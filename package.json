@@ -9,7 +9,9 @@
     "lint": "eslint",
     "db:seed": "tsx prisma/seed.ts",
     "postinstall": "prisma generate",
-    "db:migrate": "prisma migrate deploy"
+    "db:migrate": "prisma migrate deploy",
+    "db:push": "prisma db push",
+    "migrate": "node scripts/migrate.js"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.8",
