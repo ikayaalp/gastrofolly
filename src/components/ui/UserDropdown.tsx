@@ -1,0 +1,139 @@
+'use client'
+
+import { useState, useRef, useEffect } from 'react'
+import { useSession, signOut } from 'next-auth/react'
+import Link from 'next/link'
+import { User, Settings, BookOpen, LogOut, ChevronDown, Play } from 'lucide-react'
+
+export default function UserDropdown() {
+  const { data: session } = useSession()
+  const [isOpen, setIsOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
+
+  if (!session?.user) {
+    return null
+  }
+
+  const handleSignOut = () => {
+    signOut({ callbackUrl: '/' })
+  }
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors focus:outline-none"
+      >
+        <div className="w-8 h-8 rounded-full bg-orange-600 flex items-center justify-center border-2 border-gray-600 hover:border-orange-500 transition-colors">
+          <span className="text-lg">👨‍🍳</span>
+        </div>
+        <span className="hidden md:block text-sm font-medium">
+          {session.user.name}
+        </span>
+        <ChevronDown 
+          className={`h-4 w-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+        />
+      </button>
+
+      {isOpen && (
+        <div className="absolute right-0 mt-2 w-72 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50">
+          {/* Kullanıcı Bilgileri */}
+          <div className="px-4 py-3 border-b border-gray-700">
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 rounded-full bg-orange-600 flex items-center justify-center">
+                <span className="text-2xl">👨‍🍳</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-white font-semibold truncate">
+                  {session.user.name || 'Kullanıcı'}
+                </p>
+                <p className="text-gray-400 text-sm truncate">
+                  {session.user.email}
+                </p>
+                <p className="text-orange-500 text-xs font-medium">
+                  {session.user.role === 'ADMIN' ? 'Yönetici' : 
+                   session.user.role === 'INSTRUCTOR' ? 'Eğitmen' : 'Öğrenci'}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Menü Seçenekleri */}
+          <div className="py-2">
+            <Link
+              href="/dashboard"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+            >
+              <User className="h-4 w-4 mr-3" />
+              Profilim
+            </Link>
+            
+            <Link
+              href="/my-courses"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+            >
+              <BookOpen className="h-4 w-4 mr-3" />
+              Kurslarım
+            </Link>
+
+            {session.user.role === 'ADMIN' && (
+              <>
+                <Link
+                  href="/admin"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+                >
+                  <User className="h-4 w-4 mr-3" />
+                  Admin Paneli
+                </Link>
+                <Link
+                  href="/admin/courses"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+                >
+                  <Play className="h-4 w-4 mr-3" />
+                  Kurs Yönetimi
+                </Link>
+              </>
+            )}
+
+            <Link
+              href="/settings"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+            >
+              <Settings className="h-4 w-4 mr-3" />
+              Ayarlar
+            </Link>
+          </div>
+
+          {/* Çıkış */}
+          <div className="border-t border-gray-700 py-2">
+            <button
+              onClick={handleSignOut}
+              className="flex items-center w-full px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+            >
+              <LogOut className="h-4 w-4 mr-3" />
+              Çıkış Yap
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}

@@ -1,0 +1,276 @@
+import Link from "next/link"
+import Image from "next/image"
+import { ChefHat, Users, Award, Target, Heart, Mail, Linkedin, Twitter } from "lucide-react"
+
+export default function AboutPage() {
+  return (
+    <div className="min-h-screen bg-black text-white">
+      {/* Header */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900 backdrop-blur-sm border-b border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <Link href="/" className="flex items-center space-x-2">
+              <ChefHat className="h-8 w-8 text-orange-500" />
+              <span className="text-2xl font-bold text-white">Chef2.0</span>
+            </Link>
+            <nav className="hidden md:flex space-x-8">
+              <Link href="/" className="text-gray-300 hover:text-orange-500">
+                Ana Sayfa
+              </Link>
+              <Link href="/about" className="text-orange-500">
+                Hakkımızda
+              </Link>
+              <Link href="/contact" className="text-gray-300 hover:text-orange-500">
+                İletişim
+              </Link>
+            </nav>
+            <div className="flex items-center space-x-4">
+              <Link
+                href="/auth/signin"
+                className="text-gray-300 hover:text-orange-500"
+              >
+                Giriş Yap
+              </Link>
+              <Link
+                href="/auth/signup"
+                className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors"
+              >
+                Kayıt Ol
+              </Link>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Hero Section */}
+      <section className="pt-32 pb-20 bg-gradient-to-b from-gray-900 to-black">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
+              Hakkımızda
+            </h1>
+            <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
+              Chef2.0 olarak gastronomi dünyasında yeni nesil eğitim deneyimi sunuyoruz.
+              Amacımız, mutfak sanatını herkes için erişilebilir kılmak.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Mission Section */}
+      <section className="py-16 bg-black">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="bg-orange-500/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Target className="h-8 w-8 text-orange-500" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-4">Misyonumuz</h3>
+              <p className="text-gray-400">
+                Gastronomi eğitimini demokratikleştirmek ve herkesin mutfak sanatını öğrenebileceği 
+                bir platform oluşturmak.
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="bg-orange-500/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Heart className="h-8 w-8 text-orange-500" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-4">Vizyonumuz</h3>
+              <p className="text-gray-400">
+                Türkiye&apos;nin en büyük online gastronomi eğitim platformu olmak ve 
+                dünya çapında tanınan bir marka haline gelmek.
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="bg-orange-500/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Award className="h-8 w-8 text-orange-500" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-4">Değerlerimiz</h3>
+              <p className="text-gray-400">
+                Kalite, yenilikçilik, erişilebilirlik ve sürekli öğrenme 
+                ilkelerini benimser, öğrencilerimizin başarısını öncelik olarak görürüz.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Co-Founders Section */}
+      <section className="py-16 bg-gray-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-white mb-4">
+              Kurucu Ortaklarımız
+            </h2>
+            <p className="text-gray-400">
+              Chef2.0&apos;ı hayata geçiren vizyoner ekibimizle tanışın
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* İsmail Kayaalp */}
+            <div className="bg-gray-800 rounded-xl p-6 text-center border border-gray-700 hover:border-orange-500 transition-colors">
+              <div className="w-24 h-24 rounded-full bg-orange-600 flex items-center justify-center mx-auto mb-4">
+                <span className="text-3xl">👨‍💼</span>
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">İbrahim Kayaalp</h3>
+              <p className="text-orange-500 font-medium mb-3">Co-Founder & CEO</p>
+              <p className="text-gray-400 text-sm mb-4">
+                Teknoloji ve gastronomi alanında 10+ yıllık deneyime sahip. 
+                Platform&apos;un vizyonunu belirleme ve stratejik yönlendirme konularında liderlik ediyor.
+              </p>
+              <div className="flex justify-center space-x-3">
+                <button className="text-gray-400 hover:text-orange-500">
+                  <Mail className="h-5 w-5" />
+                </button>
+                <button className="text-gray-400 hover:text-orange-500">
+                  <Linkedin className="h-5 w-5" />
+                </button>
+                <button className="text-gray-400 hover:text-orange-500">
+                  <Twitter className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* İbrahim Kayaalp */}
+            <div className="bg-gray-800 rounded-xl p-6 text-center border border-gray-700 hover:border-orange-500 transition-colors">
+              <div className="w-24 h-24 rounded-full bg-orange-600 flex items-center justify-center mx-auto mb-4">
+                <span className="text-3xl">👨‍💻</span>
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">İsmail Kayaalp</h3>
+              <p className="text-orange-500 font-medium mb-3">Co-Founder & CTO</p>
+              <p className="text-gray-400 text-sm mb-4">
+                Yazılım geliştirme ve sistem mimarisi konularında uzman. 
+                Platform&apos;un teknik altyapısını tasarlama ve geliştirme süreçlerini yönetiyor.
+              </p>
+              <div className="flex justify-center space-x-3">
+                <button className="text-gray-400 hover:text-orange-500">
+                  <Mail className="h-5 w-5" />
+                </button>
+                <button className="text-gray-400 hover:text-orange-500">
+                  <Linkedin className="h-5 w-5" />
+                </button>
+                <button className="text-gray-400 hover:text-orange-500">
+                  <Twitter className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Zeynep Berre Uçan Kayaalp */}
+            <div className="bg-gray-800 rounded-xl p-6 text-center border border-gray-700 hover:border-orange-500 transition-colors">
+              <div className="w-24 h-24 rounded-full bg-orange-600 flex items-center justify-center mx-auto mb-4">
+                <span className="text-3xl">👩‍🍳</span>
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">Berre Zeynep Uçan Kayaalp</h3>
+              <p className="text-orange-500 font-medium mb-3">Co-Founder & Head of Content</p>
+              <p className="text-gray-400 text-sm mb-4">
+                Gastronomi eğitimi ve içerik üretimi alanında uzman. 
+                Eğitim programlarının kalitesi ve eğitmen seçimi süreçlerini yönetiyor.
+              </p>
+              <div className="flex justify-center space-x-3">
+                <button className="text-gray-400 hover:text-orange-500">
+                  <Mail className="h-5 w-5" />
+                </button>
+                <button className="text-gray-400 hover:text-orange-500">
+                  <Linkedin className="h-5 w-5" />
+                </button>
+                <button className="text-gray-400 hover:text-orange-500">
+                  <Twitter className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="py-16 bg-black">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-orange-500 mb-2">10,000+</div>
+              <p className="text-gray-400">Mutlu Öğrenci</p>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-orange-500 mb-2">50+</div>
+              <p className="text-gray-400">Video Kurs</p>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-orange-500 mb-2">25+</div>
+              <p className="text-gray-400">Profesyonel Şef</p>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-orange-500 mb-2">4.9</div>
+              <p className="text-gray-400">Ortalama Puan</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-16 bg-black">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl font-bold text-white mb-4">
+            Gastronomi Yolculuğunuza Başlayın
+          </h2>
+          <p className="text-xl text-white mb-8">
+            Profesyonel şeflerden öğrenin, becerilerinizi geliştirin ve mutfak sanatında ustalaşın.
+          </p>
+          <Link
+            href="/auth/signup"
+            className="bg-orange-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-orange-700 transition-colors inline-block"
+          >
+            Hemen Başla
+          </Link>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-white py-12 border-t border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+              <div className="flex items-center space-x-2 mb-4">
+                <ChefHat className="h-8 w-8 text-orange-500" />
+                <span className="text-2xl font-bold">Chef2.0</span>
+              </div>
+              <p className="text-gray-400">
+                Gastronomi dünyasında kendinizi geliştirin ve profesyonel bir şef olun.
+              </p>
+            </div>
+            <div>
+              <h4 className="text-lg font-semibold mb-4">Kurslar</h4>
+              <ul className="space-y-2 text-gray-400">
+                <li><Link href="#" className="hover:text-white">Temel Mutfak</Link></li>
+                <li><Link href="#" className="hover:text-white">Türk Mutfağı</Link></li>
+                <li><Link href="#" className="hover:text-white">Pastane</Link></li>
+                <li><Link href="#" className="hover:text-white">Dünya Mutfağı</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-lg font-semibold mb-4">Şirket</h4>
+              <ul className="space-y-2 text-gray-400">
+                <li><Link href="/about" className="hover:text-white">Hakkımızda</Link></li>
+                <li><Link href="#" className="hover:text-white">Eğitmenler</Link></li>
+                <li><Link href="#" className="hover:text-white">Kariyer</Link></li>
+                <li><Link href="/contact" className="hover:text-white">İletişim</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-lg font-semibold mb-4">Destek</h4>
+              <ul className="space-y-2 text-gray-400">
+                <li><Link href="#" className="hover:text-white">Yardım Merkezi</Link></li>
+                <li><Link href="#" className="hover:text-white">Gizlilik</Link></li>
+                <li><Link href="#" className="hover:text-white">Şartlar</Link></li>
+                <li><Link href="#" className="hover:text-white">SSS</Link></li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+            <p>&copy; 2024 Chef2.0. Tüm hakları saklıdır.</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  )
+}
