@@ -11,7 +11,8 @@
     "postinstall": "prisma generate",
     "db:migrate": "prisma migrate deploy",
     "db:push": "prisma db push",
-    "migrate": "node scripts/migrate.js"
+    "migrate": "node scripts/migrate.js",
+    "create-admin": "node scripts/create-admin.js"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.8",
