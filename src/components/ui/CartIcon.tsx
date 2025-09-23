@@ -41,7 +41,7 @@ export default function CartIcon() {
   if (!isVisible) return null
 
   return (
-    <div className="fixed bottom-12 right-24 z-50">
+    <div className="fixed bottom-24 right-4 md:bottom-12 md:right-24 z-50">
       <Link
         href="/cart"
         className={`
@@ -50,15 +50,15 @@ export default function CartIcon() {
           ${showAnimation ? 'animate-bounce' : ''}
           ${showPulse ? 'animate-pulse' : ''}
           group
-          w-20 h-20 flex items-center justify-center
+          w-16 h-16 md:w-20 md:h-20 flex items-center justify-center
         `}
       >
-        <ShoppingCart className="h-10 w-10 text-white transition-transform duration-300 group-hover:scale-110" />
+        <ShoppingCart className="h-8 w-8 md:h-10 md:w-10 text-white transition-transform duration-300 group-hover:scale-110" />
         
         {/* Item count badge with enhanced animation */}
         {state.itemCount > 0 && (
           <span className={`
-            absolute -top-2 -right-2 bg-red-500 text-white text-sm font-bold rounded-full h-7 w-7 
+            absolute -top-1 -right-1 md:-top-2 md:-right-2 bg-red-500 text-white text-xs md:text-sm font-bold rounded-full h-5 w-5 md:h-7 md:w-7 
             flex items-center justify-center shadow-lg border-2 border-white
             ${showAnimation ? 'animate-ping' : ''}
             ${showPulse ? 'animate-pulse' : ''}
