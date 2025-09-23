@@ -1,7 +1,7 @@
 "use client"
 
 import { useCart } from '@/contexts/CartContext'
-import { ChefHat, Trash2, ShoppingBag, ArrowLeft, Search, Bell } from 'lucide-react'
+import { ChefHat, Trash2, ShoppingBag, ArrowLeft, Search, Bell, Home, BookOpen, Users, MessageCircle } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
@@ -43,8 +43,8 @@ export default function CartPage() {
   if (state.items.length === 0) {
     return (
       <div className="min-h-screen bg-black">
-        {/* Header */}
-        <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
+        {/* Desktop Header */}
+        <header className="hidden md:block fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center py-4">
               <div className="flex items-center space-x-8">
@@ -55,7 +55,7 @@ export default function CartPage() {
                     <span className="bg-orange-600 text-white px-2 py-1 rounded text-sm font-medium">Admin</span>
                   )}
                 </Link>
-                <nav className="hidden md:flex space-x-6">
+                <nav className="flex space-x-6">
                   <Link href="/home" className="text-white font-semibold">
                     Ana Sayfa
                   </Link>
@@ -97,8 +97,27 @@ export default function CartPage() {
           </div>
         </header>
 
+        {/* Mobile Top Bar */}
+        <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
+          <div className="flex justify-between items-center py-3 px-4">
+            <Link href="/home" className="flex items-center space-x-2">
+              <ChefHat className="h-6 w-6 text-orange-500" />
+              <span className="text-lg font-bold text-white">Chef2.0</span>
+            </Link>
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={() => setIsSearchOpen(true)}
+                className="p-2 text-gray-300 hover:text-white transition-colors"
+              >
+                <Search className="h-5 w-5" />
+              </button>
+              <UserDropdown />
+            </div>
+          </div>
+        </div>
+
         {/* Empty Cart */}
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:pt-24">
           <div className="text-center">
             <ShoppingBag className="h-24 w-24 text-gray-600 mx-auto mb-6" />
             <h1 className="text-3xl font-bold text-white mb-4">Sepetiniz Boş</h1>
@@ -108,6 +127,28 @@ export default function CartPage() {
               className="bg-orange-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-orange-700 transition-colors"
             >
               Kursları Keşfet
+            </Link>
+          </div>
+        </div>
+
+        {/* Mobile Bottom Navigation */}
+        <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-gray-900/95 backdrop-blur-sm border-t border-gray-800">
+          <div className="flex justify-around items-center py-2">
+            <Link href="/home" className="flex flex-col items-center py-2 px-3 text-orange-500">
+              <Home className="h-6 w-6" />
+              <span className="text-xs font-medium mt-1">Ana Sayfa</span>
+            </Link>
+            <Link href="/my-courses" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+              <BookOpen className="h-6 w-6" />
+              <span className="text-xs font-medium mt-1">Kurslarım</span>
+            </Link>
+            <Link href="/chef-sosyal" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+              <Users className="h-6 w-6" />
+              <span className="text-xs font-medium mt-1">Sosyal</span>
+            </Link>
+            <Link href="/contact" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+              <MessageCircle className="h-6 w-6" />
+              <span className="text-xs font-medium mt-1">İletişim</span>
             </Link>
           </div>
         </div>
@@ -171,7 +212,7 @@ export default function CartPage() {
         </div>
       </header>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-16 md:pt-24 pb-20 md:pb-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-white">Sepetim</h1>
           <button
@@ -316,6 +357,28 @@ export default function CartPage() {
               </p>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Mobile Bottom Navigation */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-gray-900/95 backdrop-blur-sm border-t border-gray-800">
+        <div className="flex justify-around items-center py-2">
+          <Link href="/home" className="flex flex-col items-center py-2 px-3 text-orange-500">
+            <Home className="h-6 w-6" />
+            <span className="text-xs font-medium mt-1">Ana Sayfa</span>
+          </Link>
+          <Link href="/my-courses" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+            <BookOpen className="h-6 w-6" />
+            <span className="text-xs font-medium mt-1">Kurslarım</span>
+          </Link>
+          <Link href="/chef-sosyal" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+            <Users className="h-6 w-6" />
+            <span className="text-xs font-medium mt-1">Sosyal</span>
+          </Link>
+          <Link href="/contact" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+            <MessageCircle className="h-6 w-6" />
+            <span className="text-xs font-medium mt-1">İletişim</span>
+          </Link>
         </div>
       </div>
 
