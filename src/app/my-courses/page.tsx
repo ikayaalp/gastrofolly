@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
-import { ChefHat, Play, Clock, BookOpen, Star, ArrowRight } from "lucide-react"
+import { ChefHat, Play, Clock, BookOpen, Star, ArrowRight, Home, Users, MessageCircle, Search } from "lucide-react"
 import UserDropdown from "@/components/ui/UserDropdown"
 
 async function getUserCourses(userId: string) {
@@ -58,8 +58,8 @@ export default async function MyCoursesPage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Header */}
-      <header className="bg-gray-900/30 border-b border-gray-800 sticky top-0 z-50">
+      {/* Desktop Header */}
+      <header className="hidden md:block bg-gray-900/30 backdrop-blur-sm border-b border-gray-800 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between py-4">
             <div className="flex items-center space-x-8">
@@ -70,7 +70,7 @@ export default async function MyCoursesPage() {
                   <span className="bg-orange-600 text-white px-2 py-1 rounded text-sm font-medium">Admin</span>
                 )}
               </Link>
-              <nav className="hidden md:flex space-x-6">
+              <nav className="flex space-x-6">
                 <Link href="/home" className="text-gray-300 hover:text-white transition-colors">
                   Ana Sayfa
                 </Link>
@@ -103,7 +103,23 @@ export default async function MyCoursesPage() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Mobile Top Bar */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
+        <div className="flex justify-between items-center py-3 px-4">
+          <Link href="/home" className="flex items-center space-x-2">
+            <ChefHat className="h-6 w-6 text-orange-500" />
+            <span className="text-lg font-bold text-white">Chef2.0</span>
+          </Link>
+          <div className="flex items-center space-x-3">
+            <button className="p-2 text-gray-300 hover:text-white transition-colors">
+              <Search className="h-5 w-5" />
+            </button>
+            <UserDropdown />
+          </div>
+        </div>
+      </div>
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-16 md:pt-8 pb-20 md:pb-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Kurslarım</h1>
           <p className="text-gray-400">
@@ -230,6 +246,28 @@ export default async function MyCoursesPage() {
           </div>
         )}
       </main>
+
+      {/* Mobile Bottom Navigation */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-gray-900/95 backdrop-blur-sm border-t border-gray-800">
+        <div className="flex justify-around items-center py-2">
+          <Link href="/home" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+            <Home className="h-6 w-6" />
+            <span className="text-xs font-medium mt-1">Ana Sayfa</span>
+          </Link>
+          <Link href="/my-courses" className="flex flex-col items-center py-2 px-3 text-orange-500">
+            <BookOpen className="h-6 w-6" />
+            <span className="text-xs font-medium mt-1">Kurslarım</span>
+          </Link>
+          <Link href="/chef-sosyal" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+            <Users className="h-6 w-6" />
+            <span className="text-xs font-medium mt-1">Sosyal</span>
+          </Link>
+          <Link href="/contact" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+            <MessageCircle className="h-6 w-6" />
+            <span className="text-xs font-medium mt-1">İletişim</span>
+          </Link>
+        </div>
+      </div>
 
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-8 border-t border-gray-800 mt-16">
