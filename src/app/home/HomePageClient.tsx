@@ -195,7 +195,7 @@ export default function HomePageClient({
       </main>
 
       {/* Mobile Bottom Navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-gray-900/95 backdrop-blur-sm border-t border-gray-800">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-t border-gray-800">
         <div className="flex justify-around items-center py-2">
           <Link href="/home" className="flex flex-col items-center py-2 px-3 text-orange-500">
             <Home className="h-6 w-6" />

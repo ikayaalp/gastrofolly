@@ -238,7 +238,7 @@ export default function ChefSosyalClient({
                   <span className="text-2xl font-bold text-white">Chef2.0</span>
                 </Link>
                 {/* Navigation ortada */}
-                <nav className="hidden md:flex space-x-8">
+                <nav className="flex space-x-8">
                   <Link href="/" className="text-gray-300 hover:text-orange-500">
                     Ana Sayfa
                   </Link>
@@ -556,7 +556,7 @@ export default function ChefSosyalClient({
       )}
 
       {/* Mobile Bottom Navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-gray-900/95 backdrop-blur-sm border-t border-gray-800">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-t border-gray-800">
         <div className="flex justify-around items-center py-2">
           <Link href="/home" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
             <Home className="h-6 w-6" />

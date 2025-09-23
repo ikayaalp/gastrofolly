@@ -59,7 +59,7 @@ export default async function MyCoursesPage() {
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Desktop Header */}
-      <header className="hidden md:block bg-gray-900/30 backdrop-blur-sm border-b border-gray-800 sticky top-0 z-50">
+      <header className="hidden md:block fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between py-4">
             <div className="flex items-center space-x-8">
@@ -97,6 +97,9 @@ export default async function MyCoursesPage() {
             </div>
 
             <div className="flex items-center space-x-4">
+              <button className="p-2 text-gray-300 hover:text-white transition-colors">
+                <Search className="h-5 w-5" />
+              </button>
               <UserDropdown />
             </div>
           </div>
@@ -248,7 +251,7 @@ export default async function MyCoursesPage() {
       </main>
 
       {/* Mobile Bottom Navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-gray-900/95 backdrop-blur-sm border-t border-gray-800">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-t border-gray-800">
         <div className="flex justify-around items-center py-2">
           <Link href="/home" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
             <Home className="h-6 w-6" />
