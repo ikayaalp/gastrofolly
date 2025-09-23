@@ -62,7 +62,7 @@ export default async function AdminPage() {
   return (
     <div className="min-h-screen bg-black">
       {/* Header */}
-      <header className="bg-gray-900 border-b border-gray-800">
+      <header className="bg-gray-900/30 border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-8">
@@ -83,6 +83,9 @@ export default async function AdminPage() {
                 </Link>
                 <Link href="/admin/courses" className="text-gray-300 hover:text-white transition-colors">
                   Kurs Yönetimi
+                </Link>
+                <Link href="/admin/users" className="text-gray-300 hover:text-white transition-colors">
+                  Kullanıcı Yönetimi
                 </Link>
                 <Link href="/chef-sosyal" className="text-gray-300 hover:text-white transition-colors">
                   Chef Sosyal
@@ -148,6 +151,29 @@ export default async function AdminPage() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Admin Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <Link href="/admin/courses" className="bg-gray-900 border border-gray-800 rounded-lg p-6 hover:bg-gray-800 transition-colors">
+            <div className="flex items-center">
+              <BookOpen className="h-8 w-8 text-green-500" />
+              <div className="ml-4">
+                <h3 className="text-lg font-semibold text-white">Kurs Yönetimi</h3>
+                <p className="text-gray-400">Kursları düzenle, yayınla ve yönet</p>
+              </div>
+            </div>
+          </Link>
+          
+          <Link href="/admin/users" className="bg-gray-900 border border-gray-800 rounded-lg p-6 hover:bg-gray-800 transition-colors">
+            <div className="flex items-center">
+              <Users className="h-8 w-8 text-blue-500" />
+              <div className="ml-4">
+                <h3 className="text-lg font-semibold text-white">Kullanıcı Yönetimi</h3>
+                <p className="text-gray-400">Kullanıcıları yönet ve rollerini değiştir</p>
+              </div>
+            </div>
+          </Link>
         </div>
 
         {/* Kullanıcı Listesi */}

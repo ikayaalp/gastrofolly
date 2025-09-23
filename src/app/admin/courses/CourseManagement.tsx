@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { Plus, Edit, Trash2, Eye, EyeOff, Play, Clock, Users, Star, Upload } from "lucide-react"
+import { Plus, Edit, Trash2, Eye, EyeOff, Play, Users, Star, Upload } from "lucide-react"
+import Image from "next/image"
 import CourseEditModal from "./CourseEditModal"
 import LessonManageModal from "./LessonManageModal"
 
@@ -239,9 +240,11 @@ export default function CourseManagement({ courses, categories, instructors }: C
                       <div className="flex items-center space-x-3">
                         <div className="w-12 h-12 bg-gray-700 rounded-lg overflow-hidden flex-shrink-0">
                           {course.imageUrl ? (
-                            <img
+                            <Image
                               src={course.imageUrl}
                               alt={course.title}
+                              width={48}
+                              height={48}
                               className="w-full h-full object-cover"
                             />
                           ) : (

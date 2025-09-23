@@ -178,7 +178,7 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted }: Vid
     if (duration > 0 && currentTime / duration >= 0.8 && !isCompleted) {
       markAsCompleted()
     }
-  }, [currentTime, duration, isCompleted, lesson.id, course.id])
+  }, [currentTime, duration, isCompleted, lesson.id, course.id, markAsCompleted])
 
   // YouTube URL kontrolü
   const isYouTubeUrl = (url: string) => {

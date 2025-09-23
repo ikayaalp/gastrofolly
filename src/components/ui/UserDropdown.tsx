@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import Link from 'next/link'
-import { User, Settings, BookOpen, LogOut, ChevronDown, Play } from 'lucide-react'
+import { User, Settings, BookOpen, LogOut, ChevronDown, Play, Heart } from 'lucide-react'
 
 export default function UserDropdown() {
   const { data: session } = useSession()
@@ -89,6 +89,15 @@ export default function UserDropdown() {
             >
               <BookOpen className="h-4 w-4 mr-3" />
               Kurslarım
+            </Link>
+            
+            <Link
+              href="/favorites"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+            >
+              <Heart className="h-4 w-4 mr-3" />
+              Favorilerim
             </Link>
 
             {session.user.role === 'ADMIN' && (

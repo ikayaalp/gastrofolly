@@ -11,9 +11,12 @@ import {
   Play, 
   CheckCircle,
   ArrowLeft,
-  ShoppingCart
+  ShoppingCart,
+  Lock
 } from "lucide-react"
 import EnrollButton from "@/components/course/EnrollButton"
+import FavoriteButton from "@/components/course/FavoriteButton"
+import ShareButton from "@/components/course/ShareButton"
 import CommentsSection from "@/components/course/CommentsSection"
 import UserDropdown from "@/components/ui/UserDropdown"
 
@@ -78,7 +81,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
   return (
     <div className="min-h-screen bg-black">
       {/* Header */}
-      <header className="bg-gray-900 border-b border-gray-800">
+      <header className="bg-gray-900/30 border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-8">
@@ -142,7 +145,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
       </header>
 
       {/* Breadcrumb */}
-      <div className="bg-gray-900 border-b border-gray-800">
+      <div className="bg-gray-900/30 border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center space-x-2 text-sm">
             <Link href="/home" className="text-gray-400 hover:text-orange-500">
@@ -198,9 +201,12 @@ export default async function CoursePage({ params }: CoursePageProps) {
                       className="w-10 h-10 rounded-full mr-3"
                     />
                     <div>
-                      <p className="font-semibold text-white">
+                      <Link 
+                        href={`/instructor/${course.instructor.id}`}
+                        className="font-semibold text-white hover:text-orange-500 transition-colors cursor-pointer"
+                      >
                         {course.instructor.name}
-                      </p>
+                      </Link>
                       <p className="text-sm text-gray-400">Eğitmen</p>
                     </div>
                   </div>
@@ -263,15 +269,22 @@ export default async function CoursePage({ params }: CoursePageProps) {
                       <div className="bg-orange-500/20 text-orange-500 w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold mr-4">
                         {index + 1}
                       </div>
-                      <div>
-                        <h3 className="font-semibold text-white">
-                          {lesson.title}
-                        </h3>
-                        {lesson.description && (
-                          <p className="text-sm text-gray-400">
-                            {lesson.description}
-                          </p>
+                      <div className="flex items-center">
+                        {lesson.isFree ? (
+                          <Play className="h-4 w-4 text-green-500 mr-2" />
+                        ) : (
+                          <Lock className="h-4 w-4 text-orange-500 mr-2" />
                         )}
+                        <div>
+                          <h3 className="font-semibold text-white">
+                            {lesson.title}
+                          </h3>
+                          {lesson.description && (
+                            <p className="text-sm text-gray-400">
+                              {lesson.description}
+                            </p>
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className="flex items-center space-x-4">
@@ -349,9 +362,36 @@ export default async function CoursePage({ params }: CoursePageProps) {
               ) : (
                 <EnrollButton 
                   courseId={course.id} 
-                  price={course.discountedPrice || course.price} 
+                  price={course.price}
+                  discountedPrice={course.discountedPrice || undefined}
+                  title={course.title}
+                  imageUrl={course.imageUrl || undefined}
+                  instructor={{ name: course.instructor.name || 'Unknown' }}
                 />
               )}
+
+              {/* Favorite Button */}
+              <div className="mt-4">
+                <FavoriteButton
+                  courseId={course.id}
+                  title={course.title}
+                  price={course.price}
+                  discountedPrice={course.discountedPrice || undefined}
+                  imageUrl={course.imageUrl || undefined}
+                  instructor={{ name: course.instructor.name || 'Unknown' }}
+                  category={course.category}
+                  level={course.level}
+                  _count={course._count}
+                />
+              </div>
+
+              {/* Share Button */}
+              <div className="mt-4">
+                <ShareButton
+                  courseId={course.id}
+                  courseTitle={course.title}
+                />
+              </div>
 
               <div className="mt-6 space-y-4 text-sm text-gray-300">
                 <div className="flex items-center justify-between">

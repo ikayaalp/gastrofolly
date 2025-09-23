@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import AuthSessionProvider from "@/components/providers/SessionProvider";
+import { CartProvider } from "@/contexts/CartContext";
+import { FavoritesProvider } from "@/contexts/FavoritesContext";
+import CartIcon from "@/components/ui/CartIcon";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -23,7 +26,12 @@ export default function RootLayout({
     <html lang="tr">
       <body className={`${inter.variable} font-sans antialiased`}>
         <AuthSessionProvider>
-          {children}
+          <CartProvider>
+            <FavoritesProvider>
+              {children}
+              <CartIcon />
+            </FavoritesProvider>
+          </CartProvider>
         </AuthSessionProvider>
       </body>
     </html>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react"
 import Link from "next/link"
-import { signIn, getSession } from "next-auth/react"
+import { signIn } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { ChefHat, Eye, EyeOff } from "lucide-react"
 

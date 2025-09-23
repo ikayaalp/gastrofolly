@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { ChefHat, Mail, Phone, MapPin, Clock, AlertCircle, Search, Bell } from "lucide-react"
+import { ChefHat, Mail, Phone, Clock, AlertCircle, Search, Bell } from "lucide-react"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import UserDropdown from "@/components/ui/UserDropdown"
@@ -9,7 +9,7 @@ export default async function ContactPage() {
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900 backdrop-blur-sm border-b border-gray-800">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             {session?.user ? (

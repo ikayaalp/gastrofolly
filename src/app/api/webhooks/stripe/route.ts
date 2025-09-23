@@ -35,7 +35,9 @@ export async function POST(request: NextRequest) {
       case 'checkout.session.completed':
         const session = event.data.object as Stripe.Checkout.Session
         
-        if (session.metadata?.userId && session.metadata?.courseId) {
+        if (session.metadata?.userId && session.metadata?.courseIds) {
+          const courseIds = JSON.parse(session.metadata.courseIds)
+          
           // Payment durumunu güncelle
           await prisma.payment.updateMany({
             where: {
@@ -47,15 +49,17 @@ export async function POST(request: NextRequest) {
             }
           })
 
-          // Kullanıcıyı kursa kaydet
-          await prisma.enrollment.create({
-            data: {
-              userId: session.metadata.userId,
-              courseId: session.metadata.courseId,
-            }
-          })
+          // Kullanıcıyı tüm kurslara kaydet
+          for (const courseId of courseIds) {
+            await prisma.enrollment.create({
+              data: {
+                userId: session.metadata.userId,
+                courseId: courseId,
+              }
+            })
+          }
 
-          console.log(`User ${session.metadata.userId} enrolled in course ${session.metadata.courseId}`)
+          console.log(`User ${session.metadata.userId} enrolled in courses: ${courseIds.join(', ')}`)
         }
         break
 

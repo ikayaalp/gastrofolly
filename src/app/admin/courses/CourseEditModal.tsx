@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { X, Save, Upload } from "lucide-react"
+import { X, Save } from "lucide-react"
 
 interface Course {
   id: string

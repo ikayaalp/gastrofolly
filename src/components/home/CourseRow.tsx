@@ -212,13 +212,13 @@ export default function CourseRow({ title, courses, showProgress = false }: Cour
                         {averageRating.toFixed(1)} ({course.reviews.length})
                       </span>
                     </div>
-                    <div className="flex flex-col items-end">
+                    <div className="flex flex-col items-end min-h-[3rem]">
                       {course.discountedPrice && course.discountRate ? (
                         <>
                           <span className="text-lg font-bold text-green-400">
                             ₺{course.discountedPrice.toLocaleString('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                           </span>
-                          <div className="flex items-center space-x-2">
+                          <div className="flex items-center space-x-2 mt-1">
                             <span className="text-sm text-gray-400 line-through">
                               ₺{course.price.toLocaleString('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                             </span>
@@ -228,9 +228,12 @@ export default function CourseRow({ title, courses, showProgress = false }: Cour
                           </div>
                         </>
                       ) : (
-                        <span className="text-lg font-bold text-orange-500">
-                          ₺{course.price.toLocaleString('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                        </span>
+                        <div className="flex flex-col items-end">
+                          <span className="text-lg font-bold text-orange-500">
+                            ₺{course.price.toLocaleString('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                          </span>
+                          <div className="h-6"></div>
+                        </div>
                       )}
                     </div>
                   </div>
