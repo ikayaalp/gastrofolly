@@ -1,17 +1,22 @@
 "use client"
 
 import { useCart } from '@/contexts/CartContext'
-import { ChefHat, Trash2, ShoppingBag, ArrowLeft } from 'lucide-react'
+import { ChefHat, Trash2, ShoppingBag, ArrowLeft, Search, Bell } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import DiscountCode from '@/components/cart/DiscountCode'
+import UserDropdown from '@/components/ui/UserDropdown'
+import SearchModal from '@/components/ui/SearchModal'
+import { useSession } from 'next-auth/react'
 
 export default function CartPage() {
   const { state, removeItem, clearCart } = useCart()
   const router = useRouter()
+  const { data: session } = useSession()
   const [appliedDiscount, setAppliedDiscount] = useState<{ code: string; percentage: number; amount: number } | null>(null)
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
 
   const handleCheckout = () => {
     if (state.items.length === 0) return
@@ -39,14 +44,54 @@ export default function CartPage() {
     return (
       <div className="min-h-screen bg-black">
         {/* Header */}
-        <header className="bg-gray-900/30 border-b border-gray-800">
+        <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center py-4">
               <div className="flex items-center space-x-8">
                 <Link href="/home" className="flex items-center space-x-2">
                   <ChefHat className="h-8 w-8 text-orange-500" />
                   <span className="text-2xl font-bold text-white">Chef2.0</span>
+                  {session?.user?.role === 'ADMIN' && (
+                    <span className="bg-orange-600 text-white px-2 py-1 rounded text-sm font-medium">Admin</span>
+                  )}
                 </Link>
+                <nav className="hidden md:flex space-x-6">
+                  <Link href="/home" className="text-white font-semibold">
+                    Ana Sayfa
+                  </Link>
+                  <Link href="/my-courses" className="text-gray-300 hover:text-white transition-colors">
+                    Kurslarım
+                  </Link>
+                  {session?.user?.role === 'ADMIN' && (
+                    <>
+                      <Link href="/admin" className="text-gray-300 hover:text-white transition-colors">
+                        Admin Paneli
+                      </Link>
+                      <Link href="/admin/courses" className="text-gray-300 hover:text-white transition-colors">
+                        Kurs Yönetimi
+                      </Link>
+                    </>
+                  )}
+                  <Link href="/chef-sosyal" className="text-gray-300 hover:text-white transition-colors">
+                    Chef Sosyal
+                  </Link>
+                  <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
+                    İletişim
+                  </Link>
+                </nav>
+              </div>
+              
+              <div className="flex items-center space-x-4">
+                <button
+                  onClick={() => setIsSearchOpen(true)}
+                  className="p-2 text-gray-300 hover:text-white transition-colors"
+                >
+                  <Search className="h-5 w-5" />
+                </button>
+                <button className="p-2 text-gray-300 hover:text-white transition-colors">
+                  <Bell className="h-5 w-5" />
+                </button>
+                <UserDropdown />
               </div>
             </div>
           </div>
@@ -73,27 +118,60 @@ export default function CartPage() {
   return (
     <div className="min-h-screen bg-black">
       {/* Header */}
-      <header className="bg-gray-900/30 border-b border-gray-800">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-8">
               <Link href="/home" className="flex items-center space-x-2">
                 <ChefHat className="h-8 w-8 text-orange-500" />
                 <span className="text-2xl font-bold text-white">Chef2.0</span>
+                {session?.user?.role === 'ADMIN' && (
+                  <span className="bg-orange-600 text-white px-2 py-1 rounded text-sm font-medium">Admin</span>
+                )}
               </Link>
+              <nav className="hidden md:flex space-x-6">
+                <Link href="/home" className="text-white font-semibold">
+                  Ana Sayfa
+                </Link>
+                <Link href="/my-courses" className="text-gray-300 hover:text-white transition-colors">
+                  Kurslarım
+                </Link>
+                {session?.user?.role === 'ADMIN' && (
+                  <>
+                    <Link href="/admin" className="text-gray-300 hover:text-white transition-colors">
+                      Admin Paneli
+                    </Link>
+                    <Link href="/admin/courses" className="text-gray-300 hover:text-white transition-colors">
+                      Kurs Yönetimi
+                    </Link>
+                  </>
+                )}
+                <Link href="/chef-sosyal" className="text-gray-300 hover:text-white transition-colors">
+                  Chef Sosyal
+                </Link>
+                <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
+                  İletişim
+                </Link>
+              </nav>
             </div>
-            <Link
-              href="/home"
-              className="flex items-center text-gray-300 hover:text-orange-500 transition-colors"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Ana Sayfaya Dön
-            </Link>
+            
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => setIsSearchOpen(true)}
+                className="p-2 text-gray-300 hover:text-white transition-colors"
+              >
+                <Search className="h-5 w-5" />
+              </button>
+              <button className="p-2 text-gray-300 hover:text-white transition-colors">
+                <Bell className="h-5 w-5" />
+              </button>
+              <UserDropdown />
+            </div>
           </div>
         </div>
       </header>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-white">Sepetim</h1>
           <button
@@ -240,6 +318,12 @@ export default function CartPage() {
           </div>
         </div>
       </div>
+
+      {/* Search Modal */}
+      <SearchModal 
+        isOpen={isSearchOpen} 
+        onClose={() => setIsSearchOpen(false)} 
+      />
     </div>
   )
 }
