@@ -12,7 +12,10 @@ import {
   CheckCircle,
   ArrowLeft,
   ShoppingCart,
-  Lock
+  Lock,
+  Home,
+  BookOpen,
+  MessageCircle
 } from "lucide-react"
 import EnrollButton from "@/components/course/EnrollButton"
 import FavoriteButton from "@/components/course/FavoriteButton"
@@ -80,8 +83,8 @@ export default async function CoursePage({ params }: CoursePageProps) {
 
   return (
     <div className="min-h-screen bg-black">
-      {/* Header */}
-      <header className="bg-gray-900/30 border-b border-gray-800">
+      {/* Desktop Header */}
+      <header className="hidden md:block bg-gray-900/30 border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-8">
@@ -143,6 +146,31 @@ export default async function CoursePage({ params }: CoursePageProps) {
           </div>
         </div>
       </header>
+
+      {/* Mobile Top Bar */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
+        <div className="flex justify-between items-center py-3 px-4">
+          <Link href="/home" className="flex items-center space-x-2">
+            <ChefHat className="h-6 w-6 text-orange-500" />
+            <span className="text-lg font-bold text-white">Chef2.0</span>
+            {session?.user?.role === 'ADMIN' && (
+              <span className="bg-orange-600 text-white px-2 py-1 rounded text-xs font-medium">Admin</span>
+            )}
+          </Link>
+          <div className="flex items-center space-x-3">
+            {session?.user ? (
+              <UserDropdown />
+            ) : (
+              <Link
+                href="/auth/signin"
+                className="text-gray-300 hover:text-orange-500 text-sm"
+              >
+                Giriş Yap
+              </Link>
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* Breadcrumb */}
       <div className="bg-gray-900/30 border-b border-gray-800">
@@ -443,6 +471,28 @@ export default async function CoursePage({ params }: CoursePageProps) {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Mobile Bottom Navigation */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-t border-gray-800">
+        <div className="flex justify-around items-center py-2">
+          <Link href="/home" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+            <Home className="h-6 w-6" />
+            <span className="text-xs font-medium mt-1">Ana Sayfa</span>
+          </Link>
+          <Link href="/my-courses" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+            <BookOpen className="h-6 w-6" />
+            <span className="text-xs font-medium mt-1">Kurslarım</span>
+          </Link>
+          <Link href="/chef-sosyal" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+            <Users className="h-6 w-6" />
+            <span className="text-xs font-medium mt-1">Sosyal</span>
+          </Link>
+          <Link href="/contact" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+            <MessageCircle className="h-6 w-6" />
+            <span className="text-xs font-medium mt-1">İletişim</span>
+          </Link>
         </div>
       </div>
     </div>

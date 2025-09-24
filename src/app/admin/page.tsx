@@ -61,8 +61,8 @@ export default async function AdminPage() {
 
   return (
     <div className="min-h-screen bg-black">
-      {/* Header */}
-      <header className="bg-gray-900/30 border-b border-gray-800">
+      {/* Desktop Header */}
+      <header className="hidden md:block bg-gray-900/30 border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-8">
@@ -102,7 +102,19 @@ export default async function AdminPage() {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Mobile Top Bar */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
+        <div className="flex justify-between items-center py-3 px-4">
+          <Link href="/home" className="flex items-center space-x-2">
+            <ChefHat className="h-6 w-6 text-orange-500" />
+            <span className="text-lg font-bold text-white">Chef2.0</span>
+            <span className="bg-orange-600 text-white px-2 py-1 rounded text-xs font-medium">Admin</span>
+          </Link>
+          <UserDropdown />
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-20 md:pt-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Admin Paneli</h1>
           <p className="text-gray-400">Sistem istatistikleri ve kullanıcı yönetimi</p>

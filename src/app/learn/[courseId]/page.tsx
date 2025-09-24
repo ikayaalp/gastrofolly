@@ -6,6 +6,9 @@ import VideoPlayer from "@/components/video/VideoPlayer"
 import CourseSidebar from "@/components/learn/CourseSidebar"
 import CommentsSection from "@/components/course/CommentsSection"
 import RecommendedCourses from "@/components/course/RecommendedCourses"
+import Link from "next/link"
+import { Home, BookOpen, Users, MessageCircle, ChefHat } from "lucide-react"
+import UserDropdown from "@/components/ui/UserDropdown"
 
 interface LearnPageProps {
   params: {
@@ -151,7 +154,18 @@ export default async function LearnPage({ params, searchParams }: LearnPageProps
 
   return (
     <div className="min-h-screen bg-black">
-      <div className="flex">
+      {/* Mobile Top Bar */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
+        <div className="flex justify-between items-center py-3 px-4">
+          <Link href="/home" className="flex items-center space-x-2">
+            <ChefHat className="h-6 w-6 text-orange-500" />
+            <span className="text-lg font-bold text-white">Chef2.0</span>
+          </Link>
+          <UserDropdown />
+        </div>
+      </div>
+
+      <div className="flex pt-16 md:pt-0">
         {/* Main Content */}
         <div className="flex-1 flex flex-col">
           {/* Video Player */}
@@ -185,6 +199,28 @@ export default async function LearnPage({ params, searchParams }: LearnPageProps
           progress={progress}
           currentLessonId={currentLesson.id}
         />
+      </div>
+
+      {/* Mobile Bottom Navigation */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-t border-gray-800">
+        <div className="flex justify-around items-center py-2">
+          <Link href="/home" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+            <Home className="h-6 w-6" />
+            <span className="text-xs font-medium mt-1">Ana Sayfa</span>
+          </Link>
+          <Link href="/my-courses" className="flex flex-col items-center py-2 px-3 text-orange-500">
+            <BookOpen className="h-6 w-6" />
+            <span className="text-xs font-medium mt-1">Kurslarım</span>
+          </Link>
+          <Link href="/chef-sosyal" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+            <Users className="h-6 w-6" />
+            <span className="text-xs font-medium mt-1">Sosyal</span>
+          </Link>
+          <Link href="/contact" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+            <MessageCircle className="h-6 w-6" />
+            <span className="text-xs font-medium mt-1">İletişim</span>
+          </Link>
+        </div>
       </div>
     </div>
   )
