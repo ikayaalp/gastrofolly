@@ -2,17 +2,20 @@
 
 import { useState, useEffect } from 'react'
 import { useCart } from '@/contexts/CartContext'
+import { useSession } from 'next-auth/react'
 import { ShoppingCart } from 'lucide-react'
 import Link from 'next/link'
 
 export default function CartIcon() {
+  const { data: session } = useSession()
   const { state } = useCart()
   const [isVisible, setIsVisible] = useState(false)
   const [showAnimation, setShowAnimation] = useState(false)
   const [showPulse, setShowPulse] = useState(false)
 
   useEffect(() => {
-    if (state.itemCount > 0) {
+    // Only show cart icon if user is logged in and has items
+    if (session?.user && state.itemCount > 0) {
       setIsVisible(true)
       setShowAnimation(true)
       setShowPulse(true)
@@ -36,7 +39,7 @@ export default function CartIcon() {
       setShowAnimation(false)
       setShowPulse(false)
     }
-  }, [state.itemCount])
+  }, [state.itemCount, session?.user])
 
   if (!isVisible) return null
 
