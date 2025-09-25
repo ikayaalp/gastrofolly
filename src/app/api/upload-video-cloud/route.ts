@@ -3,10 +3,20 @@ import { prisma } from "@/lib/prisma"
 import { v2 as cloudinary } from 'cloudinary'
 
 export async function POST(request: NextRequest) {
+  console.log('=== VIDEO UPLOAD API START ===')
   try {
+    console.log('Parsing form data...')
     const formData = await request.formData()
     const file = formData.get("video") as File
     const lessonId = formData.get("lessonId") as string
+    
+    console.log('Form data parsed:', {
+      hasFile: !!file,
+      fileName: file?.name,
+      fileSize: file?.size,
+      fileType: file?.type,
+      lessonId: lessonId
+    })
     
     if (!file) {
       return NextResponse.json({ error: "Video dosyası bulunamadı" }, { status: 400 })
@@ -127,7 +137,9 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
+    console.error("=== VIDEO UPLOAD API ERROR ===")
     console.error("Cloud upload error:", error)
+    console.error("Error stack:", error instanceof Error ? error.stack : 'No stack')
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Video yüklenirken hata oluştu" },
       { status: 500 }
