@@ -29,6 +29,14 @@ export async function POST(request: NextRequest) {
       const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET || 'video_upload'
       const folder = process.env.CLOUDINARY_FOLDER || 'chef-courses/videos'
 
+      console.log('Cloudinary credentials check:', {
+        cloudName: cloudName ? '✓' : '✗',
+        apiKey: apiKey ? '✓' : '✗',
+        apiSecret: apiSecret ? '✓' : '✗',
+        uploadPreset,
+        folder
+      })
+
       if (!cloudName || !apiKey || !apiSecret) {
         throw new Error("Cloudinary credentials eksik")
       }
@@ -48,8 +56,11 @@ export async function POST(request: NextRequest) {
         body: uploadFormData
       })
       
+      console.log('Cloudinary response status:', response.status)
+      
       if (!response.ok) {
         const errorData = await response.json()
+        console.error('Cloudinary upload error:', errorData)
         throw new Error(`Cloudinary upload failed: ${errorData.error?.message || 'Unknown error'}`)
       }
       
