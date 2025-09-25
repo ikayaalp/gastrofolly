@@ -83,7 +83,9 @@ export default function CourseEditModal({ course, categories, instructors, onClo
 
       if (response.ok) {
         onClose()
-        window.location.reload()
+        if (typeof window !== 'undefined') {
+          window.location.reload()
+        }
       } else {
         const data = await response.json()
         alert(data.error || 'Kurs kaydedilemedi')

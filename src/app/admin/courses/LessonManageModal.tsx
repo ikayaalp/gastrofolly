@@ -49,7 +49,10 @@ export default function LessonManageModal({ course, onClose }: LessonManageModal
   const handleVideoUploaded = (videoUrl: string) => {
     setShowVideoUpload(false)
     setSelectedLessonId(null)
-    window.location.reload()
+    // Client-side'da reload yap
+    if (typeof window !== 'undefined') {
+      window.location.reload()
+    }
   }
 
   const deleteLesson = async (lessonId: string) => {
@@ -63,7 +66,11 @@ export default function LessonManageModal({ course, onClose }: LessonManageModal
       })
 
       if (response.ok) {
-        window.location.reload()
+        if (typeof window !== 'undefined') {
+          if (typeof window !== 'undefined') {
+          window.location.reload()
+        }
+        }
       } else {
         alert('Ders silinemedi')
       }
@@ -110,7 +117,9 @@ export default function LessonManageModal({ course, onClose }: LessonManageModal
           order: course.lessons.length + 1,
           isFree: false
         })
-        window.location.reload()
+        if (typeof window !== 'undefined') {
+          window.location.reload()
+        }
       } else {
         const data = await response.json()
         alert(data.error || 'Ders kaydedilemedi')

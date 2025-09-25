@@ -55,7 +55,9 @@ export default function CommentsSection({
         setNewComment("")
         setNewRating(5)
         // Sayfayı yenile veya state'i güncelle
-        window.location.reload()
+        if (typeof window !== 'undefined') {
+          window.location.reload()
+        }
       }
     } catch (error) {
       console.error('Yorum gönderme hatası:', error)
@@ -77,7 +79,9 @@ export default function CommentsSection({
 
       if (response.ok) {
         // Sayfayı yenile veya state'i güncelle
-        window.location.reload()
+        if (typeof window !== 'undefined') {
+          window.location.reload()
+        }
       } else {
         alert('Yorum silinirken bir hata oluştu.')
       }

@@ -101,7 +101,9 @@ export default function CourseManagement({ courses, categories, instructors }: C
       })
 
       if (response.ok) {
-        window.location.reload()
+        if (typeof window !== 'undefined') {
+          window.location.reload()
+        }
       } else {
         alert('Kurs durumu değiştirilemedi')
       }
@@ -122,7 +124,9 @@ export default function CourseManagement({ courses, categories, instructors }: C
       })
 
       if (response.ok) {
-        window.location.reload()
+        if (typeof window !== 'undefined') {
+          window.location.reload()
+        }
       } else {
         alert('Kurs silinemedi')
       }

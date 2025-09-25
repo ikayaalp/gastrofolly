@@ -34,7 +34,9 @@ export default function VideoManagement({ lessonsWithoutVideos, allLessons }: Vi
     setRefreshKey(prev => prev + 1)
     
     // Sayfayı yenile
-    window.location.reload()
+    if (typeof window !== 'undefined') {
+      window.location.reload()
+    }
   }
 
   const handleUploadClick = (lesson: Lesson) => {
