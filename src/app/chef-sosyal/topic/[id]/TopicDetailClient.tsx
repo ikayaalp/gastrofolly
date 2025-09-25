@@ -1,7 +1,7 @@
 'use client'
 
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { ChefHat, ArrowLeft, MessageCircle, ThumbsUp, Clock, User, Plus, Search, Bell, Home, BookOpen, Users } from "lucide-react"
 import UserDropdown from "@/components/ui/UserDropdown"
 
@@ -62,6 +62,51 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
   const [comments, setComments] = useState(topic.posts)
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
   const [replyText, setReplyText] = useState('')
+  const [isLiked, setIsLiked] = useState(false)
+  const [likeCount, setLikeCount] = useState(topic.likeCount)
+
+  // Sayfa yüklendiğinde kullanıcının bu başlığı beğenip beğenmediğini kontrol et
+  useEffect(() => {
+    if (session?.user?.id) {
+      checkLikeStatus()
+    }
+  }, [session?.user?.id])
+
+  // Beğeni durumunu kontrol et
+  const checkLikeStatus = async () => {
+    try {
+      const response = await fetch(`/api/forum/like?topicId=${topic.id}`)
+      if (response.ok) {
+        const data = await response.json()
+        setIsLiked(data.liked)
+      }
+    } catch (error) {
+      console.error('Error checking like status:', error)
+    }
+  }
+
+  // Beğenme/beğenmeme işlemi
+  const handleLike = async () => {
+    if (!session?.user?.id) return
+    
+    try {
+      const response = await fetch('/api/forum/like', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ topicId: topic.id }),
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setIsLiked(data.liked)
+        setLikeCount(prevCount => data.liked ? prevCount + 1 : prevCount - 1)
+      }
+    } catch (error) {
+      console.error('Error liking topic:', error)
+    }
+  }
 
   // Zaman formatı
   const formatTimeAgo = (dateString: string) => {
@@ -302,22 +347,47 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
                 <h1 className="text-2xl font-bold text-white mb-3">
                   {topic.title}
                 </h1>
-                <div className="flex items-center space-x-4 text-sm text-gray-400 mb-4">
-                  <span className="flex items-center">
-                    <User className="h-4 w-4 mr-1" />
-                    {topic.author.name || 'Anonim'}
-                  </span>
-                  <span className="flex items-center">
-                    <MessageCircle className="h-4 w-4 mr-1" />
-                    {comments.length} yorum
-                  </span>
-                  <span className="flex items-center">
-                    <ThumbsUp className="h-4 w-4 mr-1" />
-                    {topic.likeCount} beğeni
-                  </span>
-                  <span className="text-gray-500">
-                    👁️ {topic.viewCount} görüntüleme
-                  </span>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-4 text-sm text-gray-400">
+                    <span className="flex items-center">
+                      <User className="h-4 w-4 mr-1" />
+                      {topic.author.name || 'Anonim'}
+                    </span>
+                    <span className="flex items-center">
+                      <MessageCircle className="h-4 w-4 mr-1" />
+                      {comments.length} yorum
+                    </span>
+                    <span className="flex items-center">
+                      <ThumbsUp className="h-4 w-4 mr-1" />
+                      {likeCount} beğeni
+                    </span>
+                    <span className="text-gray-500">
+                      👁️ {topic.viewCount} görüntüleme
+                    </span>
+                  </div>
+                  {session?.user && (
+                    <button 
+                      onClick={handleLike}
+                      className={`flex items-center space-x-1 px-3 py-1 rounded-lg transition-colors ${
+                        isLiked 
+                          ? 'bg-orange-600 hover:bg-orange-700' 
+                          : 'bg-gray-800 hover:bg-gray-700'
+                      }`}
+                    >
+                      <ThumbsUp className={`h-4 w-4 ${
+                        isLiked 
+                          ? 'text-white' 
+                          : 'text-gray-400'
+                      }`} />
+                      <span className={`text-sm ${
+                        isLiked 
+                          ? 'text-white' 
+                          : 'text-gray-400'
+                      }`}>
+                        {isLiked ? 'Beğenildi' : 'Beğen'}
+                      </span>
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

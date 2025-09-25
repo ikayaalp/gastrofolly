@@ -82,6 +82,26 @@ export default function ChefSosyalClient({
     }
   }, [showNewTopicModal, categories.length])
 
+  // Sayfa yüklendiğinde kullanıcının beğendiği başlıkları yükle
+  useEffect(() => {
+    if (session?.user?.id) {
+      loadLikedTopics()
+    }
+  }, [session?.user?.id])
+
+  // Kullanıcının beğendiği başlıkları yükle
+  const loadLikedTopics = async () => {
+    try {
+      const response = await fetch('/api/forum/liked-topics')
+      if (response.ok) {
+        const data = await response.json()
+        setLikedTopics(new Set(data.likedTopicIds))
+      }
+    } catch (error) {
+      console.error('Error loading liked topics:', error)
+    }
+  }
+
   // Kategorileri yeniden yükle
   const loadCategories = async () => {
     try {
