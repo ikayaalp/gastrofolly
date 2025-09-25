@@ -495,49 +495,40 @@ export default function ChefSosyalClient({
                         <p className="text-gray-300 mb-4 line-clamp-2">
                           {topic.content}
                         </p>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-4 text-sm text-gray-400">
-                            <span className="flex items-center">
-                              <User className="h-4 w-4 mr-1" />
-                              {topic.author.name || 'Anonim'}
-                            </span>
-                            <span className="flex items-center">
-                              <MessageCircle className="h-4 w-4 mr-1" />
-                              {topic._count.posts} yanıt
-                            </span>
+                        <div className="flex items-center space-x-4 text-sm text-gray-400">
+                          <span className="flex items-center">
+                            <User className="h-4 w-4 mr-1" />
+                            {topic.author.name || 'Anonim'}
+                          </span>
+                          <span className="flex items-center">
+                            <MessageCircle className="h-4 w-4 mr-1" />
+                            {topic._count.posts} yanıt
+                          </span>
+                          {session?.user ? (
+                            <button 
+                              onClick={(e) => {
+                                e.preventDefault()
+                                e.stopPropagation()
+                                handleLike(topic.id)
+                              }}
+                              className={`flex items-center transition-colors ${
+                                likedTopics.has(topic.id) 
+                                  ? 'text-orange-400 hover:text-orange-300' 
+                                  : 'text-gray-400 hover:text-orange-400'
+                              }`}
+                            >
+                              <ThumbsUp className="h-4 w-4 mr-1" />
+                              <span>{topic.likeCount} beğeni</span>
+                            </button>
+                          ) : (
                             <span className="flex items-center">
                               <ThumbsUp className="h-4 w-4 mr-1" />
                               {topic.likeCount} beğeni
                             </span>
-                            <span className="text-gray-500">
-                              👁️ {topic.viewCount} görüntüleme
-                            </span>
-                          </div>
-                          <button 
-                            onClick={(e) => {
-                              e.preventDefault()
-                              e.stopPropagation()
-                              handleLike(topic.id)
-                            }}
-                            className={`flex items-center space-x-1 px-3 py-1 rounded-lg transition-colors ${
-                              likedTopics.has(topic.id) 
-                                ? 'bg-orange-600 hover:bg-orange-700' 
-                                : 'bg-gray-800 hover:bg-gray-700'
-                            }`}
-                          >
-                            <ThumbsUp className={`h-4 w-4 ${
-                              likedTopics.has(topic.id) 
-                                ? 'text-white' 
-                                : 'text-gray-400'
-                            }`} />
-                            <span className={`text-sm ${
-                              likedTopics.has(topic.id) 
-                                ? 'text-white' 
-                                : 'text-gray-400'
-                            }`}>
-                              {likedTopics.has(topic.id) ? 'Beğenildi' : 'Beğen'}
-                            </span>
-                          </button>
+                          )}
+                          <span className="text-gray-500">
+                            👁️ {topic.viewCount} görüntüleme
+                          </span>
                         </div>
                       </div>
                     </div>

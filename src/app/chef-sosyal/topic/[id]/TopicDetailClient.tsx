@@ -427,10 +427,6 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
                     <User className="h-4 w-4 mr-1" />
                     {topic.author.name || 'Anonim'}
                   </span>
-                  <span className="flex items-center">
-                    <MessageCircle className="h-4 w-4 mr-1" />
-                    {comments.length} yorum
-                  </span>
                   {session?.user ? (
                     <button 
                       onClick={handleLike}
@@ -449,6 +445,18 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
                       {likeCount} beğeni
                     </span>
                   )}
+                  <button 
+                    onClick={() => {
+                      const commentsSection = document.getElementById('comments-section')
+                      if (commentsSection) {
+                        commentsSection.scrollIntoView({ behavior: 'smooth' })
+                      }
+                    }}
+                    className="flex items-center text-gray-400 hover:text-orange-400 transition-colors"
+                  >
+                    <MessageCircle className="h-4 w-4 mr-1" />
+                    <span>{comments.length} yorum</span>
+                  </button>
                   <span className="text-gray-500">
                     👁️ {topic.viewCount} görüntüleme
                   </span>
