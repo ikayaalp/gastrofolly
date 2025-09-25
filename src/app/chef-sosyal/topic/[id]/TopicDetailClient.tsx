@@ -422,47 +422,36 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
                 <h1 className="text-2xl font-bold text-white mb-3">
                   {topic.title}
                 </h1>
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center space-x-4 text-sm text-gray-400">
-                    <span className="flex items-center">
-                      <User className="h-4 w-4 mr-1" />
-                      {topic.author.name || 'Anonim'}
-                    </span>
-                    <span className="flex items-center">
-                      <MessageCircle className="h-4 w-4 mr-1" />
-                      {comments.length} yorum
-                    </span>
+                <div className="flex items-center space-x-4 text-sm text-gray-400 mb-4">
+                  <span className="flex items-center">
+                    <User className="h-4 w-4 mr-1" />
+                    {topic.author.name || 'Anonim'}
+                  </span>
+                  <span className="flex items-center">
+                    <MessageCircle className="h-4 w-4 mr-1" />
+                    {comments.length} yorum
+                  </span>
+                  {session?.user ? (
+                    <button 
+                      onClick={handleLike}
+                      className={`flex items-center space-x-1 transition-colors ${
+                        isLiked 
+                          ? 'text-orange-400 hover:text-orange-300' 
+                          : 'text-gray-400 hover:text-orange-400'
+                      }`}
+                    >
+                      <ThumbsUp className="h-4 w-4 mr-1" />
+                      <span>{likeCount} beğeni</span>
+                    </button>
+                  ) : (
                     <span className="flex items-center">
                       <ThumbsUp className="h-4 w-4 mr-1" />
                       {likeCount} beğeni
                     </span>
-                    <span className="text-gray-500">
-                      👁️ {topic.viewCount} görüntüleme
-                    </span>
-                  </div>
-                  {session?.user && (
-                    <button 
-                      onClick={handleLike}
-                      className={`flex items-center space-x-1 px-3 py-1 rounded-lg transition-colors ${
-                        isLiked 
-                          ? 'bg-orange-600 hover:bg-orange-700' 
-                          : 'bg-gray-800 hover:bg-gray-700'
-                      }`}
-                    >
-                      <ThumbsUp className={`h-4 w-4 ${
-                        isLiked 
-                          ? 'text-white' 
-                          : 'text-gray-400'
-                      }`} />
-                      <span className={`text-sm ${
-                        isLiked 
-                          ? 'text-white' 
-                          : 'text-gray-400'
-                      }`}>
-                        {isLiked ? 'Beğenildi' : 'Beğen'}
-                      </span>
-                    </button>
                   )}
+                  <span className="text-gray-500">
+                    👁️ {topic.viewCount} görüntüleme
+                  </span>
                 </div>
               </div>
             </div>
@@ -505,9 +494,22 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
 
           {/* Yorumlar */}
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-            <h2 className="text-xl font-semibold text-white mb-6">
-              Yorumlar ({comments.length})
-            </h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold text-white">
+                Yorumlar ({comments.length})
+              </h2>
+              <button 
+                onClick={() => {
+                  const commentsSection = document.getElementById('comments-section')
+                  if (commentsSection) {
+                    commentsSection.scrollIntoView({ behavior: 'smooth' })
+                  }
+                }}
+                className="text-orange-500 hover:text-orange-400 transition-colors text-sm font-medium"
+              >
+                Yorumlara Git ↓
+              </button>
+            </div>
             
             {comments.length === 0 ? (
               <div className="text-center py-8">
@@ -515,7 +517,7 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
                 <p className="text-gray-400">Henüz yorum yapılmamış. İlk yorumu siz yapın!</p>
               </div>
             ) : (
-              <div className="space-y-6">
+              <div id="comments-section" className="space-y-6">
                 {comments.map((comment) => (
                   <div key={comment.id} className="border-b border-gray-800 pb-6 last:border-b-0">
                     <div className="flex items-start space-x-4">
