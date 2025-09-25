@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
       const cloudName = process.env.CLOUDINARY_CLOUD_NAME
       const apiKey = process.env.CLOUDINARY_API_KEY
       const apiSecret = process.env.CLOUDINARY_API_SECRET
-      const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET || 'image_upload'
+      const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET || 'chef-courses-unsigned'
       const folder = process.env.CLOUDINARY_FOLDER || 'chef-courses/images'
 
       console.log('Cloudinary image upload credentials check:', {
@@ -38,22 +38,38 @@ export async function POST(request: NextRequest) {
         fileSize: file.size
       })
 
-      if (!cloudName || !apiKey || !apiSecret) {
-        throw new Error("Cloudinary credentials eksik")
+      if (!cloudName) {
+        throw new Error("CLOUDINARY_CLOUD_NAME eksik")
       }
 
+      // Cloudinary Upload API endpoint
       const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`
       
-      // FormData oluştur
+      // FormData oluştur - Cloudinary dokümantasyonuna göre
       const uploadFormData = new FormData()
       uploadFormData.append('file', file)
-      uploadFormData.append('upload_preset', uploadPreset)
-      uploadFormData.append('resource_type', 'image')
+      
+      // Upload preset kullan (unsigned upload için)
+      if (uploadPreset) {
+        uploadFormData.append('upload_preset', uploadPreset)
+      }
+      
+      // Klasör ve public_id ayarla
       uploadFormData.append('folder', folder)
-      uploadFormData.append('public_id', `${type}_${Date.now()}`) // Unique ID
+      uploadFormData.append('public_id', `${type}_${Date.now()}`)
       
       // Resim optimizasyonu için transformations
       uploadFormData.append('transformation', 'f_auto,q_auto,w_auto')
+      
+      // Eager transformations (önceden işlenmiş versiyonlar)
+      uploadFormData.append('eager', 'w_400,h_300,c_fill,f_auto,q_auto')
+      
+      console.log('Uploading to Cloudinary with params:', {
+        upload_preset: uploadPreset,
+        folder: folder,
+        public_id: `${type}_${Date.now()}`,
+        transformation: 'f_auto,q_auto,w_auto'
+      })
       
       const response = await fetch(cloudinaryUrl, {
         method: 'POST',
@@ -61,14 +77,30 @@ export async function POST(request: NextRequest) {
       })
       
       console.log('Cloudinary image upload response status:', response.status)
+      console.log('Cloudinary image upload response headers:', Object.fromEntries(response.headers.entries()))
       
       if (!response.ok) {
-        const errorData = await response.json()
-        console.error('Cloudinary image upload error:', errorData)
-        throw new Error(`Cloudinary upload failed: ${errorData.error?.message || 'Unknown error'}`)
+        let errorMessage = 'Unknown error'
+        try {
+          const errorData = await response.json()
+          console.error('Cloudinary image upload error response:', errorData)
+          errorMessage = errorData.error?.message || errorData.message || `HTTP ${response.status}`
+        } catch (parseError) {
+          console.error('Error parsing Cloudinary error response:', parseError)
+          errorMessage = `HTTP ${response.status}: ${response.statusText}`
+        }
+        throw new Error(`Cloudinary upload failed: ${errorMessage}`)
       }
       
       const data = await response.json()
+      console.log('Cloudinary upload success:', {
+        public_id: data.public_id,
+        secure_url: data.secure_url,
+        width: data.width,
+        height: data.height,
+        bytes: data.bytes
+      })
+      
       return {
         url: data.secure_url,
         publicId: data.public_id,

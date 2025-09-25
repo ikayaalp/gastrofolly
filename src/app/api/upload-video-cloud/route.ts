@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
       const cloudName = process.env.CLOUDINARY_CLOUD_NAME
       const apiKey = process.env.CLOUDINARY_API_KEY
       const apiSecret = process.env.CLOUDINARY_API_SECRET
-      const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET || 'video_upload'
+      const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET || 'chef-courses-unsigned'
       const folder = process.env.CLOUDINARY_FOLDER || 'chef-courses/videos'
 
       console.log('Cloudinary credentials check:', {
@@ -37,34 +37,67 @@ export async function POST(request: NextRequest) {
         folder
       })
 
-      if (!cloudName || !apiKey || !apiSecret) {
-        throw new Error("Cloudinary credentials eksik")
+      if (!cloudName) {
+        throw new Error("CLOUDINARY_CLOUD_NAME eksik")
       }
 
       const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`
       
-      // FormData oluştur
+      // FormData oluştur - Cloudinary dokümantasyonuna göre
       const uploadFormData = new FormData()
       uploadFormData.append('file', file)
-      uploadFormData.append('upload_preset', uploadPreset) // Cloudinary'de bu preset'i oluşturun
-      uploadFormData.append('resource_type', 'video')
-      uploadFormData.append('folder', folder) // Organize etmek için klasör
-      uploadFormData.append('public_id', `video_${Date.now()}`) // Unique ID
+      
+      // Upload preset kullan (unsigned upload için)
+      if (uploadPreset) {
+        uploadFormData.append('upload_preset', uploadPreset)
+      }
+      
+      // Klasör ve public_id ayarla
+      uploadFormData.append('folder', folder)
+      uploadFormData.append('public_id', `video_${Date.now()}`)
+      
+      // Video optimizasyonu için transformations
+      uploadFormData.append('transformation', 'f_auto,q_auto')
+      
+      // Eager transformations (önceden işlenmiş versiyonlar)
+      uploadFormData.append('eager', 'w_1280,h_720,c_fill,f_auto,q_auto')
+      
+      console.log('Uploading video to Cloudinary with params:', {
+        upload_preset: uploadPreset,
+        folder: folder,
+        public_id: `video_${Date.now()}`,
+        transformation: 'f_auto,q_auto'
+      })
       
       const response = await fetch(cloudinaryUrl, {
         method: 'POST',
         body: uploadFormData
       })
       
-      console.log('Cloudinary response status:', response.status)
+      console.log('Cloudinary video upload response status:', response.status)
+      console.log('Cloudinary video upload response headers:', Object.fromEntries(response.headers.entries()))
       
       if (!response.ok) {
-        const errorData = await response.json()
-        console.error('Cloudinary upload error:', errorData)
-        throw new Error(`Cloudinary upload failed: ${errorData.error?.message || 'Unknown error'}`)
+        let errorMessage = 'Unknown error'
+        try {
+          const errorData = await response.json()
+          console.error('Cloudinary video upload error response:', errorData)
+          errorMessage = errorData.error?.message || errorData.message || `HTTP ${response.status}`
+        } catch (parseError) {
+          console.error('Error parsing Cloudinary error response:', parseError)
+          errorMessage = `HTTP ${response.status}: ${response.statusText}`
+        }
+        throw new Error(`Cloudinary upload failed: ${errorMessage}`)
       }
       
       const data = await response.json()
+      console.log('Cloudinary video upload success:', {
+        public_id: data.public_id,
+        secure_url: data.secure_url,
+        duration: data.duration,
+        bytes: data.bytes
+      })
+      
       return {
         url: data.secure_url,
         publicId: data.public_id,
