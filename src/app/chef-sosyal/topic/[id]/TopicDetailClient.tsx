@@ -457,9 +457,6 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
                     <MessageCircle className="h-4 w-4 mr-1" />
                     <span>{comments.length} yorum</span>
                   </button>
-                  <span className="text-gray-500">
-                    👁️ {topic.viewCount} görüntüleme
-                  </span>
                 </div>
               </div>
             </div>

@@ -526,9 +526,6 @@ export default function ChefSosyalClient({
                               {topic.likeCount} beğeni
                             </span>
                           )}
-                          <span className="text-gray-500">
-                            👁️ {topic.viewCount} görüntüleme
-                          </span>
                         </div>
                       </div>
                     </div>
