@@ -28,7 +28,7 @@ export default function UserDropdown() {
   }
 
   const handleSignOut = () => {
-    signOut({ callbackUrl: '/' })
+    signOut({ callbackUrl: '/home' })
   }
 
   return (
