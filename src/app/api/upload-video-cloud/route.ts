@@ -26,6 +26,8 @@ export async function POST(request: NextRequest) {
       const cloudName = process.env.CLOUDINARY_CLOUD_NAME
       const apiKey = process.env.CLOUDINARY_API_KEY
       const apiSecret = process.env.CLOUDINARY_API_SECRET
+      const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET || 'video_upload'
+      const folder = process.env.CLOUDINARY_FOLDER || 'chef-courses/videos'
 
       if (!cloudName || !apiKey || !apiSecret) {
         throw new Error("Cloudinary credentials eksik")
@@ -36,9 +38,9 @@ export async function POST(request: NextRequest) {
       // FormData oluştur
       const uploadFormData = new FormData()
       uploadFormData.append('file', file)
-      uploadFormData.append('upload_preset', 'video_upload') // Cloudinary'de bu preset'i oluşturun
+      uploadFormData.append('upload_preset', uploadPreset) // Cloudinary'de bu preset'i oluşturun
       uploadFormData.append('resource_type', 'video')
-      uploadFormData.append('folder', 'chef-courses/videos') // Organize etmek için klasör
+      uploadFormData.append('folder', folder) // Organize etmek için klasör
       uploadFormData.append('public_id', `video_${Date.now()}`) // Unique ID
       
       const response = await fetch(cloudinaryUrl, {
