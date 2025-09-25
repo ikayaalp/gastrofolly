@@ -56,9 +56,7 @@ export async function POST(request: NextRequest) {
       uploadFormData.append('folder', folder)
       uploadFormData.append('public_id', `video_${Date.now()}`)
       
-      // Video optimizasyonu için transformations
-      uploadFormData.append('transformation', 'f_auto,q_auto')
-      
+      // Unsigned upload'da transformation kullanılamaz
       // Eager transformations (önceden işlenmiş versiyonlar)
       uploadFormData.append('eager', 'w_1280,h_720,c_fill,f_auto,q_auto')
       
@@ -66,7 +64,7 @@ export async function POST(request: NextRequest) {
         upload_preset: uploadPreset,
         folder: folder,
         public_id: `video_${Date.now()}`,
-        transformation: 'f_auto,q_auto'
+        eager: 'w_1280,h_720,c_fill,f_auto,q_auto'
       })
       
       const response = await fetch(cloudinaryUrl, {
