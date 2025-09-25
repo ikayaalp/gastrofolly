@@ -7,6 +7,8 @@ import Image from "next/image"
 import { ChefHat, Play, Clock, BookOpen, Star, ArrowRight, Home, Users, MessageCircle, Search } from "lucide-react"
 import UserDropdown from "@/components/ui/UserDropdown"
 
+
+//deneme 
 async function getUserCourses(userId: string) {
   const enrollments = await prisma.enrollment.findMany({
     where: { userId },
