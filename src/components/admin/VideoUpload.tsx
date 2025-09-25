@@ -63,8 +63,15 @@ export default function VideoUpload({ onVideoUploaded, lessonId }: VideoUploadPr
         ok: response.ok
       })
 
-      const data = await response.json()
-      console.log('Response data:', data)
+      let data
+      try {
+        data = await response.json()
+        console.log('Response data:', data)
+      } catch (jsonError) {
+        console.error('JSON parse error:', jsonError)
+        console.log('Response text:', await response.text())
+        throw new Error(`API response is not valid JSON. Status: ${response.status}`)
+      }
 
       if (response.ok) {
         setSuccess(`Video başarıyla yüklendi: ${file.name}`)
