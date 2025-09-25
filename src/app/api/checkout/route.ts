@@ -81,11 +81,14 @@ export async function POST(request: NextRequest) {
 
     console.log(`User ${session.user.id} enrolled in courses: ${courseIds.join(', ')}`)
 
+    // Satın alma sonrası ilk kursun öğrenme sayfasına yönlendir
+    const firstCourseId = courseIds[0]
+
     return NextResponse.json({ 
       success: true, 
       message: "Kurslar başarıyla satın alındı!",
       enrollments: enrollments.length,
-      redirectUrl: "/my-courses?success=true"
+      redirectUrl: `/learn/${firstCourseId}`
     })
   } catch (error) {
     console.error('Checkout error:', error)
