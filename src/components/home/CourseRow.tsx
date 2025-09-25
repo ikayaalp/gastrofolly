@@ -172,11 +172,25 @@ export default function CourseRow({ title, courses, showProgress = false }: Cour
 
                 {/* Course Info */}
                 <div className="p-4">
-                  <h3 className="text-lg font-semibold text-white mb-2 line-clamp-2 group-hover:text-orange-500 transition-colors">
+                  <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-orange-500 transition-colors overflow-hidden" style={{
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                    lineHeight: '1.4',
+                    minHeight: '2.8em',
+                    maxHeight: '2.8em'
+                  }}>
                     {course.title}
                   </h3>
                   
-                  <p className="text-gray-400 text-sm mb-3 line-clamp-2">
+                  <p className="text-gray-400 text-sm mb-3 overflow-hidden" style={{
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                    lineHeight: '1.4',
+                    minHeight: '2.8em',
+                    maxHeight: '2.8em'
+                  }}>
                     {course.description}
                   </p>
 
