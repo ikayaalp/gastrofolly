@@ -64,13 +64,28 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
   const [replyText, setReplyText] = useState('')
   const [isLiked, setIsLiked] = useState(false)
   const [likeCount, setLikeCount] = useState(topic.likeCount)
+  const [likedComments, setLikedComments] = useState<Set<string>>(new Set())
 
   // Sayfa yüklendiğinde kullanıcının bu başlığı beğenip beğenmediğini kontrol et
   useEffect(() => {
     if (session?.user?.id) {
       checkLikeStatus()
+      loadLikedPosts()
     }
   }, [session?.user?.id])
+
+  // Kullanıcının beğendiği yorumları yükle
+  const loadLikedPosts = async () => {
+    try {
+      const response = await fetch(`/api/forum/liked-posts?topicId=${topic.id}`)
+      if (response.ok) {
+        const data = await response.json()
+        setLikedComments(new Set(data.likedPostIds))
+      }
+    } catch (error) {
+      console.error('Error loading liked posts:', error)
+    }
+  }
 
   // Beğeni durumunu kontrol et
   const checkLikeStatus = async () => {
@@ -105,6 +120,66 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
       }
     } catch (error) {
       console.error('Error liking topic:', error)
+    }
+  }
+
+  // Yorum beğenme/beğenmeme işlemi
+  const handleCommentLike = async (postId: string) => {
+    if (!session?.user?.id) return
+    
+    try {
+      const response = await fetch('/api/forum/post-like', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ postId }),
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        
+        // Comment listesini güncelle
+        setComments(prevComments => 
+          prevComments.map(comment => {
+            if (comment.id === postId) {
+              return { 
+                ...comment, 
+                likeCount: data.liked ? comment.likeCount + 1 : comment.likeCount - 1 
+              }
+            }
+            
+            // Replies içinde de arayalım
+            if (comment.replies) {
+              const updatedReplies = comment.replies.map(reply => {
+                if (reply.id === postId) {
+                  return { 
+                    ...reply, 
+                    likeCount: data.liked ? reply.likeCount + 1 : reply.likeCount - 1 
+                  }
+                }
+                return reply
+              })
+              return { ...comment, replies: updatedReplies }
+            }
+            
+            return comment
+          })
+        )
+        
+        // Liked comments state'ini güncelle
+        setLikedComments(prev => {
+          const newSet = new Set(prev)
+          if (data.liked) {
+            newSet.add(postId)
+          } else {
+            newSet.delete(postId)
+          }
+          return newSet
+        })
+      }
+    } catch (error) {
+      console.error('Error liking comment:', error)
     }
   }
 
@@ -459,10 +534,34 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
                           {comment.content}
                         </p>
                         <div className="flex items-center space-x-4 mt-3">
-                          <button className="flex items-center text-gray-400 hover:text-orange-400 transition-colors">
-                            <ThumbsUp className="h-4 w-4 mr-1" />
-                            {comment.likeCount}
-                          </button>
+                          {session?.user ? (
+                            <button 
+                              onClick={() => handleCommentLike(comment.id)}
+                              className={`flex items-center space-x-1 px-2 py-1 rounded-lg transition-colors ${
+                                likedComments.has(comment.id)
+                                  ? 'bg-orange-600 hover:bg-orange-700'
+                                  : 'bg-gray-800 hover:bg-gray-700'
+                              }`}
+                            >
+                              <ThumbsUp className={`h-4 w-4 ${
+                                likedComments.has(comment.id)
+                                  ? 'text-white'
+                                  : 'text-gray-400'
+                              }`} />
+                              <span className={`text-sm ${
+                                likedComments.has(comment.id)
+                                  ? 'text-white'
+                                  : 'text-gray-400'
+                              }`}>
+                                {comment.likeCount}
+                              </span>
+                            </button>
+                          ) : (
+                            <div className="flex items-center text-gray-400">
+                              <ThumbsUp className="h-4 w-4 mr-1" />
+                              {comment.likeCount}
+                            </div>
+                          )}
                           {session?.user && (
                             <button 
                               onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
@@ -528,10 +627,34 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
                                       {reply.content}
                                     </p>
                                     <div className="flex items-center space-x-4 mt-2">
-                                      <button className="flex items-center text-gray-400 hover:text-orange-400 transition-colors text-xs">
-                                        <ThumbsUp className="h-3 w-3 mr-1" />
-                                        {reply.likeCount}
-                                      </button>
+                                      {session?.user ? (
+                                        <button 
+                                          onClick={() => handleCommentLike(reply.id)}
+                                          className={`flex items-center space-x-1 px-2 py-1 rounded-lg transition-colors text-xs ${
+                                            likedComments.has(reply.id)
+                                              ? 'bg-orange-600 hover:bg-orange-700'
+                                              : 'bg-gray-800 hover:bg-gray-700'
+                                          }`}
+                                        >
+                                          <ThumbsUp className={`h-3 w-3 ${
+                                            likedComments.has(reply.id)
+                                              ? 'text-white'
+                                              : 'text-gray-400'
+                                          }`} />
+                                          <span className={`text-xs ${
+                                            likedComments.has(reply.id)
+                                              ? 'text-white'
+                                              : 'text-gray-400'
+                                          }`}>
+                                            {reply.likeCount}
+                                          </span>
+                                        </button>
+                                      ) : (
+                                        <div className="flex items-center text-gray-400 text-xs">
+                                          <ThumbsUp className="h-3 w-3 mr-1" />
+                                          {reply.likeCount}
+                                        </div>
+                                      )}
                                     </div>
                                   </div>
                                 </div>

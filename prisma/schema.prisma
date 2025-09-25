@@ -67,6 +67,7 @@ model User {
   topics        Topic[]
   posts         Post[]
   topicLikes    TopicLike[]
+  postLikes     PostLike[]
 }
 
 enum UserRole {
@@ -268,4 +269,18 @@ model Post {
   
   parent   Post?   @relation("PostReplies", fields: [parentId], references: [id], onDelete: Cascade)
   replies  Post[]  @relation("PostReplies")
+  likes    PostLike[]
+}
+
+// Forum Yorum Beğeni modeli
+model PostLike {
+  id      String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId  String
+  post    Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
 }
