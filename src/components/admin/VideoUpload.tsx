@@ -55,11 +55,12 @@ export default function VideoUpload({ onVideoUploaded, lessonId }: VideoUploadPr
         onVideoUploaded(data.videoUrl)
         setUploadProgress(100)
       } else {
-        setError(data.error || "Video yüklenirken hata oluştu")
+        console.error('Video upload error response:', data)
+        setError(data.error || data.message || "Video yüklenirken hata oluştu")
       }
     } catch (error) {
       console.error("Upload error:", error)
-      setError("Video yüklenirken hata oluştu")
+      setError(error instanceof Error ? error.message : "Video yüklenirken hata oluştu")
     } finally {
       setUploading(false)
     }
