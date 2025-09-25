@@ -66,6 +66,7 @@ model User {
   payments      Payment[]
   topics        Topic[]
   posts         Post[]
+  topicLikes    TopicLike[]
 }
 
 enum UserRole {
@@ -235,6 +236,20 @@ model Topic {
   category   ForumCategory @relation(fields: [categoryId], references: [id])
 
   posts Post[]
+  likes TopicLike[]
+}
+
+// Forum Beğeni modeli
+model TopicLike {
+  id      String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topicId String
+  topic   Topic  @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, topicId])
 }
 
 // Forum Mesaj modeli
