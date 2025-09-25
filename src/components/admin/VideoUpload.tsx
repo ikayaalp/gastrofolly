@@ -37,18 +37,34 @@ export default function VideoUpload({ onVideoUploaded, lessonId }: VideoUploadPr
     setUploadProgress(0)
 
     try {
+      console.log('Starting video upload:', {
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type,
+        lessonId: lessonId
+      })
+
       const formData = new FormData()
       formData.append('video', file)
       if (lessonId) {
         formData.append('lessonId', lessonId)
       }
 
+      console.log('Sending request to /api/upload-video-cloud')
+      
       const response = await fetch('/api/upload-video-cloud', {
         method: 'POST',
         body: formData
       })
 
+      console.log('Response received:', {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok
+      })
+
       const data = await response.json()
+      console.log('Response data:', data)
 
       if (response.ok) {
         setSuccess(`Video başarıyla yüklendi: ${file.name}`)
@@ -56,11 +72,13 @@ export default function VideoUpload({ onVideoUploaded, lessonId }: VideoUploadPr
         setUploadProgress(100)
       } else {
         console.error('Video upload error response:', data)
-        setError(data.error || data.message || "Video yüklenirken hata oluştu")
+        const errorMessage = data.error || data.message || `HTTP ${response.status}: ${response.statusText}`
+        setError(errorMessage)
       }
     } catch (error) {
       console.error("Upload error:", error)
-      setError(error instanceof Error ? error.message : "Video yüklenirken hata oluştu")
+      const errorMessage = error instanceof Error ? error.message : "Video yüklenirken hata oluştu"
+      setError(errorMessage)
     } finally {
       setUploading(false)
     }
