@@ -51,49 +51,42 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Stripe checkout session oluştur
-    const lineItems = items.map((item: CartItem) => ({
-      price_data: {
-        currency: 'try',
-        product_data: {
-          name: item.title,
-          description: `Eğitmen: ${item.instructor.name}`,
-          images: item.imageUrl ? [item.imageUrl] : [],
-        },
-        unit_amount: Math.round((item.discountedPrice || item.price) * 100),
-      },
-      quantity: 1,
-    }))
+    // Şimdilik direkt kurs kaydı yap (Stripe olmadan)
+    const enrollments = []
+    const payments = []
 
-    const checkoutSession = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: lineItems,
-      mode: 'payment',
-      success_url: `${process.env.NEXTAUTH_URL}/my-courses?success=true`,
-      cancel_url: `${process.env.NEXTAUTH_URL}/cart?canceled=true`,
-      customer_email: session.user.email || undefined,
-      metadata: {
-        userId: session.user.id,
-        courseIds: JSON.stringify(courseIds),
-        total: total.toString(),
-      },
-    })
-
-    // Payment kayıtları oluştur
     for (const item of items) {
-      await prisma.payment.create({
+      // Kurs kaydı oluştur
+      const enrollment = await prisma.enrollment.create({
+        data: {
+          userId: session.user.id,
+          courseId: item.id,
+        }
+      })
+      enrollments.push(enrollment)
+
+      // Payment kaydı oluştur (COMPLETED olarak)
+      const payment = await prisma.payment.create({
         data: {
           userId: session.user.id,
           courseId: item.id,
           amount: item.discountedPrice || item.price,
           currency: 'TRY',
-          status: 'PENDING',
-          stripePaymentId: checkoutSession.id,
+          status: 'COMPLETED',
+          stripePaymentId: `direct_${Date.now()}_${item.id}`,
         }
       })
+      payments.push(payment)
     }
 
-    return NextResponse.json({ url: checkoutSession.url })
+    console.log(`User ${session.user.id} enrolled in courses: ${courseIds.join(', ')}`)
+
+    return NextResponse.json({ 
+      success: true, 
+      message: "Kurslar başarıyla satın alındı!",
+      enrollments: enrollments.length,
+      redirectUrl: "/my-courses?success=true"
+    })
   } catch (error) {
     console.error('Checkout error:', error)
     return NextResponse.json(

@@ -45,8 +45,9 @@ export default function CheckoutPage() {
       const data = await response.json()
 
       if (response.ok) {
-        // Redirect to Stripe checkout
-        window.location.href = data.url
+        // Başarılı mesajı göster ve kurslara yönlendir
+        alert(data.message || 'Kurslar başarıyla satın alındı!')
+        router.push(data.redirectUrl || '/my-courses?success=true')
       } else {
         alert(data.error || 'Ödeme işlemi başlatılamadı.')
       }
@@ -212,13 +213,13 @@ export default function CheckoutPage() {
                   ) : (
                     <>
                       <CreditCard className="h-5 w-5 mr-2" />
-                      ₺{totalWithTax.toLocaleString('tr-TR')} Öde
+                      ₺{totalWithTax.toLocaleString('tr-TR')} Satın Al
                     </>
                   )}
                 </button>
 
                 <p className="text-xs text-gray-400 text-center">
-                  Ödeme işlemi Stripe üzerinden güvenle gerçekleştirilir
+                  Kurslar anında hesabınıza eklenecek
                 </p>
               </div>
             </div>
