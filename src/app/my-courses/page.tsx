@@ -167,9 +167,10 @@ export default async function MyCoursesPage() {
                     <Image
                       src={course.imageUrl || "/api/placeholder/400/240"}
                       alt={course.title}
-                      layout="fill"
-                      objectFit="cover"
+                      fill
+                      style={{ objectFit: 'cover' }}
                       className="rounded-t-xl"
+                      unoptimized={true}
                     />
                     <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300">
                       <Link

@@ -310,6 +310,7 @@ export default async function InstructorPage({ params }: InstructorPageProps) {
                               width={400}
                               height={200}
                               className="w-full h-48 object-cover"
+                              unoptimized={true}
                             />
                           ) : (
                             <div className="w-full h-48 bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center">
