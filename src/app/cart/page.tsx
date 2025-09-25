@@ -21,7 +21,7 @@ export default function CartPage() {
   const handleCheckout = () => {
     if (state.items.length === 0) return
     
-    // Redirect to checkout with cart items
+    // Redirect to checkout with cart i
     router.push('/checkout')
   }
 
