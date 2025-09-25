@@ -73,6 +73,7 @@ export default function ChefSosyalClient({
     categoryId: 'default-category' // Varsayılan kategori ID'si
   })
   const [submitting, setSubmitting] = useState(false)
+  const [likedTopics, setLikedTopics] = useState<Set<string>>(new Set())
 
   // Modal açıldığında kategorileri yükle
   useEffect(() => {
@@ -89,6 +90,47 @@ export default function ChefSosyalClient({
       setCategories(data)
     } catch (error) {
       console.error('Error loading categories:', error)
+    }
+  }
+
+  // Like/Unlike işlemi
+  const handleLike = async (topicId: string) => {
+    if (!session?.user?.id) return
+    
+    try {
+      const response = await fetch('/api/forum/like', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ topicId }),
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        
+        // Topic listesini güncelle
+        setTopics(prevTopics => 
+          prevTopics.map(topic => 
+            topic.id === topicId 
+              ? { ...topic, likeCount: data.liked ? topic.likeCount + 1 : topic.likeCount - 1 }
+              : topic
+          )
+        )
+        
+        // Liked topics state'ini güncelle
+        setLikedTopics(prev => {
+          const newSet = new Set(prev)
+          if (data.liked) {
+            newSet.add(topicId)
+          } else {
+            newSet.delete(topicId)
+          }
+          return newSet
+        })
+      }
+    } catch (error) {
+      console.error('Error liking topic:', error)
     }
   }
 
@@ -433,22 +475,49 @@ export default function ChefSosyalClient({
                         <p className="text-gray-300 mb-4 line-clamp-2">
                           {topic.content}
                         </p>
-                        <div className="flex items-center space-x-4 text-sm text-gray-400">
-                          <span className="flex items-center">
-                            <User className="h-4 w-4 mr-1" />
-                            {topic.author.name || 'Anonim'}
-                          </span>
-                          <span className="flex items-center">
-                            <MessageCircle className="h-4 w-4 mr-1" />
-                            {topic._count.posts} yanıt
-                          </span>
-                          <span className="flex items-center">
-                            <ThumbsUp className="h-4 w-4 mr-1" />
-                            {topic.likeCount} beğeni
-                          </span>
-                          <span className="text-gray-500">
-                            👁️ {topic.viewCount} görüntüleme
-                          </span>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-4 text-sm text-gray-400">
+                            <span className="flex items-center">
+                              <User className="h-4 w-4 mr-1" />
+                              {topic.author.name || 'Anonim'}
+                            </span>
+                            <span className="flex items-center">
+                              <MessageCircle className="h-4 w-4 mr-1" />
+                              {topic._count.posts} yanıt
+                            </span>
+                            <span className="flex items-center">
+                              <ThumbsUp className="h-4 w-4 mr-1" />
+                              {topic.likeCount} beğeni
+                            </span>
+                            <span className="text-gray-500">
+                              👁️ {topic.viewCount} görüntüleme
+                            </span>
+                          </div>
+                          <button 
+                            onClick={(e) => {
+                              e.preventDefault()
+                              e.stopPropagation()
+                              handleLike(topic.id)
+                            }}
+                            className={`flex items-center space-x-1 px-3 py-1 rounded-lg transition-colors ${
+                              likedTopics.has(topic.id) 
+                                ? 'bg-orange-600 hover:bg-orange-700' 
+                                : 'bg-gray-800 hover:bg-gray-700'
+                            }`}
+                          >
+                            <ThumbsUp className={`h-4 w-4 ${
+                              likedTopics.has(topic.id) 
+                                ? 'text-white' 
+                                : 'text-gray-400'
+                            }`} />
+                            <span className={`text-sm ${
+                              likedTopics.has(topic.id) 
+                                ? 'text-white' 
+                                : 'text-gray-400'
+                            }`}>
+                              {likedTopics.has(topic.id) ? 'Beğenildi' : 'Beğen'}
+                            </span>
+                          </button>
                         </div>
                       </div>
                     </div>
