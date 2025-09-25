@@ -63,6 +63,9 @@ export async function POST(request: NextRequest) {
         uploadFormData.append('upload_preset', uploadPreset)
       }
       
+      // Video upload için resource_type gerekli
+      uploadFormData.append('resource_type', 'video')
+      
       // Klasör ve public_id ayarla
       uploadFormData.append('folder', folder)
       uploadFormData.append('public_id', `video_${Date.now()}`)
