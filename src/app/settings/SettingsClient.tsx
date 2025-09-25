@@ -81,7 +81,7 @@ export default function SettingsClient({ user }: SettingsClientProps) {
         formData.append('file', selectedFile)
         formData.append('type', 'profile')
 
-        const uploadResponse = await fetch('/api/upload-video', {
+        const uploadResponse = await fetch('/api/upload-image-cloud', {
           method: 'POST',
           body: formData
         })

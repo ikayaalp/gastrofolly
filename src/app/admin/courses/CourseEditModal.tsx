@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { X, Save } from "lucide-react"
+import ImageUpload from "@/components/admin/ImageUpload"
 
 interface Course {
   id: string
@@ -61,6 +62,10 @@ export default function CourseEditModal({ course, categories, instructors, onClo
     instructorId: course?.instructor.id || ""
   })
   const [loading, setLoading] = useState(false)
+
+  const handleImageUploaded = (imageUrl: string) => {
+    setFormData(prev => ({ ...prev, imageUrl }))
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -328,18 +333,15 @@ export default function CourseEditModal({ course, categories, instructors, onClo
                 />
               </div>
 
-              {/* Resim URL */}
+              {/* Resim Yükleme */}
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Kurs Resmi URL
+                  Kurs Resmi
                 </label>
-                <input
-                  type="url"
-                  name="imageUrl"
-                  value={formData.imageUrl}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
-                  placeholder="https://images.unsplash.com/photo-..."
+                <ImageUpload 
+                  onImageUploaded={handleImageUploaded}
+                  currentImageUrl={formData.imageUrl}
+                  type="course"
                 />
               </div>
 
