@@ -56,15 +56,13 @@ export async function POST(request: NextRequest) {
       uploadFormData.append('folder', folder)
       uploadFormData.append('public_id', `video_${Date.now()}`)
       
-      // Unsigned upload'da transformation kullanılamaz
-      // Eager transformations (önceden işlenmiş versiyonlar)
-      uploadFormData.append('eager', 'w_1280,h_720,c_fill,f_auto,q_auto')
+      // Unsigned upload'da transformation ve eager kullanılamaz
+      // Sadece temel parametreler kullanılabilir
       
       console.log('Uploading video to Cloudinary with params:', {
         upload_preset: uploadPreset,
         folder: folder,
-        public_id: `video_${Date.now()}`,
-        eager: 'w_1280,h_720,c_fill,f_auto,q_auto'
+        public_id: `video_${Date.now()}`
       })
       
       const response = await fetch(cloudinaryUrl, {
