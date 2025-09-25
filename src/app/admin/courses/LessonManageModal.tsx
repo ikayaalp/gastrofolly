@@ -142,7 +142,7 @@ export default function LessonManageModal({ course, onClose }: LessonManageModal
       const formData = new FormData()
       formData.append('video', file)
       
-      const response = await fetch('/api/upload-video', {
+      const response = await fetch('/api/upload-video-cloud', {
         method: 'POST',
         body: formData
       })

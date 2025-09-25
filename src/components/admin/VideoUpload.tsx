@@ -43,7 +43,7 @@ export default function VideoUpload({ onVideoUploaded, lessonId }: VideoUploadPr
         formData.append('lessonId', lessonId)
       }
 
-      const response = await fetch('/api/upload-video', {
+      const response = await fetch('/api/upload-video-cloud', {
         method: 'POST',
         body: formData
       })
