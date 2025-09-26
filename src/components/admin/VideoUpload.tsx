@@ -69,9 +69,7 @@ export default function VideoUpload({ onVideoUploaded, lessonId }: VideoUploadPr
         console.log('Response data:', data)
       } catch (jsonError) {
         console.error('JSON parse error:', jsonError)
-        const responseText = await response.text()
-        console.log('Response text:', responseText)
-        setError(`API hatası: ${response.status} - ${responseText}`)
+        setError(`API hatası: ${response.status} - Geçersiz JSON response`)
         return
       }
 
