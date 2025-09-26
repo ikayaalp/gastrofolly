@@ -60,11 +60,19 @@ interface Course {
   title: string
   description: string
   price: number
-  imageUrl?: string | null
+  imageUrl: string | null
   isPublished: boolean
   createdAt: Date
   updatedAt: Date
-  category: Category
+  category: {
+    id: string
+    name: string
+    slug: string
+    description: string | null
+    imageUrl: string | null
+    createdAt: Date
+    updatedAt: Date
+  }
   instructor: {
     id: string
     name: string
