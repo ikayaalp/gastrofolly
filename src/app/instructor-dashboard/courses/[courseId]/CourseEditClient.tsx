@@ -48,13 +48,15 @@ interface Lesson {
 interface Review {
   id: string
   rating: number
-  comment: string
+  comment: string | null
   createdAt: Date
+  courseId: string
+  userId: string
   user: {
     id: string
-    name: string
+    name: string | null
     email: string
-    image?: string
+    image: string | null
   }
 }
 
@@ -628,21 +630,21 @@ export default function CourseEditClient({ course, categories, session }: Props)
                           {review.user.image ? (
                             <Image
                               src={review.user.image}
-                              alt={review.user.name}
+                              alt={review.user.name || 'User'}
                               width={40}
                               height={40}
                               className="rounded-full"
                             />
                           ) : (
                             <span className="text-white font-medium">
-                              {review.user.name.charAt(0).toUpperCase()}
+                              {review.user.name?.charAt(0).toUpperCase() || 'U'}
                             </span>
                           )}
                         </div>
                         <div className="flex-1">
                           <div className="flex justify-between items-start mb-2">
                             <div>
-                              <h4 className="text-white font-semibold">{review.user.name}</h4>
+                              <h4 className="text-white font-semibold">{review.user.name || 'Anonymous'}</h4>
                               <div className="flex items-center space-x-1">
                                 {[...Array(5)].map((_, i) => (
                                   <Star

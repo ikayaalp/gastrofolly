@@ -17,7 +17,19 @@ async function getInstructorData(userId: string) {
       where: { instructorId: userId },
       include: {
         category: true,
-        reviews: true,
+        instructor: true,
+        reviews: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                image: true
+              }
+            }
+          }
+        },
         _count: { select: { enrollments: true, lessons: true } }
       },
       orderBy: { createdAt: 'desc' }

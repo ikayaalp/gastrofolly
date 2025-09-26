@@ -16,15 +16,15 @@ import Image from "next/image"
 
 interface User {
   id: string
-  name: string
+  name: string | null
   email: string
-  image?: string
+  image: string | null
 }
 
 interface Course {
   id: string
   title: string
-  imageUrl?: string
+  imageUrl: string | null
 }
 
 interface Reply {
@@ -46,9 +46,10 @@ interface Message {
 interface Session {
   user: {
     id: string
-    name: string
-    email: string
-    role: string
+    name?: string | null | undefined
+    email?: string | null | undefined
+    image?: string | null | undefined
+    role?: string | undefined
   }
 }
 
@@ -65,7 +66,7 @@ export default function InstructorMessagesClient({ messages, session }: Props) {
 
   const filteredMessages = messages.filter(message => {
     const matchesSearch = message.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         message.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (message.user.name?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
                          message.course.title.toLowerCase().includes(searchTerm.toLowerCase())
     
     const matchesCourse = filterCourse === "all" || message.course.id === filterCourse
@@ -163,7 +164,7 @@ export default function InstructorMessagesClient({ messages, session }: Props) {
                         {message.user.image ? (
                           <Image
                             src={message.user.image}
-                            alt={message.user.name}
+                            alt={message.user.name || 'User'}
                             width={40}
                             height={40}
                             className="rounded-full"
@@ -206,7 +207,7 @@ export default function InstructorMessagesClient({ messages, session }: Props) {
                       {selectedMessage.user.image ? (
                         <Image
                           src={selectedMessage.user.image}
-                          alt={selectedMessage.user.name}
+                          alt={selectedMessage.user.name || 'User'}
                           width={48}
                           height={48}
                           className="rounded-full"
@@ -251,7 +252,7 @@ export default function InstructorMessagesClient({ messages, session }: Props) {
                               {reply.user.image ? (
                                 <Image
                                   src={reply.user.image}
-                                  alt={reply.user.name}
+                                  alt={reply.user.name || 'User'}
                                   width={32}
                                   height={32}
                                   className="rounded-full"

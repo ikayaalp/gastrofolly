@@ -23,14 +23,25 @@ import {
 interface Category {
   id: string
   name: string
+  slug: string
+  description: string | null
+  imageUrl: string | null
+  createdAt: Date
+  updatedAt: Date
 }
 
 interface Lesson {
   id: string
   title: string
+  description: string | null
   order: number
-  duration: number
+  duration: number | null
+  videoUrl: string | null
   isPublished: boolean
+  isFree: boolean
+  courseId: string
+  createdAt: Date
+  updatedAt: Date
 }
 
 interface Course {
@@ -38,13 +49,31 @@ interface Course {
   title: string
   description: string
   price: number
-  imageUrl?: string
+  imageUrl: string | null
   isPublished: boolean
   createdAt: Date
   updatedAt: Date
   category: Category
+  instructor: {
+    id: string
+    name: string | null
+    email: string
+  }
   lessons: Lesson[]
-  reviews: Array<{ rating: number }>
+  reviews: Array<{ 
+    id: string
+    rating: number
+    comment: string | null
+    createdAt: Date
+    courseId: string
+    userId: string
+    user: {
+      id: string
+      name: string | null
+      email: string
+      image: string | null
+    }
+  }>
   _count: {
     enrollments: number
     lessons: number
@@ -54,9 +83,10 @@ interface Course {
 interface Session {
   user: {
     id: string
-    name: string
-    email: string
-    role: string
+    name?: string | null | undefined
+    email?: string | null | undefined
+    image?: string | null | undefined
+    role?: string | undefined
   }
 }
 

@@ -19,14 +19,20 @@ import Image from "next/image"
 interface Category {
   id: string
   name: string
+  slug: string
+  description: string | null
+  imageUrl: string | null
+  createdAt: Date
+  updatedAt: Date
 }
 
 interface Session {
   user: {
     id: string
-    name: string
-    email: string
-    role: string
+    name?: string | null | undefined
+    email?: string | null | undefined
+    image?: string | null | undefined
+    role?: string | undefined
   }
 }
 

@@ -20,12 +20,38 @@ interface Course {
   title: string
   description: string
   price: number
+  imageUrl: string | null
   isPublished: boolean
   createdAt: Date
+  updatedAt: Date
   category: {
+    id: string
     name: string
+    slug: string
+    description: string | null
+    imageUrl: string | null
+    createdAt: Date
+    updatedAt: Date
   }
-  reviews: Array<{ rating: number }>
+  instructor: {
+    id: string
+    name: string | null
+    email: string
+  }
+  reviews: Array<{ 
+    id: string
+    rating: number
+    comment: string | null
+    createdAt: Date
+    courseId: string
+    userId: string
+    user: {
+      id: string
+      name: string | null
+      email: string
+      image: string | null
+    }
+  }>
   _count: {
     enrollments: number
     lessons: number
@@ -37,11 +63,15 @@ interface Message {
   content: string
   createdAt: Date
   user: {
-    name: string
+    id: string
+    name: string | null
     email: string
+    image: string | null
   }
   course: {
+    id: string
     title: string
+    imageUrl: string | null
   }
 }
 
