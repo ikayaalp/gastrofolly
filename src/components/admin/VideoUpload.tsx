@@ -50,9 +50,9 @@ export default function VideoUpload({ onVideoUploaded, lessonId }: VideoUploadPr
         formData.append('lessonId', lessonId)
       }
 
-      console.log('Sending request to /api/upload-video-vercel')
+      console.log('Sending request to /api/upload-video-firebase')
       
-      const response = await fetch('/api/upload-video-vercel', {
+      const response = await fetch('/api/upload-video-firebase', {
         method: 'POST',
         body: formData
       })
