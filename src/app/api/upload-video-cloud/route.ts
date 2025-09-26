@@ -61,8 +61,10 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(await file.arrayBuffer())
     
     console.log('Uploading to Cloudinary...')
+    console.log('Buffer size:', buffer.length)
+    console.log('File size:', file.size)
     
-    // Cloudinary'ye yükle (mevcut preset kullan)
+    // Cloudinary'ye yükle (basit ayarlar)
     const result = await new Promise((resolve, reject) => {
       cloudinary.uploader.upload_stream(
         {
@@ -70,15 +72,16 @@ export async function POST(request: NextRequest) {
           upload_preset: 'chef-courses-videos-unsigned',
           public_id: `video_${Date.now()}`,
           chunk_size: 6000000, // 6MB chunks
-          eager: [
-            { width: 1280, height: 720, crop: 'scale' },
-            { width: 854, height: 480, crop: 'scale' }
-          ],
-          eager_async: true
+          timeout: 120000 // 2 dakika timeout
         },
         (error, result) => {
-          if (error) reject(error)
-          else resolve(result)
+          if (error) {
+            console.error('Cloudinary upload error:', error)
+            reject(error)
+          } else {
+            console.log('Cloudinary upload success:', result)
+            resolve(result)
+          }
         }
       ).end(buffer)
     })
