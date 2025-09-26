@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
       const apiKey = process.env.CLOUDINARY_API_KEY
       const apiSecret = process.env.CLOUDINARY_API_SECRET
       const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET || 'chef-courses-unsigned'
-      const folder = process.env.CLOUDINARY_FOLDER || 'chef-courses/images'
+      const folder = 'chef-courses' // Resimler ana klasörde
 
       console.log('Cloudinary image upload credentials check:', {
         cloudName: cloudName ? '✓' : '✗',
