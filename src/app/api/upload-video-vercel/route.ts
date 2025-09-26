@@ -41,8 +41,7 @@ export async function POST(request: NextRequest) {
 
     console.log('Vercel Blob upload success:', {
       url: blob.url,
-      pathname: blob.pathname,
-      size: blob.size
+      pathname: blob.pathname
     })
     
     // Lesson'ı güncelle
@@ -60,7 +59,6 @@ export async function POST(request: NextRequest) {
       success: true, 
       videoUrl: blob.url,
       pathname: blob.pathname,
-      size: blob.size,
       message: "Video başarıyla Vercel Blob'a yüklendi" 
     })
 
