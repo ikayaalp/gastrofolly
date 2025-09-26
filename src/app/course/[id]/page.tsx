@@ -237,6 +237,13 @@ export default async function CoursePage({ params }: CoursePageProps) {
                       </Link>
                       <p className="text-sm text-gray-400">Eğitmen</p>
                     </div>
+                    <Link 
+                      href="/chef-sor"
+                      className="ml-4 bg-orange-600 hover:bg-orange-700 text-white px-3 py-2 rounded-lg transition-colors flex items-center space-x-2"
+                    >
+                      <MessageCircle className="h-4 w-4" />
+                      <span className="text-sm">💬 Chef'e Sor</span>
+                    </Link>
                   </div>
                   
                   {averageRating > 0 && (
@@ -488,6 +495,10 @@ export default async function CoursePage({ params }: CoursePageProps) {
           <Link href="/chef-sosyal" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
             <Users className="h-6 w-6" />
             <span className="text-xs font-medium mt-1">Sosyal</span>
+          </Link>
+          <Link href="/chef-sor" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+            <MessageCircle className="h-6 w-6" />
+            <span className="text-xs font-medium mt-1">Chef'e Sor</span>
           </Link>
           <Link href="/messages" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
             <MessageCircle className="h-6 w-6" />
