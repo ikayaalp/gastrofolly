@@ -69,8 +69,10 @@ export default function VideoUpload({ onVideoUploaded, lessonId }: VideoUploadPr
         console.log('Response data:', data)
       } catch (jsonError) {
         console.error('JSON parse error:', jsonError)
-        console.log('Response text:', await response.text())
-        throw new Error(`API response is not valid JSON. Status: ${response.status}`)
+        const responseText = await response.text()
+        console.log('Response text:', responseText)
+        setError(`API hatası: ${response.status} - ${responseText}`)
+        return
       }
 
       if (response.ok) {
@@ -84,20 +86,27 @@ export default function VideoUpload({ onVideoUploaded, lessonId }: VideoUploadPr
         
         let errorMessage = "Video yüklenirken hata oluştu"
         
+        console.log('Error response data:', data)
+        console.log('Response status:', response.status)
+        console.log('Response statusText:', response.statusText)
+        
         if (data && data.error) {
-          errorMessage = data.error
+          errorMessage = `Hata: ${data.error}`
         } else if (data && data.message) {
-          errorMessage = data.message
+          errorMessage = `Hata: ${data.message}`
         } else if (response.status === 401) {
           errorMessage = "Cloudinary kimlik doğrulama hatası. API anahtarlarını kontrol edin."
         } else if (response.status === 403) {
           errorMessage = "Cloudinary erişim hatası. Upload preset'i kontrol edin."
         } else if (response.status === 413) {
           errorMessage = "Video dosyası çok büyük. 500MB'dan küçük bir dosya seçin."
+        } else if (response.status === 500) {
+          errorMessage = "Sunucu hatası. Cloudinary ayarlarını kontrol edin."
         } else {
           errorMessage = `HTTP ${response.status}: ${response.statusText}`
         }
         
+        console.log('Setting error message:', errorMessage)
         setError(errorMessage)
       }
     } catch (error) {
