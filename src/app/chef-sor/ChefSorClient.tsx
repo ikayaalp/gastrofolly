@@ -183,7 +183,7 @@ export default function ChefSorClient({ enrolledCourses, session }: ChefSorClien
                 <span className="text-2xl font-bold text-white">Chef2.0</span>
               </Link>
               <div className="h-8 w-px bg-gray-600"></div>
-              <h1 className="text-xl font-semibold text-white">Chef'ine Sor</h1>
+              <h1 className="text-xl font-semibold text-white">Chef&apos;ine Sor</h1>
             </div>
             <Link
               href="/home"
