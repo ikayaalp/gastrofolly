@@ -45,6 +45,18 @@ export async function POST(request: NextRequest) {
       CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET ? '✓' : '✗'
     })
 
+    // Cloudinary credentials kontrolü
+    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+      console.error('Cloudinary credentials eksik:', {
+        CLOUDINARY_CLOUD_NAME: !!process.env.CLOUDINARY_CLOUD_NAME,
+        CLOUDINARY_API_KEY: !!process.env.CLOUDINARY_API_KEY,
+        CLOUDINARY_API_SECRET: !!process.env.CLOUDINARY_API_SECRET
+      })
+      return NextResponse.json({ 
+        error: "Cloudinary kimlik bilgileri eksik. Lütfen environment variables'ları kontrol edin." 
+      }, { status: 500 })
+    }
+
     // Video dosyasını buffer'a çevir
     const buffer = Buffer.from(await file.arrayBuffer())
     

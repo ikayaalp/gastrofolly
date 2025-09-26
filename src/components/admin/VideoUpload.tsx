@@ -79,7 +79,25 @@ export default function VideoUpload({ onVideoUploaded, lessonId }: VideoUploadPr
         setUploadProgress(100)
       } else {
         console.error('Video upload error response:', data)
-        const errorMessage = data.error || data.message || `HTTP ${response.status}: ${response.statusText}`
+        console.error('Response status:', response.status)
+        console.error('Response statusText:', response.statusText)
+        
+        let errorMessage = "Video yüklenirken hata oluştu"
+        
+        if (data && data.error) {
+          errorMessage = data.error
+        } else if (data && data.message) {
+          errorMessage = data.message
+        } else if (response.status === 401) {
+          errorMessage = "Cloudinary kimlik doğrulama hatası. API anahtarlarını kontrol edin."
+        } else if (response.status === 403) {
+          errorMessage = "Cloudinary erişim hatası. Upload preset'i kontrol edin."
+        } else if (response.status === 413) {
+          errorMessage = "Video dosyası çok büyük. 500MB'dan küçük bir dosya seçin."
+        } else {
+          errorMessage = `HTTP ${response.status}: ${response.statusText}`
+        }
+        
         setError(errorMessage)
       }
     } catch (error) {
