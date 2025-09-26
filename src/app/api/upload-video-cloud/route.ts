@@ -50,12 +50,12 @@ export async function POST(request: NextRequest) {
     
     console.log('Uploading to Cloudinary...')
     
-    // Cloudinary'ye yükle
+    // Cloudinary'ye yükle (mevcut preset kullan)
     const result = await new Promise((resolve, reject) => {
       cloudinary.uploader.upload_stream(
         {
           resource_type: 'video',
-          folder: 'gastrofolly/videos',
+          upload_preset: 'chef-courses-videos-unsigned',
           public_id: `video_${Date.now()}`,
           chunk_size: 6000000, // 6MB chunks
           eager: [
