@@ -17,7 +17,18 @@ export default function MessageButton({ instructorId, instructorName, courseId }
   const [isOpen, setIsOpen] = useState(false)
   const [message, setMessage] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const [availableCourses, setAvailableCourses] = useState<any[]>([])
+  const [availableCourses, setAvailableCourses] = useState<Array<{
+    id: string
+    title: string
+    description: string
+    price: number
+    imageUrl: string | null
+    isPublished: boolean
+    createdAt: Date
+    _count: {
+      enrollments: number
+    }
+  }>>([])
   const [selectedCourseId, setSelectedCourseId] = useState("")
 
   const handleSendMessage = async () => {
