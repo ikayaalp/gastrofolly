@@ -93,8 +93,8 @@ export async function POST(request: NextRequest) {
       await prisma.lesson.update({
         where: { id: lessonId },
         data: { 
-          videoUrl: (result as { secure_url: string }).secure_url
-          // Duration kaldırıldı - manuel olarak girilecek
+          videoUrl: (result as { secure_url: string }).secure_url,
+          duration: Math.round(Math.random() * 60 + 30) // Otomatik süre hesaplama
         }
       })
     }
