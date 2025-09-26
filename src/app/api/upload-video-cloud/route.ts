@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
       await prisma.lesson.update({
         where: { id: lessonId },
         data: { 
-          videoUrl: (result as any).secure_url,
+          videoUrl: (result as { secure_url: string }).secure_url,
           duration: Math.round(Math.random() * 60 + 30) // Geçici süre
         }
       })
@@ -86,8 +86,8 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json({ 
       success: true, 
-      videoUrl: (result as any).secure_url,
-      publicId: (result as any).public_id,
+      videoUrl: (result as { secure_url: string }).secure_url,
+      publicId: (result as { public_id: string }).public_id,
       message: "Video başarıyla Cloudinary'ye yüklendi" 
     })
 
