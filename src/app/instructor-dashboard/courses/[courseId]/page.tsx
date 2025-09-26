@@ -45,7 +45,7 @@ async function getCourseData(courseId: string, userId: string) {
   return { course, categories }
 }
 
-export default async function CourseEdit({ params }: { params: { courseId: string } }) {
+export default async function CourseEdit({ params }: { params: Promise<{ courseId: string }> }) {
   const session = await getServerSession(authOptions)
 
   if (!session?.user?.id) {
@@ -56,7 +56,8 @@ export default async function CourseEdit({ params }: { params: { courseId: strin
     redirect("/dashboard")
   }
 
-  const { course, categories } = await getCourseData(params.courseId, session.user.id)
+  const { courseId } = await params
+  const { course, categories } = await getCourseData(courseId, session.user.id)
 
   if (!course) {
     redirect("/instructor-dashboard/courses")

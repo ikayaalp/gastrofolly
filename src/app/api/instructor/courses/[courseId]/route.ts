@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma"
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { courseId: string } }
+  { params }: { params: Promise<{ courseId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -18,9 +18,11 @@ export async function GET(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
+    const { courseId } = await params
+
     const course = await prisma.course.findFirst({
       where: { 
-        id: params.courseId,
+        id: courseId,
         instructorId: session.user.id 
       },
       include: {
@@ -64,7 +66,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { courseId: string } }
+  { params }: { params: Promise<{ courseId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -77,13 +79,14 @@ export async function PUT(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
+    const { courseId } = await params
     const body = await request.json()
     const { title, description, price, categoryId, imageUrl, isPublished } = body
 
     // Check if course exists and belongs to instructor
     const existingCourse = await prisma.course.findFirst({
       where: { 
-        id: params.courseId,
+        id: courseId,
         instructorId: session.user.id 
       }
     })
@@ -93,7 +96,7 @@ export async function PUT(
     }
 
     const course = await prisma.course.update({
-      where: { id: params.courseId },
+      where: { id: courseId },
       data: {
         ...(title && { title }),
         ...(description && { description }),
@@ -117,7 +120,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { courseId: string } }
+  { params }: { params: Promise<{ courseId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -130,10 +133,12 @@ export async function DELETE(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
+    const { courseId } = await params
+
     // Check if course exists and belongs to instructor
     const existingCourse = await prisma.course.findFirst({
       where: { 
-        id: params.courseId,
+        id: courseId,
         instructorId: session.user.id 
       }
     })
@@ -144,7 +149,7 @@ export async function DELETE(
 
     // Delete course (cascade will handle related records)
     await prisma.course.delete({
-      where: { id: params.courseId }
+      where: { id: courseId }
     })
 
     return NextResponse.json({ message: "Course deleted successfully" })

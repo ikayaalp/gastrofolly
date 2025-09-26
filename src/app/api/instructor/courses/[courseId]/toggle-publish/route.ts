@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma"
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { courseId: string } }
+  { params }: { params: Promise<{ courseId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -18,13 +18,14 @@ export async function PATCH(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
+    const { courseId } = await params
     const body = await request.json()
     const { isPublished } = body
 
     // Check if course exists and belongs to instructor
     const existingCourse = await prisma.course.findFirst({
       where: { 
-        id: params.courseId,
+        id: courseId,
         instructorId: session.user.id 
       }
     })
@@ -34,7 +35,7 @@ export async function PATCH(
     }
 
     const course = await prisma.course.update({
-      where: { id: params.courseId },
+      where: { id: courseId },
       data: { isPublished },
       include: {
         category: true,

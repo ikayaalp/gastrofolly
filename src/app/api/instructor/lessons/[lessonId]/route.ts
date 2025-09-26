@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma"
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { lessonId: string } }
+  { params }: { params: Promise<{ lessonId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -18,13 +18,14 @@ export async function PUT(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
+    const { lessonId } = await params
     const body = await request.json()
     const { title, description, duration, videoUrl, isPublished } = body
 
     // Check if lesson exists and belongs to instructor's course
     const existingLesson = await prisma.lesson.findFirst({
       where: { 
-        id: params.lessonId,
+        id: lessonId,
         course: { instructorId: session.user.id }
       }
     })
@@ -34,7 +35,7 @@ export async function PUT(
     }
 
     const lesson = await prisma.lesson.update({
-      where: { id: params.lessonId },
+      where: { id: lessonId },
       data: {
         ...(title && { title }),
         ...(description && { description }),
@@ -53,7 +54,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { lessonId: string } }
+  { params }: { params: Promise<{ lessonId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -66,10 +67,12 @@ export async function DELETE(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
+    const { lessonId } = await params
+
     // Check if lesson exists and belongs to instructor's course
     const existingLesson = await prisma.lesson.findFirst({
       where: { 
-        id: params.lessonId,
+        id: lessonId,
         course: { instructorId: session.user.id }
       }
     })
@@ -80,7 +83,7 @@ export async function DELETE(
 
     // Delete lesson
     await prisma.lesson.delete({
-      where: { id: params.lessonId }
+      where: { id: lessonId }
     })
 
     return NextResponse.json({ message: "Lesson deleted successfully" })
