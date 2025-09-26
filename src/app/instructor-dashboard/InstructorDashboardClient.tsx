@@ -12,7 +12,6 @@ import {
   Edit,
   Eye,
   Star,
-  Calendar,
   BarChart3
 } from "lucide-react"
 
@@ -51,15 +50,24 @@ interface InstructorData {
   totalStudents: number
   totalRevenue: number
   recentMessages: Message[]
-  courseStats: any[]
+  courseStats: Array<{
+    id: string
+    title: string
+    _count: {
+      enrollments: number
+      lessons: number
+    }
+    reviews: Array<{ rating: number }>
+  }>
 }
 
 interface Session {
   user: {
     id: string
-    name: string
-    email: string
-    role: string
+    name?: string | null | undefined
+    email?: string | null | undefined
+    image?: string | null | undefined
+    role?: string | undefined
   }
 }
 
