@@ -60,7 +60,7 @@ interface Course {
   title: string
   description: string
   price: number
-  imageUrl?: string
+  imageUrl?: string | null
   isPublished: boolean
   createdAt: Date
   updatedAt: Date
@@ -81,9 +81,10 @@ interface Course {
 interface Session {
   user: {
     id: string
-    name: string
-    email: string
-    role: string
+    name?: string | null | undefined
+    email?: string | null | undefined
+    image?: string | null | undefined
+    role?: string | undefined
   }
 }
 
