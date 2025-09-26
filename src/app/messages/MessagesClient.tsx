@@ -1,19 +1,16 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useSession } from "next-auth/react"
+import { useSearchParams } from "next/navigation"
 import { 
   MessageSquare, 
-  Reply, 
   Send, 
   User, 
-  Calendar,
-  BookOpen,
   Search,
-  Filter,
-  MoreVertical,
+  ChevronLeft,
   Users,
-  Clock,
-  ChevronLeft
+  Clock
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -25,28 +22,11 @@ interface User {
   email: string
   image: string | null
   role: string
-}
-
-interface Course {
-  id: string
-  title: string
-  imageUrl: string | null
-}
-
-interface Reply {
-  id: string
-  content: string
-  createdAt: Date
-  user: User
-}
-
-interface Message {
-  id: string
-  content: string
-  createdAt: Date
-  user: User
-  course: Course
-  replies: Reply[]
+  createdCourses?: {
+    id: string
+    title: string
+    imageUrl: string | null
+  }[]
 }
 
 interface DirectMessage {
@@ -75,49 +55,44 @@ interface Session {
 }
 
 interface Props {
-  messages: Message[]
   session: Session
 }
 
-export default function InstructorMessagesClient({ messages, session }: Props) {
-  const [selectedMessage, setSelectedMessage] = useState<Message | null>(null)
-  const [replyContent, setReplyContent] = useState("")
-  const [searchTerm, setSearchTerm] = useState("")
-  const [filterCourse, setFilterCourse] = useState("all")
-  const [activeTab, setActiveTab] = useState<'dm'>('dm')
+export default function MessagesClient({ session }: Props) {
+  const searchParams = useSearchParams()
+  const instructorIdFromUrl = searchParams.get('instructorId')
+  
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null)
-  const [dmMessages, setDmMessages] = useState<DirectMessage[]>([])
+  const [messages, setMessages] = useState<DirectMessage[]>([])
   const [newMessage, setNewMessage] = useState("")
+  const [searchTerm, setSearchTerm] = useState("")
+  const [instructors, setInstructors] = useState<User[]>([])
+  const [showInstructors, setShowInstructors] = useState(false)
   const [loading, setLoading] = useState(true)
 
-  const filteredMessages = messages.filter(message => {
-    const matchesSearch = message.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (message.user.name?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
-                         message.course.title.toLowerCase().includes(searchTerm.toLowerCase())
-    
-    const matchesCourse = filterCourse === "all" || message.course.id === filterCourse
-    
-    return matchesSearch && matchesCourse
-  })
-
-  const uniqueCourses = messages.reduce((acc, message) => {
-    if (!acc.find(course => course.id === message.course.id)) {
-      acc.push(message.course)
-    }
-    return acc
-  }, [] as Course[])
-
-  // DM fonksiyonları
+  // Konuşmaları yükle
   useEffect(() => {
-    if (activeTab === 'dm') {
-      fetchConversations()
-    }
-  }, [activeTab])
+    fetchConversations()
+  }, [])
 
+  // URL'den gelen instructorId ile konuşma aç
+  useEffect(() => {
+    if (instructorIdFromUrl && conversations.length > 0) {
+      const existingConversation = conversations.find(conv => conv.otherUser.id === instructorIdFromUrl)
+      if (existingConversation) {
+        setSelectedConversation(existingConversation)
+      } else {
+        // Eğer konuşma yoksa, eğitmen bilgilerini al ve yeni konuşma başlat
+        fetchInstructorAndStartConversation(instructorIdFromUrl)
+      }
+    }
+  }, [instructorIdFromUrl, conversations])
+
+  // Mesajları yükle
   useEffect(() => {
     if (selectedConversation) {
-      fetchDmMessages(selectedConversation.otherUser.id)
+      fetchMessages(selectedConversation.otherUser.id)
     }
   }, [selectedConversation])
 
@@ -135,19 +110,46 @@ export default function InstructorMessagesClient({ messages, session }: Props) {
     }
   }
 
-  const fetchDmMessages = async (otherUserId: string) => {
+  const fetchMessages = async (otherUserId: string) => {
     try {
       const response = await fetch(`/api/direct-messages?otherUserId=${otherUserId}`)
       if (response.ok) {
         const data = await response.json()
-        setDmMessages(data.messages)
+        setMessages(data.messages)
       }
     } catch (error) {
-      console.error('Error fetching DM messages:', error)
+      console.error('Error fetching messages:', error)
     }
   }
 
-  const sendDmMessage = async () => {
+  const fetchInstructors = async (search: string = "") => {
+    try {
+      const response = await fetch(`/api/direct-messages/users?search=${search}`)
+      if (response.ok) {
+        const data = await response.json()
+        setInstructors(data.instructors)
+      }
+    } catch (error) {
+      console.error('Error fetching instructors:', error)
+    }
+  }
+
+  const fetchInstructorAndStartConversation = async (instructorId: string) => {
+    try {
+      const response = await fetch(`/api/direct-messages/users?search=`)
+      if (response.ok) {
+        const data = await response.json()
+        const instructor = data.instructors.find((inst: User) => inst.id === instructorId)
+        if (instructor) {
+          startNewConversation(instructor)
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching instructor:', error)
+    }
+  }
+
+  const sendMessage = async () => {
     if (!newMessage.trim() || !selectedConversation) return
 
     try {
@@ -164,18 +166,35 @@ export default function InstructorMessagesClient({ messages, session }: Props) {
 
       if (response.ok) {
         setNewMessage("")
-        fetchDmMessages(selectedConversation.otherUser.id)
-        fetchConversations()
+        fetchMessages(selectedConversation.otherUser.id)
+        fetchConversations() // Konuşma listesini güncelle
       }
     } catch (error) {
-      console.error('Error sending DM message:', error)
+      console.error('Error sending message:', error)
     }
   }
 
-  const handleDmKeyPress = (e: React.KeyboardEvent) => {
+  const startNewConversation = async (instructor: User) => {
+    setSelectedConversation({
+      otherUser: instructor,
+      lastMessage: {
+        id: '',
+        content: '',
+        createdAt: new Date(),
+        isRead: true,
+        sender: session.user as User,
+        receiver: instructor
+      },
+      unreadCount: 0
+    })
+    setShowInstructors(false)
+    setMessages([])
+  }
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
-      sendDmMessage()
+      sendMessage()
     }
   }
 
@@ -193,31 +212,6 @@ export default function InstructorMessagesClient({ messages, session }: Props) {
     return new Date(date).toLocaleDateString('tr-TR')
   }
 
-  const handleReply = async (messageId: string) => {
-    if (!replyContent.trim()) return
-
-    try {
-      const response = await fetch('/api/instructor/messages/reply', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          messageId,
-          content: replyContent
-        }),
-      })
-
-      if (response.ok) {
-        setReplyContent("")
-        // Refresh messages or update state
-        window.location.reload()
-      }
-    } catch (error) {
-      console.error('Error sending reply:', error)
-    }
-  }
-
   return (
     <div className="min-h-screen bg-gray-900">
       {/* Header */}
@@ -225,24 +219,26 @@ export default function InstructorMessagesClient({ messages, session }: Props) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-4">
-              <Link href="/instructor-dashboard" className="flex items-center space-x-2">
+              <Link href="/home" className="flex items-center space-x-2">
                 <ChefHat className="h-8 w-8 text-orange-500" />
                 <span className="text-2xl font-bold text-white">Chef2.0</span>
               </Link>
               <div className="h-6 w-px bg-gray-600"></div>
-              <div>
-                <h1 className="text-2xl font-bold text-white">Mesajlar</h1>
-                <p className="text-gray-400">Öğrencilerle iletişim kurun</p>
-              </div>
+              <h1 className="text-2xl font-bold text-white">Mesajlar</h1>
             </div>
             <div className="flex items-center space-x-4">
-              <Link
-                href="/messages"
+              <button
+                onClick={() => {
+                  setShowInstructors(!showInstructors)
+                  if (!showInstructors) {
+                    fetchInstructors()
+                  }
+                }}
                 className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors flex items-center space-x-2"
               >
                 <Users className="h-4 w-4" />
-                <span>Genel Mesajlar</span>
-              </Link>
+                <span>Yeni Konuşma</span>
+              </button>
             </div>
           </div>
         </div>
@@ -276,7 +272,7 @@ export default function InstructorMessagesClient({ messages, session }: Props) {
                   <div className="p-4 text-center text-gray-400">
                     <MessageSquare className="h-8 w-8 mx-auto mb-2" />
                     <p>Henüz konuşma yok</p>
-                    <p className="text-sm">Öğrencilerden mesaj bekleniyor</p>
+                    <p className="text-sm">Yeni konuşma başlatın</p>
                   </div>
                 ) : (
                   conversations
@@ -357,7 +353,7 @@ export default function InstructorMessagesClient({ messages, session }: Props) {
                         {selectedConversation.otherUser.name}
                       </h3>
                       <p className="text-gray-400 text-sm">
-                        {selectedConversation.otherUser.role === 'STUDENT' ? 'Öğrenci' : 'Eğitmen'}
+                        {selectedConversation.otherUser.role === 'INSTRUCTOR' ? 'Eğitmen' : 'Öğrenci'}
                       </p>
                     </div>
                   </div>
@@ -365,29 +361,29 @@ export default function InstructorMessagesClient({ messages, session }: Props) {
 
                 {/* Mesajlar */}
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                  {dmMessages.length === 0 ? (
+                  {messages.length === 0 ? (
                     <div className="text-center text-gray-400 py-8">
                       <MessageSquare className="h-12 w-12 mx-auto mb-4" />
                       <p>Henüz mesaj yok</p>
                       <p className="text-sm">İlk mesajınızı gönderin</p>
                     </div>
                   ) : (
-                    dmMessages.map((message) => (
-                      <div
-                        key={message.id}
-                        className={`flex ${message.sender.id === session.user.id ? 'justify-end' : 'justify-start'}`}
-                      >
+                    messages.map((message) => (
                         <div
-                          className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                            message.sender.id === session.user.id
-                              ? 'bg-orange-600 text-white'
-                              : 'bg-gray-700 text-gray-300'
-                          }`}
+                          key={message.id}
+                          className={`flex ${message.sender.id === session.user.id ? 'justify-end' : 'justify-start'}`}
                         >
-                          <p className="text-sm">{message.content}</p>
-                          <p className={`text-xs mt-1 ${
-                            message.sender.id === session.user.id ? 'text-orange-200' : 'text-gray-400'
-                          }`}>
+                          <div
+                            className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                              message.sender.id === session.user.id
+                                ? 'bg-orange-600 text-white'
+                                : 'bg-gray-700 text-gray-300'
+                            }`}
+                          >
+                            <p className="text-sm">{message.content}</p>
+                            <p className={`text-xs mt-1 ${
+                              message.sender.id === session.user.id ? 'text-orange-200' : 'text-gray-400'
+                            }`}>
                             {formatTime(message.createdAt)}
                           </p>
                         </div>
@@ -402,13 +398,13 @@ export default function InstructorMessagesClient({ messages, session }: Props) {
                     <textarea
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
-                      onKeyPress={handleDmKeyPress}
+                      onKeyPress={handleKeyPress}
                       placeholder="Mesajınızı yazın..."
                       className="flex-1 bg-gray-700 text-white p-3 rounded-lg border border-gray-600 focus:border-orange-500 focus:outline-none resize-none"
                       rows={2}
                     />
                     <button
-                      onClick={sendDmMessage}
+                      onClick={sendMessage}
                       disabled={!newMessage.trim()}
                       className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
                     >
@@ -422,13 +418,75 @@ export default function InstructorMessagesClient({ messages, session }: Props) {
                 <div className="text-center text-gray-400">
                   <MessageSquare className="h-16 w-16 mx-auto mb-4" />
                   <h3 className="text-white font-semibold mb-2">Konuşma Seçin</h3>
-                  <p>Mesajlaşmak istediğiniz öğrenciyi seçin</p>
+                  <p>Mesajlaşmak istediğiniz kişiyi seçin</p>
                 </div>
               </div>
             )}
           </div>
         </div>
       </div>
+
+      {/* Chef Seçim Modal */}
+      {showInstructors && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 rounded-lg border border-gray-700 w-full max-w-md mx-4 max-h-96">
+            <div className="p-4 border-b border-gray-700">
+              <div className="flex justify-between items-center">
+                <h3 className="text-white font-semibold">Chef Seçin</h3>
+                <button
+                  onClick={() => setShowInstructors(false)}
+                  className="text-gray-400 hover:text-white"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="relative mt-3">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Chef ara..."
+                  onChange={(e) => fetchInstructors(e.target.value)}
+                  className="w-full bg-gray-700 text-white pl-10 pr-4 py-2 rounded-lg border border-gray-600 focus:border-orange-500 focus:outline-none"
+                />
+              </div>
+            </div>
+            <div className="max-h-64 overflow-y-auto">
+              {instructors.map((instructor) => (
+                <div
+                  key={instructor.id}
+                  onClick={() => startNewConversation(instructor)}
+                  className="p-4 border-b border-gray-700 cursor-pointer hover:bg-gray-700 transition-colors"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 rounded-full bg-orange-600 flex items-center justify-center">
+                      {instructor.image ? (
+                        <Image
+                          src={instructor.image}
+                          alt={instructor.name || 'User'}
+                          width={40}
+                          height={40}
+                          className="rounded-full"
+                        />
+                      ) : (
+                        <User className="h-5 w-5 text-white" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="text-white font-medium">{instructor.name}</h4>
+                      <p className="text-gray-400 text-sm">{instructor.email}</p>
+                      {instructor.createdCourses && instructor.createdCourses.length > 0 && (
+                        <p className="text-orange-500 text-xs mt-1">
+                          {instructor.createdCourses.length} kurs
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
