@@ -288,7 +288,7 @@ export default function ChefSosyalClient({
                     Chef Sosyal
                   </Link>
                   <Link href="/chef-sor" className="text-gray-300 hover:text-white transition-colors">
-                    Chef'e Sor
+                    Mesajlar
                   </Link>
                   <Link href="/messages" className="text-gray-300 hover:text-white transition-colors">
                     Mesajlar
