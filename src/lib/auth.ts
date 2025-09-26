@@ -67,6 +67,10 @@ export const authOptions: NextAuthOptions = {
       return session
     },
     async redirect({ url, baseUrl }) {
+      // Çıkış yapıldığında ana sayfaya yönlendir
+      if (url === baseUrl || url === "/") {
+        return baseUrl
+      }
       // Login sonrası home sayfasına yönlendir
       if (url.startsWith("/") && url !== "/auth/signin" && url !== "/auth/signup") {
         return `${baseUrl}/home`

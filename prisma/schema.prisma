@@ -68,6 +68,7 @@ model User {
   posts         Post[]
   topicLikes    TopicLike[]
   postLikes     PostLike[]
+  messages      Message[]
 }
 
 enum UserRole {
@@ -114,6 +115,7 @@ model Course {
   reviews     Review[]
   progress    Progress[]
   payments    Payment[]
+  messages    Message[]
 }
 
 enum CourseLevel {
@@ -131,6 +133,7 @@ model Lesson {
   duration    Int? // dakika cinsinden
   order       Int
   isFree      Boolean  @default(false)
+  isPublished Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -283,4 +286,21 @@ model PostLike {
   post    Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@unique([userId, postId])
+}
+
+// Mesaj modeli (Eğitmen-Öğrenci iletişimi)
+model Message {
+  id        String   @id @default(cuid())
+  content   String
+  parentId  String?  // Yanıt mesajı için
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  
+  parent   Message? @relation("MessageReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies  Message[] @relation("MessageReplies")
 }
