@@ -75,7 +75,7 @@ interface Course {
   }
   instructor: {
     id: string
-    name: string
+    name: string | null
     email: string
   }
   lessons: Lesson[]
