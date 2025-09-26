@@ -53,8 +53,30 @@ async function getInstructorData(userId: string) {
     }).then(enrollments => 
       enrollments.reduce((total, enrollment) => total + enrollment.course.price, 0)
     ),
-    // Son mesajlar (geçici olarak boş array)
-    Promise.resolve([]),
+        // Son mesajlar
+        prisma.message.findMany({
+          where: {
+            course: { instructorId: userId }
+          },
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                image: true
+              }
+            },
+            course: {
+              select: {
+                id: true,
+                title: true
+              }
+            }
+          },
+          orderBy: { createdAt: 'desc' },
+          take: 5
+        }),
     // Kurs istatistikleri
     prisma.course.findMany({
       where: { instructorId: userId },

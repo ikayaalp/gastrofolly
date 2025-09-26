@@ -5,7 +5,6 @@ import AuthSessionProvider from "@/components/providers/SessionProvider";
 import { CartProvider } from "@/contexts/CartContext";
 import { FavoritesProvider } from "@/contexts/FavoritesContext";
 import CartIcon from "@/components/ui/CartIcon";
-import Header from "@/components/ui/Header";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -29,7 +28,6 @@ export default function RootLayout({
         <AuthSessionProvider>
           <CartProvider>
             <FavoritesProvider>
-              <Header />
               {children}
               <CartIcon />
             </FavoritesProvider>

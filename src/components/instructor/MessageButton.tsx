@@ -8,14 +8,17 @@ import { MessageCircle, Send } from "lucide-react"
 interface MessageButtonProps {
   instructorId: string
   instructorName: string
+  courseId?: string
 }
 
-export default function MessageButton({ instructorId, instructorName }: MessageButtonProps) {
+export default function MessageButton({ instructorId, instructorName, courseId }: MessageButtonProps) {
   const { data: session } = useSession()
   const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
   const [message, setMessage] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [availableCourses, setAvailableCourses] = useState<any[]>([])
+  const [selectedCourseId, setSelectedCourseId] = useState("")
 
   const handleSendMessage = async () => {
     if (!session) {
@@ -28,14 +31,35 @@ export default function MessageButton({ instructorId, instructorName }: MessageB
       return
     }
 
+    const finalCourseId = courseId || selectedCourseId
+    if (!finalCourseId) {
+      alert("Lütfen bir kurs seçin.")
+      return
+    }
+
     setIsLoading(true)
 
     try {
-      // Burada gerçek mesaj gönderme API'si çağrılabilir
-      // Şimdilik basit bir alert gösteriyoruz
-      alert(`Mesaj ${instructorName} eğitmenine gönderildi!`)
-      setMessage("")
-      setIsOpen(false)
+      const response = await fetch('/api/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          content: message.trim(),
+          courseId: finalCourseId
+        })
+      })
+
+      if (response.ok) {
+        alert(`Mesaj ${instructorName} eğitmenine gönderildi!`)
+        setMessage("")
+        setSelectedCourseId("")
+        setIsOpen(false)
+      } else {
+        const errorData = await response.json()
+        alert(errorData.error || "Mesaj gönderilirken bir hata oluştu.")
+      }
     } catch (error) {
       console.error("Message send error:", error)
       alert("Mesaj gönderilirken bir hata oluştu.")
@@ -44,11 +68,25 @@ export default function MessageButton({ instructorId, instructorName }: MessageB
     }
   }
 
-  const handleOpenMessage = () => {
+  const handleOpenMessage = async () => {
     if (!session) {
       router.push("/auth/signin")
       return
     }
+    
+    // Eğer courseId verilmemişse, kullanıcının bu eğitmenin kurslarına kayıtlı olup olmadığını kontrol et
+    if (!courseId) {
+      try {
+        const response = await fetch(`/api/instructor/${instructorId}/courses`)
+        if (response.ok) {
+          const data = await response.json()
+          setAvailableCourses(data.courses || [])
+        }
+      } catch (error) {
+        console.error("Error fetching courses:", error)
+      }
+    }
+    
     setIsOpen(true)
   }
 
@@ -76,6 +114,26 @@ export default function MessageButton({ instructorId, instructorName }: MessageB
               <h3 className="text-white font-semibold mb-4">
                 {instructorName} Eğitmenine Mesaj Gönder
               </h3>
+              
+              {!courseId && availableCourses.length > 0 && (
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Kurs Seçin
+                  </label>
+                  <select
+                    value={selectedCourseId}
+                    onChange={(e) => setSelectedCourseId(e.target.value)}
+                    className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-sm text-white"
+                  >
+                    <option value="">Kurs seçin...</option>
+                    {availableCourses.map((course) => (
+                      <option key={course.id} value={course.id}>
+                        {course.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
               
               <div className="mb-4">
                 <textarea

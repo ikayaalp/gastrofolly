@@ -233,7 +233,7 @@ export default function CourseEditClient({ course, categories, session }: Props)
     : 0
 
   return (
-    <div className="min-h-screen bg-gray-900 pt-20">
+    <div className="min-h-screen bg-gray-900">
       {/* Header */}
       <header className="bg-gray-800 border-b border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -118,7 +118,7 @@ export default function InstructorDashboardClient({ instructorData, session }: P
   const publishedCourses = instructorData.courses.filter(c => c.isPublished).length
 
   return (
-    <div className="min-h-screen bg-gray-900 pt-20">
+    <div className="min-h-screen bg-gray-900">
       {/* Page Header */}
       <div className="bg-gray-800 border-b border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
