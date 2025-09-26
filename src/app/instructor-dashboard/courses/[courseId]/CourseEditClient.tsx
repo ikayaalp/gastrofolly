@@ -34,12 +34,15 @@ interface Category {
 interface Lesson {
   id: string
   title: string
-  description: string
+  description: string | null
   order: number
-  duration: number
-  videoUrl?: string
+  duration: number | null
+  videoUrl: string | null
   isPublished: boolean
+  isFree: boolean
+  courseId: string
   createdAt: Date
+  updatedAt: Date
 }
 
 interface Review {
