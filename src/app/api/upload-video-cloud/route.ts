@@ -52,6 +52,10 @@ export async function POST(request: NextRequest) {
         throw new Error("CLOUDINARY_CLOUD_NAME eksik")
       }
 
+      if (!uploadPreset) {
+        throw new Error("CLOUDINARY_UPLOAD_PRESET eksik")
+      }
+
       const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`
       
       // FormData oluştur - Cloudinary dokümantasyonuna göre
