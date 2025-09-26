@@ -9,7 +9,19 @@ async function getInstructorCourses(userId: string) {
     where: { instructorId: userId },
     include: {
       category: true,
-      reviews: true,
+      instructor: true,
+      reviews: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true
+            }
+          }
+        }
+      },
       lessons: {
         orderBy: { order: 'asc' }
       },
