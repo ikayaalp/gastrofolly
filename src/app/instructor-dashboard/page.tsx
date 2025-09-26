@@ -70,7 +70,8 @@ async function getInstructorData(userId: string) {
             course: {
               select: {
                 id: true,
-                title: true
+                title: true,
+                imageUrl: true
               }
             }
           },
