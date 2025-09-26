@@ -1,48 +1,54 @@
-import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
-import { authOptions } from "@/lib/auth"
-import { prisma } from "@/lib/prisma"
+import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth/next'
+import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
 
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-
+    
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Sadece eğitmenler mesaj yanıtlayabilir
     if (session.user.role !== 'INSTRUCTOR' && session.user.role !== 'ADMIN') {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
-    const body = await request.json()
-    const { messageId, content } = body
+    const { messageId, content } = await request.json()
 
     if (!messageId || !content) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
+      return NextResponse.json({ error: 'Message ID and content are required' }, { status: 400 })
     }
 
-    // Check if message exists and belongs to instructor's course
-    const message = await prisma.message.findFirst({
-      where: { 
-        id: messageId,
-        course: { instructorId: session.user.id }
-      },
+    // Orijinal mesajı bul ve eğitmenin kursu olduğunu kontrol et
+    const originalMessage = await prisma.message.findUnique({
+      where: { id: messageId },
       include: {
-        course: true
+        course: {
+          select: {
+            instructorId: true
+          }
+        }
       }
     })
 
-    if (!message) {
-      return NextResponse.json({ error: "Message not found" }, { status: 404 })
+    if (!originalMessage) {
+      return NextResponse.json({ error: 'Message not found' }, { status: 404 })
     }
 
-    // Create reply
+    // Eğitmenin bu kursun sahibi olduğunu kontrol et
+    if (originalMessage.course.instructorId !== session.user.id) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
+    }
+
+    // Yanıt mesajını oluştur
     const reply = await prisma.message.create({
       data: {
-        content,
-        courseId: message.courseId,
+        content: content.trim(),
         userId: session.user.id,
+        courseId: originalMessage.courseId,
         parentId: messageId
       },
       include: {
@@ -53,13 +59,23 @@ export async function POST(request: NextRequest) {
             email: true,
             image: true
           }
+        },
+        course: {
+          select: {
+            id: true,
+            title: true,
+            imageUrl: true
+          }
         }
       }
     })
 
-    return NextResponse.json(reply, { status: 201 })
+    return NextResponse.json({ reply }, { status: 201 })
   } catch (error) {
-    console.error("Error creating reply:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    console.error('Error creating reply:', error)
+    return NextResponse.json(
+      { error: 'Failed to create reply' },
+      { status: 500 }
+    )
   }
 }

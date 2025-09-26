@@ -53,6 +53,7 @@ async function getInstructorData(userId: string) {
     }).then(enrollments => 
       enrollments.reduce((total, enrollment) => total + enrollment.course.price, 0)
     ),
+
         // Son mesajlar
         prisma.message.findMany({
           where: {
