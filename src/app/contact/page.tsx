@@ -408,7 +408,7 @@ export default async function ContactPage() {
           </Link>
           <Link href="/contact" className="flex flex-col items-center py-2 px-3 text-orange-500">
             <MessageCircle className="h-6 w-6" />
-            <span className="text-xs font-medium mt-1">İletişim</span>
+            <span className="text-xs font-medium mt-1">Mesajlar</span>
           </Link>
         </div>
       </div>
