@@ -200,7 +200,7 @@ export default function ChefSorClient({ enrolledCourses, session, selectedInstru
                 <span className="text-2xl font-bold text-white">Chef2.0</span>
               </Link>
               <div className="h-8 w-px bg-gray-600"></div>
-              <h1 className="text-xl font-semibold text-white">Chef&apos;ine Sor</h1>
+              <h1 className="text-xl font-semibold text-white">Mesajlar</h1>
             </div>
             <Link
               href="/home"
@@ -212,10 +212,10 @@ export default function ChefSorClient({ enrolledCourses, session, selectedInstru
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-[calc(100vh-200px)]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 h-[calc(100vh-80px)] overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-full">
           {/* Sol Panel - Eğitmen Listesi */}
-          <div className="bg-gray-800 rounded-lg p-6">
+          <div className="bg-gray-800 rounded-lg p-6 flex flex-col">
             <div className="mb-4">
               <h2 className="text-lg font-semibold text-white mb-4">Eğitmenlerin</h2>
               <div className="relative">
@@ -230,7 +230,7 @@ export default function ChefSorClient({ enrolledCourses, session, selectedInstru
               </div>
             </div>
 
-            <div className="space-y-3 max-h-[calc(100vh-300px)] overflow-y-auto">
+            <div className="space-y-3 flex-1 overflow-y-auto">
               {filteredInstructors.length === 0 ? (
                 <p className="text-gray-400 text-center py-8">
                   {searchTerm ? "Eğitmen bulunamadı" : "Henüz hiç kurs satın almamışsınız"}
@@ -278,7 +278,7 @@ export default function ChefSorClient({ enrolledCourses, session, selectedInstru
           </div>
 
           {/* Orta Panel - Kurs Seçimi */}
-          <div className="bg-gray-800 rounded-lg p-6">
+          <div className="bg-gray-800 rounded-lg p-6 flex flex-col">
             <h2 className="text-lg font-semibold text-white mb-4">Kurslar</h2>
             
             {!selectedInstructor ? (
@@ -286,7 +286,7 @@ export default function ChefSorClient({ enrolledCourses, session, selectedInstru
                 Önce bir eğitmen seçin
               </p>
             ) : (
-              <div className="space-y-3 max-h-[calc(100vh-300px)] overflow-y-auto">
+              <div className="space-y-3 flex-1 overflow-y-auto">
                 {enrolledCourses
                   .filter(course => course.instructor.id === selectedInstructor.id)
                   .map((course) => (
@@ -330,10 +330,35 @@ export default function ChefSorClient({ enrolledCourses, session, selectedInstru
 
           {/* Sağ Panel - Mesajlaşma */}
           <div className="bg-gray-800 rounded-lg p-6 flex flex-col">
-            <div className="mb-4">
+            {/* Mesaj Header */}
+            <div className="mb-4 pb-4 border-b border-gray-700">
               <h2 className="text-lg font-semibold text-white">Mesajlaşma</h2>
               {selectedCourse && (
-                <p className="text-sm text-gray-400">{selectedCourse.title}</p>
+                <div className="mt-2">
+                  <p className="text-sm text-gray-400">{selectedCourse.title}</p>
+                  {selectedInstructor && (
+                    <div className="flex items-center mt-2 space-x-2">
+                      <div className="w-6 h-6 rounded-full bg-orange-600 flex items-center justify-center">
+                        {selectedInstructor.image ? (
+                          <Image
+                            src={selectedInstructor.image}
+                            alt={selectedInstructor.name || 'Eğitmen'}
+                            width={24}
+                            height={24}
+                            className="rounded-full"
+                          />
+                        ) : (
+                          <span className="text-white text-xs font-semibold">
+                            {selectedInstructor.name?.charAt(0).toUpperCase() || 'E'}
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-sm text-gray-300">
+                        {selectedInstructor.name || 'Eğitmen'}
+                      </span>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
 

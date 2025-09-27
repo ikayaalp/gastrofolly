@@ -30,7 +30,7 @@ export default function MessageButton({ instructorId, instructorName, courseId }
       className="w-full flex items-center justify-center py-3 px-4 rounded-lg border-2 border-gray-600 bg-gray-800 text-gray-400 hover:border-blue-500 hover:text-blue-500 transition-all duration-300"
     >
       <MessageCircle className="h-5 w-5 mr-2" />
-      Mesaj Gönder
+      Mesajlar
     </button>
   )
 }
