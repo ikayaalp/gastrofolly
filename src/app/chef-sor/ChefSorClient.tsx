@@ -11,8 +11,11 @@ import {
   Users,
   Search,
   Clock,
-  Star
+  Star,
+  Home,
+  Bell
 } from "lucide-react"
+import UserDropdown from "@/components/ui/UserDropdown"
 
 interface Instructor {
   id: string
@@ -189,30 +192,79 @@ export default function ChefSorClient({ enrolledCourses, session, selectedInstru
   }
 
   return (
-    <div className="min-h-screen bg-gray-900">
-      {/* Header */}
-      <header className="bg-gray-800 border-b border-gray-700">
+    <div className="min-h-screen bg-black text-white">
+      {/* Desktop Header */}
+      <header className="hidden md:block fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-8">
               <Link href="/home" className="flex items-center space-x-2">
                 <ChefHat className="h-8 w-8 text-orange-500" />
                 <span className="text-2xl font-bold text-white">Chef2.0</span>
+                {session?.user?.role === 'ADMIN' && (
+                  <span className="bg-orange-600 text-white px-2 py-1 rounded text-sm font-medium">Admin</span>
+                )}
               </Link>
-              <div className="h-8 w-px bg-gray-600"></div>
-              <h1 className="text-xl font-semibold text-white">Mesajlar</h1>
+              <nav className="flex space-x-6">
+                <Link href="/home" className="text-gray-300 hover:text-white transition-colors">
+                  Ana Sayfa
+                </Link>
+                <Link href="/my-courses" className="text-gray-300 hover:text-white transition-colors">
+                  Kurslarım
+                </Link>
+                {session?.user?.role === 'ADMIN' && (
+                  <>
+                    <Link href="/admin" className="text-gray-300 hover:text-white transition-colors">
+                      Admin Paneli
+                    </Link>
+                    <Link href="/admin/courses" className="text-gray-300 hover:text-white transition-colors">
+                      Kurs Yönetimi
+                    </Link>
+                  </>
+                )}
+                <Link href="/chef-sosyal" className="text-gray-300 hover:text-white transition-colors">
+                  Chef Sosyal
+                </Link>
+                <Link href="/chef-sor" className="text-white font-semibold">
+                  Mesajlar
+                </Link>
+                <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
+                  İletişim
+                </Link>
+              </nav>
             </div>
-            <Link
-              href="/home"
-              className="text-gray-300 hover:text-white transition-colors"
-            >
-              Ana Sayfaya Dön
-            </Link>
+            
+            <div className="flex items-center space-x-4">
+              <button className="text-gray-300 hover:text-white">
+                <Search className="h-5 w-5" />
+              </button>
+              <button className="text-gray-300 hover:text-white">
+                <Bell className="h-5 w-5" />
+              </button>
+              <UserDropdown />
+            </div>
           </div>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 h-[calc(100vh-80px)] overflow-hidden">
+      {/* Mobile Top Bar */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
+        <div className="flex justify-between items-center py-3 px-4">
+          <Link href="/home" className="flex items-center space-x-2">
+            <ChefHat className="h-6 w-6 text-orange-500" />
+            <span className="text-lg font-bold text-white">Chef2.0</span>
+          </Link>
+          <div className="flex items-center space-x-3">
+            <button className="p-2 text-gray-300 hover:text-white transition-colors">
+              <Search className="h-5 w-5" />
+            </button>
+            <UserDropdown />
+          </div>
+        </div>
+      </div>
+
+      <div className="pt-16 md:pt-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 h-[calc(100vh-80px)] overflow-hidden">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-full">
           {/* Sol Panel - Eğitmen Listesi */}
           <div className="bg-gray-800 rounded-lg p-6 flex flex-col">
@@ -230,7 +282,7 @@ export default function ChefSorClient({ enrolledCourses, session, selectedInstru
               </div>
             </div>
 
-            <div className="space-y-3 flex-1 overflow-y-auto">
+            <div className="space-y-3 flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
               {filteredInstructors.length === 0 ? (
                 <p className="text-gray-400 text-center py-8">
                   {searchTerm ? "Eğitmen bulunamadı" : "Henüz hiç kurs satın almamışsınız"}
@@ -286,7 +338,7 @@ export default function ChefSorClient({ enrolledCourses, session, selectedInstru
                 Önce bir eğitmen seçin
               </p>
             ) : (
-              <div className="space-y-3 flex-1 overflow-y-auto">
+              <div className="space-y-3 flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
                 {enrolledCourses
                   .filter(course => course.instructor.id === selectedInstructor.id)
                   .map((course) => (
@@ -371,7 +423,7 @@ export default function ChefSorClient({ enrolledCourses, session, selectedInstru
             ) : (
               <>
                 {/* Mesaj Listesi */}
-                <div className="flex-1 overflow-y-auto space-y-4 mb-4">
+                <div className="flex-1 overflow-y-auto space-y-4 mb-4 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
                   {messages.length === 0 ? (
                     <p className="text-gray-400 text-center py-8">
                       Henüz mesaj yok. İlk mesajı siz gönderin!
@@ -447,6 +499,33 @@ export default function ChefSorClient({ enrolledCourses, session, selectedInstru
               </>
             )}
           </div>
+        </div>
+        </div>
+      </div>
+
+      {/* Mobile Bottom Navigation */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-t border-gray-800">
+        <div className="flex justify-around items-center py-2">
+          <Link href="/home" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+            <Home className="h-6 w-6" />
+            <span className="text-xs font-medium mt-1">Ana Sayfa</span>
+          </Link>
+          <Link href="/my-courses" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+            <BookOpen className="h-6 w-6" />
+            <span className="text-xs font-medium mt-1">Kurslarım</span>
+          </Link>
+          <Link href="/chef-sosyal" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+            <Users className="h-6 w-6" />
+            <span className="text-xs font-medium mt-1">Sosyal</span>
+          </Link>
+          <Link href="/chef-sor" className="flex flex-col items-center py-2 px-3 text-orange-500">
+            <MessageCircle className="h-6 w-6" />
+            <span className="text-xs font-medium mt-1">Mesajlar</span>
+          </Link>
+          <Link href="/contact" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+            <MessageCircle className="h-6 w-6" />
+            <span className="text-xs font-medium mt-1">İletişim</span>
+          </Link>
         </div>
       </div>
     </div>
