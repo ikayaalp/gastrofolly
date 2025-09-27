@@ -15,7 +15,8 @@ async function getInstructorMessages(userId: string) {
           id: true,
           name: true,
           email: true,
-          image: true
+          image: true,
+          role: true
         }
       },
       course: {
@@ -32,7 +33,8 @@ async function getInstructorMessages(userId: string) {
               id: true,
               name: true,
               email: true,
-              image: true
+              image: true,
+              role: true
             }
           }
         },
