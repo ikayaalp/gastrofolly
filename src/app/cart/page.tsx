@@ -75,6 +75,9 @@ export default function CartPage() {
                   <Link href="/chef-sosyal" className="text-gray-300 hover:text-white transition-colors">
                     Chef Sosyal
                   </Link>
+                  <Link href="/chef-sor" className="text-gray-300 hover:text-white transition-colors">
+                    Mesajlar
+                  </Link>
                   <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
                     İletişim
                   </Link>

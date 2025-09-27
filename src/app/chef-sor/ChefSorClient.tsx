@@ -263,8 +263,8 @@ export default function ChefSorClient({ enrolledCourses, session, selectedInstru
         </div>
       </div>
 
-      <div className="pt-16 md:pt-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 h-[calc(100vh-80px)] overflow-hidden">
+      <div className="pt-16 md:pt-24 pb-20 md:pb-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 h-[calc(100vh-140px)] md:h-[calc(100vh-80px)] overflow-hidden">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-full">
           {/* Sol Panel - Eğitmen Listesi */}
           <div className="bg-gray-800 rounded-lg p-6 flex flex-col">
@@ -423,14 +423,14 @@ export default function ChefSorClient({ enrolledCourses, session, selectedInstru
             ) : (
               <>
                 {/* Mesaj Listesi */}
-                <div className="flex-1 overflow-y-auto space-y-4 mb-4 scrollbar-thin scrollbar-thumb-orange-500 scrollbar-track-gray-800 max-h-[400px]">
+                <div className="flex-1 overflow-y-auto space-y-4 mb-4 scrollbar-thin scrollbar-thumb-orange-500 scrollbar-track-gray-800 max-h-[300px] md:max-h-[400px] pr-2 pl-1">
                   {messages.length === 0 ? (
                     <p className="text-gray-400 text-center py-8">
                       Henüz mesaj yok. İlk mesajı siz gönderin!
                     </p>
                   ) : (
                     messages.map((message) => (
-                      <div key={message.id} className="space-y-2">
+                      <div key={message.id} className="space-y-3 mb-4">
                         {/* Ana Mesaj */}
                         <div
                           className={`flex ${
@@ -438,7 +438,7 @@ export default function ChefSorClient({ enrolledCourses, session, selectedInstru
                           }`}
                         >
                           <div
-                            className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                            className={`max-w-xs lg:max-w-md px-4 py-3 rounded-lg ${
                               message.user.id === session.user.id
                                 ? 'bg-orange-600 text-white'
                                 : 'bg-gray-700 text-gray-300'
@@ -457,10 +457,10 @@ export default function ChefSorClient({ enrolledCourses, session, selectedInstru
                             key={reply.id}
                             className={`flex ${
                               reply.user.id === session.user.id ? 'justify-end' : 'justify-start'
-                            } ml-8`}
+                            } ml-6 mt-2`}
                           >
                             <div
-                              className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                              className={`max-w-xs lg:max-w-md px-4 py-3 rounded-lg ${
                                 reply.user.id === session.user.id
                                   ? 'bg-orange-600 text-white'
                                   : 'bg-gray-700 text-gray-300'
@@ -524,7 +524,7 @@ export default function ChefSorClient({ enrolledCourses, session, selectedInstru
           </Link>
           <Link href="/contact" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
             <MessageCircle className="h-6 w-6" />
-            <span className="text-xs font-medium mt-1">İletişim</span>
+            <span className="text-xs font-medium mt-1">Mesajlar</span>
           </Link>
         </div>
       </div>
