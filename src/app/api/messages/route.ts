@@ -20,18 +20,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Course ID and Instructor ID are required' }, { status: 400 })
     }
 
-    // Mesajları getir (öğrenci ve eğitmen arasındaki)
+    // Mesajları getir (sadece bu öğrenci ve eğitmen arasındaki)
     const messages = await prisma.message.findMany({
       where: {
         courseId: courseId,
-        OR: [
-          { userId: session.user.id }, // Öğrencinin gönderdiği mesajlar
-          { 
-            course: { 
-              instructorId: instructorId 
-            } 
-          } // Eğitmenin kursuna gelen mesajlar
-        ]
+        course: { 
+          instructorId: instructorId 
+        },
+        userId: session.user.id // Sadece bu öğrencinin mesajları
       },
       include: {
         user: {
@@ -50,6 +46,16 @@ export async function GET(request: NextRequest) {
           }
         },
         replies: {
+          where: {
+            OR: [
+              { userId: session.user.id }, // Öğrencinin yanıtları
+              { 
+                user: {
+                  id: instructorId // Eğitmenin yanıtları
+                }
+              }
+            ]
+          },
           include: {
             user: {
               select: {
