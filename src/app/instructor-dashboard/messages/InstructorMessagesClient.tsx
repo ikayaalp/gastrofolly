@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { 
   MessageSquare, 
   Reply, 
@@ -49,21 +49,6 @@ interface Message {
   replies: Reply[]
 }
 
-interface DirectMessage {
-  id: string
-  content: string
-  createdAt: Date
-  isRead: boolean
-  sender: User
-  receiver: User
-}
-
-interface Conversation {
-  otherUser: User
-  lastMessage: DirectMessage
-  unreadCount: number
-}
-
 interface Session {
   user: {
     id: string
@@ -84,12 +69,6 @@ export default function InstructorMessagesClient({ messages, session }: Props) {
   const [replyContent, setReplyContent] = useState("")
   const [searchTerm, setSearchTerm] = useState("")
   const [filterCourse, setFilterCourse] = useState("all")
-  const [activeTab, setActiveTab] = useState<'dm'>('dm')
-  const [conversations, setConversations] = useState<Conversation[]>([])
-  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null)
-  const [dmMessages, setDmMessages] = useState<DirectMessage[]>([])
-  const [newMessage, setNewMessage] = useState("")
-  const [loading, setLoading] = useState(true)
 
   const filteredMessages = messages.filter(message => {
     const matchesSearch = message.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -107,77 +86,6 @@ export default function InstructorMessagesClient({ messages, session }: Props) {
     }
     return acc
   }, [] as Course[])
-
-  // DM fonksiyonları
-  useEffect(() => {
-    if (activeTab === 'dm') {
-      fetchConversations()
-    }
-  }, [activeTab])
-
-  useEffect(() => {
-    if (selectedConversation) {
-      fetchDmMessages(selectedConversation.otherUser.id)
-    }
-  }, [selectedConversation])
-
-  const fetchConversations = async () => {
-    try {
-      const response = await fetch('/api/direct-messages/conversations')
-      if (response.ok) {
-        const data = await response.json()
-        setConversations(data.conversations)
-      }
-    } catch (error) {
-      console.error('Error fetching conversations:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const fetchDmMessages = async (otherUserId: string) => {
-    try {
-      const response = await fetch(`/api/direct-messages?otherUserId=${otherUserId}`)
-      if (response.ok) {
-        const data = await response.json()
-        setDmMessages(data.messages)
-      }
-    } catch (error) {
-      console.error('Error fetching DM messages:', error)
-    }
-  }
-
-  const sendDmMessage = async () => {
-    if (!newMessage.trim() || !selectedConversation) return
-
-    try {
-      const response = await fetch('/api/direct-messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          content: newMessage,
-          receiverId: selectedConversation.otherUser.id
-        }),
-      })
-
-      if (response.ok) {
-        setNewMessage("")
-        fetchDmMessages(selectedConversation.otherUser.id)
-        fetchConversations()
-      }
-    } catch (error) {
-      console.error('Error sending DM message:', error)
-    }
-  }
-
-  const handleDmKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      sendDmMessage()
-    }
-  }
 
   const formatTime = (date: Date) => {
     const now = new Date()
@@ -249,55 +157,70 @@ export default function InstructorMessagesClient({ messages, session }: Props) {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 h-[calc(100vh-200px)]">
-          {/* Konuşma Listesi */}
-          <div className="lg:col-span-1">
-            <div className="bg-gray-800 rounded-lg border border-gray-700 h-full flex flex-col">
+        {/* Search and Filter */}
+        <div className="mb-6">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Mesajlarda ara..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full bg-gray-800 text-white pl-10 pr-4 py-2 rounded-lg border border-gray-700 focus:border-orange-500 focus:outline-none"
+              />
+            </div>
+            <div className="relative">
+              <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <select
+                value={filterCourse}
+                onChange={(e) => setFilterCourse(e.target.value)}
+                className="bg-gray-800 text-white pl-10 pr-8 py-2 rounded-lg border border-gray-700 focus:border-orange-500 focus:outline-none appearance-none min-w-[200px]"
+              >
+                <option value="all">Tüm Kurslar</option>
+                {uniqueCourses.map(course => (
+                  <option key={course.id} value={course.id}>
+                    {course.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Messages List */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Messages */}
+          <div className="lg:col-span-2">
+            <div className="bg-gray-800 rounded-lg border border-gray-700">
               <div className="p-4 border-b border-gray-700">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Konuşmalarda ara..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full bg-gray-700 text-white pl-10 pr-4 py-2 rounded-lg border border-gray-600 focus:border-orange-500 focus:outline-none"
-                  />
-                </div>
+                <h2 className="text-lg font-semibold text-white">Öğrenci Mesajları</h2>
+                <p className="text-gray-400 text-sm">{filteredMessages.length} mesaj</p>
               </div>
               
-              <div className="flex-1 overflow-y-auto">
-                {loading ? (
-                  <div className="p-4 text-center text-gray-400">
-                    <Clock className="h-6 w-6 mx-auto mb-2 animate-spin" />
-                    Yükleniyor...
-                  </div>
-                ) : conversations.length === 0 ? (
-                  <div className="p-4 text-center text-gray-400">
-                    <MessageSquare className="h-8 w-8 mx-auto mb-2" />
-                    <p>Henüz konuşma yok</p>
+              <div className="max-h-[600px] overflow-y-auto">
+                {filteredMessages.length === 0 ? (
+                  <div className="p-8 text-center text-gray-400">
+                    <MessageSquare className="h-12 w-12 mx-auto mb-4" />
+                    <p>Henüz mesaj yok</p>
                     <p className="text-sm">Öğrencilerden mesaj bekleniyor</p>
                   </div>
                 ) : (
-                  conversations
-                    .filter(conv => 
-                      conv.otherUser.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                      conv.lastMessage.content.toLowerCase().includes(searchTerm.toLowerCase())
-                    )
-                    .map((conversation) => (
+                  <div className="divide-y divide-gray-700">
+                    {filteredMessages.map((message) => (
                       <div
-                        key={conversation.otherUser.id}
-                        onClick={() => setSelectedConversation(conversation)}
-                        className={`p-4 border-b border-gray-700 cursor-pointer hover:bg-gray-700 transition-colors ${
-                          selectedConversation?.otherUser.id === conversation.otherUser.id ? 'bg-gray-700' : ''
+                        key={message.id}
+                        onClick={() => setSelectedMessage(message)}
+                        className={`p-4 cursor-pointer hover:bg-gray-700 transition-colors ${
+                          selectedMessage?.id === message.id ? 'bg-gray-700' : ''
                         }`}
                       >
                         <div className="flex items-start space-x-3">
-                          <div className="w-10 h-10 rounded-full bg-orange-600 flex items-center justify-center relative">
-                            {conversation.otherUser.image ? (
+                          <div className="w-10 h-10 rounded-full bg-orange-600 flex items-center justify-center">
+                            {message.user.image ? (
                               <Image
-                                src={conversation.otherUser.image}
-                                alt={conversation.otherUser.name || 'User'}
+                                src={message.user.image}
+                                alt={message.user.name || 'User'}
                                 width={40}
                                 height={40}
                                 className="rounded-full"
@@ -305,45 +228,51 @@ export default function InstructorMessagesClient({ messages, session }: Props) {
                             ) : (
                               <User className="h-5 w-5 text-white" />
                             )}
-                            {conversation.unreadCount > 0 && (
-                              <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                                {conversation.unreadCount}
-                              </div>
-                            )}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex justify-between items-start">
                               <h3 className="text-white font-medium truncate">
-                                {conversation.otherUser.name}
+                                {message.user.name}
                               </h3>
                               <span className="text-gray-400 text-xs">
-                                {formatTime(conversation.lastMessage.createdAt)}
+                                {formatTime(message.createdAt)}
                               </span>
                             </div>
                             <p className="text-gray-300 text-sm mt-1 line-clamp-2">
-                              {conversation.lastMessage.content}
+                              {message.content}
                             </p>
+                            <div className="flex items-center mt-2 space-x-2">
+                              <span className="bg-orange-500/20 text-orange-500 px-2 py-1 rounded text-xs">
+                                {message.course.title}
+                              </span>
+                              {message.replies.length > 0 && (
+                                <span className="bg-blue-500/20 text-blue-500 px-2 py-1 rounded text-xs">
+                                  {message.replies.length} yanıt
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
-                    ))
+                    ))}
+                  </div>
                 )}
               </div>
             </div>
           </div>
 
-          {/* Mesaj Alanı */}
-          <div className="lg:col-span-3">
-            {selectedConversation ? (
+          {/* Message Detail */}
+          <div className="lg:col-span-1">
+            {selectedMessage ? (
               <div className="bg-gray-800 rounded-lg border border-gray-700 h-full flex flex-col">
-                {/* Mesaj Header */}
+                {/* Message Header */}
                 <div className="p-4 border-b border-gray-700">
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 rounded-full bg-orange-600 flex items-center justify-center">
-                      {selectedConversation.otherUser.image ? (
+                      {selectedMessage.user.image ? (
                         <Image
-                          src={selectedConversation.otherUser.image}
-                          alt={selectedConversation.otherUser.name || 'User'}
+                          src={selectedMessage.user.image}
+                          alt={selectedMessage.user.name || 'User'}
                           width={40}
                           height={40}
                           className="rounded-full"
@@ -354,65 +283,79 @@ export default function InstructorMessagesClient({ messages, session }: Props) {
                     </div>
                     <div>
                       <h3 className="text-white font-semibold">
-                        {selectedConversation.otherUser.name}
+                        {selectedMessage.user.name}
                       </h3>
                       <p className="text-gray-400 text-sm">
-                        {selectedConversation.otherUser.role === 'STUDENT' ? 'Öğrenci' : 'Eğitmen'}
+                        {selectedMessage.course.title}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                {/* Mesajlar */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                  {dmMessages.length === 0 ? (
-                    <div className="text-center text-gray-400 py-8">
-                      <MessageSquare className="h-12 w-12 mx-auto mb-4" />
-                      <p>Henüz mesaj yok</p>
-                      <p className="text-sm">İlk mesajınızı gönderin</p>
-                    </div>
-                  ) : (
-                    dmMessages.map((message) => (
-                      <div
-                        key={message.id}
-                        className={`flex ${message.sender.id === session.user.id ? 'justify-end' : 'justify-start'}`}
-                      >
-                        <div
-                          className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                            message.sender.id === session.user.id
-                              ? 'bg-orange-600 text-white'
-                              : 'bg-gray-700 text-gray-300'
-                          }`}
-                        >
-                          <p className="text-sm">{message.content}</p>
-                          <p className={`text-xs mt-1 ${
-                            message.sender.id === session.user.id ? 'text-orange-200' : 'text-gray-400'
-                          }`}>
-                            {formatTime(message.createdAt)}
+                {/* Message Content */}
+                <div className="flex-1 overflow-y-auto p-4">
+                  <div className="mb-4">
+                    <p className="text-gray-300 text-sm leading-relaxed">
+                      {selectedMessage.content}
+                    </p>
+                    <p className="text-gray-500 text-xs mt-2">
+                      {formatTime(selectedMessage.createdAt)}
+                    </p>
+                  </div>
+
+                  {/* Replies */}
+                  {selectedMessage.replies.length > 0 && (
+                    <div className="space-y-3">
+                      <h4 className="text-white font-medium text-sm">Yanıtlar</h4>
+                      {selectedMessage.replies.map((reply) => (
+                        <div key={reply.id} className="bg-gray-700 rounded-lg p-3">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <div className="w-6 h-6 rounded-full bg-orange-600 flex items-center justify-center">
+                              {reply.user.image ? (
+                                <Image
+                                  src={reply.user.image}
+                                  alt={reply.user.name || 'User'}
+                                  width={24}
+                                  height={24}
+                                  className="rounded-full"
+                                />
+                              ) : (
+                                <User className="h-3 w-3 text-white" />
+                              )}
+                            </div>
+                            <span className="text-white text-sm font-medium">
+                              {reply.user.name}
+                            </span>
+                            <span className="text-gray-400 text-xs">
+                              {formatTime(reply.createdAt)}
+                            </span>
+                          </div>
+                          <p className="text-gray-300 text-sm">
+                            {reply.content}
                           </p>
                         </div>
-                      </div>
-                    ))
+                      ))}
+                    </div>
                   )}
                 </div>
 
-                {/* Mesaj Gönderme */}
+                {/* Reply Form */}
                 <div className="p-4 border-t border-gray-700">
-                  <div className="flex space-x-2">
+                  <div className="space-y-3">
                     <textarea
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      onKeyPress={handleDmKeyPress}
-                      placeholder="Mesajınızı yazın..."
-                      className="flex-1 bg-gray-700 text-white p-3 rounded-lg border border-gray-600 focus:border-orange-500 focus:outline-none resize-none"
-                      rows={2}
+                      value={replyContent}
+                      onChange={(e) => setReplyContent(e.target.value)}
+                      placeholder="Yanıtınızı yazın..."
+                      className="w-full bg-gray-700 text-white p-3 rounded-lg border border-gray-600 focus:border-orange-500 focus:outline-none resize-none"
+                      rows={3}
                     />
                     <button
-                      onClick={sendDmMessage}
-                      disabled={!newMessage.trim()}
-                      className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                      onClick={() => handleReply(selectedMessage.id)}
+                      disabled={!replyContent.trim()}
+                      className="w-full bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
                     >
-                      <Send className="h-4 w-4" />
+                      <Reply className="h-4 w-4" />
+                      <span>Yanıtla</span>
                     </button>
                   </div>
                 </div>
@@ -421,8 +364,8 @@ export default function InstructorMessagesClient({ messages, session }: Props) {
               <div className="bg-gray-800 rounded-lg border border-gray-700 h-full flex items-center justify-center">
                 <div className="text-center text-gray-400">
                   <MessageSquare className="h-16 w-16 mx-auto mb-4" />
-                  <h3 className="text-white font-semibold mb-2">Konuşma Seçin</h3>
-                  <p>Mesajlaşmak istediğiniz öğrenciyi seçin</p>
+                  <h3 className="text-white font-semibold mb-2">Mesaj Seçin</h3>
+                  <p>Yanıtlamak istediğiniz mesajı seçin</p>
                 </div>
               </div>
             )}
