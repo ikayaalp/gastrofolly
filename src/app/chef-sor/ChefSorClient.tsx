@@ -423,7 +423,7 @@ export default function ChefSorClient({ enrolledCourses, session, selectedInstru
             ) : (
               <>
                 {/* Mesaj Listesi */}
-                <div className="flex-1 overflow-y-auto space-y-4 mb-4 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+                <div className="flex-1 overflow-y-auto space-y-4 mb-4 scrollbar-thin scrollbar-thumb-orange-500 scrollbar-track-gray-800 max-h-[400px]">
                   {messages.length === 0 ? (
                     <p className="text-gray-400 text-center py-8">
                       Henüz mesaj yok. İlk mesajı siz gönderin!
