@@ -263,11 +263,11 @@ export default function ChefSorClient({ enrolledCourses, session, selectedInstru
         </div>
       </div>
 
-      <div className="pt-16 md:pt-24 pb-20 md:pb-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 h-[calc(100vh-140px)] md:h-[calc(100vh-80px)] overflow-hidden">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-full">
+      <div className="pt-16 md:pt-24 pb-20 md:pb-8 min-h-screen overflow-y-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Sol Panel - Eğitmen Listesi */}
-          <div className="bg-gray-800 rounded-lg p-6 flex flex-col">
+          <div className="bg-gray-800 rounded-lg p-6 flex flex-col h-[400px] md:h-[600px]">
             <div className="mb-4">
               <h2 className="text-lg font-semibold text-white mb-4">Eğitmenlerin</h2>
               <div className="relative">
@@ -330,7 +330,7 @@ export default function ChefSorClient({ enrolledCourses, session, selectedInstru
           </div>
 
           {/* Orta Panel - Kurs Seçimi */}
-          <div className="bg-gray-800 rounded-lg p-6 flex flex-col">
+          <div className="bg-gray-800 rounded-lg p-6 flex flex-col h-[400px] md:h-[600px]">
             <h2 className="text-lg font-semibold text-white mb-4">Kurslar</h2>
             
             {!selectedInstructor ? (
@@ -381,7 +381,7 @@ export default function ChefSorClient({ enrolledCourses, session, selectedInstru
           </div>
 
           {/* Sağ Panel - Mesajlaşma */}
-          <div className="bg-gray-800 rounded-lg p-6 flex flex-col">
+          <div className="bg-gray-800 rounded-lg p-6 flex flex-col h-[400px] md:h-[600px]">
             {/* Mesaj Header */}
             <div className="mb-4 pb-4 border-b border-gray-700">
               <h2 className="text-lg font-semibold text-white">Mesajlaşma</h2>
@@ -423,7 +423,7 @@ export default function ChefSorClient({ enrolledCourses, session, selectedInstru
             ) : (
               <>
                 {/* Mesaj Listesi */}
-                <div className="flex-1 overflow-y-auto space-y-4 mb-4 scrollbar-thin scrollbar-thumb-orange-500 scrollbar-track-gray-800 max-h-[300px] md:max-h-[400px] pr-2 pl-1">
+                <div className="flex-1 overflow-y-auto space-y-4 mb-4 scrollbar-thin scrollbar-thumb-orange-500 scrollbar-track-gray-800 pr-2 pl-1">
                   {messages.length === 0 ? (
                     <p className="text-gray-400 text-center py-8">
                       Henüz mesaj yok. İlk mesajı siz gönderin!
