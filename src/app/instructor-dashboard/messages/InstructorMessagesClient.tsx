@@ -13,7 +13,8 @@ import {
   MoreVertical,
   Users,
   Clock,
-  ChevronLeft
+  ChevronLeft,
+  MessageCircle
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -77,6 +78,7 @@ export default function InstructorMessagesClient({ messages, session }: Props) {
   const [replyContent, setReplyContent] = useState("")
   const [searchTerm, setSearchTerm] = useState("")
   const [filterCourse, setFilterCourse] = useState("all")
+  const [activeTab, setActiveTab] = useState<'history' | 'new'>('history')
 
   // Mesajları kişi bazında grupla
   const conversations = useMemo(() => {
@@ -184,242 +186,263 @@ export default function InstructorMessagesClient({ messages, session }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900">
-      {/* Header */}
-      <header className="bg-gray-800 border-b border-gray-700">
+    <div className="min-h-screen bg-black text-white">
+      {/* Desktop Header */}
+      <header className="hidden md:block fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-8">
               <Link href="/instructor-dashboard" className="flex items-center space-x-2">
                 <ChefHat className="h-8 w-8 text-orange-500" />
                 <span className="text-2xl font-bold text-white">Chef2.0</span>
+                <span className="bg-orange-600 text-white px-2 py-1 rounded text-sm font-medium">Eğitmen</span>
               </Link>
-              <div className="h-6 w-px bg-gray-600"></div>
-              <div>
-                <h1 className="text-2xl font-bold text-white">Mesajlar</h1>
-                <p className="text-gray-400">Öğrencilerle iletişim kurun</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Link
-                href="/chef-sor"
-                className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors flex items-center space-x-2"
-              >
-                <Users className="h-4 w-4" />
-                <span>Chef&apos;e Sor</span>
-              </Link>
+              <nav className="flex space-x-6">
+                <Link href="/instructor-dashboard" className="text-white font-semibold">
+                  Dashboard
+                </Link>
+                <Link href="/instructor-dashboard/courses" className="text-gray-300 hover:text-white transition-colors">
+                  Kurslarım
+                </Link>
+                <Link href="/instructor-dashboard/messages" className="text-gray-300 hover:text-white transition-colors">
+                  Mesajlar
+                </Link>
+                <Link href="/chef-sor" className="text-gray-300 hover:text-white transition-colors">
+                  Chef&apos;e Sor
+                </Link>
+              </nav>
             </div>
           </div>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 h-[calc(100vh-200px)]">
-          {/* Konuşma Listesi */}
-          <div className="lg:col-span-1">
-            <div className="bg-gray-800 rounded-lg border border-gray-700 h-full flex flex-col">
-              {/* Search and Filter */}
-              <div className="p-4 border-b border-gray-700">
-                <div className="space-y-3">
-                  <div className="relative">
+      {/* Mobile Top Bar */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
+        <div className="flex justify-between items-center py-3 px-4">
+          <Link href="/instructor-dashboard" className="flex items-center space-x-2">
+            <ChefHat className="h-6 w-6 text-orange-500" />
+            <span className="text-lg font-bold text-white">Chef2.0</span>
+          </Link>
+        </div>
+      </div>
+
+      <div className="pt-16 md:pt-24 pb-20 md:pb-8 min-h-screen overflow-y-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Sol Panel - Tab Navigation */}
+            <div className="bg-gray-800 rounded-lg p-6 flex flex-col h-[400px] md:h-[600px]">
+              {/* Tab Navigation */}
+              <div className="flex space-x-1 mb-6 bg-gray-700 p-1 rounded-lg">
+                <button
+                  onClick={() => setActiveTab('history')}
+                  className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                    activeTab === 'history'
+                      ? 'bg-orange-600 text-white'
+                      : 'text-gray-300 hover:text-white'
+                  }`}
+                >
+                  Sohbet Geçmişi
+                </button>
+              </div>
+
+              {/* Tab Content */}
+              {activeTab === 'history' && (
+                <>
+                  <h2 className="text-lg font-semibold text-white mb-4">Öğrenci Mesajları</h2>
+                  <div className="relative mb-4">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <input
                       type="text"
-                      placeholder="Konuşmalarda ara..."
+                      placeholder="Öğrenci ara..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full bg-gray-700 text-white pl-10 pr-4 py-2 rounded-lg border border-gray-600 focus:border-orange-500 focus:outline-none"
+                      className="w-full pl-10 pr-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-orange-500"
                     />
                   </div>
-                  <div className="relative">
-                    <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <select
-                      value={filterCourse}
-                      onChange={(e) => setFilterCourse(e.target.value)}
-                      className="w-full bg-gray-700 text-white pl-10 pr-8 py-2 rounded-lg border border-gray-600 focus:border-orange-500 focus:outline-none appearance-none"
-                    >
-                      <option value="all">Tüm Kurslar</option>
-                      {uniqueCourses.map(course => (
-                        <option key={course.id} value={course.id}>
-                          {course.title}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Conversations List */}
-              <div className="flex-1 overflow-y-auto">
-                {filteredConversations.length === 0 ? (
-                  <div className="p-4 text-center text-gray-400">
-                    <MessageSquare className="h-8 w-8 mx-auto mb-2" />
-                    <p>Henüz konuşma yok</p>
-                    <p className="text-sm">Öğrencilerden mesaj bekleniyor</p>
-                  </div>
-                ) : (
-                  <div className="divide-y divide-gray-700">
-                    {filteredConversations.map((conversation) => (
-                      <div
-                        key={`${conversation.user.id}-${conversation.course.id}`}
-                        onClick={() => setSelectedConversation(conversation)}
-                        className={`p-4 cursor-pointer hover:bg-gray-700 transition-colors ${
-                          selectedConversation?.user.id === conversation.user.id && 
-                          selectedConversation?.course.id === conversation.course.id 
-                            ? 'bg-gray-700' : ''
-                        }`}
-                      >
-                        <div className="flex items-start space-x-3">
-                          <div className="w-10 h-10 rounded-full bg-orange-600 flex items-center justify-center relative">
-                            {conversation.user.image ? (
-                              <Image
-                                src={conversation.user.image}
-                                alt={conversation.user.name || 'User'}
-                                width={40}
-                                height={40}
-                                className="rounded-full"
-                              />
-                            ) : (
-                              <User className="h-5 w-5 text-white" />
-                            )}
-                            {conversation.unreadCount > 0 && (
-                              <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                                {conversation.unreadCount}
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex justify-between items-start">
-                              <h3 className="text-white font-medium truncate">
-                                {conversation.user.name}
-                              </h3>
-                              <span className="text-gray-400 text-xs">
-                                {formatTime(conversation.lastMessage.createdAt)}
-                              </span>
+                  <div className="space-y-3 flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+                    {filteredConversations.length === 0 ? (
+                      <p className="text-gray-400 text-center py-8">
+                        Henüz mesaj yok
+                      </p>
+                    ) : (
+                      filteredConversations.map((conversation) => (
+                        <div
+                          key={`${conversation.user.id}-${conversation.course.id}`}
+                          onClick={() => setSelectedConversation(conversation)}
+                          className={`p-4 rounded-lg cursor-pointer transition-colors ${
+                            selectedConversation?.user.id === conversation.user.id && 
+                            selectedConversation?.course.id === conversation.course.id
+                              ? 'bg-orange-600 text-white'
+                              : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
+                          }`}
+                        >
+                          <div className="flex items-center space-x-3">
+                            <div className="w-12 h-12 rounded-full bg-orange-600 flex items-center justify-center relative">
+                              {conversation.user.image ? (
+                                <Image
+                                  src={conversation.user.image}
+                                  alt={conversation.user.name || 'Öğrenci'}
+                                  width={48}
+                                  height={48}
+                                  className="rounded-full"
+                                />
+                              ) : (
+                                <span className="text-white font-semibold">
+                                  {conversation.user.name?.charAt(0).toUpperCase() || 'Ö'}
+                                </span>
+                              )}
+                              {conversation.unreadCount > 0 && (
+                                <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                                  {conversation.unreadCount}
+                                </div>
+                              )}
                             </div>
-                            <p className="text-gray-300 text-sm mt-1 line-clamp-2">
-                              {conversation.lastMessage.content}
-                            </p>
-                            <div className="flex items-center mt-2 space-x-2">
-                              <span className="bg-orange-500/20 text-orange-500 px-2 py-1 rounded text-xs">
-                                {conversation.course.title}
-                              </span>
-                              <span className="bg-blue-500/20 text-blue-500 px-2 py-1 rounded text-xs">
-                                {conversation.messages.length} mesaj
-                              </span>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium truncate">
+                                {conversation.user.name || 'Öğrenci'}
+                              </p>
+                              <p className="text-sm opacity-75 truncate">
+                                {conversation.lastMessage.content}
+                              </p>
+                              <p className="text-xs opacity-50 mt-1">
+                                {formatTime(conversation.lastMessage.createdAt)}
+                              </p>
+                              <div className="flex items-center mt-1 space-x-2">
+                                <span className="bg-orange-500/20 text-orange-500 px-2 py-1 rounded text-xs">
+                                  {conversation.course.title}
+                                </span>
+                              </div>
                             </div>
                           </div>
                         </div>
+                      ))
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Sağ Panel - Mesajlaşma */}
+            <div className="bg-gray-800 rounded-lg p-6 flex flex-col h-[400px] md:h-[600px]">
+              {/* Mesaj Header */}
+              <div className="mb-4 pb-4 border-b border-gray-700">
+                <h2 className="text-lg font-semibold text-white">Mesajlaşma</h2>
+                {selectedConversation && (
+                  <div className="mt-2">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-6 h-6 rounded-full bg-orange-600 flex items-center justify-center">
+                        {selectedConversation.user.image ? (
+                          <Image
+                            src={selectedConversation.user.image}
+                            alt={selectedConversation.user.name || 'Öğrenci'}
+                            width={24}
+                            height={24}
+                            className="rounded-full"
+                          />
+                        ) : (
+                          <span className="text-white text-xs font-semibold">
+                            {selectedConversation.user.name?.charAt(0).toUpperCase() || 'Ö'}
+                          </span>
+                        )}
                       </div>
-                    ))}
+                      <span className="text-sm text-gray-300">
+                        {selectedConversation.user.name || 'Öğrenci'}
+                      </span>
+                      <span className="text-xs text-gray-400">
+                        - {selectedConversation.course.title}
+                      </span>
+                    </div>
                   </div>
                 )}
               </div>
-            </div>
-          </div>
 
-          {/* Sohbet Alanı */}
-          <div className="lg:col-span-3">
-            {selectedConversation ? (
-              <div className="bg-gray-800 rounded-lg border border-gray-700 h-full flex flex-col">
-                {/* Sohbet Header */}
-                <div className="p-4 border-b border-gray-700">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 rounded-full bg-orange-600 flex items-center justify-center">
-                      {selectedConversation.user.image ? (
-                        <Image
-                          src={selectedConversation.user.image}
-                          alt={selectedConversation.user.name || 'User'}
-                          width={40}
-                          height={40}
-                          className="rounded-full"
-                        />
-                      ) : (
-                        <User className="h-5 w-5 text-white" />
-                      )}
-                    </div>
-                    <div>
-                      <h3 className="text-white font-semibold">
-                        {selectedConversation.user.name}
-                      </h3>
-                      <p className="text-gray-400 text-sm">
-                        {selectedConversation.course.title}
-                      </p>
-                    </div>
-                  </div>
+              {!selectedConversation ? (
+                <div className="flex-1 flex items-center justify-center">
+                  <p className="text-gray-400 text-center">
+                    Mesajlaşmak için bir öğrenci seçin
+                  </p>
                 </div>
-
-                {/* Mesajlar */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                  {selectedMessages.length === 0 ? (
-                    <div className="text-center text-gray-400 py-8">
-                      <MessageSquare className="h-12 w-12 mx-auto mb-4" />
-                      <p>Henüz mesaj yok</p>
-                    </div>
-                  ) : (
-                    selectedMessages.map((message) => (
-                      <div key={message.id} className="space-y-4">
-                        {/* Öğrenci Mesajı */}
-                        <div className="flex justify-start">
-                          <div className="max-w-xs lg:max-w-md">
-                            <div className="bg-gray-700 rounded-lg p-3">
-                              <p className="text-gray-300 text-sm">{message.content}</p>
-                              <p className="text-gray-500 text-xs mt-1">
+              ) : (
+                <>
+                  {/* Mesaj Listesi */}
+                  <div className="flex-1 overflow-y-auto space-y-4 mb-4 scrollbar-thin scrollbar-thumb-orange-500 scrollbar-track-gray-800 pr-2 pl-1">
+                    {selectedMessages.length === 0 ? (
+                      <p className="text-gray-400 text-center py-8">
+                        Henüz mesaj yok
+                      </p>
+                    ) : (
+                      selectedMessages.map((message) => (
+                        <div key={message.id} className="space-y-3 mb-4">
+                          {/* Öğrenci Mesajı */}
+                          <div className="flex justify-start">
+                            <div className="max-w-xs lg:max-w-md px-4 py-3 rounded-lg bg-gray-700 text-gray-300">
+                              <p className="text-sm">{message.content}</p>
+                              <p className="text-xs opacity-75 mt-1">
                                 {formatTime(message.createdAt)}
                               </p>
                             </div>
                           </div>
-                        </div>
 
-                        {/* Eğitmen Yanıtları */}
-                        {message.replies.map((reply) => (
-                          <div key={reply.id} className="flex justify-end">
-                            <div className="max-w-xs lg:max-w-md">
-                              <div className="bg-orange-600 rounded-lg p-3">
-                                <p className="text-white text-sm">{reply.content}</p>
-                                <p className="text-orange-200 text-xs mt-1">
+                          {/* Eğitmen Yanıtları */}
+                          {message.replies.map((reply) => (
+                            <div key={reply.id} className="flex justify-end">
+                              <div className="max-w-xs lg:max-w-md px-4 py-3 rounded-lg bg-orange-600 text-white">
+                                <p className="text-sm">{reply.content}</p>
+                                <p className="text-xs opacity-75 mt-1">
                                   {formatTime(reply.createdAt)}
                                 </p>
                               </div>
                             </div>
-                          </div>
-                        ))}
-                      </div>
-                    ))
-                  )}
-                </div>
+                          ))}
+                        </div>
+                      ))
+                    )}
+                  </div>
 
-                {/* Yanıt Formu */}
-                <div className="p-4 border-t border-gray-700">
-                  <div className="space-y-3">
-                    <textarea
+                  {/* Yanıt Formu */}
+                  <div className="flex space-x-2">
+                    <input
+                      type="text"
                       value={replyContent}
                       onChange={(e) => setReplyContent(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && selectedConversation && handleReply(selectedConversation.lastMessage.id)}
                       placeholder="Yanıtınızı yazın..."
-                      className="w-full bg-gray-700 text-white p-3 rounded-lg border border-gray-600 focus:border-orange-500 focus:outline-none resize-none"
-                      rows={3}
+                      className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-orange-500"
                     />
                     <button
                       onClick={() => selectedConversation && handleReply(selectedConversation.lastMessage.id)}
                       disabled={!replyContent.trim()}
-                      className="w-full bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                      className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
                     >
-                      <Reply className="h-4 w-4" />
-                      <span>Yanıtla</span>
+                      <Send className="h-4 w-4" />
                     </button>
                   </div>
-                </div>
-              </div>
-            ) : (
-              <div className="bg-gray-800 rounded-lg border border-gray-700 h-full flex items-center justify-center">
-                <div className="text-center text-gray-400">
-                  <MessageSquare className="h-16 w-16 mx-auto mb-4" />
-                  <h3 className="text-white font-semibold mb-2">Konuşma Seçin</h3>
-                  <p>Mesajlaşmak istediğiniz öğrenciyi seçin</p>
-                </div>
-              </div>
-            )}
+                </>
+              )}
+            </div>
           </div>
+        </div>
+      </div>
+
+      {/* Mobile Bottom Navigation */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-t border-gray-800">
+        <div className="flex justify-around items-center py-2">
+          <Link href="/instructor-dashboard" className="flex flex-col items-center py-2 px-3 text-orange-500">
+            <ChefHat className="h-6 w-6" />
+            <span className="text-xs font-medium mt-1">Dashboard</span>
+          </Link>
+          <Link href="/instructor-dashboard/courses" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+            <BookOpen className="h-6 w-6" />
+            <span className="text-xs font-medium mt-1">Kurslarım</span>
+          </Link>
+          <Link href="/instructor-dashboard/messages" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+            <MessageCircle className="h-6 w-6" />
+            <span className="text-xs font-medium mt-1">Mesajlar</span>
+          </Link>
+          <Link href="/chef-sor" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+            <MessageCircle className="h-6 w-6" />
+            <span className="text-xs font-medium mt-1">Chef&apos;e Sor</span>
+          </Link>
         </div>
       </div>
     </div>
