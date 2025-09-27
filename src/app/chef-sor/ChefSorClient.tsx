@@ -79,9 +79,10 @@ interface Session {
 interface ChefSorClientProps {
   enrolledCourses: Course[]
   session: Session
+  selectedInstructorId?: string
 }
 
-export default function ChefSorClient({ enrolledCourses, session }: ChefSorClientProps) {
+export default function ChefSorClient({ enrolledCourses, session, selectedInstructorId }: ChefSorClientProps) {
   const [selectedInstructor, setSelectedInstructor] = useState<Instructor | null>(null)
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
@@ -143,6 +144,22 @@ export default function ChefSorClient({ enrolledCourses, session }: ChefSorClien
       setIsLoading(false)
     }
   }
+
+  // URL'den gelen instructorId ile eğitmeni otomatik seç
+  useEffect(() => {
+    if (selectedInstructorId && uniqueInstructors.length > 0) {
+      const instructor = uniqueInstructors.find(i => i.id === selectedInstructorId)
+      if (instructor) {
+        setSelectedInstructor(instructor)
+        // İlk kursu otomatik seç
+        const firstCourse = enrolledCourses.find(c => c.instructor.id === instructor.id)
+        if (firstCourse) {
+          setSelectedCourse(firstCourse)
+          loadMessages(firstCourse.id)
+        }
+      }
+    }
+  }, [selectedInstructorId, uniqueInstructors, enrolledCourses])
 
   // Eğitmen seçildiğinde
   const handleInstructorSelect = (instructor: Instructor) => {

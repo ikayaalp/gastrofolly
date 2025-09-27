@@ -39,7 +39,13 @@ async function getUserEnrolledCourses(userId: string) {
   return enrollments.map(enrollment => enrollment.course)
 }
 
-export default async function ChefSorPage() {
+interface ChefSorPageProps {
+  searchParams: {
+    instructorId?: string
+  }
+}
+
+export default async function ChefSorPage({ searchParams }: ChefSorPageProps) {
   const session = await getServerSession(authOptions)
 
   if (!session?.user?.id) {
@@ -57,6 +63,7 @@ export default async function ChefSorPage() {
     <ChefSorClient 
       enrolledCourses={enrolledCourses}
       session={session}
+      selectedInstructorId={searchParams.instructorId}
     />
   )
 }

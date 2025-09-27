@@ -20,8 +20,8 @@ export default function MessageButton({ instructorId, instructorName, courseId }
       return
     }
     
-    // Mesajlar sayfasına yönlendir ve eğitmen ID'sini query parameter olarak gönder
-    router.push(`/messages?instructorId=${instructorId}`)
+    // Chef'e Sor sayfasına yönlendir ve eğitmen ID'sini query parameter olarak gönder
+    router.push(`/chef-sor?instructorId=${instructorId}`)
   }
 
   return (
