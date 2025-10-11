@@ -49,6 +49,7 @@ export async function POST(request: NextRequest) {
       data: {
         name: pendingUser.name,
         email: pendingUser.email,
+        password: pendingUser.password, // Hashlenmiş şifre
         emailVerified: new Date(), // Email doğrulandı
       }
     })

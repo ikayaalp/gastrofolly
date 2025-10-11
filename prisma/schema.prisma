@@ -53,9 +53,12 @@ model User {
   email                 String    @unique
   emailVerified         DateTime?
   image                 String?
+  password              String?   // Hashlenmiş şifre
   firebaseUid           String?   @unique // Firebase Authentication UID
   verificationCode      String?   // 6 haneli doğrulama kodu
   verificationCodeExpiry DateTime? // Kodun geçerlilik süresi
+  resetToken            String?   // Şifre sıfırlama token
+  resetTokenExpiry      DateTime? // Token geçerlilik süresi
   role                  UserRole  @default(STUDENT)
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt

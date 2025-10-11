@@ -206,6 +206,80 @@ export async function sendVerificationEmail(
 }
 
 /**
+ * Şifre sıfırlama emaili gönder
+ */
+export async function sendPasswordResetEmail(
+  to: string,
+  resetUrl: string,
+  name?: string
+): Promise<boolean> {
+  try {
+    const transporter = createTransporter()
+
+    const mailOptions = {
+      from: `"Chef2.0 Platform" <${process.env.EMAIL_USER}>`,
+      to: to,
+      subject: '🔑 Chef2.0 - Şifre Sıfırlama',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f4f4f4; }
+            .container { max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+            .header { background: linear-gradient(135deg, #ea580c 0%, #f97316 100%); padding: 40px 20px; text-align: center; }
+            .header h1 { margin: 0; color: #ffffff; font-size: 28px; }
+            .content { padding: 40px 30px; }
+            .button { display: inline-block; background: #ea580c; color: #ffffff; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+            .button:hover { background: #c2410c; }
+            .footer { background: #f9fafb; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 14px; }
+            .warning { background: #fef2f2; border-left: 4px solid #ef4444; padding: 12px 16px; margin: 20px 0; border-radius: 4px; color: #991b1b; font-size: 14px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🍳 Chef2.0</h1>
+            </div>
+            <div class="content">
+              <h2>Merhaba ${name || 'Chef'}! 👋</h2>
+              <p>Şifre sıfırlama talebiniz alındı. Yeni şifre belirlemek için aşağıdaki butona tıklayın:</p>
+              
+              <div style="text-align: center;">
+                <a href="${resetUrl}" class="button">Şifremi Sıfırla</a>
+              </div>
+              
+              <p style="color: #6b7280; font-size: 14px;">
+                Veya bu linki kopyalayıp tarayıcınıza yapıştırın:<br>
+                <code style="background: #f3f4f6; padding: 8px; display: block; margin-top: 8px; word-break: break-all;">${resetUrl}</code>
+              </p>
+              
+              <div class="warning">
+                ⚠️ <strong>Önemli:</strong> Bu bağlantı 1 saat süreyle geçerlidir.<br>
+                Eğer bu işlemi siz yapmadıysanız, bu e-postayı görmezden gelebilirsiniz.
+              </div>
+            </div>
+            <div class="footer">
+              <p><strong>Chef2.0 Gastronomi Platformu</strong></p>
+              <p>© ${new Date().getFullYear()} Chef2.0. Tüm hakları saklıdır.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+    }
+
+    await transporter.sendMail(mailOptions)
+    console.log(`Password reset email sent to ${to}`)
+    return true
+  } catch (error) {
+    console.error('Error sending password reset email:', error)
+    return false
+  }
+}
+
+/**
  * Kodun geçerlilik süresini kontrol et (10 dakika)
  */
 export function isCodeExpired(expiryDate: Date): boolean {

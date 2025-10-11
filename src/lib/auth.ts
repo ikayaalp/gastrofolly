@@ -33,12 +33,21 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
-        // Şifre kontrolü (şu an için basit kontrol, bcrypt ekleyeceğiz)
-        // const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
+        // Email doğrulanmış mı kontrol et
+        if (!user.emailVerified) {
+          return null
+        }
+
+        // Şifre kontrolü
+        if (!user.password) {
+          return null
+        }
+
+        const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
         
-        // if (!isPasswordValid) {
-        //   return null
-        // }
+        if (!isPasswordValid) {
+          return null
+        }
 
         return {
           id: user.id,
