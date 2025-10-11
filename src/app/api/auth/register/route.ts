@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { generateVerificationCode, sendVerificationEmail, getCodeExpiry } from "@/lib/emailService"
 import { addPendingUser } from "@/lib/pendingUsers"
+import { validatePassword } from "@/lib/passwordValidator"
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,9 +17,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (password.length < 6) {
+    // Güçlü şifre kontrolü
+    const passwordValidation = validatePassword(password)
+    if (!passwordValidation.isValid) {
       return NextResponse.json(
-        { message: "Şifre en az 6 karakter olmalıdır" },
+        { message: passwordValidation.errors.join(', ') },
         { status: 400 }
       )
     }

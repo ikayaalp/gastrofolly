@@ -3,7 +3,8 @@
 import { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
-import { ChefHat, Lock, Eye, EyeOff, CheckCircle, AlertCircle } from "lucide-react"
+import { ChefHat, Lock, Eye, EyeOff, CheckCircle, AlertCircle, Check, X } from "lucide-react"
+import { validatePassword, getStrengthColor, getStrengthText } from "@/lib/passwordValidator"
 
 function ResetPasswordForm() {
   const router = useRouter()
@@ -19,6 +20,9 @@ function ResetPasswordForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState(false)
+  
+  // Şifre validasyonu
+  const passwordValidation = validatePassword(formData.password)
 
   useEffect(() => {
     if (!token || !email) {
@@ -31,14 +35,15 @@ function ResetPasswordForm() {
     setIsLoading(true)
     setError("")
 
-    if (formData.password !== formData.confirmPassword) {
-      setError("Şifreler eşleşmiyor")
+    // Şifre validasyonu
+    if (!passwordValidation.isValid) {
+      setError(passwordValidation.errors.join(', '))
       setIsLoading(false)
       return
     }
 
-    if (formData.password.length < 6) {
-      setError("Şifre en az 6 karakter olmalıdır")
+    if (formData.password !== formData.confirmPassword) {
+      setError("Şifreler eşleşmiyor")
       setIsLoading(false)
       return
     }
@@ -145,7 +150,7 @@ function ResetPasswordForm() {
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   className="block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md shadow-sm text-white placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500 pr-10"
-                  placeholder="En az 6 karakter"
+                  placeholder="Güçlü bir şifre oluşturun"
                   disabled={success}
                 />
                 <button
@@ -160,6 +165,49 @@ function ResetPasswordForm() {
                   )}
                 </button>
               </div>
+              
+              {/* Şifre Gücü Göstergesi */}
+              {formData.password && (
+                <div className="mt-2 space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <div className="flex-1 h-2 bg-gray-700 rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full transition-all duration-300 ${
+                          passwordValidation.strength === 'strong' ? 'bg-green-500 w-full' :
+                          passwordValidation.strength === 'medium' ? 'bg-yellow-500 w-2/3' :
+                          'bg-red-500 w-1/3'
+                        }`}
+                      />
+                    </div>
+                    <span className={`text-sm font-medium ${getStrengthColor(passwordValidation.strength)}`}>
+                      {getStrengthText(passwordValidation.strength)}
+                    </span>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className={`flex items-center space-x-1 ${formData.password.length >= 8 ? 'text-green-400' : 'text-gray-400'}`}>
+                      {formData.password.length >= 8 ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                      <span>8+ karakter</span>
+                    </div>
+                    <div className={`flex items-center space-x-1 ${/[A-Z]/.test(formData.password) ? 'text-green-400' : 'text-gray-400'}`}>
+                      {/[A-Z]/.test(formData.password) ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                      <span>Büyük harf</span>
+                    </div>
+                    <div className={`flex items-center space-x-1 ${/[a-z]/.test(formData.password) ? 'text-green-400' : 'text-gray-400'}`}>
+                      {/[a-z]/.test(formData.password) ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                      <span>Küçük harf</span>
+                    </div>
+                    <div className={`flex items-center space-x-1 ${/\d/.test(formData.password) ? 'text-green-400' : 'text-gray-400'}`}>
+                      {/\d/.test(formData.password) ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                      <span>Rakam</span>
+                    </div>
+                    <div className={`flex items-center space-x-1 ${/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(formData.password) ? 'text-green-400' : 'text-gray-400'}`}>
+                      {/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(formData.password) ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                      <span>Özel karakter</span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div>
