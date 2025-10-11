@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
+import { generateVerificationCode, sendVerificationEmail, getCodeExpiry } from "@/lib/emailService"
 
 export async function POST(request: NextRequest) {
   try {
@@ -36,17 +37,37 @@ export async function POST(request: NextRequest) {
     // Şifreyi hashle
     const hashedPassword = await bcrypt.hash(password, 12)
 
-    // Kullanıcı oluştur
+    // 6 haneli doğrulama kodu oluştur
+    const verificationCode = generateVerificationCode()
+    const codeExpiry = getCodeExpiry()
+
+    // Kullanıcı oluştur (henüz doğrulanmamış)
     const user = await prisma.user.create({
       data: {
         name,
         email,
-        // password: hashedPassword, // Şu an için password field'i yok, sonra ekleyeceğiz
+        verificationCode,
+        verificationCodeExpiry: codeExpiry,
+        // emailVerified: null, // Henüz doğrulanmadı
       }
     })
 
+    // Doğrulama email'i gönder
+    const emailSent = await sendVerificationEmail(email, verificationCode, name)
+
+    if (!emailSent) {
+      // Email gönderilemedi ama kullanıcı oluşturuldu
+      // Kullanıcı daha sonra tekrar kod isteyebilir
+      console.error('Verification email could not be sent')
+    }
+
     return NextResponse.json(
-      { message: "Kullanıcı başarıyla oluşturuldu", userId: user.id },
+      { 
+        message: "Kullanıcı başarıyla oluşturuldu", 
+        userId: user.id,
+        email: user.email,
+        requiresVerification: true
+      },
       { status: 201 }
     )
   } catch (error) {

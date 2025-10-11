@@ -48,14 +48,17 @@ model VerificationToken {
 
 // Kullanıcı modeli
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String    @unique
-  emailVerified DateTime?
-  image         String?
-  role          UserRole  @default(STUDENT)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id                    String    @id @default(cuid())
+  name                  String?
+  email                 String    @unique
+  emailVerified         DateTime?
+  image                 String?
+  firebaseUid           String?   @unique // Firebase Authentication UID
+  verificationCode      String?   // 6 haneli doğrulama kodu
+  verificationCodeExpiry DateTime? // Kodun geçerlilik süresi
+  role                  UserRole  @default(STUDENT)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 
   accounts      Account[]
   sessions      Session[]

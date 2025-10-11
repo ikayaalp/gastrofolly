@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from "react"
 import Link from "next/link"
 import { signIn } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { ChefHat, Eye, EyeOff } from "lucide-react"
+import { ChefHat, Eye, EyeOff, AlertCircle } from "lucide-react"
 
 function SignInForm() {
   const [email, setEmail] = useState("")
@@ -36,7 +36,7 @@ function SignInForm() {
       })
 
       if (result?.error) {
-        setError("Giriş bilgileri hatalı")
+        setError("Giriş bilgileri hatalı veya email doğrulanmamış")
       } else {
         router.push("/home")
       }

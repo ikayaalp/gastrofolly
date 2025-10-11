@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { ChefHat, Eye, EyeOff } from "lucide-react"
+import { ChefHat, Eye, EyeOff, Mail, CheckCircle } from "lucide-react"
 
 export default function SignUp() {
   const [formData, setFormData] = useState({
@@ -16,12 +16,14 @@ export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const [success, setSuccess] = useState(false)
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setError("")
+    setSuccess(false)
 
     if (formData.password !== formData.confirmPassword) {
       setError("Şifreler eşleşmiyor")
@@ -30,6 +32,7 @@ export default function SignUp() {
     }
 
     try {
+      // Backend'e kullanıcı bilgilerini kaydet ve doğrulama kodu gönder
       const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: {
@@ -45,12 +48,16 @@ export default function SignUp() {
       const data = await response.json()
 
       if (response.ok) {
-        router.push("/auth/signin?message=Hesap başarıyla oluşturuldu")
+        setSuccess(true)
+        // Email doğrulama sayfasına yönlendir
+        setTimeout(() => {
+          router.push(`/auth/verify-email?email=${encodeURIComponent(formData.email)}`)
+        }, 1500)
       } else {
-        setError(data.error || "Kayıt olurken bir hata oluştu")
+        setError(data.message || "Kayıt olurken bir hata oluştu")
       }
-    } catch (error) {
-      setError("Bir hata oluştu")
+    } catch (error: any) {
+      setError(error.message || "Bir hata oluştu")
     } finally {
       setIsLoading(false)
     }
@@ -89,6 +96,18 @@ export default function SignUp() {
             {error && (
               <div className="bg-red-900/50 border border-red-700 text-red-400 px-4 py-3 rounded-md">
                 {error}
+              </div>
+            )}
+            
+            {success && (
+              <div className="bg-green-900/50 border border-green-700 text-green-400 px-4 py-3 rounded-md">
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="h-5 w-5" />
+                  <div>
+                    <p className="font-semibold">Hesap başarıyla oluşturuldu!</p>
+                    <p className="text-sm mt-1">📧 E-posta adresinize 6 haneli doğrulama kodu gönderildi. Doğrulama sayfasına yönlendiriliyorsunuz...</p>
+                  </div>
+                </div>
               </div>
             )}
             
