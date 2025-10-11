@@ -7,9 +7,9 @@ import { prisma } from "@/lib/prisma"
 import TopicDetailClient from "./TopicDetailClient"
 
 interface TopicDetailPageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export default async function TopicDetailPage({ params }: TopicDetailPageProps) {

@@ -19,9 +19,9 @@ import InstructorShareButton from "@/components/instructor/InstructorShareButton
 import MessageButton from "@/components/instructor/MessageButton"
 
 interface InstructorPageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 async function getInstructor(id: string) {

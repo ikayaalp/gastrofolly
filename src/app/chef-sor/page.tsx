@@ -40,9 +40,9 @@ async function getUserEnrolledCourses(userId: string) {
 }
 
 interface ChefSorPageProps {
-  searchParams: {
+  searchParams: Promise<{
     instructorId?: string
-  }
+  }>
 }
 
 export default async function ChefSorPage({ searchParams }: ChefSorPageProps) {
@@ -58,12 +58,13 @@ export default async function ChefSorPage({ searchParams }: ChefSorPageProps) {
   }
 
   const enrolledCourses = await getUserEnrolledCourses(session.user.id)
+  const resolvedSearchParams = await searchParams
 
   return (
     <ChefSorClient 
       enrolledCourses={enrolledCourses}
       session={session}
-      selectedInstructorId={searchParams.instructorId}
+      selectedInstructorId={resolvedSearchParams.instructorId}
     />
   )
 }

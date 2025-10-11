@@ -11,12 +11,12 @@ import { Home, BookOpen, Users, MessageCircle, ChefHat } from "lucide-react"
 import UserDropdown from "@/components/ui/UserDropdown"
 
 interface LearnPageProps {
-  params: {
+  params: Promise<{
     courseId: string
-  }
-  searchParams: {
+  }>
+  searchParams: Promise<{
     lesson?: string
-  }
+  }>
 }
 
 async function getCourseWithProgress(courseId: string, userId: string) {
