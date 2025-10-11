@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { generateVerificationCode, sendVerificationEmail, getCodeExpiry } from "@/lib/emailService"
+import { addPendingUser } from "@/lib/pendingUsers"
 
 export async function POST(request: NextRequest) {
   try {
@@ -41,34 +42,33 @@ export async function POST(request: NextRequest) {
     const verificationCode = generateVerificationCode()
     const codeExpiry = getCodeExpiry()
 
-    // Kullanıcı oluştur (henüz doğrulanmamış)
-    const user = await prisma.user.create({
-      data: {
-        name,
-        email,
-        verificationCode,
-        verificationCodeExpiry: codeExpiry,
-        // emailVerified: null, // Henüz doğrulanmadı
-      }
+    // ⚠️ Kullanıcıyı GEÇİCİ storage'a kaydet (Prisma'ya değil!)
+    addPendingUser(email, {
+      name,
+      email,
+      password: hashedPassword,
+      verificationCode,
+      codeExpiry,
+      createdAt: new Date()
     })
 
     // Doğrulama emaili gönder
     const emailSent = await sendVerificationEmail(email, verificationCode, name)
 
     if (!emailSent) {
-      // Email gönderilemedi ama kullanıcı oluşturuldu
-      // Kullanıcı daha sonra tekrar kod isteyebilir
-      console.error('Verification email could not be sent')
+      return NextResponse.json(
+        { message: "Email gönderilemedi. Lütfen tekrar deneyin." },
+        { status: 500 }
+      )
     }
 
     return NextResponse.json(
       { 
-        message: "Kullanıcı başarıyla oluşturuldu", 
-        userId: user.id,
-        email: user.email,
+        message: "Doğrulama kodu e-posta adresinize gönderildi", 
+        email: email,
         requiresVerification: true
       },
-      { status: 201 }
+      { status: 200 }
     )
   } catch (error) {
     console.error("Kayıt hatası:", error)
