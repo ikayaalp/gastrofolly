@@ -56,8 +56,8 @@ export default function SignUp() {
       } else {
         setError(data.message || "Kayıt olurken bir hata oluştu")
       }
-    } catch (error: any) {
-      setError(error.message || "Bir hata oluştu")
+    } catch (error) {
+      setError("Bir hata oluştu")
     } finally {
       setIsLoading(false)
     }

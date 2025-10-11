@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // Doğrulama email'i gönder
+    // Doğrulama emaili gönder
     const emailSent = await sendVerificationEmail(email, verificationCode, name)
 
     if (!emailSent) {
