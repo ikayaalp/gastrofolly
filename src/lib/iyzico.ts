@@ -89,8 +89,11 @@ async function makeIyzicoRequest<T>(endpoint: string, requestBody: unknown): Pro
     apiKey: IYZICO_CONFIG.apiKey.substring(0, 15) + '...',
     secretKey: IYZICO_CONFIG.secretKey.substring(0, 15) + '...',
     baseUrl: IYZICO_CONFIG.baseUrl,
-    requestBody: bodyString.substring(0, 200) + '...'
+    requestBodyLength: bodyString.length
   })
+  
+  // Tam request body'yi göster (hata ayıklama için)
+  console.log('TAM REQUEST BODY:', JSON.stringify(JSON.parse(bodyString), null, 2))
 
   const headers = getIyzicoHeaders(endpoint, bodyString)
 

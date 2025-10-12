@@ -140,30 +140,30 @@ export async function POST(request: NextRequest) {
         id: session.user.id,
         name: firstName,
         surname: lastName,
-        gsmNumber: '+905555555555', // Sandbox için default
+        gsmNumber: '+905350000000', // Sandbox test numarası
         email: user.email,
         identityNumber: '11111111111', // Sandbox için sabit
-        registrationAddress: 'Online Eğitim Platformu',
-        lastLoginDate: new Date().toISOString().split('T')[0] + ' 12:00:00',
-        registrationDate: new Date().toISOString().split('T')[0] + ' 12:00:00',
-        zipCode: '34000',
+        lastLoginDate: '2015-10-05 12:43:35',
+        registrationDate: '2013-04-21 15:12:09',
+        registrationAddress: 'Nidakule Göztepe, Merdivenköy Mah. Bora Sok. No:1',
         ip: userIp,
         city: 'Istanbul',
-        country: 'Turkey'
+        country: 'Turkey',
+        zipCode: '34732'
       },
       shippingAddress: {
         contactName: `${firstName} ${lastName}`,
         city: 'Istanbul',
         country: 'Turkey',
-        address: 'Online Eğitim Platformu',
-        zipCode: '34000'
+        address: 'Nidakule Göztepe, Merdivenköy Mah. Bora Sok. No:1',
+        zipCode: '34732'
       },
       billingAddress: {
         contactName: `${firstName} ${lastName}`,
         city: 'Istanbul',
         country: 'Turkey',
-        address: 'Online Eğitim Platformu',
-        zipCode: '34000'
+        address: 'Nidakule Göztepe, Merdivenköy Mah. Bora Sok. No:1',
+        zipCode: '34732'
       },
       basketItems: basketItems
     }
