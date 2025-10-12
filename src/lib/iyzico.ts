@@ -65,12 +65,42 @@ export interface IyzicoCallbackData {
   errorGroup?: string
 }
 
+export interface IyzicoCheckoutFormResult {
+  status: string
+  locale: string
+  systemTime: number
+  conversationId: string
+  token?: string
+  tokenExpireTime?: number
+  paymentPageUrl?: string
+  checkoutFormContent?: string
+  errorCode?: string
+  errorMessage?: string
+  errorGroup?: string
+}
+
+export interface IyzicoPaymentResult {
+  status: string
+  locale: string
+  systemTime: number
+  conversationId: string
+  paymentId?: string
+  paymentStatus?: string
+  fraudStatus?: number
+  price?: number
+  paidPrice?: number
+  currency?: string
+  errorCode?: string
+  errorMessage?: string
+  errorGroup?: string
+}
+
 /**
  * Iyzico ödeme formu oluşturur
  */
-export const createCheckoutForm = (paymentRequest: IyzicoPaymentRequest): Promise<any> => {
+export const createCheckoutForm = (paymentRequest: IyzicoPaymentRequest): Promise<IyzicoCheckoutFormResult> => {
   return new Promise((resolve, reject) => {
-    iyzico.checkoutFormInitialize.create(paymentRequest, (err: any, result: any) => {
+    iyzico.checkoutFormInitialize.create(paymentRequest, (err: Error | null, result: IyzicoCheckoutFormResult) => {
       if (err) {
         reject(err)
       } else {
@@ -83,7 +113,7 @@ export const createCheckoutForm = (paymentRequest: IyzicoPaymentRequest): Promis
 /**
  * Iyzico ödeme sonucunu kontrol eder
  */
-export const retrieveCheckoutForm = (token: string): Promise<any> => {
+export const retrieveCheckoutForm = (token: string): Promise<IyzicoPaymentResult> => {
   return new Promise((resolve, reject) => {
     iyzico.checkoutForm.retrieve(
       {
@@ -91,7 +121,7 @@ export const retrieveCheckoutForm = (token: string): Promise<any> => {
         conversationId: Date.now().toString(),
         token: token
       },
-      (err: any, result: any) => {
+      (err: Error | null, result: IyzicoPaymentResult) => {
         if (err) {
           reject(err)
         } else {
