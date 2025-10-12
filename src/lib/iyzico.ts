@@ -8,50 +8,48 @@ const IYZICO_CONFIG = {
 }
 
 /**
- * İyzico için authorization header oluşturur
- * İyzico'nun beklediği tam format: randomString + endpoint + requestBody
+ * İyzico için authorization header oluşturur (IYZWSv2 formatı)
+ * İyzico dokümantasyonuna göre: https://docs.iyzico.com
  */
 function generateAuthHeader(endpoint: string, requestBody: string): { authHeader: string; randomString: string } {
-  // 8 byte random string (16 hex karakter)
-  const randomString = crypto.randomBytes(8).toString('hex')
+  // 1. Random key oluştur (8 byte = 16 hex karakter)
+  const randomKey = crypto.randomBytes(8).toString('hex')
 
-  // İyzico'nun beklediği format: apiKey + randomString + requestBody
-  const dataToSign = IYZICO_CONFIG.apiKey + randomString + requestBody
-  
-  console.log('İmza için kullanılan format:', {
-    format: 'apiKey + randomString + requestBody',
-    apiKey: IYZICO_CONFIG.apiKey.substring(0, 15) + '...',
-    randomString,
-    requestBodyStart: requestBody.substring(0, 50) + '...'
-  })
+  // 2. HMAC-SHA256 için data: randomKey + endpoint + requestBody
+  const dataToSign = randomKey + endpoint + requestBody
 
-  console.log('İmza için kullanılan data:', {
-    apiKey: IYZICO_CONFIG.apiKey.substring(0, 15) + '...',
-    randomString,
+  console.log('IYZWSv2 İmza Oluşturma:', {
+    format: 'randomKey + endpoint + requestBody',
+    randomKey,
+    endpoint,
     requestBodyLength: requestBody.length,
-    dataToSignLength: dataToSign.length,
-    dataToSignPreview: dataToSign.substring(0, 100) + '...'
+    dataToSignLength: dataToSign.length
   })
 
-  // HMAC-SHA256 ile imza oluştur
-  const hash = crypto
+  // 3. HMAC-SHA256 ile encryptedData oluştur (HEX digest)
+  const encryptedData = crypto
     .createHmac('sha256', IYZICO_CONFIG.secretKey)
     .update(dataToSign, 'utf8')
-    .digest('base64')
+    .digest('hex')
 
-  // İyzico'nun beklediği header formatı - dokümantasyona göre
-  const authHeader = `IYZWS ${IYZICO_CONFIG.apiKey}:${hash}:${randomString}`
+  // 4. Authorization string oluştur
+  const authorizationString = `apiKey:${IYZICO_CONFIG.apiKey}&randomKey:${randomKey}&signature:${encryptedData}`
 
-  console.log('Oluşturulan auth header:', {
-    format: 'IYZWS apiKey:hash:randomString',
-    apiKey: IYZICO_CONFIG.apiKey.substring(0, 15) + '...',
-    hash: hash.substring(0, 20) + '...',
-    randomString,
-    fullHeader: authHeader.substring(0, 60) + '...',
-    secretKeyUsed: IYZICO_CONFIG.secretKey.substring(0, 15) + '...'
+  // 5. Base64 encode et
+  const base64EncodedAuthorization = Buffer.from(authorizationString, 'utf8').toString('base64')
+
+  // 6. Final header: IYZWSv2 + base64
+  const authHeader = `IYZWSv2 ${base64EncodedAuthorization}`
+
+  console.log('IYZWSv2 Auth Header Oluşturuldu:', {
+    randomKey,
+    encryptedData: encryptedData.substring(0, 20) + '...',
+    authorizationString: authorizationString.substring(0, 60) + '...',
+    base64Length: base64EncodedAuthorization.length,
+    headerFormat: 'IYZWSv2 [base64]'
   })
 
-  return { authHeader, randomString }
+  return { authHeader, randomString: randomKey }
 }
 
 /**
@@ -216,14 +214,16 @@ export interface IyzicoPaymentResult {
 /**
  * Iyzico ödeme formu oluşturur
  * İyzico dokümantasyonuna göre: https://docs.iyzico.com
+ * Doğru endpoint: /payment/iyzipos/checkoutform/initialize/auth/ecom
  */
 export const createCheckoutForm = async (paymentRequest: IyzicoPaymentRequest): Promise<IyzicoCheckoutFormResult> => {
-  // İyzico CheckoutForm API - Basit endpoint (auth/ecom kullanmıyoruz)
-  return makeIyzicoRequest<IyzicoCheckoutFormResult>('/payment/iyzipos/checkoutform/initialize', paymentRequest)
+  // İyzico CheckoutForm API - auth/ecom endpoint'i kullanmalıyız
+  return makeIyzicoRequest<IyzicoCheckoutFormResult>('/payment/iyzipos/checkoutform/initialize/auth/ecom', paymentRequest)
 }
 
 /**
  * Iyzico ödeme sonucunu kontrol eder
+ * Doğru endpoint: /payment/iyzipos/checkoutform/auth/ecom/detail
  */
 export const retrieveCheckoutForm = async (token: string): Promise<IyzicoPaymentResult> => {
   const request = {
@@ -233,5 +233,5 @@ export const retrieveCheckoutForm = async (token: string): Promise<IyzicoPayment
   }
 
   // İyzico dokümantasyonuna göre doğru endpoint
-  return makeIyzicoRequest<IyzicoPaymentResult>('/payment/iyzipos/checkoutform/auth/detail', request)
+  return makeIyzicoRequest<IyzicoPaymentResult>('/payment/iyzipos/checkoutform/auth/ecom/detail', request)
 }
