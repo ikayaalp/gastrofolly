@@ -10,9 +10,9 @@ const IYZICO_CONFIG = {
 /**
  * İyzico için authorization header oluşturur
  */
-function generateAuthHeader(url: string, requestBody: string): string {
+function generateAuthHeader(endpoint: string, requestBody: string): string {
   const randomString = crypto.randomBytes(8).toString('hex')
-  const dataToSign = randomString + url + requestBody
+  const dataToSign = randomString + endpoint + requestBody
   
   const hash = crypto
     .createHmac('sha256', IYZICO_CONFIG.secretKey)
@@ -25,9 +25,9 @@ function generateAuthHeader(url: string, requestBody: string): string {
 /**
  * İyzico için gerekli header'ları oluşturur
  */
-function getIyzicoHeaders(url: string, requestBody: string) {
+function getIyzicoHeaders(endpoint: string, requestBody: string) {
   const randomString = crypto.randomBytes(8).toString('hex')
-  const authHeader = generateAuthHeader(url, requestBody)
+  const authHeader = generateAuthHeader(endpoint, requestBody)
   
   return {
     'Content-Type': 'application/json',
@@ -44,14 +44,23 @@ async function makeIyzicoRequest<T>(endpoint: string, requestBody: unknown): Pro
   const url = `${IYZICO_CONFIG.baseUrl}${endpoint}`
   const bodyString = JSON.stringify(requestBody)
   
-  console.log('İyzico API Request:', {
+  console.log('İyzico API Request Details:', {
     url,
-    apiKey: IYZICO_CONFIG.apiKey.substring(0, 10) + '...',
-    secretKey: IYZICO_CONFIG.secretKey.substring(0, 10) + '...',
-    baseUrl: IYZICO_CONFIG.baseUrl
+    endpoint,
+    apiKey: IYZICO_CONFIG.apiKey.substring(0, 15) + '...',
+    secretKey: IYZICO_CONFIG.secretKey.substring(0, 15) + '...',
+    baseUrl: IYZICO_CONFIG.baseUrl,
+    requestBody: bodyString.substring(0, 200) + '...'
   })
   
   const headers = getIyzicoHeaders(endpoint, bodyString)
+  
+  console.log('İyzico Headers:', {
+    'Content-Type': headers['Content-Type'],
+    'Authorization': headers['Authorization'].substring(0, 50) + '...',
+    'x-iyzi-rnd': headers['x-iyzi-rnd'],
+    'x-iyzi-client-version': headers['x-iyzi-client-version']
+  })
   
   const response = await fetch(url, {
     method: 'POST',
