@@ -99,17 +99,17 @@ export async function POST(request: NextRequest) {
 
       console.log(`User ${userId} successfully enrolled in courses:`, courseIds)
 
-      // Fraud detection varsa özel mesajla yönlendir
+      // Fraud detection varsa özel mesajla kurs detay sayfasına yönlendir
       if (result.fraudStatus === 1) {
         console.log('Payment completed despite fraud detection')
         return NextResponse.redirect(
-          new URL(`/learn/${courseIds[0]}?success=true&fraud_bypassed=true`, process.env.NEXTAUTH_URL!)
+          new URL(`/course/${courseIds[0]}?success=true&fraud_bypassed=true`, process.env.NEXTAUTH_URL!)
         )
       }
 
-      // Normal başarılı ödeme sonrası ilk kursa yönlendir
+      // Normal başarılı ödeme sonrası kurs detay sayfasına yönlendir
       return NextResponse.redirect(
-        new URL(`/learn/${courseIds[0]}?success=true`, process.env.NEXTAUTH_URL!)
+        new URL(`/course/${courseIds[0]}?success=true`, process.env.NEXTAUTH_URL!)
       )
         } else {
           // Ödeme başarısız - detaylı log
