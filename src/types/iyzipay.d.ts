@@ -66,20 +66,50 @@ declare module 'iyzipay' {
     static SUBSCRIPTION: string
   }
 
+  export interface CheckoutFormResult {
+    status: string
+    locale: string
+    systemTime: number
+    conversationId: string
+    token?: string
+    tokenExpireTime?: number
+    paymentPageUrl?: string
+    checkoutFormContent?: string
+    errorCode?: string
+    errorMessage?: string
+    errorGroup?: string
+  }
+
+  export interface PaymentResult {
+    status: string
+    locale: string
+    systemTime: number
+    conversationId: string
+    paymentId?: string
+    paymentStatus?: string
+    fraudStatus?: number
+    price?: number
+    paidPrice?: number
+    currency?: string
+    errorCode?: string
+    errorMessage?: string
+    errorGroup?: string
+  }
+
   export default class Iyzipay {
     constructor(config: IyzipayConfig)
     
     checkoutFormInitialize: {
       create(
         request: CheckoutFormRequest,
-        callback: (err: Error | null, result: any) => void
+        callback: (err: Error | null, result: CheckoutFormResult) => void
       ): void
     }
     
     checkoutForm: {
       retrieve(
         request: CheckoutFormRetrieveRequest,
-        callback: (err: Error | null, result: any) => void
+        callback: (err: Error | null, result: PaymentResult) => void
       ): void
     }
 
