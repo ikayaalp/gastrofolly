@@ -22,6 +22,8 @@ interface LearnPageProps {
 }
 
 async function getCourseWithProgress(courseId: string, userId: string) {
+  console.log('Learn Page - getCourseWithProgress:', { courseId, userId })
+  
   const enrollment = await prisma.enrollment.findUnique({
     where: {
       userId_courseId: {
@@ -31,7 +33,15 @@ async function getCourseWithProgress(courseId: string, userId: string) {
     }
   })
 
+  console.log('Learn Page - enrollment found:', enrollment)
+
   if (!enrollment) {
+    console.log('Learn Page - No enrollment found, checking all enrollments for user:', userId)
+    const allEnrollments = await prisma.enrollment.findMany({
+      where: { userId },
+      select: { courseId: true, createdAt: true }
+    })
+    console.log('Learn Page - All enrollments for user:', allEnrollments)
     return null
   }
 
@@ -127,9 +137,30 @@ export default async function LearnPage({ params, searchParams }: LearnPageProps
   const resolvedSearchParams = await searchParams
   const data = await getCourseWithProgress(courseId, session.user.id)
 
+  // Success parametresi varsa enrollment kontrolünü bypass et (ödeme başarılı ama enrollment henüz oluşturulmamış olabilir)
   if (!data || !data.course) {
-    // Eğer enrollment yoksa course detail sayfasına yönlendir
-    redirect(`/course/${courseId}`)
+    if (resolvedSearchParams?.success) {
+      console.log('Learn Page - Success parameter found, bypassing enrollment check temporarily')
+      // Success parametresi varsa enrollment'ı manuel oluştur
+      try {
+        await prisma.enrollment.create({
+          data: {
+            userId: session.user.id,
+            courseId: courseId,
+          }
+        })
+        console.log('Learn Page - Enrollment created successfully')
+        // Sayfayı yenile
+        redirect(`/learn/${courseId}?success=true${resolvedSearchParams?.fraud_bypassed ? '&fraud_bypassed=true' : ''}`)
+      } catch (error) {
+        console.log('Learn Page - Enrollment already exists or error:', error)
+        // Enrollment zaten varsa devam et
+      }
+    } else {
+      console.log('Learn Page - No enrollment found, redirecting to course detail page')
+      // Eğer enrollment yoksa course detail sayfasına yönlendir
+      redirect(`/course/${courseId}`)
+    }
   }
 
   const { course, progress } = data
