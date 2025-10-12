@@ -206,6 +206,7 @@ export interface IyzicoPaymentResult {
   price?: number
   paidPrice?: number
   currency?: string
+  basketId?: string
   errorCode?: string
   errorMessage?: string
   errorGroup?: string
