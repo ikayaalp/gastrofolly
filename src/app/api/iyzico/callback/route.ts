@@ -33,20 +33,37 @@ export async function POST(request: NextRequest) {
       const conversationId = result.conversationId
       
       // Bu conversationId ile ilişkili tüm pending payment kayıtlarını bul
-      const payments = await prisma.payment.findMany({
+      let payments = await prisma.payment.findMany({
         where: {
           stripePaymentId: conversationId,
           status: 'PENDING'
         }
       })
 
+      // Eğer bulunamadıysa, basketId ile de ara (İyzico bazen conversationId'yi değiştirebiliyor)
+      if (payments.length === 0 && result.basketId) {
+        console.log('ConversationId ile bulunamadı, basketId ile arayalım:', result.basketId)
+        payments = await prisma.payment.findMany({
+          where: {
+            stripePaymentId: result.basketId,
+            status: 'PENDING'
+          }
+        })
+      }
+
       if (payments.length === 0) {
-        console.error('Payment records not found:', conversationId)
+        console.error('Payment records not found for conversationId:', conversationId, 'basketId:', result.basketId)
+        // Debug için tüm pending payment'ları listele
+        const allPendingPayments = await prisma.payment.findMany({
+          where: { status: 'PENDING' },
+          select: { stripePaymentId: true, userId: true, courseId: true, createdAt: true }
+        })
+        console.error('All pending payments:', allPendingPayments)
         return NextResponse.redirect(new URL('/cart?error=payment_not_found', process.env.NEXTAUTH_URL!))
       }
 
-      // conversationId formatı: userId_timestamp
-      const userId = conversationId.split('_')[0]
+      // UserId'yi payment kayıtlarından al (conversationId formatı değişebiliyor)
+      const userId = payments[0].userId
 
       // Tüm ödeme kayıtlarını güncelle ve enrollment oluştur
       const courseIds = []
