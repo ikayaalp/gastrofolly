@@ -113,12 +113,16 @@ export async function POST(request: NextRequest) {
     // Kullanıcı IP adresini al
     const userIp = getClientIp(request)
     
+    // Callback URL'i düzgün oluştur (çift slash olmasın)
+    const baseUrl = process.env.NEXTAUTH_URL?.replace(/\/$/, '') || 'https://gastrofolly.vercel.app'
+    const callbackUrl = `${baseUrl}/api/iyzico/callback`
+    
     console.log('İstek detayları:', {
       userIp,
       conversationId,
       totalWithTax,
       itemsCount: items.length,
-      callbackUrl: `${process.env.NEXTAUTH_URL}/api/iyzico/callback`
+      callbackUrl
     })
 
     // Iyzico ödeme isteği hazırla
@@ -130,7 +134,7 @@ export async function POST(request: NextRequest) {
       currency: 'TRY',
       basketId: conversationId,
       paymentGroup: 'PRODUCT',
-      callbackUrl: `${process.env.NEXTAUTH_URL}/api/iyzico/callback`,
+      callbackUrl: callbackUrl,
       enabledInstallments: [1, 2, 3, 6, 9],
       buyer: {
         id: session.user.id,

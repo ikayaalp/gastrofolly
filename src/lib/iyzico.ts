@@ -215,8 +215,8 @@ export interface IyzicoPaymentResult {
  * İyzico dokümantasyonuna göre: https://docs.iyzico.com
  */
 export const createCheckoutForm = async (paymentRequest: IyzicoPaymentRequest): Promise<IyzicoCheckoutFormResult> => {
-  // İyzico CheckoutForm API - Resmi endpoint
-  return makeIyzicoRequest<IyzicoCheckoutFormResult>('/payment/iyzipos/checkoutform/initialize/auth/ecom', paymentRequest)
+  // İyzico CheckoutForm API - Basit endpoint (auth/ecom kullanmıyoruz)
+  return makeIyzicoRequest<IyzicoCheckoutFormResult>('/payment/iyzipos/checkoutform/initialize', paymentRequest)
 }
 
 /**
