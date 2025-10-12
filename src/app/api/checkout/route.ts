@@ -24,7 +24,15 @@ function getClientIp(request: NextRequest): string {
   if (realIp) {
     return realIp
   }
-  return '85.34.78.112' // Fallback IP for Turkey
+  
+  // Vercel'den gelen IP'yi kontrol et
+  const vercelIp = request.headers.get('x-vercel-forwarded-for')
+  if (vercelIp) {
+    return vercelIp.split(',')[0].trim()
+  }
+  
+  // Türkiye IP'si kullan
+  return '85.34.78.112'
 }
 
 export async function POST(request: NextRequest) {
@@ -105,6 +113,14 @@ export async function POST(request: NextRequest) {
     
     // Kullanıcı IP adresini al
     const userIp = getClientIp(request)
+    
+    console.log('İstek detayları:', {
+      userIp,
+      conversationId,
+      totalWithTax,
+      itemsCount: items.length,
+      callbackUrl: `${process.env.NEXTAUTH_URL}/api/iyzico/callback`
+    })
 
     // Iyzico ödeme isteği hazırla
     const paymentRequest: IyzicoPaymentRequest = {

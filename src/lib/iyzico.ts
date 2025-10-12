@@ -214,8 +214,15 @@ export interface IyzicoPaymentResult {
  * Iyzico ödeme formu oluşturur
  */
 export const createCheckoutForm = async (paymentRequest: IyzicoPaymentRequest): Promise<IyzicoCheckoutFormResult> => {
-  // İyzico dokümantasyonuna göre doğru endpoint
-  return makeIyzicoRequest<IyzicoCheckoutFormResult>('/payment/iyzipos/checkoutform/initialize', paymentRequest)
+  // İyzico'nun farklı endpoint formatlarını deneyelim
+  // Önce standart format
+  try {
+    return await makeIyzicoRequest<IyzicoCheckoutFormResult>('/payment/iyzipos/checkoutform/initialize/auth/ecom', paymentRequest)
+  } catch (error) {
+    console.log('İlk endpoint başarısız, alternatif deneyelim:', error)
+    // Alternatif format
+    return makeIyzicoRequest<IyzicoCheckoutFormResult>('/payment/iyzipos/checkoutform/initialize', paymentRequest)
+  }
 }
 
 /**
