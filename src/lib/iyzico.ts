@@ -2,7 +2,7 @@ import crypto from 'crypto'
 
 // Iyzico yapılandırması
 const IYZICO_CONFIG = {
-  apiKey: process.env.IYZICO_API_KEY || 'sandbox-eq7YZQDpwxzkr9YHnq9xdYoR5OMXEQSuve',
+  apiKey: process.env.IYZICO_API_KEY || 'sandbox-eq7YZQDpwxzkr9YHnq9xdYoR5OMXEQSu',
   secretKey: process.env.IYZICO_SECRET_KEY || 'sandbox-QXZ7ogP4KUdnG9OeLV8yIdBr3xwu6M27',
   baseUrl: process.env.IYZICO_BASE_URL || 'https://sandbox-api.iyzipay.com'
 }
@@ -40,11 +40,11 @@ function generateAuthHeader(endpoint: string, requestBody: string): { authHeader
     .update(dataToSign, 'utf8')
     .digest('base64')
 
-  // İyzico'nun beklediği header formatı
-  const authHeader = `IYZWS ${IYZICO_CONFIG.apiKey}:${hash}:${randomString}`
+  // İyzico'nun beklediği header formatı - IYZWSv2 kullanılmalı!
+  const authHeader = `IYZWSv2 ${IYZICO_CONFIG.apiKey}:${hash}:${randomString}`
 
   console.log('Oluşturulan auth header:', {
-    format: 'IYZWS apiKey:hash:randomString',
+    format: 'IYZWSv2 apiKey:hash:randomString',
     apiKey: IYZICO_CONFIG.apiKey.substring(0, 15) + '...',
     hash: hash.substring(0, 20) + '...',
     randomString,
