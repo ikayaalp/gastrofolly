@@ -9,17 +9,37 @@ const IYZICO_CONFIG = {
 
 /**
  * İyzico için authorization header oluşturur
+ * İyzico'nun beklediği tam format: randomString + endpoint + requestBody
  */
 function generateAuthHeader(endpoint: string, requestBody: string): string {
   const randomString = crypto.randomBytes(8).toString('hex')
+  
+  // İyzico'nun beklediği format: randomString + endpoint + requestBody
   const dataToSign = randomString + endpoint + requestBody
+  
+  console.log('İmza için kullanılan data:', {
+    randomString,
+    endpoint,
+    requestBodyLength: requestBody.length,
+    dataToSignLength: dataToSign.length
+  })
   
   const hash = crypto
     .createHmac('sha256', IYZICO_CONFIG.secretKey)
     .update(dataToSign, 'utf8')
     .digest('base64')
   
-  return `IYZWS ${IYZICO_CONFIG.apiKey}:${hash}:${randomString}`
+  const authHeader = `IYZWS ${IYZICO_CONFIG.apiKey}:${hash}:${randomString}`
+  
+  console.log('Oluşturulan auth header:', {
+    format: 'IYZWS apiKey:hash:randomString',
+    apiKey: IYZICO_CONFIG.apiKey.substring(0, 15) + '...',
+    hash: hash.substring(0, 20) + '...',
+    randomString,
+    fullHeader: authHeader.substring(0, 60) + '...'
+  })
+  
+  return authHeader
 }
 
 /**
@@ -32,8 +52,7 @@ function getIyzicoHeaders(endpoint: string, requestBody: string) {
   return {
     'Content-Type': 'application/json',
     'Authorization': authHeader,
-    'x-iyzi-rnd': randomString,
-    'x-iyzi-client-version': 'iyzipay-node-2.0.48'
+    'x-iyzi-rnd': randomString
   }
 }
 
@@ -58,8 +77,7 @@ async function makeIyzicoRequest<T>(endpoint: string, requestBody: unknown): Pro
   console.log('İyzico Headers:', {
     'Content-Type': headers['Content-Type'],
     'Authorization': headers['Authorization'].substring(0, 50) + '...',
-    'x-iyzi-rnd': headers['x-iyzi-rnd'],
-    'x-iyzi-client-version': headers['x-iyzi-client-version']
+    'x-iyzi-rnd': headers['x-iyzi-rnd']
   })
   
   const response = await fetch(url, {
