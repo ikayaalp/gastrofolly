@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
         id: session.user.id,
         name: firstName,
         surname: lastName,
-        gsmNumber: user.phone || '+905555555555',
+        gsmNumber: '+905555555555', // Sandbox için default
         email: user.email,
         identityNumber: '11111111111', // Sandbox için sabit
         registrationAddress: 'Online Eğitim Platformu',
