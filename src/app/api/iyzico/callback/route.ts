@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
 
     console.log('Iyzico callback result:', result)
 
-    if (result.status === 'success' && result.paymentStatus === 'SUCCESS') {
+    if (result.status === 'success' && result.paymentStatus === 'SUCCESS' && result.fraudStatus !== 1) {
       const conversationId = result.conversationId
       
       // Bu conversationId ile ilişkili tüm pending payment kayıtlarını bul
@@ -91,7 +91,9 @@ export async function POST(request: NextRequest) {
           
           // Hata mesajını daha kullanıcı dostu hale getir
           let userFriendlyError = 'payment_failed'
-          if (result.errorCode === '1000') {
+          if (result.fraudStatus === 1) {
+            userFriendlyError = 'Güvenlik kontrolü nedeniyle ödeme reddedildi. Lütfen farklı bir kart deneyin.'
+          } else if (result.errorCode === '1000') {
             userFriendlyError = 'Geçersiz kart bilgileri'
           } else if (result.errorCode === '1001') {
             userFriendlyError = 'Kart bilgileri bulunamadı'
