@@ -15,20 +15,19 @@ function generateAuthHeader(endpoint: string, requestBody: string): { authHeader
   // 8 byte random string (16 hex karakter)
   const randomString = crypto.randomBytes(8).toString('hex')
 
-  // İyzico'nun beklediği format: randomString + endpoint + requestBody
-  // Alternatif format da deneyelim: endpoint + randomString + requestBody
-  const dataToSign = randomString + endpoint + requestBody
+  // İyzico'nun beklediği format: apiKey + randomString + requestBody
+  const dataToSign = IYZICO_CONFIG.apiKey + randomString + requestBody
   
   console.log('İmza için kullanılan format:', {
-    format: 'randomString + endpoint + requestBody',
+    format: 'apiKey + randomString + requestBody',
+    apiKey: IYZICO_CONFIG.apiKey.substring(0, 15) + '...',
     randomString,
-    endpoint,
     requestBodyStart: requestBody.substring(0, 50) + '...'
   })
 
   console.log('İmza için kullanılan data:', {
+    apiKey: IYZICO_CONFIG.apiKey.substring(0, 15) + '...',
     randomString,
-    endpoint,
     requestBodyLength: requestBody.length,
     dataToSignLength: dataToSign.length,
     dataToSignPreview: dataToSign.substring(0, 100) + '...'
@@ -40,11 +39,11 @@ function generateAuthHeader(endpoint: string, requestBody: string): { authHeader
     .update(dataToSign, 'utf8')
     .digest('base64')
 
-  // İyzico'nun beklediği header formatı - IYZWSv2 kullanılmalı!
-  const authHeader = `IYZWSv2 ${IYZICO_CONFIG.apiKey}:${hash}:${randomString}`
+  // İyzico'nun beklediği header formatı - dokümantasyona göre
+  const authHeader = `IYZWS ${IYZICO_CONFIG.apiKey}:${hash}:${randomString}`
 
   console.log('Oluşturulan auth header:', {
-    format: 'IYZWSv2 apiKey:hash:randomString',
+    format: 'IYZWS apiKey:hash:randomString',
     apiKey: IYZICO_CONFIG.apiKey.substring(0, 15) + '...',
     hash: hash.substring(0, 20) + '...',
     randomString,
