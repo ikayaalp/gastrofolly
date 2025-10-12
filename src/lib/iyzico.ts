@@ -23,25 +23,47 @@ function generateAuthHeader(url: string, requestBody: string): string {
 }
 
 /**
+ * İyzico için gerekli header'ları oluşturur
+ */
+function getIyzicoHeaders(url: string, requestBody: string) {
+  const randomString = crypto.randomBytes(8).toString('hex')
+  const authHeader = generateAuthHeader(url, requestBody)
+  
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': authHeader,
+    'x-iyzi-rnd': randomString,
+    'x-iyzi-client-version': 'iyzipay-node-2.0.48'
+  }
+}
+
+/**
  * İyzico API'ye istek gönderir
  */
 async function makeIyzicoRequest<T>(endpoint: string, requestBody: unknown): Promise<T> {
   const url = `${IYZICO_CONFIG.baseUrl}${endpoint}`
   const bodyString = JSON.stringify(requestBody)
   
-  const authHeader = generateAuthHeader(endpoint, bodyString)
+  console.log('İyzico API Request:', {
+    url,
+    apiKey: IYZICO_CONFIG.apiKey.substring(0, 10) + '...',
+    secretKey: IYZICO_CONFIG.secretKey.substring(0, 10) + '...',
+    baseUrl: IYZICO_CONFIG.baseUrl
+  })
+  
+  const headers = getIyzicoHeaders(endpoint, bodyString)
   
   const response = await fetch(url, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': authHeader,
-      'x-iyzi-rnd': crypto.randomBytes(8).toString('hex')
-    },
+    headers,
     body: bodyString
   })
   
-  return response.json() as Promise<T>
+  const result = await response.json() as T
+  
+  console.log('İyzico API Response:', result)
+  
+  return result
 }
 
 export interface IyzicoPaymentItem {
