@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
-import { stripe } from "@/lib/stripe"
 import { prisma } from "@/lib/prisma"
+import { createCheckoutForm, IyzicoPaymentRequest } from "@/lib/iyzico"
+import Iyzipay from 'iyzipay'
 
 interface CartItem {
   id: string
@@ -15,11 +16,23 @@ interface CartItem {
   }
 }
 
+function getClientIp(request: NextRequest): string {
+  const forwardedFor = request.headers.get('x-forwarded-for')
+  if (forwardedFor) {
+    return forwardedFor.split(',')[0].trim()
+  }
+  const realIp = request.headers.get('x-real-ip')
+  if (realIp) {
+    return realIp
+  }
+  return '85.34.78.112' // Fallback IP for Turkey
+}
+
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session?.user?.id) {
+    if (!session?.user?.id || !session?.user?.email) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
@@ -46,50 +59,126 @@ export async function POST(request: NextRequest) {
 
     if (existingEnrollments.length > 0) {
       return NextResponse.json(
-        { error: "You are already enrolled in some of these courses" },
+        { error: "Bu kurslardan bazılarına zaten kayıtlısınız" },
         { status: 400 }
       )
     }
 
-    // Şimdilik direkt kurs kaydı yap (Stripe olmadan)
-    const enrollments = []
-    const payments = []
+    // Kullanıcı bilgilerini al
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id }
+    })
 
-    for (const item of items) {
-      // Kurs kaydı oluştur
-      const enrollment = await prisma.enrollment.create({
-        data: {
-          userId: session.user.id,
-          courseId: item.id,
-        }
-      })
-      enrollments.push(enrollment)
-
-      // Payment kaydı oluştur (COMPLETED olarak)
-      const payment = await prisma.payment.create({
-        data: {
-          userId: session.user.id,
-          courseId: item.id,
-          amount: item.discountedPrice || item.price,
-          currency: 'TRY',
-          status: 'COMPLETED',
-          stripePaymentId: `direct_${Date.now()}_${item.id}`,
-        }
-      })
-      payments.push(payment)
+    if (!user) {
+      return NextResponse.json(
+        { error: "Kullanıcı bulunamadı" },
+        { status: 404 }
+      )
     }
 
-    console.log(`User ${session.user.id} enrolled in courses: ${courseIds.join(', ')}`)
-
-    // Satın alma sonrası ilk kursun öğrenme sayfasına yönlendir
-    const firstCourseId = courseIds[0]
-
-    return NextResponse.json({ 
-      success: true, 
-      message: "Kurslar başarıyla satın alındı!",
-      enrollments: enrollments.length,
-      redirectUrl: `/learn/${firstCourseId}`
+    // KDV dahil toplam fiyat hesapla
+    const totalWithTax = total * 1.18
+    
+    // Sepet öğelerini Iyzico formatına çevir
+    const basketItems = items.map((item: CartItem) => {
+      const itemPrice = item.discountedPrice || item.price
+      const itemPriceWithTax = itemPrice * 1.18
+      
+      return {
+        id: item.id,
+        name: item.title.substring(0, 64), // Iyzico max 64 karakter
+        category1: 'Eğitim',
+        category2: 'Online Kurs',
+        itemType: Iyzipay.BASKET_ITEM_TYPE.VIRTUAL,
+        price: itemPriceWithTax.toFixed(2)
+      }
     })
+
+    // Benzersiz conversation ID
+    const conversationId = `${session.user.id}_${Date.now()}`
+    
+    // Kullanıcı adını parçala
+    const nameParts = (user.name || 'Kullanıcı').split(' ')
+    const firstName = nameParts[0] || 'Kullanıcı'
+    const lastName = nameParts.slice(1).join(' ') || 'Soyadı'
+    
+    // Kullanıcı IP adresini al
+    const userIp = getClientIp(request)
+
+    // Iyzico ödeme isteği hazırla
+    const paymentRequest: IyzicoPaymentRequest = {
+      locale: 'tr',
+      conversationId: conversationId,
+      price: totalWithTax.toFixed(2),
+      paidPrice: totalWithTax.toFixed(2),
+      currency: 'TRY',
+      basketId: conversationId,
+      paymentGroup: 'PRODUCT',
+      callbackUrl: `${process.env.NEXTAUTH_URL}/api/iyzico/callback`,
+      enabledInstallments: [1, 2, 3, 6, 9],
+      buyer: {
+        id: session.user.id,
+        name: firstName,
+        surname: lastName,
+        gsmNumber: user.phone || '+905555555555',
+        email: user.email,
+        identityNumber: '11111111111', // Sandbox için sabit
+        registrationAddress: 'Online Eğitim Platformu',
+        ip: userIp,
+        city: 'Istanbul',
+        country: 'Turkey'
+      },
+      shippingAddress: {
+        contactName: `${firstName} ${lastName}`,
+        city: 'Istanbul',
+        country: 'Turkey',
+        address: 'Online Eğitim Platformu'
+      },
+      billingAddress: {
+        contactName: `${firstName} ${lastName}`,
+        city: 'Istanbul',
+        country: 'Turkey',
+        address: 'Online Eğitim Platformu'
+      },
+      basketItems: basketItems
+    }
+
+    // Iyzico ödeme formunu oluştur
+    const result = await createCheckoutForm(paymentRequest)
+
+    if (result.status === 'success' && result.checkoutFormContent) {
+      // Her kurs için ödeme kaydı oluştur (callback'te kullanmak için)
+      for (const courseId of courseIds) {
+        const courseItem = items.find((item: CartItem) => item.id === courseId)
+        const coursePrice = courseItem ? (courseItem.discountedPrice || courseItem.price) * 1.18 : 0
+        
+        await prisma.payment.create({
+          data: {
+            userId: session.user.id,
+            courseId: courseId,
+            amount: coursePrice,
+            currency: 'TRY',
+            status: 'PENDING',
+            stripePaymentId: conversationId, // conversationId'yi sakla
+          }
+        })
+      }
+
+      return NextResponse.json({
+        success: true,
+        paymentPageUrl: result.paymentPageUrl,
+        checkoutFormContent: result.checkoutFormContent,
+        token: result.token,
+        conversationId: conversationId,
+        items: courseIds // Callback'te kullanmak için
+      })
+    } else {
+      console.error('Iyzico error:', result)
+      return NextResponse.json(
+        { error: result.errorMessage || 'Ödeme formu oluşturulamadı' },
+        { status: 400 }
+      )
+    }
   } catch (error) {
     console.error('Checkout error:', error)
     return NextResponse.json(

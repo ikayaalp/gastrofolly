@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useCart } from '@/contexts/CartContext'
@@ -8,11 +8,18 @@ import { ChefHat, CreditCard, Lock, ArrowLeft, Home, BookOpen, Users, MessageCir
 import Link from 'next/link'
 import Image from 'next/image'
 
+declare global {
+  interface Window {
+    iyziInit?: () => void
+  }
+}
+
 export default function CheckoutPage() {
   const { data: session } = useSession()
   const router = useRouter()
-  const { state } = useCart()
+  const { state, dispatch } = useCart()
   const [isProcessing, setIsProcessing] = useState(false)
+  const [checkoutFormContent, setCheckoutFormContent] = useState<string | null>(null)
 
   if (!session) {
     router.push('/auth/signin')
@@ -26,11 +33,32 @@ export default function CheckoutPage() {
 
   const totalWithTax = state.total * 1.18
 
+  useEffect(() => {
+    // Iyzico form içeriği yüklendiğinde script'leri çalıştır
+    if (checkoutFormContent) {
+      // Script'leri çalıştır
+      const scripts = document.querySelectorAll('#iyzico-checkout-form script')
+      scripts.forEach((oldScript) => {
+        const newScript = document.createElement('script')
+        Array.from(oldScript.attributes).forEach((attr) => {
+          newScript.setAttribute(attr.name, attr.value)
+        })
+        newScript.appendChild(document.createTextNode(oldScript.innerHTML))
+        oldScript.parentNode?.replaceChild(newScript, oldScript)
+      })
+
+      // iyziInit fonksiyonunu çağır
+      if (typeof window.iyziInit === 'function') {
+        window.iyziInit()
+      }
+    }
+  }, [checkoutFormContent])
+
   const handleCheckout = async () => {
     setIsProcessing(true)
 
     try {
-      // Create checkout session with Stripe
+      // Iyzico ödeme formu oluştur
       const response = await fetch('/api/checkout', {
         method: 'POST',
         headers: {
@@ -38,25 +66,65 @@ export default function CheckoutPage() {
         },
         body: JSON.stringify({
           items: state.items,
-          total: totalWithTax,
+          total: state.total,
         }),
       })
 
       const data = await response.json()
 
-      if (response.ok) {
-        // Başarılı mesajı göster ve kurslara yönlendir
-        alert(data.message || 'Kurslar başarıyla satın alındı!')
-        router.push(data.redirectUrl || '/my-courses?success=true')
+      if (response.ok && data.checkoutFormContent) {
+        // Ödeme formunu göster
+        setCheckoutFormContent(data.checkoutFormContent)
       } else {
         alert(data.error || 'Ödeme işlemi başlatılamadı.')
+        setIsProcessing(false)
       }
     } catch (error) {
       console.error('Checkout error:', error)
       alert('Bir hata oluştu. Lütfen tekrar deneyin.')
-    } finally {
       setIsProcessing(false)
     }
+  }
+
+  // Eğer ödeme formu gösteriliyorsa
+  if (checkoutFormContent) {
+    return (
+      <div className="min-h-screen bg-black">
+        {/* Desktop Header */}
+        <header className="hidden md:block bg-gray-900/30 border-b border-gray-800">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center py-4">
+              <div className="flex items-center space-x-8">
+                <Link href="/home" className="flex items-center space-x-2">
+                  <ChefHat className="h-8 w-8 text-orange-500" />
+                  <span className="text-2xl font-bold text-white">Chef2.0</span>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Mobile Top Bar */}
+        <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
+          <div className="flex justify-between items-center py-3 px-4">
+            <Link href="/home" className="flex items-center space-x-2">
+              <ChefHat className="h-6 w-6 text-orange-500" />
+              <span className="text-lg font-bold text-white">Chef2.0</span>
+            </Link>
+          </div>
+        </div>
+
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-20 md:pt-8">
+          <h1 className="text-3xl font-bold text-white mb-8">Ödeme</h1>
+          
+          {/* Iyzico Checkout Form */}
+          <div 
+            id="iyzico-checkout-form"
+            dangerouslySetInnerHTML={{ __html: checkoutFormContent }}
+          />
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -181,7 +249,7 @@ export default function CheckoutPage() {
                     <CreditCard className="h-6 w-6 text-orange-500 mr-3" />
                     <div>
                       <p className="text-white font-semibold">Kredi/Banka Kartı</p>
-                      <p className="text-gray-400 text-sm">Stripe ile güvenli ödeme</p>
+                      <p className="text-gray-400 text-sm">iyzico ile güvenli ödeme</p>
                     </div>
                   </div>
                 </div>
