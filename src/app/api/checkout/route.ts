@@ -3,7 +3,6 @@ import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { createCheckoutForm, IyzicoPaymentRequest } from "@/lib/iyzico"
-import Iyzipay from 'iyzipay'
 
 interface CartItem {
   id: string
@@ -89,7 +88,7 @@ export async function POST(request: NextRequest) {
         name: item.title.substring(0, 64), // Iyzico max 64 karakter
         category1: 'Eğitim',
         category2: 'Online Kurs',
-        itemType: Iyzipay.BASKET_ITEM_TYPE.VIRTUAL,
+        itemType: 'VIRTUAL',
         price: itemPriceWithTax.toFixed(2)
       }
     })

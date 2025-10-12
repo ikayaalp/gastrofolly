@@ -1,11 +1,48 @@
-import Iyzipay from 'iyzipay'
+import crypto from 'crypto'
 
 // Iyzico yapılandırması
-export const iyzico = new Iyzipay({
+const IYZICO_CONFIG = {
   apiKey: process.env.IYZICO_API_KEY || 'sandbox-eq7YZQDpwxzkr9YHnq9xdYoR5OMXEQSuve',
   secretKey: process.env.IYZICO_SECRET_KEY || 'sandbox-QXZ7ogP4KUdnG9OeLV8yIdBr3xwu6M27',
-  uri: process.env.IYZICO_BASE_URL || 'https://sandbox-api.iyzipay.com'
-})
+  baseUrl: process.env.IYZICO_BASE_URL || 'https://sandbox-api.iyzipay.com'
+}
+
+/**
+ * İyzico için authorization header oluşturur
+ */
+function generateAuthHeader(url: string, requestBody: string): string {
+  const randomString = crypto.randomBytes(8).toString('hex')
+  const dataToSign = randomString + url + requestBody
+  
+  const hash = crypto
+    .createHmac('sha256', IYZICO_CONFIG.secretKey)
+    .update(dataToSign, 'utf8')
+    .digest('base64')
+  
+  return `IYZWS ${IYZICO_CONFIG.apiKey}:${hash}:${randomString}`
+}
+
+/**
+ * İyzico API'ye istek gönderir
+ */
+async function makeIyzicoRequest<T>(endpoint: string, requestBody: unknown): Promise<T> {
+  const url = `${IYZICO_CONFIG.baseUrl}${endpoint}`
+  const bodyString = JSON.stringify(requestBody)
+  
+  const authHeader = generateAuthHeader(endpoint, bodyString)
+  
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': authHeader,
+      'x-iyzi-rnd': crypto.randomBytes(8).toString('hex')
+    },
+    body: bodyString
+  })
+  
+  return response.json() as Promise<T>
+}
 
 export interface IyzicoPaymentItem {
   id: string
@@ -98,37 +135,20 @@ export interface IyzicoPaymentResult {
 /**
  * Iyzico ödeme formu oluşturur
  */
-export const createCheckoutForm = (paymentRequest: IyzicoPaymentRequest): Promise<IyzicoCheckoutFormResult> => {
-  return new Promise((resolve, reject) => {
-    iyzico.checkoutFormInitialize.create(paymentRequest, (err: Error | null, result: IyzicoCheckoutFormResult) => {
-      if (err) {
-        reject(err)
-      } else {
-        resolve(result)
-      }
-    })
-  })
+export const createCheckoutForm = async (paymentRequest: IyzicoPaymentRequest): Promise<IyzicoCheckoutFormResult> => {
+  return makeIyzicoRequest<IyzicoCheckoutFormResult>('/payment/iyzipos/checkoutform/initialize/auth/ecom', paymentRequest)
 }
 
 /**
  * Iyzico ödeme sonucunu kontrol eder
  */
-export const retrieveCheckoutForm = (token: string): Promise<IyzicoPaymentResult> => {
-  return new Promise((resolve, reject) => {
-    iyzico.checkoutForm.retrieve(
-      {
-        locale: 'tr',
-        conversationId: Date.now().toString(),
-        token: token
-      },
-      (err: Error | null, result: IyzicoPaymentResult) => {
-        if (err) {
-          reject(err)
-        } else {
-          resolve(result)
-        }
-      }
-    )
-  })
+export const retrieveCheckoutForm = async (token: string): Promise<IyzicoPaymentResult> => {
+  const request = {
+    locale: 'tr',
+    conversationId: Date.now().toString(),
+    token: token
+  }
+  
+  return makeIyzicoRequest<IyzicoPaymentResult>('/payment/iyzipos/checkoutform/auth/ecom/detail', request)
 }
 
