@@ -17,19 +17,9 @@ declare global {
 export default function CheckoutPage() {
   const { data: session } = useSession()
   const router = useRouter()
-  const { state, dispatch } = useCart()
+  const { state } = useCart()
   const [isProcessing, setIsProcessing] = useState(false)
   const [checkoutFormContent, setCheckoutFormContent] = useState<string | null>(null)
-
-  if (!session) {
-    router.push('/auth/signin')
-    return null
-  }
-
-  if (state.items.length === 0) {
-    router.push('/cart')
-    return null
-  }
 
   const totalWithTax = state.total * 1.18
 
@@ -53,6 +43,16 @@ export default function CheckoutPage() {
       }
     }
   }, [checkoutFormContent])
+
+  if (!session) {
+    router.push('/auth/signin')
+    return null
+  }
+
+  if (state.items.length === 0) {
+    router.push('/cart')
+    return null
+  }
 
   const handleCheckout = async () => {
     setIsProcessing(true)
