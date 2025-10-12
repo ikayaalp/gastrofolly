@@ -97,9 +97,8 @@ export async function POST(request: NextRequest) {
         category1: 'Eğitim',
         category2: 'Online Kurs',
         itemType: 'VIRTUAL',
-        price: itemPriceWithTax.toFixed(2),
-        subMerchantKey: '',
-        subMerchantPrice: itemPriceWithTax.toFixed(2)
+        price: itemPriceWithTax.toFixed(2)
+        // subMerchantKey ve subMerchantPrice - Pazaryeri değilse GÖNDERMEYİN
       }
     })
 
