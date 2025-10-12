@@ -163,6 +163,11 @@ export default async function LearnPage({ params, searchParams }: LearnPageProps
     }
   }
 
+  // TypeScript için data'nın null olmadığını garanti et
+  if (!data || !data.course) {
+    redirect(`/course/${courseId}`)
+  }
+
   const { course, progress } = data
 
   // Önerilen kursları al
