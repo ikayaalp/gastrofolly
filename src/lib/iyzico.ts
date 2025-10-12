@@ -9,39 +9,47 @@ const IYZICO_CONFIG = {
 
 /**
  * İyzico için authorization header oluşturur
- * Döndürdüğü obje: { authHeader, randomString }
- * (Not: önceki kullanımda tek string dönüyordu; şimdi auth ve randomString beraber dönüyor.
- *  getIyzicoHeaders buna göre güncellendi — geri kalan kod aynı kalmalı.)
+ * İyzico'nun beklediği tam format: randomString + endpoint + requestBody
  */
 function generateAuthHeader(endpoint: string, requestBody: string): { authHeader: string; randomString: string } {
-  // Tek bir randomString üret
+  // 8 byte random string (16 hex karakter)
   const randomString = crypto.randomBytes(8).toString('hex')
 
   // İyzico'nun beklediği format: randomString + endpoint + requestBody
+  // Alternatif format da deneyelim: endpoint + randomString + requestBody
   const dataToSign = randomString + endpoint + requestBody
+  
+  console.log('İmza için kullanılan format:', {
+    format: 'randomString + endpoint + requestBody',
+    randomString,
+    endpoint,
+    requestBodyStart: requestBody.substring(0, 50) + '...'
+  })
 
-  // (Opsiyonel) debug log — üretimde kapatabilirsin
   console.log('İmza için kullanılan data:', {
     randomString,
     endpoint,
     requestBodyLength: requestBody.length,
-    dataToSignLength: dataToSign.length
+    dataToSignLength: dataToSign.length,
+    dataToSignPreview: dataToSign.substring(0, 100) + '...'
   })
 
+  // HMAC-SHA256 ile imza oluştur
   const hash = crypto
     .createHmac('sha256', IYZICO_CONFIG.secretKey)
     .update(dataToSign, 'utf8')
     .digest('base64')
 
+  // İyzico'nun beklediği header formatı
   const authHeader = `IYZWS ${IYZICO_CONFIG.apiKey}:${hash}:${randomString}`
 
-  // (Opsiyonel) debug log
   console.log('Oluşturulan auth header:', {
     format: 'IYZWS apiKey:hash:randomString',
     apiKey: IYZICO_CONFIG.apiKey.substring(0, 15) + '...',
     hash: hash.substring(0, 20) + '...',
     randomString,
-    fullHeader: authHeader.substring(0, 60) + '...'
+    fullHeader: authHeader.substring(0, 60) + '...',
+    secretKeyUsed: IYZICO_CONFIG.secretKey.substring(0, 15) + '...'
   })
 
   return { authHeader, randomString }
@@ -49,17 +57,24 @@ function generateAuthHeader(endpoint: string, requestBody: string): { authHeader
 
 /**
  * İyzico için gerekli header'ları oluşturur
- * (Artık aynı randomString hem Authorization içinde hem x-iyzi-rnd'de kullanılıyor)
+ * İyzico'nun beklediği header formatı
  */
 function getIyzicoHeaders(endpoint: string, requestBody: string) {
-  // generateAuthHeader tek bir randomString üretip döndürür
   const { authHeader, randomString } = generateAuthHeader(endpoint, requestBody)
 
-  return {
+  const headers = {
     'Content-Type': 'application/json',
     'Authorization': authHeader,
     'x-iyzi-rnd': randomString
   }
+
+  console.log('Final Headers:', {
+    'Content-Type': headers['Content-Type'],
+    'Authorization': headers['Authorization'].substring(0, 80) + '...',
+    'x-iyzi-rnd': headers['x-iyzi-rnd']
+  })
+
+  return headers
 }
 
 /**
