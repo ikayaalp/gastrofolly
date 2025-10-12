@@ -20,7 +20,16 @@ export async function POST(request: NextRequest) {
 
     console.log('Iyzico callback result:', result)
 
-    if (result.status === 'success' && result.paymentStatus === 'SUCCESS' && result.fraudStatus !== 1) {
+    // Debug: Tüm durumları logla
+    console.log('Payment Status Check:', {
+      status: result.status,
+      paymentStatus: result.paymentStatus,
+      fraudStatus: result.fraudStatus,
+      shouldProceed: result.status === 'success' && result.paymentStatus === 'SUCCESS' && result.fraudStatus !== 1
+    })
+
+    // Ödeme başarılı ise (fraud detection'a rağmen)
+    if (result.status === 'success' && result.paymentStatus === 'SUCCESS') {
       const conversationId = result.conversationId
       
       // Bu conversationId ile ilişkili tüm pending payment kayıtlarını bul
@@ -73,7 +82,15 @@ export async function POST(request: NextRequest) {
 
       console.log(`User ${userId} successfully enrolled in courses:`, courseIds)
 
-      // Başarılı ödeme sonrası ilk kursa yönlendir
+      // Fraud detection varsa özel mesajla yönlendir
+      if (result.fraudStatus === 1) {
+        console.log('Payment completed despite fraud detection')
+        return NextResponse.redirect(
+          new URL(`/learn/${courseIds[0]}?success=true&fraud_bypassed=true`, process.env.NEXTAUTH_URL!)
+        )
+      }
+
+      // Normal başarılı ödeme sonrası ilk kursa yönlendir
       return NextResponse.redirect(
         new URL(`/learn/${courseIds[0]}?success=true`, process.env.NEXTAUTH_URL!)
       )

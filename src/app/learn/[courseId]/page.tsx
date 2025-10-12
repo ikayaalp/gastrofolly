@@ -7,7 +7,7 @@ import CourseSidebar from "@/components/learn/CourseSidebar"
 import CommentsSection from "@/components/course/CommentsSection"
 import RecommendedCourses from "@/components/course/RecommendedCourses"
 import Link from "next/link"
-import { Home, BookOpen, Users, MessageCircle, ChefHat } from "lucide-react"
+import { Home, BookOpen, Users, MessageCircle, ChefHat, CheckCircle } from "lucide-react"
 import UserDropdown from "@/components/ui/UserDropdown"
 
 interface LearnPageProps {
@@ -16,6 +16,8 @@ interface LearnPageProps {
   }>
   searchParams: Promise<{
     lesson?: string
+    success?: string
+    fraud_bypassed?: string
   }>
 }
 
@@ -164,6 +166,28 @@ export default async function LearnPage({ params, searchParams }: LearnPageProps
           <UserDropdown />
         </div>
       </div>
+
+      {/* Success Alert */}
+      {resolvedSearchParams?.success && (
+        <div className="fixed top-20 left-4 right-4 z-40 md:top-4 md:left-auto md:right-4 md:w-96">
+          <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4">
+            <div className="flex items-center">
+              <div className="bg-green-500 rounded-full p-2 mr-3">
+                <CheckCircle className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h3 className="text-green-400 font-semibold text-lg">Ödeme Başarılı!</h3>
+                <p className="text-gray-300 text-sm">
+                  {resolvedSearchParams?.fraud_bypassed 
+                    ? "Ödeme tamamlandı. Kursunuza hoş geldiniz!"
+                    : "Kursunuz başarıyla satın alındı. İyi öğrenmeler!"
+                  }
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex pt-16 md:pt-0">
         {/* Main Content */}
