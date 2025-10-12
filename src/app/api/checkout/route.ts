@@ -89,7 +89,9 @@ export async function POST(request: NextRequest) {
         category1: 'Eğitim',
         category2: 'Online Kurs',
         itemType: 'VIRTUAL',
-        price: itemPriceWithTax.toFixed(2)
+        price: itemPriceWithTax.toFixed(2),
+        subMerchantKey: '',
+        subMerchantPrice: itemPriceWithTax.toFixed(2)
       }
     })
 
@@ -123,6 +125,9 @@ export async function POST(request: NextRequest) {
         email: user.email,
         identityNumber: '11111111111', // Sandbox için sabit
         registrationAddress: 'Online Eğitim Platformu',
+        lastLoginDate: new Date().toISOString().split('T')[0] + ' 12:00:00',
+        registrationDate: new Date().toISOString().split('T')[0] + ' 12:00:00',
+        zipCode: '34000',
         ip: userIp,
         city: 'Istanbul',
         country: 'Turkey'
@@ -131,13 +136,15 @@ export async function POST(request: NextRequest) {
         contactName: `${firstName} ${lastName}`,
         city: 'Istanbul',
         country: 'Turkey',
-        address: 'Online Eğitim Platformu'
+        address: 'Online Eğitim Platformu',
+        zipCode: '34000'
       },
       billingAddress: {
         contactName: `${firstName} ${lastName}`,
         city: 'Istanbul',
         country: 'Turkey',
-        address: 'Online Eğitim Platformu'
+        address: 'Online Eğitim Platformu',
+        zipCode: '34000'
       },
       basketItems: basketItems
     }

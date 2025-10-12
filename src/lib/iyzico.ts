@@ -122,6 +122,8 @@ export interface IyzicoPaymentItem {
   category2?: string
   itemType: string
   price: string
+  subMerchantKey?: string
+  subMerchantPrice?: string
 }
 
 export interface IyzicoPaymentRequest {
@@ -142,6 +144,9 @@ export interface IyzicoPaymentRequest {
     email: string
     identityNumber: string
     registrationAddress: string
+    lastLoginDate?: string
+    registrationDate?: string
+    zipCode?: string
     ip: string
     city: string
     country: string
@@ -151,12 +156,14 @@ export interface IyzicoPaymentRequest {
     city: string
     country: string
     address: string
+    zipCode?: string
   }
   billingAddress: {
     contactName: string
     city: string
     country: string
     address: string
+    zipCode?: string
   }
   basketItems: IyzicoPaymentItem[]
 }
