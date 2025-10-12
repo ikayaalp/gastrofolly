@@ -77,13 +77,36 @@ export async function POST(request: NextRequest) {
       return NextResponse.redirect(
         new URL(`/learn/${courseIds[0]}?success=true`, process.env.NEXTAUTH_URL!)
       )
-    } else {
-      // Ödeme başarısız
-      console.error('Payment failed:', result)
-      return NextResponse.redirect(
-        new URL(`/cart?error=${result.errorMessage || 'payment_failed'}`, process.env.NEXTAUTH_URL!)
-      )
-    }
+        } else {
+          // Ödeme başarısız - detaylı log
+          console.error('Payment failed - İyzico Response:', {
+            status: result.status,
+            errorCode: result.errorCode,
+            errorMessage: result.errorMessage,
+            errorGroup: result.errorGroup,
+            conversationId: result.conversationId,
+            paymentId: result.paymentId,
+            fraudStatus: result.fraudStatus
+          })
+          
+          // Hata mesajını daha kullanıcı dostu hale getir
+          let userFriendlyError = 'payment_failed'
+          if (result.errorCode === '1000') {
+            userFriendlyError = 'Geçersiz kart bilgileri'
+          } else if (result.errorCode === '1001') {
+            userFriendlyError = 'Kart bilgileri bulunamadı'
+          } else if (result.errorCode === '1003') {
+            userFriendlyError = 'Yetersiz bakiye'
+          } else if (result.errorCode === '1004') {
+            userFriendlyError = 'Kart kullanılamıyor'
+          } else if (result.errorMessage) {
+            userFriendlyError = result.errorMessage
+          }
+          
+          return NextResponse.redirect(
+            new URL(`/cart?error=${encodeURIComponent(userFriendlyError)}`, process.env.NEXTAUTH_URL!)
+          )
+        }
   } catch (error) {
     console.error('Callback error:', error)
     return NextResponse.redirect(

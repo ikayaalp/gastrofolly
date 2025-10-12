@@ -4,8 +4,8 @@ import { useCart } from '@/contexts/CartContext'
 import { ChefHat, Trash2, ShoppingBag, ArrowLeft, Search, Bell, Home, BookOpen, Users, MessageCircle } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useState, useEffect } from 'react'
 import DiscountCode from '@/components/cart/DiscountCode'
 import UserDropdown from '@/components/ui/UserDropdown'
 import SearchModal from '@/components/ui/SearchModal'
@@ -14,9 +14,11 @@ import { useSession } from 'next-auth/react'
 export default function CartPage() {
   const { state, removeItem, clearCart } = useCart()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { data: session } = useSession()
   const [appliedDiscount, setAppliedDiscount] = useState<{ code: string; percentage: number; amount: number } | null>(null)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const handleCheckout = () => {
     if (state.items.length === 0) return
@@ -32,6 +34,18 @@ export default function CartPage() {
   const handleDiscountRemoved = () => {
     setAppliedDiscount(null)
   }
+
+  // URL'den error parametresini kontrol et
+  useEffect(() => {
+    const error = searchParams.get('error')
+    if (error) {
+      setErrorMessage(decodeURIComponent(error))
+      // URL'den error parametresini temizle
+      const newUrl = new URL(window.location.href)
+      newUrl.searchParams.delete('error')
+      window.history.replaceState({}, '', newUrl.toString())
+    }
+  }, [searchParams])
 
   // Fiyat hesaplamaları
   const subtotal = state.total
@@ -118,6 +132,33 @@ export default function CartPage() {
             </div>
           </div>
         </div>
+
+        {/* Error Alert */}
+        {errorMessage && (
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:pt-24">
+            <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-6 mb-8">
+              <div className="flex items-center">
+                <div className="bg-red-500 rounded-full p-2 mr-4">
+                  <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-red-400 font-semibold text-lg mb-1">Ödeme Hatası</h3>
+                  <p className="text-gray-300">{errorMessage}</p>
+                </div>
+                <button
+                  onClick={() => setErrorMessage(null)}
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Empty Cart */}
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:pt-24">
@@ -225,6 +266,33 @@ export default function CartPage() {
             Sepeti Temizle
           </button>
         </div>
+
+        {/* Error Alert */}
+        {errorMessage && (
+          <div className="mb-8">
+            <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-6">
+              <div className="flex items-center">
+                <div className="bg-red-500 rounded-full p-2 mr-4">
+                  <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-red-400 font-semibold text-lg mb-1">Ödeme Hatası</h3>
+                  <p className="text-gray-300">{errorMessage}</p>
+                </div>
+                <button
+                  onClick={() => setErrorMessage(null)}
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Cart Items */}
