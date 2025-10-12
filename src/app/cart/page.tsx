@@ -5,17 +5,17 @@ import { ChefHat, Trash2, ShoppingBag, ArrowLeft, Search, Bell, Home, BookOpen, 
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import DiscountCode from '@/components/cart/DiscountCode'
 import UserDropdown from '@/components/ui/UserDropdown'
 import SearchModal from '@/components/ui/SearchModal'
 import { useSession } from 'next-auth/react'
 
-export default function CartPage() {
+function CartPageContent() {
   const { state, removeItem, clearCart } = useCart()
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const [appliedDiscount, setAppliedDiscount] = useState<{ code: string; percentage: number; amount: number } | null>(null)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -46,6 +46,18 @@ export default function CartPage() {
       window.history.replaceState({}, '', newUrl.toString())
     }
   }, [searchParams])
+
+  // Session yükleniyor mu kontrol et
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <p className="text-white">Yükleniyor...</p>
+        </div>
+      </div>
+    )
+  }
 
   // Fiyat hesaplamaları
   const subtotal = state.total
@@ -459,5 +471,20 @@ export default function CartPage() {
         onClose={() => setIsSearchOpen(false)} 
       />
     </div>
+  )
+}
+
+export default function CartPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <p className="text-white">Yükleniyor...</p>
+        </div>
+      </div>
+    }>
+      <CartPageContent />
+    </Suspense>
   )
 }
