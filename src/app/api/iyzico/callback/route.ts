@@ -3,6 +3,84 @@ import { retrieveCheckoutForm } from "@/lib/iyzico"
 import { prisma } from "@/lib/prisma"
 
 /**
+ * ConversationId ile ödeme kontrolü yapar
+ */
+async function handlePaymentWithConversationId(conversationId: string) {
+  try {
+    // Bu conversationId ile ilişkili tüm pending payment kayıtlarını bul
+    let payments = await prisma.payment.findMany({
+      where: {
+        stripePaymentId: conversationId,
+        status: 'PENDING'
+      }
+    })
+
+    // Eğer bulunamadıysa, basketId formatında ara
+    if (payments.length === 0) {
+      console.log('ConversationId ile bulunamadı, basketId formatında arayalım')
+      payments = await prisma.payment.findMany({
+        where: {
+          stripePaymentId: { contains: conversationId },
+          status: 'PENDING'
+        }
+      })
+    }
+
+    if (payments.length === 0) {
+      console.error('Payment records not found for conversationId:', conversationId)
+      return NextResponse.redirect(new URL('/cart?error=payment_not_found', process.env.NEXTAUTH_URL!))
+    }
+
+    // UserId'yi payment kayıtlarından al
+    const userId = payments[0].userId
+
+    // Tüm ödeme kayıtlarını güncelle ve enrollment oluştur
+    const courseIds = []
+    for (const payment of payments) {
+      // Payment kaydını güncelle
+      await prisma.payment.update({
+        where: { id: payment.id },
+        data: {
+          status: 'COMPLETED',
+          stripePaymentId: conversationId,
+        }
+      })
+
+      // Enrollment kontrolü ve oluşturma
+      const existingEnrollment = await prisma.enrollment.findFirst({
+        where: {
+          userId: userId,
+          courseId: payment.courseId
+        }
+      })
+
+      if (!existingEnrollment) {
+        await prisma.enrollment.create({
+          data: {
+            userId: userId,
+            courseId: payment.courseId,
+          }
+        })
+      }
+      
+      courseIds.push(payment.courseId)
+    }
+
+    console.log(`User ${userId} successfully enrolled in courses via conversationId:`, courseIds)
+
+    // Kurs detay sayfasına yönlendir
+    return NextResponse.redirect(
+      new URL(`/course/${courseIds[0]}?success=true&conversationId_used=true`, process.env.NEXTAUTH_URL!)
+    )
+  } catch (error) {
+    console.error('handlePaymentWithConversationId error:', error)
+    return NextResponse.redirect(
+      new URL('/cart?error=conversationId_error', process.env.NEXTAUTH_URL!)
+    )
+  }
+}
+
+/**
  * Iyzico ödeme callback endpoint
  * Ödeme tamamlandığında Iyzico bu endpoint'e yönlendirir
  */
@@ -10,8 +88,25 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const token = searchParams.get('token')
+    
+    // Debug: Tüm parametreleri logla
+    console.log('Callback URL:', request.url)
+    console.log('Search params:', Object.fromEntries(searchParams.entries()))
+    console.log('Token found:', token)
 
     if (!token) {
+      console.error('No token found in callback URL')
+      // Token yoksa diğer parametreleri de kontrol et
+      const conversationId = searchParams.get('conversationId')
+      const status = searchParams.get('status')
+      console.log('Alternative params - conversationId:', conversationId, 'status:', status)
+      
+      if (conversationId) {
+        // ConversationId ile direkt ödeme kontrolü yap
+        console.log('Using conversationId for payment verification:', conversationId)
+        return await handlePaymentWithConversationId(conversationId)
+      }
+      
       return NextResponse.redirect(new URL('/cart?error=payment_token_missing', process.env.NEXTAUTH_URL!))
     }
 
