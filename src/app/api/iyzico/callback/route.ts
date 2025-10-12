@@ -6,13 +6,13 @@ import { prisma } from "@/lib/prisma"
  * Iyzico ödeme callback endpoint
  * Ödeme tamamlandığında Iyzico bu endpoint'e yönlendirir
  */
-export async function POST(request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
-    const formData = await request.formData()
-    const token = formData.get('token') as string
+    const { searchParams } = new URL(request.url)
+    const token = searchParams.get('token')
 
     if (!token) {
-      return NextResponse.redirect(new URL('/cart?error=no_token', process.env.NEXTAUTH_URL!))
+      return NextResponse.redirect(new URL('/cart?error=payment_token_missing', process.env.NEXTAUTH_URL!))
     }
 
     // Ödeme sonucunu Iyzico'dan al
@@ -152,77 +152,9 @@ export async function POST(request: NextRequest) {
 }
 
 /**
- * GET endpoint for testing
+ * POST endpoint - İyzico bazen POST request de gönderebilir
  */
-export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams
-  const token = searchParams.get('token')
-
-  if (!token) {
-    return NextResponse.redirect(new URL('/cart?error=no_token', process.env.NEXTAUTH_URL!))
-  }
-
-  try {
-    const result = await retrieveCheckoutForm(token)
-    
-    if (result.status === 'success' && result.paymentStatus === 'SUCCESS') {
-      const conversationId = result.conversationId
-      
-      const payments = await prisma.payment.findMany({
-        where: {
-          stripePaymentId: conversationId,
-          status: 'PENDING'
-        }
-      })
-
-      if (payments.length === 0) {
-        return NextResponse.redirect(new URL('/cart?error=payment_not_found', process.env.NEXTAUTH_URL!))
-      }
-
-      const userId = conversationId.split('_')[0]
-      const courseIds = []
-
-      for (const payment of payments) {
-        await prisma.payment.update({
-          where: { id: payment.id },
-          data: {
-            status: 'COMPLETED',
-            stripePaymentId: result.paymentId || conversationId,
-          }
-        })
-
-        const existingEnrollment = await prisma.enrollment.findFirst({
-          where: {
-            userId: userId,
-            courseId: payment.courseId
-          }
-        })
-
-        if (!existingEnrollment) {
-          await prisma.enrollment.create({
-            data: {
-              userId: userId,
-              courseId: payment.courseId,
-            }
-          })
-        }
-        
-        courseIds.push(payment.courseId)
-      }
-
-      return NextResponse.redirect(
-        new URL(`/learn/${courseIds[0]}?success=true`, process.env.NEXTAUTH_URL!)
-      )
-    } else {
-      return NextResponse.redirect(
-        new URL(`/cart?error=${result.errorMessage || 'payment_failed'}`, process.env.NEXTAUTH_URL!)
-      )
-    }
-  } catch (error) {
-    console.error('Callback error:', error)
-    return NextResponse.redirect(
-      new URL('/cart?error=callback_error', process.env.NEXTAUTH_URL!)
-    )
-  }
+export async function POST(request: NextRequest) {
+  // GET fonksiyonu ile aynı işlemi yap
+  return GET(request)
 }
-
