@@ -3,6 +3,78 @@ import { retrieveCheckoutForm } from "@/lib/iyzico"
 import { prisma } from "@/lib/prisma"
 
 /**
+ * Son pending payment'ları kontrol eder (parametre yoksa)
+ */
+async function handleRecentPayment() {
+  try {
+    // Son 5 dakikadaki pending payment'ları bul
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000)
+    
+    const recentPayments = await prisma.payment.findMany({
+      where: {
+        status: 'PENDING',
+        createdAt: {
+          gte: fiveMinutesAgo
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      },
+      take: 1
+    })
+
+    if (recentPayments.length === 0) {
+      console.error('No recent pending payments found')
+      return NextResponse.redirect(new URL('/cart?error=no_recent_payment', process.env.NEXTAUTH_URL!))
+    }
+
+    const payment = recentPayments[0]
+    console.log('Found recent payment:', payment)
+
+    // UserId'yi payment kayıtlarından al
+    const userId = payment.userId
+
+    // Payment kaydını güncelle ve enrollment oluştur
+    await prisma.payment.update({
+      where: { id: payment.id },
+      data: {
+        status: 'COMPLETED',
+        stripePaymentId: payment.stripePaymentId,
+      }
+    })
+
+    // Enrollment kontrolü ve oluşturma
+    const existingEnrollment = await prisma.enrollment.findFirst({
+      where: {
+        userId: userId,
+        courseId: payment.courseId
+      }
+    })
+
+    if (!existingEnrollment) {
+      await prisma.enrollment.create({
+        data: {
+          userId: userId,
+          courseId: payment.courseId,
+        }
+      })
+    }
+
+    console.log(`User ${userId} successfully enrolled in course ${payment.courseId} via recent payment`)
+
+    // Kurs detay sayfasına yönlendir
+    return NextResponse.redirect(
+      new URL(`/course/${payment.courseId}?success=true&recent_payment=true`, process.env.NEXTAUTH_URL!)
+    )
+  } catch (error) {
+    console.error('handleRecentPayment error:', error)
+    return NextResponse.redirect(
+      new URL('/cart?error=recent_payment_error', process.env.NEXTAUTH_URL!)
+    )
+  }
+}
+
+/**
  * ConversationId ile ödeme kontrolü yapar
  */
 async function handlePaymentWithConversationId(conversationId: string) {
@@ -100,6 +172,12 @@ export async function GET(request: NextRequest) {
       const conversationId = searchParams.get('conversationId')
       const status = searchParams.get('status')
       console.log('Alternative params - conversationId:', conversationId, 'status:', status)
+      
+      // Eğer hiç parametre yoksa, son pending payment'ı kontrol et
+      if (!conversationId && !status) {
+        console.log('No parameters found, checking recent pending payments')
+        return await handleRecentPayment()
+      }
       
       if (conversationId) {
         // ConversationId ile direkt ödeme kontrolü yap
