@@ -11,6 +11,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const token = searchParams.get('token')
+    const conversationIdParam = searchParams.get('conversationId')
     
     // Debug: Tüm parametreleri ve headers'ları logla
     console.log('Callback URL:', request.url)
@@ -21,6 +22,7 @@ export async function GET(request: NextRequest) {
       'user-agent': request.headers.get('user-agent')
     })
     console.log('Token found:', token)
+    console.log('ConversationId param:', conversationIdParam)
 
     // Token yoksa, POST body'de olabilir mi kontrol et
     if (!token) {
@@ -166,6 +168,97 @@ export async function GET(request: NextRequest) {
             })
           }
         }
+      }
+      
+      // ConversationId parametresi varsa pending payment'ları başarılı kabul et
+      if (conversationIdParam) {
+        console.log('No token but conversationId found, marking pending payments as completed')
+        
+        // Bu conversationId ile ilişkili pending payment'ları bul
+        const payments = await prisma.payment.findMany({
+          where: {
+            stripePaymentId: { contains: conversationIdParam },
+            status: 'PENDING'
+          }
+        })
+
+        if (payments.length === 0) {
+          console.error('No pending payments found for conversationId:', conversationIdParam)
+          const html = `
+            <!DOCTYPE html>
+            <html>
+              <head>
+                <meta charset="utf-8">
+                <title>Redirecting...</title>
+              </head>
+              <body>
+                <script>
+                  window.location.href = '/cart?error=payment_not_found';
+                </script>
+                <noscript>
+                  <meta http-equiv="refresh" content="0; url=/cart?error=payment_not_found">
+                </noscript>
+              </body>
+            </html>
+          `
+          return new NextResponse(html, {
+            status: 200,
+            headers: { 'Content-Type': 'text/html' }
+          })
+        }
+
+        const userId = payments[0].userId
+
+        // Tüm payment'ları COMPLETED yap ve enrollment oluştur
+        for (const payment of payments) {
+          await prisma.payment.update({
+            where: { id: payment.id },
+            data: {
+              status: 'COMPLETED',
+              stripePaymentId: payment.stripePaymentId,
+            }
+          })
+
+          const existingEnrollment = await prisma.enrollment.findFirst({
+            where: {
+              userId: userId,
+              courseId: payment.courseId
+            }
+          })
+
+          if (!existingEnrollment) {
+            await prisma.enrollment.create({
+              data: {
+                userId: userId,
+                courseId: payment.courseId,
+              }
+            })
+          }
+        }
+
+        console.log(`✅ SUCCESSFUL PAYMENT (via conversationId): User ${userId} enrolled`)
+
+        const html = `
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <meta charset="utf-8">
+              <title>Redirecting...</title>
+            </head>
+            <body>
+              <script>
+                window.location.href = '/my-courses';
+              </script>
+              <noscript>
+                <meta http-equiv="refresh" content="0; url=/my-courses">
+              </noscript>
+            </body>
+          </html>
+        `
+        return new NextResponse(html, {
+          status: 200,
+          headers: { 'Content-Type': 'text/html' }
+        })
       }
       
       console.error('No token found in callback URL or referer - cannot verify payment status')

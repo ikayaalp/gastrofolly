@@ -11,6 +11,14 @@ import Image from 'next/image'
 declare global {
   interface Window {
     iyziInit?: () => void
+    iyziCheckoutFormResult?: (result: {
+      status: string
+      conversationId: string
+      token?: string
+      paymentId?: string
+      errorCode?: string
+      errorMessage?: string
+    }) => void
   }
 }
 
@@ -24,6 +32,41 @@ export default function CheckoutPage() {
   const totalWithTax = state.total * 1.18
 
   useEffect(() => {
+    // İyzico callback fonksiyonunu tanımla (ÖNCE bu tanımlanmalı)
+    window.iyziCheckoutFormResult = async (result) => {
+      console.log('İyzico Callback Result:', result)
+      
+      // Token ile ödeme sonucunu kontrol et
+      if (result.token) {
+        try {
+          const response = await fetch(`/api/iyzico/callback?token=${result.token}`)
+          const html = await response.text()
+          
+          // HTML içeriğini parse et ve yönlendirme URL'ini bul
+          const parser = new DOMParser()
+          const doc = parser.parseFromString(html, 'text/html')
+          const script = doc.querySelector('script')
+          
+          if (script && script.textContent) {
+            const match = script.textContent.match(/window\.location\.href = '(.+)'/)
+            if (match && match[1]) {
+              window.location.href = match[1]
+            }
+          }
+        } catch (error) {
+          console.error('Callback error:', error)
+          router.push('/cart?error=callback_error')
+        }
+      } else if (result.status === 'success') {
+        // Token yoksa ama başarılı ise conversationId ile yönlendir
+        router.push('/my-courses')
+      } else {
+        // Başarısız ise sepete yönlendir
+        const errorMsg = result.errorMessage || 'payment_failed'
+        router.push(`/cart?error=${encodeURIComponent(errorMsg)}`)
+      }
+    }
+
     // Iyzico form içeriği yüklendiğinde script'leri çalıştır
     if (checkoutFormContent) {
       // Script'leri çalıştır
@@ -42,7 +85,12 @@ export default function CheckoutPage() {
         window.iyziInit()
       }
     }
-  }, [checkoutFormContent])
+
+    // Cleanup
+    return () => {
+      delete window.iyziCheckoutFormResult
+    }
+  }, [checkoutFormContent, router])
 
   // Session yükleniyor mu kontrol et
   if (status === 'loading') {

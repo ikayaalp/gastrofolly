@@ -113,9 +113,9 @@ export async function POST(request: NextRequest) {
     // Kullanıcı IP adresini al
     const userIp = getClientIp(request)
     
-    // Callback URL'i düzgün oluştur (çift slash olmasın)
+    // Callback URL'i düzgün oluştur (conversationId ile)
     const baseUrl = process.env.NEXTAUTH_URL?.replace(/\/$/, '') || 'https://gastrofolly.vercel.app'
-    const callbackUrl = `${baseUrl}/api/iyzico/callback`
+    const callbackUrl = `${baseUrl}/api/iyzico/callback?conversationId=${conversationId}`
     
     console.log('İstek detayları:', {
       userIp,
