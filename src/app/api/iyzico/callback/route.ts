@@ -25,7 +25,27 @@ async function handleRecentPayment() {
 
     if (recentPayments.length === 0) {
       console.error('No recent pending payments found')
-      return NextResponse.redirect(new URL('/cart?error=no_recent_payment', process.env.NEXTAUTH_URL!))
+      const html = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <title>Redirecting...</title>
+          </head>
+          <body>
+            <script>
+              window.location.href = '/cart?error=no_recent_payment';
+            </script>
+            <noscript>
+              <meta http-equiv="refresh" content="0; url=/cart?error=no_recent_payment">
+            </noscript>
+          </body>
+        </html>
+      `
+      return new NextResponse(html, {
+        status: 200,
+        headers: { 'Content-Type': 'text/html' }
+      })
     }
 
     const payment = recentPayments[0]
@@ -62,15 +82,51 @@ async function handleRecentPayment() {
 
     console.log(`User ${userId} successfully enrolled in course ${payment.courseId} via recent payment`)
 
-    // Kurslarım sayfasına yönlendir (parametresiz)
-    return NextResponse.redirect(
-      new URL(`/my-courses`, process.env.NEXTAUTH_URL!)
-    )
+    // Kurslarım sayfasına client-side yönlendirme
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Redirecting...</title>
+        </head>
+        <body>
+          <script>
+            window.location.href = '/my-courses';
+          </script>
+          <noscript>
+            <meta http-equiv="refresh" content="0; url=/my-courses">
+          </noscript>
+        </body>
+      </html>
+    `
+    return new NextResponse(html, {
+      status: 200,
+      headers: { 'Content-Type': 'text/html' }
+    })
   } catch (error) {
     console.error('handleRecentPayment error:', error)
-    return NextResponse.redirect(
-      new URL('/cart?error=recent_payment_error', process.env.NEXTAUTH_URL!)
-    )
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Redirecting...</title>
+        </head>
+        <body>
+          <script>
+            window.location.href = '/cart?error=recent_payment_error';
+          </script>
+          <noscript>
+            <meta http-equiv="refresh" content="0; url=/cart?error=recent_payment_error">
+          </noscript>
+        </body>
+      </html>
+    `
+    return new NextResponse(html, {
+      status: 200,
+      headers: { 'Content-Type': 'text/html' }
+    })
   }
 }
 
@@ -100,7 +156,27 @@ async function handlePaymentWithConversationId(conversationId: string) {
 
     if (payments.length === 0) {
       console.error('Payment records not found for conversationId:', conversationId)
-      return NextResponse.redirect(new URL('/cart?error=payment_not_found', process.env.NEXTAUTH_URL!))
+      const html = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <title>Redirecting...</title>
+          </head>
+          <body>
+            <script>
+              window.location.href = '/cart?error=payment_not_found';
+            </script>
+            <noscript>
+              <meta http-equiv="refresh" content="0; url=/cart?error=payment_not_found">
+            </noscript>
+          </body>
+        </html>
+      `
+      return new NextResponse(html, {
+        status: 200,
+        headers: { 'Content-Type': 'text/html' }
+      })
     }
 
     // UserId'yi payment kayıtlarından al
@@ -140,15 +216,51 @@ async function handlePaymentWithConversationId(conversationId: string) {
 
     console.log(`User ${userId} successfully enrolled in courses via conversationId:`, courseIds)
 
-    // Kurslarım sayfasına yönlendir (parametresiz)
-    return NextResponse.redirect(
-      new URL(`/my-courses`, process.env.NEXTAUTH_URL!)
-    )
+    // Kurslarım sayfasına client-side yönlendirme
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Redirecting...</title>
+        </head>
+        <body>
+          <script>
+            window.location.href = '/my-courses';
+          </script>
+          <noscript>
+            <meta http-equiv="refresh" content="0; url=/my-courses">
+          </noscript>
+        </body>
+      </html>
+    `
+    return new NextResponse(html, {
+      status: 200,
+      headers: { 'Content-Type': 'text/html' }
+    })
   } catch (error) {
     console.error('handlePaymentWithConversationId error:', error)
-    return NextResponse.redirect(
-      new URL('/cart?error=conversationId_error', process.env.NEXTAUTH_URL!)
-    )
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Redirecting...</title>
+        </head>
+        <body>
+          <script>
+            window.location.href = '/cart?error=conversationId_error';
+          </script>
+          <noscript>
+            <meta http-equiv="refresh" content="0; url=/cart?error=conversationId_error">
+          </noscript>
+        </body>
+      </html>
+    `
+    return new NextResponse(html, {
+      status: 200,
+      headers: { 'Content-Type': 'text/html' }
+    })
   }
 }
 
@@ -185,7 +297,27 @@ export async function GET(request: NextRequest) {
         return await handlePaymentWithConversationId(conversationId)
       }
       
-      return NextResponse.redirect(new URL('/cart?error=payment_token_missing', process.env.NEXTAUTH_URL!))
+      const html = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <title>Redirecting...</title>
+          </head>
+          <body>
+            <script>
+              window.location.href = '/cart?error=payment_token_missing';
+            </script>
+            <noscript>
+              <meta http-equiv="refresh" content="0; url=/cart?error=payment_token_missing">
+            </noscript>
+          </body>
+        </html>
+      `
+      return new NextResponse(html, {
+        status: 200,
+        headers: { 'Content-Type': 'text/html' }
+      })
     }
 
     // Ödeme sonucunu Iyzico'dan al
@@ -232,7 +364,27 @@ export async function GET(request: NextRequest) {
           select: { stripePaymentId: true, userId: true, courseId: true, createdAt: true }
         })
         console.error('All pending payments:', allPendingPayments)
-        return NextResponse.redirect(new URL('/cart?error=payment_not_found', process.env.NEXTAUTH_URL!))
+        const html = `
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <meta charset="utf-8">
+              <title>Redirecting...</title>
+            </head>
+            <body>
+              <script>
+                window.location.href = '/cart?error=payment_not_found';
+              </script>
+              <noscript>
+                <meta http-equiv="refresh" content="0; url=/cart?error=payment_not_found">
+              </noscript>
+            </body>
+          </html>
+        `
+        return new NextResponse(html, {
+          status: 200,
+          headers: { 'Content-Type': 'text/html' }
+        })
       }
 
       // UserId'yi payment kayıtlarından al (conversationId formatı değişebiliyor)
@@ -272,18 +424,28 @@ export async function GET(request: NextRequest) {
 
       console.log(`User ${userId} successfully enrolled in courses:`, courseIds)
 
-      // Fraud detection varsa kurslarım sayfasına yönlendir (parametresiz)
-      if (result.fraudStatus === 1) {
-        console.log('Payment completed despite fraud detection')
-        return NextResponse.redirect(
-          new URL(`/my-courses`, process.env.NEXTAUTH_URL!)
-        )
-      }
-
-      // Normal başarılı ödeme sonrası kurslarım sayfasına yönlendir (parametresiz)
-      return NextResponse.redirect(
-        new URL(`/my-courses`, process.env.NEXTAUTH_URL!)
-      )
+      // Başarılı ödeme sonrası kurslarım sayfasına client-side yönlendirme
+      const html = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <title>Redirecting...</title>
+          </head>
+          <body>
+            <script>
+              window.location.href = '/my-courses';
+            </script>
+            <noscript>
+              <meta http-equiv="refresh" content="0; url=/my-courses">
+            </noscript>
+          </body>
+        </html>
+      `
+      return new NextResponse(html, {
+        status: 200,
+        headers: { 'Content-Type': 'text/html' }
+      })
         } else {
           // Ödeme başarısız - detaylı log
           console.error('Payment failed - İyzico Response:', {
@@ -312,15 +474,51 @@ export async function GET(request: NextRequest) {
             userFriendlyError = result.errorMessage
           }
           
-          return NextResponse.redirect(
-            new URL(`/cart?error=${encodeURIComponent(userFriendlyError)}`, process.env.NEXTAUTH_URL!)
-          )
+          const html = `
+            <!DOCTYPE html>
+            <html>
+              <head>
+                <meta charset="utf-8">
+                <title>Redirecting...</title>
+              </head>
+              <body>
+                <script>
+                  window.location.href = '/cart?error=${encodeURIComponent(userFriendlyError)}';
+                </script>
+                <noscript>
+                  <meta http-equiv="refresh" content="0; url=/cart?error=${encodeURIComponent(userFriendlyError)}">
+                </noscript>
+              </body>
+            </html>
+          `
+          return new NextResponse(html, {
+            status: 200,
+            headers: { 'Content-Type': 'text/html' }
+          })
         }
   } catch (error) {
     console.error('Callback error:', error)
-    return NextResponse.redirect(
-      new URL('/cart?error=callback_error', process.env.NEXTAUTH_URL!)
-    )
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Redirecting...</title>
+        </head>
+        <body>
+          <script>
+            window.location.href = '/cart?error=callback_error';
+          </script>
+          <noscript>
+            <meta http-equiv="refresh" content="0; url=/cart?error=callback_error">
+          </noscript>
+        </body>
+      </html>
+    `
+    return new NextResponse(html, {
+      status: 200,
+      headers: { 'Content-Type': 'text/html' }
+    })
   }
 }
 
