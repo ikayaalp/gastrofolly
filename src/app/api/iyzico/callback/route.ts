@@ -12,14 +12,163 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const token = searchParams.get('token')
     
-    // Debug: Tüm parametreleri logla
+    // Debug: Tüm parametreleri ve headers'ları logla
     console.log('Callback URL:', request.url)
     console.log('Search params:', Object.fromEntries(searchParams.entries()))
+    console.log('Headers:', {
+      referer: request.headers.get('referer'),
+      origin: request.headers.get('origin'),
+      'user-agent': request.headers.get('user-agent')
+    })
     console.log('Token found:', token)
 
-    // Token yoksa sepete yönlendir
+    // Token yoksa, POST body'de olabilir mi kontrol et
     if (!token) {
-      console.error('No token found in callback URL - cannot verify payment status')
+      console.error('No token found in callback URL')
+      
+      // Referer'dan token'ı çıkarmayı dene
+      const referer = request.headers.get('referer')
+      if (referer) {
+        console.log('Referer URL:', referer)
+        const refererUrl = new URL(referer)
+        const refererToken = refererUrl.searchParams.get('token')
+        if (refererToken) {
+          console.log('Token found in referer:', refererToken)
+          // Token'ı referer'dan al ve tekrar işle
+          searchParams.set('token', refererToken)
+          const result = await retrieveCheckoutForm(refererToken)
+          
+          console.log('Iyzico callback result (from referer):', result)
+          
+          // Aynı success/fail kontrolünü yap
+          if (result.status === 'success' && result.paymentStatus === 'SUCCESS') {
+            // Başarılı ödeme akışı (aşağıdaki kodla aynı)
+            const conversationId = result.conversationId
+            
+            let payments = await prisma.payment.findMany({
+              where: {
+                stripePaymentId: conversationId,
+                status: 'PENDING'
+              }
+            })
+
+            if (payments.length === 0 && result.basketId) {
+              payments = await prisma.payment.findMany({
+                where: {
+                  stripePaymentId: result.basketId,
+                  status: 'PENDING'
+                }
+              })
+            }
+
+            if (payments.length === 0) {
+              const html = `
+                <!DOCTYPE html>
+                <html>
+                  <head>
+                    <meta charset="utf-8">
+                    <title>Redirecting...</title>
+                  </head>
+                  <body>
+                    <script>
+                      window.location.href = '/cart?error=payment_not_found';
+                    </script>
+                    <noscript>
+                      <meta http-equiv="refresh" content="0; url=/cart?error=payment_not_found">
+                    </noscript>
+                  </body>
+                </html>
+              `
+              return new NextResponse(html, {
+                status: 200,
+                headers: { 'Content-Type': 'text/html' }
+              })
+            }
+
+            const userId = payments[0].userId
+
+            for (const payment of payments) {
+              await prisma.payment.update({
+                where: { id: payment.id },
+                data: {
+                  status: 'COMPLETED',
+                  stripePaymentId: result.paymentId || conversationId,
+                }
+              })
+
+              const existingEnrollment = await prisma.enrollment.findFirst({
+                where: {
+                  userId: userId,
+                  courseId: payment.courseId
+                }
+              })
+
+              if (!existingEnrollment) {
+                await prisma.enrollment.create({
+                  data: {
+                    userId: userId,
+                    courseId: payment.courseId,
+                  }
+                })
+              }
+            }
+
+            console.log(`✅ SUCCESSFUL PAYMENT (from referer): User ${userId} enrolled`)
+
+            const html = `
+              <!DOCTYPE html>
+              <html>
+                <head>
+                  <meta charset="utf-8">
+                  <title>Redirecting...</title>
+                </head>
+                <body>
+                  <script>
+                    window.location.href = '/my-courses';
+                  </script>
+                  <noscript>
+                    <meta http-equiv="refresh" content="0; url=/my-courses">
+                  </noscript>
+                </body>
+              </html>
+            `
+            return new NextResponse(html, {
+              status: 200,
+              headers: { 'Content-Type': 'text/html' }
+            })
+          } else {
+            // Başarısız ödeme
+            let userFriendlyError = 'payment_failed'
+            if (result.errorMessage) {
+              userFriendlyError = result.errorMessage
+            }
+            
+            const html = `
+              <!DOCTYPE html>
+              <html>
+                <head>
+                  <meta charset="utf-8">
+                  <title>Redirecting...</title>
+                </head>
+                <body>
+                  <script>
+                    window.location.href = '/cart?error=${encodeURIComponent(userFriendlyError)}';
+                  </script>
+                  <noscript>
+                    <meta http-equiv="refresh" content="0; url=/cart?error=${encodeURIComponent(userFriendlyError)}">
+                  </noscript>
+                </body>
+              </html>
+            `
+            return new NextResponse(html, {
+              status: 200,
+              headers: { 'Content-Type': 'text/html' }
+            })
+          }
+        }
+      }
+      
+      console.error('No token found in callback URL or referer - cannot verify payment status')
       const html = `
         <!DOCTYPE html>
         <html>
