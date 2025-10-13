@@ -22,6 +22,7 @@ import FavoriteButton from "@/components/course/FavoriteButton"
 import ShareButton from "@/components/course/ShareButton"
 import CommentsSection from "@/components/course/CommentsSection"
 import UserDropdown from "@/components/ui/UserDropdown"
+import SuccessAlert from "@/components/course/SuccessAlert"
 
 interface CoursePageProps {
   params: Promise<{
@@ -70,6 +71,8 @@ export default async function CoursePage({ params, searchParams }: CoursePagePro
   const session = await getServerSession(authOptions)
   const { id } = await params
   const resolvedSearchParams = await searchParams
+  
+  
   const course = await getCourse(id)
 
   if (!course) {
@@ -177,27 +180,8 @@ export default async function CoursePage({ params, searchParams }: CoursePagePro
         </div>
       </div>
 
-      {/* Success Alert */}
-      {resolvedSearchParams?.success && (
-        <div className="fixed top-20 left-4 right-4 z-40 md:top-4 md:left-auto md:right-4 md:w-96">
-          <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4">
-            <div className="flex items-center">
-              <div className="bg-green-500 rounded-full p-2 mr-3">
-                <CheckCircle className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <h3 className="text-green-400 font-semibold text-lg">Ödeme Başarılı!</h3>
-                <p className="text-gray-300 text-sm">
-                  {resolvedSearchParams?.fraud_bypassed 
-                    ? "Ödeme tamamlandı. Kursunuza hoş geldiniz!"
-                    : "Kursunuz başarıyla satın alındı. İyi öğrenmeler!"
-                  }
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Success Alert - Client Component */}
+      <SuccessAlert />
 
       {/* Breadcrumb */}
       <div className="bg-gray-900/30 border-b border-gray-800">

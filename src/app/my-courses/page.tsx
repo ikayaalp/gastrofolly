@@ -6,6 +6,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { ChefHat, Play, Clock, BookOpen, Star, ArrowRight, Home, Users, MessageCircle, Search } from "lucide-react"
 import UserDropdown from "@/components/ui/UserDropdown"
+import SuccessAlert from "@/components/course/SuccessAlert"
 
 
 //deneme 
@@ -49,8 +50,18 @@ async function getUserCourses(userId: string) {
   return enrollmentsWithProgress
 }
 
-export default async function MyCoursesPage() {
+interface MyCoursesPageProps {
+  searchParams: Promise<{
+    success?: string
+    fraud_bypassed?: string
+    recent_payment?: string
+    conversationId_used?: string
+  }>
+}
+
+export default async function MyCoursesPage({ searchParams }: MyCoursesPageProps) {
   const session = await getServerSession(authOptions)
+  const resolvedSearchParams = await searchParams
 
   if (!session?.user?.id) {
     redirect("/auth/signin")
@@ -126,6 +137,9 @@ export default async function MyCoursesPage() {
           </div>
         </div>
       </div>
+
+      {/* Success Alert */}
+      <SuccessAlert />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-16 md:pt-8 pb-20 md:pb-8">
         <div className="mb-8">

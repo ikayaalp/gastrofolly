@@ -62,9 +62,9 @@ async function handleRecentPayment() {
 
     console.log(`User ${userId} successfully enrolled in course ${payment.courseId} via recent payment`)
 
-    // Kurs detay sayfasına yönlendir
+    // Kurslarım sayfasına yönlendir
     return NextResponse.redirect(
-      new URL(`/course/${payment.courseId}?success=true&recent_payment=true`, process.env.NEXTAUTH_URL!)
+      new URL(`/my-courses?success=true&recent_payment=true`, process.env.NEXTAUTH_URL!)
     )
   } catch (error) {
     console.error('handleRecentPayment error:', error)
@@ -140,9 +140,9 @@ async function handlePaymentWithConversationId(conversationId: string) {
 
     console.log(`User ${userId} successfully enrolled in courses via conversationId:`, courseIds)
 
-    // Kurs detay sayfasına yönlendir
+    // Kurslarım sayfasına yönlendir
     return NextResponse.redirect(
-      new URL(`/course/${courseIds[0]}?success=true&conversationId_used=true`, process.env.NEXTAUTH_URL!)
+      new URL(`/my-courses?success=true&conversationId_used=true`, process.env.NEXTAUTH_URL!)
     )
   } catch (error) {
     console.error('handlePaymentWithConversationId error:', error)
@@ -272,17 +272,17 @@ export async function GET(request: NextRequest) {
 
       console.log(`User ${userId} successfully enrolled in courses:`, courseIds)
 
-      // Fraud detection varsa özel mesajla kurs detay sayfasına yönlendir
+      // Fraud detection varsa özel mesajla kurslarım sayfasına yönlendir
       if (result.fraudStatus === 1) {
         console.log('Payment completed despite fraud detection')
         return NextResponse.redirect(
-          new URL(`/course/${courseIds[0]}?success=true&fraud_bypassed=true`, process.env.NEXTAUTH_URL!)
+          new URL(`/my-courses?success=true&fraud_bypassed=true`, process.env.NEXTAUTH_URL!)
         )
       }
 
-      // Normal başarılı ödeme sonrası kurs detay sayfasına yönlendir
+      // Normal başarılı ödeme sonrası kurslarım sayfasına yönlendir
       return NextResponse.redirect(
-        new URL(`/course/${courseIds[0]}?success=true`, process.env.NEXTAUTH_URL!)
+        new URL(`/my-courses?success=true`, process.env.NEXTAUTH_URL!)
       )
         } else {
           // Ödeme başarısız - detaylı log
