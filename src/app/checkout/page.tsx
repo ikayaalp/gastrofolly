@@ -23,7 +23,7 @@ declare global {
 }
 
 export default function CheckoutPage() {
-  const { data: session, status } = useSession()
+  const { status } = useSession()
   const router = useRouter()
   const { state } = useCart()
   const [isProcessing, setIsProcessing] = useState(false)
@@ -33,7 +33,12 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     // İyzico callback fonksiyonunu tanımla (Ödeme tamamlandığında çağrılır)
-    window.iyziCheckoutFormResult = async (result: any) => {
+    window.iyziCheckoutFormResult = async (result: {
+      status: string
+      conversationId?: string
+      token?: string
+      errorMessage?: string
+    }) => {
       console.log('🎯 İyzico Checkout Form Result:', result)
       
       // Ödeme başarılı mı kontrol et
