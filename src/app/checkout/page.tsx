@@ -32,37 +32,44 @@ export default function CheckoutPage() {
   const totalWithTax = state.total * 1.18
 
   useEffect(() => {
-    // İyzico callback fonksiyonunu tanımla (ÖNCE bu tanımlanmalı)
-    window.iyziCheckoutFormResult = async (result) => {
-      console.log('İyzico Callback Result:', result)
+    // İyzico callback fonksiyonunu tanımla (Ödeme tamamlandığında çağrılır)
+    window.iyziCheckoutFormResult = async (result: any) => {
+      console.log('🎯 İyzico Checkout Form Result:', result)
       
-      // Token ile ödeme sonucunu kontrol et
-      if (result.token) {
+      // Ödeme başarılı mı kontrol et
+      if (result.status === 'success') {
+        console.log('✅ ÖDEME BAŞARILI - Enrollment oluşturuluyor...')
+        
+        // Backend'e istek at - Pending payment'ları COMPLETED yap + Enrollment oluştur
         try {
-          const response = await fetch(`/api/iyzico/callback?token=${result.token}`)
-          const html = await response.text()
-          
-          // HTML içeriğini parse et ve yönlendirme URL'ini bul
-          const parser = new DOMParser()
-          const doc = parser.parseFromString(html, 'text/html')
-          const script = doc.querySelector('script')
-          
-          if (script && script.textContent) {
-            const match = script.textContent.match(/window\.location\.href = '(.+)'/)
-            if (match && match[1]) {
-              window.location.href = match[1]
-            }
+          const response = await fetch('/api/iyzico/complete-payment', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              conversationId: result.conversationId || result.token
+            })
+          })
+
+          const data = await response.json()
+
+          if (response.ok && data.success) {
+            console.log('✅ Enrollment oluşturuldu! Kurslarım sayfasına yönlendiriliyorsunuz...')
+            // Başarılı - Kurslarım sayfasına git
+            window.location.href = '/my-courses'
+          } else {
+            console.error('Enrollment oluşturulamadı:', data.error)
+            router.push('/cart?error=enrollment_failed')
           }
         } catch (error) {
-          console.error('Callback error:', error)
+          console.error('Complete payment error:', error)
           router.push('/cart?error=callback_error')
         }
-      } else if (result.status === 'success') {
-        // Token yoksa ama başarılı ise conversationId ile yönlendir
-        router.push('/my-courses')
       } else {
-        // Başarısız ise sepete yönlendir
-        const errorMsg = result.errorMessage || 'payment_failed'
+        // Ödeme başarısız - Sepete yönlendir
+        console.log('❌ ÖDEME BAŞARISIZ - Sepete yönlendiriliyorsunuz...')
+        const errorMsg = result.errorMessage || 'Ödeme başarısız oldu'
         router.push(`/cart?error=${encodeURIComponent(errorMsg)}`)
       }
     }
