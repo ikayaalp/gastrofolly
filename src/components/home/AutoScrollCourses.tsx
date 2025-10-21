@@ -59,7 +59,7 @@ export default function AutoScrollCourses({ courses, speed = 1, intervalMs = 16 
           className="flex overflow-x-auto scrollbar-hide space-x-4 py-2"
         >
           {courses.map((course) => (
-            <Link key={course.id} href={`/course/${course.id}`}>
+            <Link key={course.id} href={`/auth/signin?redirect=/course/${course.id}`}>
               <div className="min-w-[280px] w-[280px] md:min-w-[320px] md:w-[320px] flex-shrink-0 bg-gray-900 border border-gray-800 rounded-xl overflow-hidden hover:border-orange-500/50 transition-all duration-300 group">
                 <div className="relative h-44 bg-gray-800 overflow-hidden">
                   {course.imageUrl ? (

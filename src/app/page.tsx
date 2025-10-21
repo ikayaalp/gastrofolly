@@ -1,6 +1,4 @@
 "use client";
-
-import Image from "next/image";
 import Link from "next/link";
 import { ChefHat, Play, Star, Users } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -9,12 +7,21 @@ import { useRouter } from "next/navigation";
 
 export default function Home() {
   const router = useRouter();
-  const [featured, setFeatured] = useState<Array<any>>([]);
+  interface FeaturedCourse {
+    id: string;
+    title: string;
+    description: string;
+    price: number;
+    imageUrl?: string | null;
+    reviews: Array<{ rating: number }>;
+  }
+
+  const [featured, setFeatured] = useState<FeaturedCourse[]>([]);
 
   useEffect(() => {
     fetch("/api/courses/featured")
       .then((r) => r.json())
-      .then((d) => setFeatured(d.courses || []))
+      .then((d: { courses?: FeaturedCourse[] }) => setFeatured(d.courses || []))
       .catch(() => setFeatured([]));
   }, []);
 
