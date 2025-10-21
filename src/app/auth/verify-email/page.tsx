@@ -131,8 +131,9 @@ function VerifyEmailForm() {
   }
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+    <div className="relative min-h-screen overflow-hidden py-12 px-4 sm:px-6 lg:px-8">
+      <BackgroundCourses />
+      <div className="max-w-md mx-auto w-full space-y-8 relative">
         <div>
           <div className="flex justify-center">
             <div className="bg-orange-500/20 p-4 rounded-full">
@@ -147,7 +148,7 @@ function VerifyEmailForm() {
           </p>
         </div>
 
-        <div className="bg-gray-900 border border-gray-800 rounded-lg shadow-lg p-8">
+        <div className="backdrop-blur-md bg-black/60 border border-white/10 rounded-xl shadow-2xl p-8">
           <form className="space-y-6" onSubmit={handleSubmit}>
             {error && (
               <div className="bg-red-900/50 border border-red-700 text-red-400 px-4 py-3 rounded-md flex items-start space-x-2">
@@ -184,7 +185,7 @@ function VerifyEmailForm() {
                     onChange={(e) => handleChange(index, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(index, e)}
                     onPaste={index === 0 ? handlePaste : undefined}
-                    className="w-12 h-14 sm:w-14 sm:h-16 text-center text-2xl font-bold bg-gray-800 border-2 border-gray-600 rounded-lg text-white focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/50 transition-all"
+                    className="w-12 h-14 sm:w-14 sm:h-16 text-center text-2xl font-bold bg-gray-800/80 border-2 border-gray-600 rounded-lg text-white focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/50 transition-all"
                     disabled={isLoading || success}
                   />
                 ))}
@@ -210,7 +211,7 @@ function VerifyEmailForm() {
                   <div className="w-full border-t border-gray-700" />
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-gray-900 text-gray-400">Kod gelmedi mi?</span>
+                  <span className="px-2 bg-transparent text-gray-400">Kod gelmedi mi?</span>
                 </div>
               </div>
 
@@ -269,6 +270,50 @@ export default function VerifyEmail() {
     }>
       <VerifyEmailForm />
     </Suspense>
+  )
+}
+
+function BackgroundCourses() {
+  const [images, setImages] = useState<string[]>([])
+  useEffect(() => {
+    let mounted = true
+    ;(async () => {
+      try {
+        const res = await fetch("/api/search?q=ar")
+        const data = await res.json()
+        if (mounted && Array.isArray(data?.courses)) {
+          const imgs = data.courses
+            .map((c: { imageUrl?: string | null }) => c.imageUrl)
+            .filter((u: string | null | undefined): u is string => Boolean(u))
+          setImages(imgs)
+        }
+      } catch {}
+    })()
+    return () => { mounted = false }
+  }, [])
+  const FALLBACK_IMAGES: string[] = [
+    "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?q=80&w=1200&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1512058564366-18510be2db19?q=80&w=1200&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1200&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1526318472351-c75fcf070305?q=80&w=1200&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=1200&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1484723091739-30a097e8f929?q=80&w=1200&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=1200&auto=format&fit=crop",
+  ]
+  const sources = [...images, ...FALLBACK_IMAGES]
+  const tiles = sources.length
+    ? Array.from({ length: 48 }, (_, i) => sources[i % sources.length])
+    : FALLBACK_IMAGES
+  return (
+    <div className="absolute inset-0 -z-10">
+      <div className="w-full h-full grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 p-4 auto-rows-[7rem] sm:auto-rows-[8rem] md:auto-rows-[9rem] lg:auto-rows-[10rem] bg-black">
+        {tiles.map((src, i) => (
+          <img key={i} src={src} alt="course" className="w-full h-full object-cover rounded-lg opacity-60 hover:opacity-80 transition" loading="lazy" />
+        ))}
+      </div>
+      <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/85 to-black" />
+      <div className="absolute inset-0 backdrop-blur-[2px]" />
+    </div>
   )
 }
 
