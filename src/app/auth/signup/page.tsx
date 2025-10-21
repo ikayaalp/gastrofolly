@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { ChefHat, Eye, EyeOff, Mail, CheckCircle, Check, X } from "lucide-react"
@@ -83,8 +83,6 @@ export default function SignUp() {
 
   return (
     <div className="relative min-h-screen overflow-hidden py-12 px-4 sm:px-6 lg:px-8">
-      {/* Background borrowed from signin via CSS and duplicated inline for simplicity */}
-      <BackgroundCourses />
       <div className="max-w-md mx-auto w-full space-y-8 relative">
         <div>
           <div className="flex justify-center">
@@ -280,49 +278,6 @@ export default function SignUp() {
           </form>
         </div>
       </div>
-    </div>
-  )
-}
-
-function BackgroundCourses() {
-  const [images, setImages] = useState<string[]>([])
-  useEffect(() => {
-    let mounted = true
-    ;(async () => {
-      try {
-        const res = await fetch("/api/search?q=ar")
-        const data = await res.json()
-        if (mounted && Array.isArray(data?.courses)) {
-          const imgs = data.courses
-            .map((c: { imageUrl?: string | null }) => c.imageUrl)
-            .filter((u: string | null | undefined): u is string => Boolean(u))
-          setImages(imgs)
-        }
-      } catch {}
-    })()
-    return () => { mounted = false }
-  }, [])
-  return (
-    <div className="absolute inset-0 -z-10">
-      <div className="w-full h-full grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 p-4 auto-rows-[7rem] sm:auto-rows-[8rem] md:auto-rows-[9rem] lg:auto-rows-[10rem] bg-black">
-        {(images.length ? Array.from({ length: 48 }, (_, i) => images[i % images.length]) : [
-          "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?q=80&w=1200&auto=format&fit=crop",
-          "https://images.unsplash.com/photo-1512058564366-18510be2db19?q=80&w=1200&auto=format&fit=crop",
-          "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1200&auto=format&fit=crop",
-          "https://images.unsplash.com/photo-1526318472351-c75fcf070305?q=80&w=1200&auto=format&fit=crop",
-          "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=1200&auto=format&fit=crop",
-          "https://images.unsplash.com/photo-1484723091739-30a097e8f929?q=80&w=1200&auto=format&fit=crop",
-          "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=1200&auto=format&fit=crop",
-          "https://images.unsplash.com/photo-1467003909585-2f8a72700288?q=80&w=1200&auto=format&fit=crop",
-          "https://images.unsplash.com/photo-1499028344343-cd173ffc68a9?q=80&w=1200&auto=format&fit=crop",
-          "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?q=80&w=1200&auto=format&fit=crop",
-          "https://images.unsplash.com/photo-1498654896293-37aacf113fd9?q=80&w=1200&auto=format&fit=crop",
-        ]).map((src, i) => (
-          <img key={i} src={src} alt="course" className="w-full h-full object-cover rounded-lg opacity-75 hover:opacity-90 transition" loading="lazy" />
-        ))}
-      </div>
-      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/70 to-black/80" />
-      <div className="absolute inset-0 backdrop-blur-[2px]" />
     </div>
   )
 }
