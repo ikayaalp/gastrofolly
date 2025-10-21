@@ -7,14 +7,23 @@ import { ShoppingCart } from 'lucide-react'
 import Link from 'next/link'
 
 export default function CartIcon() {
-  const { data: session } = useSession()
-  const { state } = useCart()
+  const { data: session, status } = useSession()
+  const { state, clearCart } = useCart()
   const [isVisible, setIsVisible] = useState(false)
   const [showAnimation, setShowAnimation] = useState(false)
   const [showPulse, setShowPulse] = useState(false)
 
   useEffect(() => {
     // Only show cart icon if user is logged in and has items
+    if (!session?.user && status !== 'loading') {
+      // ensure cart is hidden and cleared when logged out
+      clearCart()
+      setIsVisible(false)
+      setShowAnimation(false)
+      setShowPulse(false)
+      return
+    }
+
     if (session?.user && state.itemCount > 0) {
       setIsVisible(true)
       setShowAnimation(true)
@@ -39,7 +48,7 @@ export default function CartIcon() {
       setShowAnimation(false)
       setShowPulse(false)
     }
-  }, [state.itemCount, session?.user])
+  }, [state.itemCount, session?.user, status])
 
   if (!isVisible) return null
 

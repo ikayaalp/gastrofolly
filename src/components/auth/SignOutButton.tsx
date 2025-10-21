@@ -2,9 +2,17 @@
 
 import { signOut } from "next-auth/react"
 import { LogOut } from "lucide-react"
+import { useCart } from "@/contexts/CartContext"
 
 export default function SignOutButton() {
+  const { clearCart } = useCart()
   const handleSignOut = () => {
+    try {
+      clearCart()
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('chef-cart')
+      }
+    } catch {}
     signOut({ callbackUrl: "/" })
   }
 
