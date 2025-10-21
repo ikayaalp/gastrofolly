@@ -60,7 +60,7 @@ export default function AutoScrollCourses({ courses, speed = 1, intervalMs = 16 
         ref={containerRef}
         onMouseEnter={() => setIsHover(true)}
         onMouseLeave={() => setIsHover(false)}
-        className="flex overflow-x-auto scrollbar-hide space-x-4 py-1 px-4 sm:px-6 lg:px-8 w-full"
+        className="flex overflow-x-auto scrollbar-hide space-x-4 py-1 px-4 sm:px-6 lg:px-8 w-full mb-6"
       >
         {courses.map((course) => (
           <Link key={course.id} href={`/auth/signin?redirect=/course/${course.id}`}>
