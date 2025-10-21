@@ -3,10 +3,20 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ChefHat, Play, Star, Users } from "lucide-react";
+import { useEffect, useState } from "react";
+import AutoScrollCourses from "@/components/home/AutoScrollCourses";
 import { useRouter } from "next/navigation";
 
 export default function Home() {
   const router = useRouter();
+  const [featured, setFeatured] = useState<Array<any>>([]);
+
+  useEffect(() => {
+    fetch("/api/courses/featured")
+      .then((r) => r.json())
+      .then((d) => setFeatured(d.courses || []))
+      .catch(() => setFeatured([]));
+  }, []);
 
   const handleSignUpClick = () => {
     console.log("Hemen Başla butonuna tıklandı!");
@@ -79,6 +89,11 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Auto Scrolling Courses */}
+      {featured.length > 0 && (
+        <AutoScrollCourses courses={featured} />
+      )}
 
       {/* Stats Section */}
       <section className="py-16 bg-gray-900">
