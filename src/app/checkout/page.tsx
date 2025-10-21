@@ -467,7 +467,7 @@ export default function CheckoutPage() {
             <Users className="h-6 w-6" />
             <span className="text-xs font-medium mt-1">Sosyal</span>
           </Link>
-          <Link href="/contact" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+          <Link href="/chef-sor" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
             <MessageCircle className="h-6 w-6" />
             <span className="text-xs font-medium mt-1">Mesajlar</span>
           </Link>

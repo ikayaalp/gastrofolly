@@ -1,7 +1,7 @@
 "use client"
 
 import { useCart } from '@/contexts/CartContext'
-import { ChefHat, Trash2, ShoppingBag, ArrowLeft, Search, Bell, Home, BookOpen, Users, MessageCircle } from 'lucide-react'
+import { ChefHat, Trash2, ShoppingBag, Search, Bell, Home, BookOpen, Users, MessageCircle } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -54,7 +54,7 @@ function CartPageContent() {
       fetch('/api/user/courses')
         .then(res => res.json())
         .then(data => {
-          const enrolledCourseIds = data.enrollments?.map((e: any) => e.courseId) || []
+          const enrolledCourseIds = data.enrollments?.map((e: { courseId: string }) => e.courseId) || []
           
           // Sepetteki kayıtlı kursları çıkar
           state.items.forEach(item => {
@@ -126,9 +126,6 @@ function CartPageContent() {
                   </Link>
                   <Link href="/chef-sor" className="text-gray-300 hover:text-white transition-colors">
                     Mesajlar
-                  </Link>
-                  <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
-                    İletişim
                   </Link>
                 </nav>
               </div>
@@ -225,7 +222,7 @@ function CartPageContent() {
               <Users className="h-6 w-6" />
               <span className="text-xs font-medium mt-1">Sosyal</span>
             </Link>
-            <Link href="/contact" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+            <Link href="/chef-sor" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
               <MessageCircle className="h-6 w-6" />
               <span className="text-xs font-medium mt-1">Mesajlar</span>
             </Link>
@@ -268,9 +265,6 @@ function CartPageContent() {
                 )}
                 <Link href="/chef-sosyal" className="text-gray-300 hover:text-white transition-colors">
                   Chef Sosyal
-                </Link>
-                <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
-                  İletişim
                 </Link>
               </nav>
             </div>

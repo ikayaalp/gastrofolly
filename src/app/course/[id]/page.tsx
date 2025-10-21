@@ -10,8 +10,6 @@ import {
   Users, 
   Play, 
   CheckCircle,
-  ArrowLeft,
-  ShoppingCart,
   Lock,
   Home,
   BookOpen,
@@ -22,16 +20,11 @@ import FavoriteButton from "@/components/course/FavoriteButton"
 import ShareButton from "@/components/course/ShareButton"
 import CommentsSection from "@/components/course/CommentsSection"
 import UserDropdown from "@/components/ui/UserDropdown"
-import SuccessAlert from "@/components/course/SuccessAlert"
 
 interface CoursePageProps {
-  params: Promise<{
+  params: {
     id: string
-  }>
-  searchParams: Promise<{
-    success?: string
-    fraud_bypassed?: string
-  }>
+  }
 }
 
 async function getCourse(id: string) {
@@ -67,10 +60,9 @@ async function getCourse(id: string) {
   })
 }
 
-export default async function CoursePage({ params, searchParams }: CoursePageProps) {
+export default async function CoursePage({ params }: CoursePageProps) {
   const session = await getServerSession(authOptions)
-  const { id } = await params
-  const resolvedSearchParams = await searchParams
+  const { id } = params
   
   
   const course = await getCourse(id)
@@ -80,14 +72,14 @@ export default async function CoursePage({ params, searchParams }: CoursePagePro
   }
 
   const isEnrolled = session?.user?.id 
-    ? course.enrollments.some(enrollment => enrollment.userId === session.user.id)
+    ? course.enrollments.some((enrollment: { userId: string }) => enrollment.userId === session.user.id)
     : false
 
   const averageRating = course.reviews.length > 0
-    ? course.reviews.reduce((acc, review) => acc + review.rating, 0) / course.reviews.length
+    ? course.reviews.reduce((acc: number, review: { rating: number }) => acc + review.rating, 0) / course.reviews.length
     : 0
 
-  const totalDuration = course.lessons.reduce((acc, lesson) => acc + (lesson.duration || 0), 0)
+  const totalDuration = course.lessons.reduce((acc: number, lesson: { duration: number | null }) => acc + (lesson.duration || 0), 0)
 
   return (
     <div className="min-h-screen bg-black">
@@ -183,8 +175,7 @@ export default async function CoursePage({ params, searchParams }: CoursePagePro
         </div>
       </div>
 
-      {/* Success Alert - Client Component */}
-      <SuccessAlert />
+      
 
       {/* Breadcrumb */}
       <div className="bg-gray-900/30 border-b border-gray-800 pt-20 md:pt-24">
@@ -302,7 +293,7 @@ export default async function CoursePage({ params, searchParams }: CoursePagePro
             <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-lg p-6 mb-8">
               <h2 className="text-2xl font-bold text-white mb-6">Kurs İçeriği</h2>
               <div className="space-y-4">
-                {course.lessons.map((lesson, index) => (
+                {course.lessons.map((lesson: { id: string; isFree?: boolean | null; duration?: number | null; title: string; description?: string | null }, index: number) => (
                   <div
                     key={lesson.id}
                     className="flex items-center justify-between p-4 border border-gray-700 rounded-lg hover:border-orange-500/50 transition-colors"

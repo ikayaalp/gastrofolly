@@ -123,9 +123,6 @@ export default function MyCoursesPage() {
                 <Link href="/chef-sor" className="text-gray-300 hover:text-white transition-colors">
                   Mesajlar
                 </Link>
-                <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
-                  İletişim
-                </Link>
               </nav>
             </div>
             
