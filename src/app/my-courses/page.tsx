@@ -7,6 +7,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { ChefHat, Play, Clock, BookOpen, Star, ArrowRight, Home, Users, MessageCircle, Search } from "lucide-react"
 import UserDropdown from "@/components/ui/UserDropdown"
+import SearchModal from "@/components/ui/SearchModal"
 
 interface Enrollment {
   id: string
@@ -47,6 +48,7 @@ export default function MyCoursesPage() {
   const router = useRouter()
   const [enrollments, setEnrollments] = useState<Enrollment[]>([])
   const [loading, setLoading] = useState(true)
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
 
   useEffect(() => {
     if (status === 'loading') return
@@ -118,6 +120,9 @@ export default function MyCoursesPage() {
                 <Link href="/chef-sosyal" className="text-gray-300 hover:text-white transition-colors">
                   Chef Sosyal
                 </Link>
+                <Link href="/chef-sor" className="text-gray-300 hover:text-white transition-colors">
+                  Mesajlar
+                </Link>
                 <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
                   İletişim
                 </Link>
@@ -125,7 +130,10 @@ export default function MyCoursesPage() {
             </div>
             
             <div className="flex items-center space-x-4">
-              <button className="p-2 text-gray-300 hover:text-white transition-colors">
+              <button
+                onClick={() => setIsSearchOpen(true)}
+                className="p-2 text-gray-300 hover:text-white transition-colors"
+              >
                 <Search className="h-5 w-5" />
               </button>
               <UserDropdown />
@@ -142,7 +150,10 @@ export default function MyCoursesPage() {
             <span className="text-lg font-bold text-white">Chef2.0</span>
           </Link>
           <div className="flex items-center space-x-3">
-            <button className="p-2 text-gray-300 hover:text-white transition-colors">
+            <button
+              onClick={() => setIsSearchOpen(true)}
+              className="p-2 text-gray-300 hover:text-white transition-colors"
+            >
               <Search className="h-5 w-5" />
             </button>
             <UserDropdown />
@@ -150,7 +161,7 @@ export default function MyCoursesPage() {
         </div>
       </div>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-16 md:pt-8 pb-20 md:pb-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-20 md:pt-24 pb-20 md:pb-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Kurslarım</h1>
           <p className="text-gray-400">
@@ -285,6 +296,12 @@ export default function MyCoursesPage() {
           </Link>
         </div>
       </div>
+
+      {/* Search Modal */}
+      <SearchModal
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+      />
     </div>
   )
 }

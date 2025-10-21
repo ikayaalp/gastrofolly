@@ -92,7 +92,7 @@ export default async function CoursePage({ params, searchParams }: CoursePagePro
   return (
     <div className="min-h-screen bg-black">
       {/* Desktop Header */}
-      <header className="hidden md:block bg-gray-900/30 border-b border-gray-800">
+      <header className="hidden md:block fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-8">
@@ -123,6 +123,9 @@ export default async function CoursePage({ params, searchParams }: CoursePagePro
                   )}
                   <Link href="/chef-sosyal" className="text-gray-300 hover:text-white transition-colors">
                     Chef Sosyal
+                  </Link>
+                  <Link href="/chef-sor" className="text-gray-300 hover:text-white transition-colors">
+                    Mesajlar
                   </Link>
                   <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
                     İletişim
@@ -184,7 +187,7 @@ export default async function CoursePage({ params, searchParams }: CoursePagePro
       <SuccessAlert />
 
       {/* Breadcrumb */}
-      <div className="bg-gray-900/30 border-b border-gray-800">
+      <div className="bg-gray-900/30 border-b border-gray-800 pt-20 md:pt-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center space-x-2 text-sm">
             <Link href="/home" className="text-gray-400 hover:text-orange-500">

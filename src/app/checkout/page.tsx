@@ -25,7 +25,7 @@ declare global {
 export default function CheckoutPage() {
   const { status } = useSession()
   const router = useRouter()
-  const { state } = useCart()
+  const { state, clearCart } = useCart()
   const [isProcessing, setIsProcessing] = useState(false)
   const [checkoutFormContent, setCheckoutFormContent] = useState<string | null>(null)
 
@@ -61,6 +61,8 @@ export default function CheckoutPage() {
 
           if (response.ok && data.success) {
             console.log('✅ Enrollment oluşturuldu! Kurslarım sayfasına yönlendiriliyorsunuz...')
+            // Sepeti temizle
+            clearCart()
             // Başarılı - Kurslarım sayfasına git
             window.location.href = '/my-courses'
           } else {
