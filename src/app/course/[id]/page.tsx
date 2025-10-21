@@ -22,9 +22,9 @@ import CommentsSection from "@/components/course/CommentsSection"
 import UserDropdown from "@/components/ui/UserDropdown"
 
 interface CoursePageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 async function getCourse(id: string) {
@@ -62,7 +62,7 @@ async function getCourse(id: string) {
 
 export default async function CoursePage({ params }: CoursePageProps) {
   const session = await getServerSession(authOptions)
-  const { id } = params
+  const { id } = await params
   
   
   const course = await getCourse(id)
