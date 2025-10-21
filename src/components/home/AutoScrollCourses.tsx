@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useEffect, useRef, useState } from "react"
-import { Play, Star } from "lucide-react"
+import { Play } from "lucide-react"
 
 interface Course {
   id: string
@@ -11,6 +11,7 @@ interface Course {
   price: number
   imageUrl?: string | null
   reviews: Array<{ rating: number }>
+  instructor?: { name?: string | null }
 }
 
 interface AutoScrollCoursesProps {
@@ -72,14 +73,13 @@ export default function AutoScrollCourses({ courses, speed = 1, intervalMs = 16 
                     <Play className="h-10 w-10 text-gray-500" />
                   </div>
                 )}
-              </div>
-              <div className="p-4">
-                <h3 className="text-white font-semibold mb-1 line-clamp-2">{course.title}</h3>
-                <div className="flex items-center text-sm text-gray-400">
-                  <Star className="h-4 w-4 text-yellow-400 fill-current mr-1" />
-                  {avg(course.reviews).toFixed(1)}
+                {/* Overlay: course title and instructor on image */}
+                <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
+                  <h3 className="text-white font-semibold text-sm md:text-base line-clamp-2">{course.title}</h3>
+                  <p className="text-white text-xs md:text-sm mt-1">{course.instructor?.name || "Eğitmen"}</p>
                 </div>
               </div>
+              
             </div>
           </Link>
         ))}
