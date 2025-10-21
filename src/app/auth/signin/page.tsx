@@ -74,17 +74,37 @@ function SignInForm() {
     signIn("google", { callbackUrl: "/home" })
   }
 
+  const FALLBACK_IMAGES: string[] = [
+    "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?q=80&w=1200&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1512058564366-18510be2db19?q=80&w=1200&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1200&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1526318472351-c75fcf070305?q=80&w=1200&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=1200&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1484723091739-30a097e8f929?q=80&w=1200&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=1200&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1467003909585-2f8a72700288?q=80&w=1200&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1200&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1499028344343-cd173ffc68a9?q=80&w=1200&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?q=80&w=1200&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1498654896293-37aacf113fd9?q=80&w=1200&auto=format&fit=crop",
+  ]
+
+  const sources = [...bgImages, ...FALLBACK_IMAGES]
+  const tiles = sources.length
+    ? Array.from({ length: 48 }, (_, i) => sources[i % sources.length])
+    : FALLBACK_IMAGES
+
   return (
     <div className="relative min-h-screen overflow-hidden py-12 px-4 sm:px-6 lg:px-8">
       {/* Background grid of course thumbnails */}
       <div className="absolute inset-0 -z-10">
-        <div className="w-full h-full grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 p-4">
-          {bgImages.slice(0, 24).map((src, idx) => (
+        <div className="w-full h-full grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 p-4 auto-rows-[7rem] sm:auto-rows-[8rem] md:auto-rows-[9rem] lg:auto-rows-[10rem]">
+          {tiles.map((src, idx) => (
             <img
               key={idx}
               src={src}
               alt="course"
-              className="w-full h-24 sm:h-28 md:h-32 object-cover rounded-lg opacity-60 hover:opacity-80 transition"
+              className="w-full h-full object-cover rounded-lg opacity-60 hover:opacity-80 transition"
               loading="lazy"
             />
           ))}
