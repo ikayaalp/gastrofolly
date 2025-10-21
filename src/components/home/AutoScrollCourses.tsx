@@ -47,11 +47,10 @@ export default function AutoScrollCourses({ courses, speed = 1, intervalMs = 16 
 
   return (
     <div className="bg-black w-full">
-      {/* Başlık satırı - isteğe bağlı olarak konteynerli */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2">
-        <div className="flex justify-between items-end">
+      {/* Başlık satırı */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-0 pb-1">
+        <div className="text-center">
           <h2 className="text-2xl md:text-3xl font-bold text-white">Öne Çıkan Kurslar</h2>
-          <Link href="/courses" className="text-sm text-orange-400 hover:text-orange-300">Tümünü Gör</Link>
         </div>
       </div>
 
@@ -60,7 +59,7 @@ export default function AutoScrollCourses({ courses, speed = 1, intervalMs = 16 
         ref={containerRef}
         onMouseEnter={() => setIsHover(true)}
         onMouseLeave={() => setIsHover(false)}
-        className="flex overflow-x-auto scrollbar-hide space-x-4 py-3 px-4 sm:px-6 lg:px-8 w-full"
+        className="flex overflow-x-auto scrollbar-hide space-x-4 py-1 px-4 sm:px-6 lg:px-8 w-full"
       >
         {courses.map((course) => (
           <Link key={course.id} href={`/auth/signin?redirect=/course/${course.id}`}>
