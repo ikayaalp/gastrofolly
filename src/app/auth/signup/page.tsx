@@ -82,8 +82,10 @@ export default function SignUp() {
   }
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+    <div className="relative min-h-screen overflow-hidden py-12 px-4 sm:px-6 lg:px-8">
+      {/* Background borrowed from signin via CSS and duplicated inline for simplicity */}
+      <BackgroundCourses />
+      <div className="max-w-md mx-auto w-full space-y-8 relative">
         <div>
           <div className="flex justify-center">
             <ChefHat className="h-12 w-12 text-orange-500" />
@@ -102,7 +104,7 @@ export default function SignUp() {
           </p>
         </div>
 
-        <div className="bg-gray-900 border border-gray-800 rounded-lg shadow-lg p-8">
+        <div className="backdrop-blur-md bg-black/60 border border-white/10 rounded-xl shadow-2xl p-8">
           <form className="space-y-6" onSubmit={handleSubmit}>
             {error && (
               <div className="bg-red-900/50 border border-red-700 text-red-400 px-4 py-3 rounded-md">
@@ -188,7 +190,7 @@ export default function SignUp() {
                   required
                   value={formData.password}
                   onChange={handleInputChange}
-                  className="block w-full px-3 py-2 pr-10 bg-gray-800 border border-gray-600 rounded-md shadow-sm text-white placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                  className="block w-full px-3 py-2 pr-10 bg-gray-800/80 border border-gray-600 rounded-md shadow-sm text-white placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                   placeholder="Güçlü bir şifre oluşturun"
                 />
                 <button
@@ -261,7 +263,7 @@ export default function SignUp() {
                 required
                 value={formData.confirmPassword}
                 onChange={handleInputChange}
-                className="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md shadow-sm text-white placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                className="mt-1 block w-full px-3 py-2 bg-gray-800/80 border border-gray-600 rounded-md shadow-sm text-white placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                 placeholder="Şifrenizi tekrar girin"
               />
             </div>
@@ -278,6 +280,37 @@ export default function SignUp() {
           </form>
         </div>
       </div>
+    </div>
+  )
+}
+
+function BackgroundCourses() {
+  const [images, setImages] = useState<string[]>([])
+  useEffect(() => {
+    let mounted = true
+    ;(async () => {
+      try {
+        const res = await fetch("/api/search?q=ar")
+        const data = await res.json()
+        if (mounted && Array.isArray(data?.courses)) {
+          const imgs = data.courses
+            .map((c: { imageUrl?: string | null }) => c.imageUrl)
+            .filter((u: string | null | undefined): u is string => Boolean(u))
+          setImages(imgs)
+        }
+      } catch {}
+    })()
+    return () => { mounted = false }
+  }, [])
+  return (
+    <div className="absolute inset-0 -z-10">
+      <div className="w-full h-full grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 p-4">
+        {images.slice(0, 24).map((src, i) => (
+          <img key={i} src={src} alt="course" className="w-full h-24 sm:h-28 md:h-32 object-cover rounded-lg opacity-60 hover:opacity-80 transition" loading="lazy" />
+        ))}
+      </div>
+      <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/85 to-black" />
+      <div className="absolute inset-0 backdrop-blur-[2px]" />
     </div>
   )
 }

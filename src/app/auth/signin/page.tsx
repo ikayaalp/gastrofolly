@@ -13,6 +13,7 @@ function SignInForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [successMessage, setSuccessMessage] = useState("")
+  const [bgImages, setBgImages] = useState<string[]>([])
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -22,6 +23,28 @@ function SignInForm() {
       setSuccessMessage(message)
     }
   }, [searchParams])
+
+  useEffect(() => {
+    let isMounted = true
+    const fetchImages = async () => {
+      try {
+        const res = await fetch("/api/search?q=ar")
+        const data = await res.json()
+        if (isMounted && Array.isArray(data?.courses)) {
+          const imgs = data.courses
+            .map((c: { imageUrl?: string | null }) => c.imageUrl)
+            .filter((u: string | null | undefined): u is string => Boolean(u))
+          setBgImages(imgs)
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+    fetchImages()
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -52,16 +75,35 @@ function SignInForm() {
   }
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+    <div className="relative min-h-screen overflow-hidden py-12 px-4 sm:px-6 lg:px-8">
+      {/* Background grid of course thumbnails */}
+      <div className="absolute inset-0 -z-10">
+        <div className="w-full h-full grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 p-4">
+          {bgImages.slice(0, 24).map((src, idx) => (
+            <img
+              key={idx}
+              src={src}
+              alt="course"
+              className="w-full h-24 sm:h-28 md:h-32 object-cover rounded-lg opacity-60 hover:opacity-80 transition"
+              loading="lazy"
+            />
+          ))}
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/85 to-black" />
+        <div className="absolute inset-0 backdrop-blur-[2px]" />
+      </div>
+
+      <div className="max-w-md mx-auto w-full space-y-8">
         <div>
           <div className="flex justify-center">
             <ChefHat className="h-12 w-12 text-orange-500" />
           </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-white">
-            Hesabınıza giriş yapın
+            Hoş geldin
           </h2>
           <p className="mt-2 text-center text-sm text-gray-300">
+            Giriş yap ve öğrenmeye başla! {" "}
+            <br />
             Henüz hesabınız yok mu?{" "}
             <Link
               href="/auth/signup"
@@ -71,7 +113,7 @@ function SignInForm() {
             </Link>
           </p>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg shadow-lg p-8">
+        <div className="backdrop-blur-md bg-black/60 border border-white/10 rounded-xl shadow-2xl p-8">
           <form className="space-y-6" onSubmit={handleSubmit}>
             {successMessage && (
               <div className="bg-green-900/50 border border-green-700 text-green-400 px-4 py-3 rounded-md">
@@ -96,7 +138,7 @@ function SignInForm() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md shadow-sm text-white placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                className="mt-1 block w-full px-3 py-2 bg-gray-800/80 border border-gray-600 rounded-md shadow-sm text-white placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                 placeholder="ornek@email.com"
               />
             </div>
@@ -114,7 +156,7 @@ function SignInForm() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md shadow-sm text-white placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500 pr-10"
+                  className="block w-full px-3 py-2 bg-gray-800/80 border border-gray-600 rounded-md shadow-sm text-white placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500 pr-10"
                   placeholder="Şifrenizi girin"
                 />
                 <button
@@ -167,10 +209,10 @@ function SignInForm() {
             <div className="mt-6">
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300" />
+                  <div className="w-full border-t border-gray-700" />
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-gray-900 text-gray-400">Veya</span>
+                  <span className="px-2 bg-transparent text-gray-400">Veya</span>
                 </div>
               </div>
 
@@ -178,7 +220,7 @@ function SignInForm() {
                 <button
                   type="button"
                   onClick={handleGoogleSignIn}
-                  className="w-full inline-flex justify-center py-2 px-4 border border-gray-600 rounded-md shadow-sm bg-gray-800 text-sm font-medium text-gray-300 hover:bg-gray-700"
+                  className="w-full inline-flex justify-center py-2 px-4 border border-gray-600 rounded-md shadow-sm bg-gray-800/80 text-sm font-medium text-gray-300 hover:bg-gray-700/80"
                 >
                   <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                     <path
