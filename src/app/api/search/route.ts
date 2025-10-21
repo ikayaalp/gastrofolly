@@ -20,25 +20,29 @@ export async function GET(request: NextRequest) {
             OR: [
               {
                 title: {
-                  contains: query
+                  contains: query,
+                  mode: 'insensitive'
                 }
               },
               {
                 description: {
-                  contains: query
+                  contains: query,
+                  mode: 'insensitive'
                 }
               },
               {
                 instructor: {
                   name: {
-                    contains: query
+                    contains: query,
+                    mode: 'insensitive'
                   }
                 }
               },
               {
                 category: {
                   name: {
-                    contains: query
+                    contains: query,
+                    mode: 'insensitive'
                   }
                 }
               }

@@ -47,6 +47,29 @@ function CartPageContent() {
     }
   }, [searchParams])
 
+  // Kayıtlı kursları sepetten otomatik çıkar
+  useEffect(() => {
+    if (session?.user?.id && state.items.length > 0) {
+      // Kullanıcının kayıtlı olduğu kursları kontrol et
+      fetch('/api/user/courses')
+        .then(res => res.json())
+        .then(data => {
+          const enrolledCourseIds = data.enrollments?.map((e: any) => e.courseId) || []
+          
+          // Sepetteki kayıtlı kursları çıkar
+          state.items.forEach(item => {
+            if (enrolledCourseIds.includes(item.id)) {
+              console.log('Removing enrolled course from cart:', item.title)
+              removeItem(item.id)
+            }
+          })
+        })
+        .catch(error => {
+          console.error('Error checking enrolled courses:', error)
+        })
+    }
+  }, [session, state.items, removeItem])
+
   // Session yükleniyor mu kontrol et
   if (status === 'loading') {
     return (
