@@ -98,7 +98,7 @@ function SignInForm() {
     <div className="relative min-h-screen overflow-hidden py-12 px-4 sm:px-6 lg:px-8">
       {/* Background grid of course thumbnails */}
       <div className="absolute inset-0 -z-10">
-        <div className="w-full h-full grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 p-4 auto-rows-[7rem] sm:auto-rows-[8rem] md:auto-rows-[9rem] lg:auto-rows-[10rem]">
+        <div className="w-full h-full grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 p-4 auto-rows-[7rem] sm:auto-rows-[8rem] md:auto-rows-[9rem] lg:auto-rows-[10rem] bg-black">
           {tiles.map((src, idx) => (
             <img
               key={idx}
