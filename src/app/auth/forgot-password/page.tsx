@@ -73,10 +73,10 @@ export default function ForgotPassword() {
       <div className="absolute inset-0 -z-10">
         <div className="w-full h-full grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 p-4 auto-rows-[7rem] sm:auto-rows-[8rem] md:auto-rows-[9rem] lg:auto-rows-[10rem] bg-black">
           {tiles.map((src, i) => (
-            <img key={i} src={src} alt="course" className="w-full h-full object-cover rounded-lg opacity-60 hover:opacity-80 transition" loading="lazy" />
+            <img key={i} src={src} alt="course" className="w-full h-full object-cover rounded-lg opacity-75 hover:opacity-90 transition" loading="lazy" />
           ))}
         </div>
-        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/85 to-black" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/70 to-black/80" />
         <div className="absolute inset-0 backdrop-blur-[2px]" />
       </div>
       <div className="max-w-md mx-auto w-full space-y-8">

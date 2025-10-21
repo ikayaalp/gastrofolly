@@ -104,12 +104,12 @@ function SignInForm() {
               key={idx}
               src={src}
               alt="course"
-              className="w-full h-full object-cover rounded-lg opacity-60 hover:opacity-80 transition"
+              className="w-full h-full object-cover rounded-lg opacity-75 hover:opacity-90 transition"
               loading="lazy"
             />
           ))}
         </div>
-        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/85 to-black" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/70 to-black/80" />
         <div className="absolute inset-0 backdrop-blur-[2px]" />
       </div>
 

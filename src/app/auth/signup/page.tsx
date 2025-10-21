@@ -318,10 +318,10 @@ function BackgroundCourses() {
           "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?q=80&w=1200&auto=format&fit=crop",
           "https://images.unsplash.com/photo-1498654896293-37aacf113fd9?q=80&w=1200&auto=format&fit=crop",
         ]).map((src, i) => (
-          <img key={i} src={src} alt="course" className="w-full h-full object-cover rounded-lg opacity-60 hover:opacity-80 transition" loading="lazy" />
+          <img key={i} src={src} alt="course" className="w-full h-full object-cover rounded-lg opacity-75 hover:opacity-90 transition" loading="lazy" />
         ))}
       </div>
-      <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/85 to-black" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/70 to-black/80" />
       <div className="absolute inset-0 backdrop-blur-[2px]" />
     </div>
   )
