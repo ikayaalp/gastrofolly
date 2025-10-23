@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useRef } from "react"
-import { Upload, X, CheckCircle, AlertCircle } from "lucide-react"
+import { useState, useRef, useCallback } from "react"
+import { Upload, X, CheckCircle, AlertCircle, FileVideo } from "lucide-react"
 
 interface VideoUploadProps {
   onVideoUploaded: (videoUrl: string) => void
@@ -13,12 +13,10 @@ export default function VideoUpload({ onVideoUploaded, lessonId }: VideoUploadPr
   const [uploadProgress, setUploadProgress] = useState(0)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
+  const [dragActive, setDragActive] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) return
-
+  const uploadFile = async (file: File) => {
     // Video dosyası kontrolü
     if (!file.type.startsWith('video/')) {
       setError("Lütfen bir video dosyası seçin")
@@ -116,6 +114,12 @@ export default function VideoUpload({ onVideoUploaded, lessonId }: VideoUploadPr
     }
   }
 
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+    await uploadFile(file)
+  }
+
   const triggerFileSelect = () => {
     fileInputRef.current?.click()
   }
@@ -126,6 +130,33 @@ export default function VideoUpload({ onVideoUploaded, lessonId }: VideoUploadPr
     setUploadProgress(0)
   }
 
+  // Drag and drop handlers
+  const handleDrag = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true)
+    } else if (e.type === "dragleave") {
+      setDragActive(false)
+    }
+  }, [])
+
+  const handleDrop = useCallback(async (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDragActive(false)
+    
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const file = e.dataTransfer.files[0]
+      await uploadFile(file)
+    }
+  }, [])
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+  }, [])
+
   return (
     <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
       <h3 className="text-lg font-semibold text-white mb-4">Video Yükle</h3>
@@ -133,7 +164,15 @@ export default function VideoUpload({ onVideoUploaded, lessonId }: VideoUploadPr
       {/* Upload Area */}
       <div 
         onClick={triggerFileSelect}
-        className="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center cursor-pointer hover:border-orange-500 hover:bg-gray-700/50 transition-colors"
+        onDragEnter={handleDrag}
+        onDragLeave={handleDrag}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+        className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-all duration-200 ${
+          dragActive 
+            ? 'border-orange-500 bg-orange-500/10 scale-105' 
+            : 'border-gray-600 hover:border-orange-500 hover:bg-gray-700/50'
+        }`}
       >
         <input
           ref={fileInputRef}
@@ -155,11 +194,19 @@ export default function VideoUpload({ onVideoUploaded, lessonId }: VideoUploadPr
               ></div>
             </div>
           </div>
+        ) : dragActive ? (
+          <div className="space-y-4">
+            <FileVideo className="h-12 w-12 text-orange-500 mx-auto animate-pulse" />
+            <div>
+              <p className="text-orange-500 font-medium">Video dosyasını buraya bırakın</p>
+              <p className="text-gray-400 text-sm mt-1">MP4, MOV, AVI formatları desteklenir</p>
+            </div>
+          </div>
         ) : (
           <div className="space-y-4">
             <Upload className="h-12 w-12 text-gray-400 mx-auto" />
             <div>
-              <p className="text-white font-medium">Video dosyası seçin</p>
+              <p className="text-white font-medium">Video dosyası seçin veya sürükleyip bırakın</p>
               <p className="text-gray-400 text-sm mt-1">MP4, MOV, AVI formatları desteklenir (Max: 500MB)</p>
             </div>
             <button

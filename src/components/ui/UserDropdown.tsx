@@ -110,32 +110,14 @@ export default function UserDropdown() {
             </Link>
 
             {session.user.role === 'INSTRUCTOR' && (
-              <>
-                <Link
-                  href="/instructor-dashboard"
-                  onClick={() => setIsOpen(false)}
-                  className="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
-                >
-                  <GraduationCap className="h-4 w-4 mr-3" />
-                  Eğitmen Paneli
-                </Link>
-                <Link
-                  href="/instructor-dashboard/courses"
-                  onClick={() => setIsOpen(false)}
-                  className="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
-                >
-                  <BookOpen className="h-4 w-4 mr-3" />
-                  Kurslarımı Yönet
-                </Link>
-                <Link
-                  href="/messages"
-                  onClick={() => setIsOpen(false)}
-                  className="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
-                >
-                  <MessageSquare className="h-4 w-4 mr-3" />
-                  Mesajlarım
-                </Link>
-              </>
+              <Link
+                href="/messages"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+              >
+                <MessageSquare className="h-4 w-4 mr-3" />
+                Mesajlarım
+              </Link>
             )}
 
             {session.user.role === 'ADMIN' && (

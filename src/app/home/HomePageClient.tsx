@@ -79,6 +79,9 @@ export default function HomePageClient({
               <Link href="/home" className="flex items-center space-x-2">
                 <ChefHat className="h-8 w-8 text-orange-500" />
                 <span className="text-2xl font-bold text-white">Chef2.0</span>
+                {session?.user?.role === 'INSTRUCTOR' && (
+                  <span className="bg-blue-600 text-white px-2 py-1 rounded text-sm font-medium">Eğitmen</span>
+                )}
                 {session?.user?.role === 'ADMIN' && (
                   <span className="bg-orange-600 text-white px-2 py-1 rounded text-sm font-medium">Admin</span>
                 )}
@@ -90,6 +93,16 @@ export default function HomePageClient({
                 <Link href="/my-courses" className="text-gray-300 hover:text-white transition-colors">
                   Kurslarım
                 </Link>
+                {session?.user?.role === 'INSTRUCTOR' && (
+                  <>
+                    <Link href="/instructor-dashboard" className="text-gray-300 hover:text-white transition-colors">
+                      Eğitmen Paneli
+                    </Link>
+                    <Link href="/instructor-dashboard/courses" className="text-gray-300 hover:text-white transition-colors">
+                      Kurslarımı Yönet
+                    </Link>
+                  </>
+                )}
                 {session?.user?.role === 'ADMIN' && (
                   <>
                     <Link href="/admin" className="text-gray-300 hover:text-white transition-colors">
