@@ -12,7 +12,8 @@ import {
   Edit,
   Eye,
   Star,
-  BarChart3
+  BarChart3,
+  User
 } from "lucide-react"
 
 interface Course {
@@ -129,7 +130,14 @@ export default function InstructorDashboardClient({ instructorData, session }: P
             </div>
             <div className="flex space-x-4">
               <Link
-                href="/instructor-dashboard/messages"
+                href="/instructor-dashboard/profile"
+                className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors flex items-center space-x-2"
+              >
+                <User className="h-4 w-4" />
+                <span>Profil</span>
+              </Link>
+              <Link
+                href="/messages"
                 className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors flex items-center space-x-2"
               >
                 <MessageSquare className="h-4 w-4" />
@@ -345,7 +353,7 @@ export default function InstructorDashboardClient({ instructorData, session }: P
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="text-lg font-semibold text-white">Mesajlar</h3>
                   <Link
-                    href="/instructor-dashboard/messages"
+                    href="/messages"
                     className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                   >
                     Tümünü Gör
