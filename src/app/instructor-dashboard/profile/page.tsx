@@ -46,11 +46,15 @@ async function getInstructorData(userId: string) {
     }
   })
 
+  if (!instructor) {
+    return null
+  }
+
   return {
     ...instructor,
     courses,
     _count: {
-      ...instructor?._count,
+      ...instructor._count,
       courses: courses.length
     }
   }
@@ -69,7 +73,7 @@ export default async function InstructorProfilePage() {
 
   const instructorData = await getInstructorData(session.user.id)
 
-  if (!instructorData) {
+  if (!instructorData || !instructorData.id) {
     redirect("/auth/signin")
   }
 
