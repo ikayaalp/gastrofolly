@@ -20,17 +20,21 @@ export default function MessageButton({ instructorId, instructorName, courseId }
       return
     }
     
-    // Chef'e Sor sayfasına yönlendir ve eğitmen ID'sini query parameter olarak gönder
-    router.push(`/chef-sor?instructorId=${instructorId}`)
+    // Yeni mesajlaşma sistemine yönlendir
+    const params = new URLSearchParams({ instructorId })
+    if (courseId) {
+      params.append('courseId', courseId)
+    }
+    router.push(`/messages?${params.toString()}`)
   }
 
   return (
     <button
       onClick={handleOpenMessage}
-      className="w-full flex items-center justify-center py-3 px-4 rounded-lg border-2 border-gray-600 bg-gray-800 text-gray-400 hover:border-blue-500 hover:text-blue-500 transition-all duration-300"
+      className="w-full flex items-center justify-center py-3 px-4 rounded-lg border-2 border-orange-600 bg-gradient-to-r from-orange-600/10 to-orange-500/10 text-orange-500 hover:border-orange-500 hover:from-orange-600/20 hover:to-orange-500/20 transition-all duration-300"
     >
       <MessageCircle className="h-5 w-5 mr-2" />
-      Mesajlar
+      Şefe Mesaj Gönder
     </button>
   )
 }

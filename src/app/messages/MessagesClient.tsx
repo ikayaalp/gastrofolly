@@ -13,7 +13,9 @@ import {
   ChefHat,
   BookOpen,
   Plus,
-  X
+  X,
+  Home,
+  Users
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -118,13 +120,31 @@ export default function MessagesClient({ session }: Props) {
 
   // URL'den gelen parametrelerle konuşma aç
   useEffect(() => {
-    if (instructorIdFromUrl && conversations.length > 0) {
-      const conversation = conversations.find(conv => conv.otherUser.id === instructorIdFromUrl)
-      if (conversation) {
-        setSelectedConversation(conversation)
+    if (instructorIdFromUrl && instructors.length > 0) {
+      // Önce mevcut konuşmalarda ara
+      const existingConversation = conversations.find(conv => 
+        conv.otherUser.id === instructorIdFromUrl &&
+        (!courseIdFromUrl || conv.course.id === courseIdFromUrl)
+      )
+      
+      if (existingConversation) {
+        setSelectedConversation(existingConversation)
+      } else {
+        // Konuşma yoksa, instructor'ı bul ve yeni konuşma başlat
+        const instructor = instructors.find(inst => inst.id === instructorIdFromUrl)
+        if (instructor) {
+          // Eğer courseId belirtilmişse o kursu kullan, yoksa ilk kursu kullan
+          const course = courseIdFromUrl 
+            ? instructor.courses.find(c => c.id === courseIdFromUrl)
+            : instructor.courses[0]
+          
+          if (course) {
+            startNewConversation(instructor, course)
+          }
+        }
       }
     }
-  }, [instructorIdFromUrl, conversations])
+  }, [instructorIdFromUrl, courseIdFromUrl, conversations, instructors])
 
   // Mesajları yükle
   useEffect(() => {
@@ -287,14 +307,14 @@ export default function MessagesClient({ session }: Props) {
               className="bg-gradient-to-r from-orange-600 to-orange-500 text-white px-4 py-2 rounded-lg hover:from-orange-700 hover:to-orange-600 transition-all flex items-center space-x-2 shadow-lg"
             >
               <Plus className="h-4 w-4" />
-              <span className="hidden sm:inline">Yeni Mesaj</span>
+              <span className="hidden sm:inline">Yeni Sohbet</span>
             </button>
           </div>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-140px)]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-140px)] md:h-[calc(100vh-140px)]">
           {/* Konuşma Listesi */}
           <div className="lg:col-span-1">
             <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700 h-full flex flex-col shadow-xl">
@@ -577,7 +597,7 @@ export default function MessagesClient({ session }: Props) {
                     className="mt-4 bg-gradient-to-r from-orange-600 to-orange-500 text-white px-6 py-2.5 rounded-lg hover:from-orange-700 hover:to-orange-600 transition-all inline-flex items-center space-x-2 shadow-lg"
                   >
                     <Plus className="h-4 w-4" />
-                    <span>Yeni Mesaj Başlat</span>
+                    <span>Yeni Sohbet Başlat</span>
                   </button>
                 </div>
               </div>
@@ -678,6 +698,28 @@ export default function MessagesClient({ session }: Props) {
           </div>
         </div>
       )}
+
+      {/* Mobile Bottom Navigation */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-gray-900/95 backdrop-blur-sm border-t border-gray-800">
+        <div className="flex justify-around items-center py-2">
+          <Link href="/home" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+            <Home className="h-6 w-6" />
+            <span className="text-xs font-medium mt-1">Ana Sayfa</span>
+          </Link>
+          <Link href="/my-courses" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+            <BookOpen className="h-6 w-6" />
+            <span className="text-xs font-medium mt-1">Kurslarım</span>
+          </Link>
+          <Link href="/chef-sosyal" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+            <Users className="h-6 w-6" />
+            <span className="text-xs font-medium mt-1">Sosyal</span>
+          </Link>
+          <Link href="/messages" className="flex flex-col items-center py-2 px-3 text-orange-500">
+            <MessageSquare className="h-6 w-6" />
+            <span className="text-xs font-medium mt-1">Mesajlar</span>
+          </Link>
+        </div>
+      </div>
     </div>
   )
 }

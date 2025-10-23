@@ -18,6 +18,7 @@ import {
 import EnrollButton from "@/components/course/EnrollButton"
 import FavoriteButton from "@/components/course/FavoriteButton"
 import ShareButton from "@/components/course/ShareButton"
+import MessageButton from "@/components/instructor/MessageButton"
 import CommentsSection from "@/components/course/CommentsSection"
 import UserDropdown from "@/components/ui/UserDropdown"
 
@@ -385,13 +386,20 @@ export default async function CoursePage({ params }: CoursePageProps) {
               </div>
 
               {isEnrolled ? (
-                <Link
-                  href={`/learn/${course.id}`}
-                  className="w-full bg-green-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-green-700 transition-colors flex items-center justify-center"
-                >
-                  <CheckCircle className="h-5 w-5 mr-2" />
-                  Kursa Devam Et
-                </Link>
+                <>
+                  <Link
+                    href={`/learn/${course.id}`}
+                    className="w-full bg-green-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-green-700 transition-colors flex items-center justify-center mb-3"
+                  >
+                    <CheckCircle className="h-5 w-5 mr-2" />
+                    Kursa Devam Et
+                  </Link>
+                  <MessageButton 
+                    instructorId={course.instructor.id}
+                    instructorName={course.instructor.name || 'Eğitmen'}
+                    courseId={course.id}
+                  />
+                </>
               ) : (
                 <EnrollButton 
                   courseId={course.id} 
