@@ -25,6 +25,7 @@ import {
   Star,
   MessageSquare
 } from "lucide-react"
+import VideoUpload from "@/components/admin/VideoUpload"
 
 interface Category {
   id: string
@@ -595,13 +596,12 @@ export default function CourseEditClient({ course, categories, session }: Props)
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Video URL (opsiyonel)
+                        Video Yükle
                       </label>
-                      <input
-                        type="url"
-                        value={newLesson.videoUrl}
-                        onChange={(e) => setNewLesson(prev => ({ ...prev, videoUrl: e.target.value }))}
-                        className="w-full bg-gray-600 text-white px-4 py-2 rounded-lg border border-gray-500 focus:border-orange-500 focus:outline-none"
+                      <VideoUpload 
+                        onVideoUploaded={(videoUrl) => {
+                          setNewLesson(prev => ({ ...prev, videoUrl }))
+                        }}
                       />
                     </div>
                     <div className="flex justify-end">

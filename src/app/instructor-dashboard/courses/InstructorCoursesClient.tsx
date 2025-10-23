@@ -17,7 +17,12 @@ import {
   BarChart3,
   MoreVertical,
   Search,
-  Filter
+  Filter,
+  Home,
+  GraduationCap,
+  MessageCircle,
+  Phone,
+  User
 } from "lucide-react"
 
 interface Category {
@@ -153,8 +158,79 @@ export default function InstructorCoursesClient({ courses, categories, session }
 
   return (
     <div className="min-h-screen bg-gray-900">
-      {/* Header */}
-      <header className="bg-gray-800 border-b border-gray-700">
+      {/* Desktop Header */}
+      <header className="hidden md:block fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <div className="flex items-center space-x-8">
+              <Link href="/home" className="flex items-center space-x-2">
+                <GraduationCap className="h-8 w-8 text-orange-500" />
+                <span className="text-2xl font-bold text-white">Chef2.0</span>
+                <span className="bg-blue-600 text-white px-2 py-1 rounded text-sm font-medium">Eğitmen</span>
+              </Link>
+              <nav className="flex space-x-6">
+                <Link href="/home" className="text-gray-300 hover:text-white transition-colors">
+                  Ana Sayfa
+                </Link>
+                <Link href="/instructor-dashboard" className="text-gray-300 hover:text-white transition-colors">
+                  Eğitmen Paneli
+                </Link>
+                <Link href="/instructor-dashboard/courses" className="text-white font-semibold">
+                  Kurslarımı Yönet
+                </Link>
+                <Link href="/chef-sosyal" className="text-gray-300 hover:text-white transition-colors">
+                  Chef Sosyal
+                </Link>
+                <Link href="/messages" className="text-gray-300 hover:text-white transition-colors">
+                  Mesajlar
+                </Link>
+                <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
+                  İletişim
+                </Link>
+              </nav>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <Link
+                href="/instructor-dashboard/profile"
+                className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors flex items-center space-x-2"
+              >
+                <User className="h-4 w-4" />
+                <span>Profil</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Mobile Bottom Navigation */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-gray-900 border-t border-gray-800">
+        <div className="grid grid-cols-5 gap-1">
+          <Link href="/home" className="flex flex-col items-center py-3 text-gray-400 hover:text-white transition-colors">
+            <Home className="h-5 w-5" />
+            <span className="text-xs mt-1">Ana Sayfa</span>
+          </Link>
+          <Link href="/instructor-dashboard" className="flex flex-col items-center py-3 text-gray-400 hover:text-white transition-colors">
+            <GraduationCap className="h-5 w-5" />
+            <span className="text-xs mt-1">Panel</span>
+          </Link>
+          <Link href="/instructor-dashboard/courses" className="flex flex-col items-center py-3 text-orange-500">
+            <BookOpen className="h-5 w-5" />
+            <span className="text-xs mt-1">Kurslar</span>
+          </Link>
+          <Link href="/messages" className="flex flex-col items-center py-3 text-gray-400 hover:text-white transition-colors">
+            <MessageCircle className="h-5 w-5" />
+            <span className="text-xs mt-1">Mesajlar</span>
+          </Link>
+          <Link href="/contact" className="flex flex-col items-center py-3 text-gray-400 hover:text-white transition-colors">
+            <Phone className="h-5 w-5" />
+            <span className="text-xs mt-1">İletişim</span>
+          </Link>
+        </div>
+      </div>
+
+      {/* Page Header */}
+      <div className="bg-gray-800 border-b border-gray-700 md:mt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div>
@@ -170,7 +246,7 @@ export default function InstructorCoursesClient({ courses, categories, session }
             </Link>
           </div>
         </div>
-      </header>
+      </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Filters */}
