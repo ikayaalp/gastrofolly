@@ -314,13 +314,13 @@ export default function MessagesClient({ session }: Props) {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20 md:pb-6">
         {/* Mobile Chat Overlay */}
         {showMobileChat && selectedConversation && (
           <div className="lg:hidden fixed inset-0 z-50 bg-gray-900">
-            <div className="h-full flex flex-col">
+            <div className="h-screen flex flex-col">
               {/* Mobile Chat Header */}
-              <div className="bg-gray-800/50 backdrop-blur-sm border-b border-gray-700 p-4 flex items-center justify-between">
+              <div className="bg-gray-800/50 backdrop-blur-sm border-b border-gray-700 p-4 flex items-center justify-between flex-shrink-0">
                 <div className="flex items-center space-x-3">
                   <button
                     onClick={() => {
@@ -357,7 +357,7 @@ export default function MessagesClient({ session }: Props) {
               </div>
 
               {/* Mobile Chat Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-6">
+              <div className="flex-1 overflow-y-auto p-4 space-y-6 min-h-0">
                 {messages.length === 0 ? (
                   <div className="h-full flex items-center justify-center text-gray-400 py-12">
                     <div className="text-center">
@@ -456,7 +456,7 @@ export default function MessagesClient({ session }: Props) {
 
               {/* Mobile Chat Input */}
               {replyingTo && (
-                <div className="px-4 py-2 bg-gray-900/50 border-t border-gray-700 flex items-center justify-between">
+                <div className="px-4 py-2 bg-gray-900/50 border-t border-gray-700 flex items-center justify-between flex-shrink-0">
                   <div className="flex items-center space-x-2 text-sm">
                     <ChevronLeft className="h-4 w-4 text-orange-500 rotate-180" />
                     <span className="text-gray-400">
@@ -472,7 +472,7 @@ export default function MessagesClient({ session }: Props) {
                 </div>
               )}
 
-              <div className="p-4 border-t border-gray-700 bg-gray-900/50">
+              <div className="p-4 border-t border-gray-700 bg-gray-900/50 flex-shrink-0">
                 <div className="flex space-x-3">
                   <textarea
                     value={newMessage}
@@ -887,8 +887,8 @@ export default function MessagesClient({ session }: Props) {
         </div>
       )}
 
-      {/* Mobile Bottom Navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-gray-900/95 backdrop-blur-sm border-t border-gray-800">
+        {/* Mobile Bottom Navigation */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-gray-900/95 backdrop-blur-sm border-t border-gray-800">
         <div className="flex justify-around items-center py-2">
           <Link href="/home" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
             <Home className="h-6 w-6" />
