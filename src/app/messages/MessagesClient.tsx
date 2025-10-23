@@ -102,6 +102,7 @@ export default function MessagesClient({ session }: Props) {
   const [showMobileChat, setShowMobileChat] = useState(false)
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   // Scroll to bottom of messages
@@ -117,6 +118,13 @@ export default function MessagesClient({ session }: Props) {
   useEffect(() => {
     fetchConversations()
     fetchInstructors()
+    
+    // Her 30 saniyede bir konuşmaları güncelle (yeni mesajlar için)
+    const interval = setInterval(() => {
+      fetchConversations()
+    }, 30000)
+    
+    return () => clearInterval(interval)
   }, [])
 
   // URL'den gelen parametrelerle konuşma aç
@@ -151,6 +159,18 @@ export default function MessagesClient({ session }: Props) {
   useEffect(() => {
     if (selectedConversation) {
       fetchMessages(selectedConversation.otherUser.id, selectedConversation.course.id)
+      // Mesajlar açıldığında okunmamış sayısını güncelle
+      const updatedConversations = conversations.map(conv => 
+        conv.otherUser.id === selectedConversation.otherUser.id && 
+        conv.course.id === selectedConversation.course.id
+          ? { ...conv, unreadCount: 0 }
+          : conv
+      )
+      setConversations(updatedConversations)
+      
+      // Toplam unread count'u güncelle
+      const totalUnread = updatedConversations.reduce((sum, conv) => sum + conv.unreadCount, 0)
+      setUnreadCount(totalUnread)
     }
   }, [selectedConversation])
 
@@ -160,6 +180,10 @@ export default function MessagesClient({ session }: Props) {
       if (response.ok) {
         const data = await response.json()
         setConversations(data.conversations)
+        
+        // Toplam okunmamış mesaj sayısını hesapla
+        const totalUnread = data.conversations.reduce((sum: number, conv: Conversation) => sum + conv.unreadCount, 0)
+        setUnreadCount(totalUnread)
       }
     } catch (error) {
       console.error('Error fetching conversations:', error)
@@ -220,7 +244,7 @@ export default function MessagesClient({ session }: Props) {
         if (selectedConversation) {
           fetchMessages(selectedConversation.otherUser.id, selectedConversation.course.id)
         }
-        fetchConversations()
+        fetchConversations() // Bu unread count'u da güncelleyecek
         setShowNewMessageModal(false)
         setSelectedCourse(null)
       } else {
@@ -299,7 +323,14 @@ export default function MessagesClient({ session }: Props) {
               </Link>
               <div className="h-6 w-px bg-gray-600"></div>
               <div className="flex items-center space-x-2">
-                <MessageSquare className="h-6 w-6 text-orange-500" />
+                <div className="relative">
+                  <MessageSquare className="h-6 w-6 text-orange-500" />
+                  {unreadCount > 0 && (
+                    <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-lg animate-pulse">
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </div>
+                  )}
+                </div>
                 <h1 className="text-xl font-bold text-white">Mesajlar</h1>
               </div>
             </div>
@@ -357,7 +388,11 @@ export default function MessagesClient({ session }: Props) {
               </div>
 
               {/* Mobile Chat Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-6 min-h-0 pb-4">
+              <div className="flex-1 overflow-y-auto p-4 space-y-6 min-h-0 pb-4" style={{ 
+                maxHeight: 'calc(100vh - 200px)',
+                overflowY: 'auto',
+                scrollBehavior: 'smooth'
+              }}>
                 {messages.length === 0 ? (
                   <div className="h-full flex items-center justify-center text-gray-400 py-12">
                     <div className="text-center">
@@ -506,10 +541,10 @@ export default function MessagesClient({ session }: Props) {
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-140px)] md:h-[calc(100vh-140px)]">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6" style={{ height: 'calc(100vh - 140px)' }}>
           {/* Konuşma Listesi */}
           <div className={`lg:col-span-1 ${showMobileChat ? 'hidden lg:block' : 'block'}`}>
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700 h-full flex flex-col shadow-xl">
+              <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700 flex flex-col shadow-xl" style={{ height: 'calc(100vh - 140px)' }}>
               <div className="p-4 border-b border-gray-700">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -605,7 +640,7 @@ export default function MessagesClient({ session }: Props) {
           {/* Mesaj Alanı */}
           <div className={`lg:col-span-2 ${showMobileChat ? 'block' : 'hidden lg:block'}`}>
             {selectedConversation ? (
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700 h-full flex flex-col shadow-xl">
+              <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700 flex flex-col shadow-xl" style={{ height: 'calc(100vh - 140px)' }}>
                 {/* Mesaj Header */}
                 <div className="p-4 border-b border-gray-700 bg-gray-900/50">
                   <div className="flex items-center justify-between">
@@ -646,7 +681,11 @@ export default function MessagesClient({ session }: Props) {
                 </div>
 
                 {/* Mesajlar */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-6">
+                <div className="flex-1 overflow-y-auto p-4 space-y-6" style={{ 
+                  maxHeight: 'calc(100vh - 300px)',
+                  overflowY: 'auto',
+                  scrollBehavior: 'smooth'
+                }}>
                   {messages.length === 0 ? (
                     <div className="h-full flex items-center justify-center text-gray-400 py-12">
                       <div className="text-center">
@@ -912,8 +951,15 @@ export default function MessagesClient({ session }: Props) {
             <Users className="h-6 w-6" />
             <span className="text-xs font-medium mt-1">Sosyal</span>
           </Link>
-          <Link href="/messages" className="flex flex-col items-center py-2 px-3 text-orange-500">
-            <MessageSquare className="h-6 w-6" />
+          <Link href="/messages" className="flex flex-col items-center py-2 px-3 text-orange-500 relative">
+            <div className="relative">
+              <MessageSquare className="h-6 w-6" />
+              {unreadCount > 0 && (
+                <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </div>
+              )}
+            </div>
             <span className="text-xs font-medium mt-1">Mesajlar</span>
           </Link>
         </div>
