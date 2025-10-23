@@ -317,8 +317,8 @@ export default function MessagesClient({ session }: Props) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20 md:pb-6">
         {/* Mobile Chat Overlay */}
         {showMobileChat && selectedConversation && (
-          <div className="lg:hidden fixed inset-0 z-50 bg-gray-900">
-            <div className="h-screen flex flex-col">
+          <div className="lg:hidden fixed inset-0 z-50 bg-gray-900" style={{ height: '100dvh' }}>
+            <div className="h-full flex flex-col">
               {/* Mobile Chat Header */}
               <div className="bg-gray-800/50 backdrop-blur-sm border-b border-gray-700 p-4 flex items-center justify-between flex-shrink-0">
                 <div className="flex items-center space-x-3">
@@ -357,7 +357,7 @@ export default function MessagesClient({ session }: Props) {
               </div>
 
               {/* Mobile Chat Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-6 min-h-0">
+              <div className="flex-1 overflow-y-auto p-4 space-y-6 min-h-0 pb-4">
                 {messages.length === 0 ? (
                   <div className="h-full flex items-center justify-center text-gray-400 py-12">
                     <div className="text-center">
@@ -456,37 +456,47 @@ export default function MessagesClient({ session }: Props) {
 
               {/* Mobile Chat Input */}
               {replyingTo && (
-                <div className="px-4 py-2 bg-gray-900/50 border-t border-gray-700 flex items-center justify-between flex-shrink-0">
-                  <div className="flex items-center space-x-2 text-sm">
-                    <ChevronLeft className="h-4 w-4 text-orange-500 rotate-180" />
-                    <span className="text-gray-400">
-                      <span className="text-orange-400">{replyingTo.user.name}</span> kullanıcısına yanıt veriyorsunuz
+                <div className="px-4 py-2 bg-gray-800/80 backdrop-blur-sm border-t border-gray-700 flex items-center justify-between flex-shrink-0">
+                  <div className="flex items-center space-x-2 text-sm flex-1">
+                    <ChevronLeft className="h-4 w-4 text-orange-500 rotate-180 flex-shrink-0" />
+                    <span className="text-gray-300 text-xs truncate">
+                      <span className="text-orange-400 font-medium">{replyingTo.user.name}</span> kullanıcısına yanıt
                     </span>
                   </div>
                   <button
                     onClick={() => setReplyingTo(null)}
-                    className="text-gray-400 hover:text-white transition-colors"
+                    className="text-gray-400 hover:text-white transition-colors flex-shrink-0 p-1"
                   >
                     <X className="h-4 w-4" />
                   </button>
                 </div>
               )}
 
-              <div className="p-4 border-t border-gray-700 bg-gray-900/50 flex-shrink-0">
-                <div className="flex space-x-3">
+              <div className="p-3 border-t border-gray-700 bg-gray-900/95 backdrop-blur-sm flex-shrink-0 sticky bottom-0">
+                <div className="flex space-x-2 items-end">
                   <textarea
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder="Mesajınızı yazın..."
-                    className="flex-1 bg-gray-700/50 text-white p-3 rounded-xl border border-gray-600 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 resize-none transition-all"
-                    rows={2}
+                    className="flex-1 bg-gray-700/50 text-white p-3 rounded-xl border border-gray-600 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 resize-none transition-all max-h-32"
+                    rows={1}
                     disabled={sending}
+                    style={{ 
+                      minHeight: '44px',
+                      maxHeight: '120px',
+                      lineHeight: '20px'
+                    }}
+                    onInput={(e) => {
+                      const target = e.target as HTMLTextAreaElement;
+                      target.style.height = 'auto';
+                      target.style.height = Math.min(target.scrollHeight, 120) + 'px';
+                    }}
                   />
                   <button
                     onClick={sendMessage}
                     disabled={!newMessage.trim() || sending}
-                    className="bg-gradient-to-r from-orange-600 to-orange-500 text-white px-5 py-2 rounded-xl hover:from-orange-700 hover:to-orange-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 shadow-lg self-end"
+                    className="bg-gradient-to-r from-orange-600 to-orange-500 text-white px-4 py-3 rounded-xl hover:from-orange-700 hover:to-orange-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-lg mb-1"
                   >
                     <Send className="h-5 w-5" />
                   </button>
