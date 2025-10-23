@@ -67,8 +67,8 @@ export async function GET(request: NextRequest) {
     const conversationsMap = new Map()
 
     for (const message of messages) {
-      const isInstructor = session.user.id === message.course.instructorId
-      const otherUserId = isInstructor ? message.userId : message.course.instructorId
+      const isInstructor = session.user.id === message.course.instructor.id
+      const otherUserId = isInstructor ? message.userId : message.course.instructor.id
       
       if (!conversationsMap.has(otherUserId)) {
         const otherUser = isInstructor 
