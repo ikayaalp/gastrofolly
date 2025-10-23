@@ -125,7 +125,7 @@ export default function InstructorDashboardClient({ instructorData, session }: P
   return (
     <div className="min-h-screen bg-gray-900">
       {/* Desktop Header */}
-      <header className="hidden md:block fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
+      <header className="hidden md:block fixed top-0 left-0 right-0 z-50 bg-gray-900 backdrop-blur-sm border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-8">
@@ -284,12 +284,12 @@ export default function InstructorDashboardClient({ instructorData, session }: P
             {/* Overview Tab */}
             {activeTab === 'overview' && (
               <div className="space-y-6">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
                   {/* Recent Courses */}
                   <div>
                     <h3 className="text-lg font-semibold text-white mb-4">Son Kurslar</h3>
                     <div className="space-y-3">
-                      {instructorData.courses.slice(0, 3).map((course) => (
+                      {instructorData.courses.slice(0, 5).map((course) => (
                         <div key={course.id} className="bg-gray-700 rounded-lg p-4">
                           <div className="flex justify-between items-start">
                             <div>
@@ -319,27 +319,6 @@ export default function InstructorDashboardClient({ instructorData, session }: P
                                 <Eye className="h-4 w-4" />
                               </Link>
                             </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Recent Messages */}
-                  <div>
-                    <h3 className="text-lg font-semibold text-white mb-4">Son Mesajlar</h3>
-                    <div className="space-y-3">
-                      {instructorData.recentMessages.map((message) => (
-                        <div key={message.id} className="bg-gray-700 rounded-lg p-4">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <h4 className="text-white font-medium">{message.user.name}</h4>
-                              <p className="text-gray-400 text-sm">{message.course.title}</p>
-                              <p className="text-gray-300 text-sm mt-1 line-clamp-2">{message.content}</p>
-                            </div>
-                            <span className="text-gray-400 text-xs">
-                              {new Date(message.createdAt).toLocaleDateString('tr-TR')}
-                            </span>
                           </div>
                         </div>
                       ))}
