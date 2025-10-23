@@ -14,33 +14,46 @@ async function getInstructorData(userId: string) {
       image: true,
       role: true,
       createdAt: true,
-      courses: {
-        select: {
-          id: true,
-          title: true,
-          description: true,
-          price: true,
-          imageUrl: true,
-          isPublished: true,
-          createdAt: true,
-          _count: {
-            select: {
-              enrollments: true,
-              lessons: true,
-              reviews: true
-            }
-          }
-        }
-      },
       _count: {
         select: {
-          courses: true
+          reviews: true,
+          enrollments: true
         }
       }
     }
   })
 
-  return instructor
+  // Eğitmenin kurslarını ayrı olarak getir
+  const courses = await prisma.course.findMany({
+    where: {
+      instructorId: userId
+    },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      price: true,
+      imageUrl: true,
+      isPublished: true,
+      createdAt: true,
+      _count: {
+        select: {
+          enrollments: true,
+          lessons: true,
+          reviews: true
+        }
+      }
+    }
+  })
+
+  return {
+    ...instructor,
+    courses,
+    _count: {
+      ...instructor?._count,
+      courses: courses.length
+    }
+  }
 }
 
 export default async function InstructorProfilePage() {
