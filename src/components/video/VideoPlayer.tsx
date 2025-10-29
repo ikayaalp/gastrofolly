@@ -48,6 +48,28 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
   const [isSeeking, setIsSeeking] = useState(false);
   const wasPlayingRef = useRef(false);
 
+  // Kontrol barı için auto-hide id
+  const hideControlsTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  // Kontrol barını 3sn gösterip sonra gizle (center play açıkken hep açık bırak)
+  const triggerControls = () => {
+    if (showCenterPlay) return;
+    setShowControls(true);
+    if (hideControlsTimeout.current) {
+      clearTimeout(hideControlsTimeout.current);
+    }
+    hideControlsTimeout.current = setTimeout(() => {
+      setShowControls(false);
+    }, 3000);
+  };
+
+  useEffect(() => {
+    // cleanup timer on unmount
+    return () => {
+      if (hideControlsTimeout.current) clearTimeout(hideControlsTimeout.current);
+    };
+  }, []);
+
   useEffect(() => {
     const video = videoRef.current
     if (!video) return
@@ -261,6 +283,8 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
       className={`relative w-full h-[75vh] bg-black group flex-shrink-0 ${isFullscreen ? 'w-screen h-screen max-w-none max-h-none !rounded-none fullscreen-active z-[10000]' : ''}`}
       style={isFullscreen ? { minHeight: '100vh', minWidth: '100vw' } : {}}
       onClick={handleVideoAreaClick}
+      onMouseMove={triggerControls}
+      onTouchMove={triggerControls}
     >
       {lesson.videoUrl && lesson.videoUrl.trim() !== "" ? (
         isYouTubeUrl(lesson.videoUrl) ? (
