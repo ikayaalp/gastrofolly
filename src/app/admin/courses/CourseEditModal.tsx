@@ -24,6 +24,7 @@ interface Course {
     name: string | null
     email: string
   }
+  isFree: boolean // <-- Eklenen alan
 }
 
 interface Category {

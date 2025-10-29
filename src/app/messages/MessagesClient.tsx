@@ -343,7 +343,7 @@ export default function MessagesClient({ session }: Props) {
               <span className="hidden sm:inline">Yeni Sohbet</span>
               </button>
           </div>
-        </div>
+            </div>
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20 md:pb-6">
@@ -354,8 +354,8 @@ export default function MessagesClient({ session }: Props) {
               {/* Mobile Chat Header */}
               <div className="bg-gray-800/50 backdrop-blur-sm border-b border-gray-700 p-4 flex items-center justify-between flex-shrink-0">
                 <div className="flex items-center space-x-3">
-                  <button
-                    onClick={() => {
+              <button
+                onClick={() => {
                       setSelectedConversation(null)
                       setShowMobileChat(false)
                     }}
@@ -535,10 +535,10 @@ export default function MessagesClient({ session }: Props) {
                     className="bg-gradient-to-r from-orange-600 to-orange-500 text-white px-4 py-3 rounded-xl hover:from-orange-700 hover:to-orange-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-lg mb-1"
                   >
                     <Send className="h-5 w-5" />
-                  </button>
-                </div>
-              </div>
+              </button>
             </div>
+          </div>
+        </div>
           </div>
         )}
 
@@ -755,8 +755,8 @@ export default function MessagesClient({ session }: Props) {
                                     <div
                                       key={reply.id}
                                       className={`flex ${reply.user.id === session.user.id ? 'justify-end' : 'justify-start'}`}
-                                    >
-                                      <div
+                        >
+                          <div
                                         className={`px-4 py-2.5 rounded-xl text-sm max-w-[85%] shadow ${
                                           reply.user.id === session.user.id
                                             ? 'bg-orange-500/80 text-white'
@@ -856,7 +856,7 @@ export default function MessagesClient({ session }: Props) {
                 >
                 <X className="h-6 w-6" />
                 </button>
-            </div>
+              </div>
             
             <div className="flex-1 overflow-y-auto p-6">
               {instructors.length === 0 ? (
@@ -870,7 +870,7 @@ export default function MessagesClient({ session }: Props) {
                   >
                     Kursları İncele
                   </Link>
-                </div>
+              </div>
               ) : (
                 <div className="space-y-4">
               {instructors.map((instructor) => (
@@ -922,14 +922,14 @@ export default function MessagesClient({ session }: Props) {
                               <h5 className="text-white font-medium text-sm group-hover:text-orange-400 transition-colors">{course.title}</h5>
                               {course.lessonCount && (
                                 <p className="text-gray-400 text-xs">{course.lessonCount} ders</p>
-                              )}
-                            </div>
+                      )}
+                    </div>
                             <ChevronLeft className="h-5 w-5 text-gray-400 group-hover:text-orange-400 rotate-180 transition-colors" />
                           </button>
                         ))}
-                      </div>
-                    </div>
-                  ))}
+                  </div>
+                </div>
+              ))}
                 </div>
               )}
             </div>
