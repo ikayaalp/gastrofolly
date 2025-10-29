@@ -52,6 +52,7 @@ export default function CourseEditModal({ course, categories, instructors, onClo
     title: course?.title || "",
     description: course?.description || "",
     price: course?.price || 0,
+    isFree: course?.isFree || false,
     discountRate: course?.discountRate || 0,
     discountedPrice: course?.discountedPrice || null,
     imageUrl: course?.imageUrl || "",
@@ -199,7 +200,8 @@ export default function CourseEditModal({ course, categories, instructors, onClo
                     required
                     min="0"
                     step="0.01"
-                    className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+                    disabled={formData.isFree}
+                    className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 disabled:opacity-60"
                     placeholder="299.99"
                   />
                 </div>
@@ -356,6 +358,20 @@ export default function CourseEditModal({ course, categories, instructors, onClo
                 />
                 <label className="text-gray-300">
                   Kursu hemen yayınla
+                </label>
+              </div>
+
+              {/* Ücretsiz Kurs */}
+              <div className="flex items-center space-x-3">
+                <input
+                  type="checkbox"
+                  name="isFree"
+                  checked={formData.isFree}
+                  onChange={handleInputChange}
+                  className="w-5 h-5 text-orange-600 bg-gray-800 border-gray-600 rounded focus:ring-orange-500 focus:ring-2"
+                />
+                <label className="text-gray-300">
+                  Ücretsiz kurs (sepete gerek kalmadan direkt kayıt)
                 </label>
               </div>
 
