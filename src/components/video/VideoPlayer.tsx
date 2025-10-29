@@ -4,14 +4,17 @@ import { useState, useRef, useEffect } from "react"
 import { Play, Pause, Volume2, VolumeX, Maximize, RotateCcw, RotateCw } from "lucide-react"
 import YouTubePlayer from "./YouTubePlayer"
 
+// Lesson tipi interface olarak tanımlanıyor
+interface Lesson {
+  id: string;
+  title: string;
+  description: string | null;
+  videoUrl: string | null;
+  duration: number | null;
+}
+
 interface VideoPlayerProps {
-  lesson: {
-    id: string
-    title: string
-    description: string | null
-    videoUrl: string | null
-    duration: number | null
-  }
+  lesson: Lesson
   course: {
     id: string
     title: string
@@ -22,9 +25,11 @@ interface VideoPlayerProps {
   }
   userId: string
   isCompleted: boolean
+  previousLesson?: Lesson | null
+  nextLesson?: Lesson | null
 }
 
-export default function VideoPlayer({ lesson, course, userId, isCompleted }: VideoPlayerProps) {
+export default function VideoPlayer({ lesson, course, userId, isCompleted, previousLesson, nextLesson }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   
@@ -264,6 +269,21 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted }: Vid
                 </button>
 
                 <div className="flex items-center space-x-2">
+                  {/* Önceki ders butonu */}
+                  <button
+                    onClick={() => {
+                      if (previousLesson) {
+                        const url = new URL(window.location.href)
+                        url.searchParams.set('lesson', previousLesson.id)
+                        window.location.href = url.toString()
+                      }
+                    }}
+                    disabled={!previousLesson}
+                    className={`text-white hover:text-orange-400 transition-colors ${!previousLesson ? 'opacity-40 cursor-not-allowed' : ''}`}
+                    title="Önceki ders"
+                  >
+                    ‹
+                  </button>
                   <button
                     onClick={toggleMute}
                     className="text-white hover:text-orange-400 transition-colors"
@@ -283,6 +303,21 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted }: Vid
                     onChange={handleVolumeChange}
                     className="w-20 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer"
                   />
+                  {/* Sonraki ders butonu */}
+                  <button
+                    onClick={() => {
+                      if (nextLesson) {
+                        const url = new URL(window.location.href)
+                        url.searchParams.set('lesson', nextLesson.id)
+                        window.location.href = url.toString()
+                      }
+                    }}
+                    disabled={!nextLesson}
+                    className={`text-white hover:text-orange-400 transition-colors ${!nextLesson ? 'opacity-40 cursor-not-allowed' : ''}`}
+                    title="Sonraki ders"
+                  >
+                    ›
+                  </button>
                 </div>
               </div>
 

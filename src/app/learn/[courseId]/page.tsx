@@ -10,6 +10,32 @@ import Link from "next/link"
 import { Home, BookOpen, Users, MessageCircle, ChefHat, CheckCircle } from "lucide-react"
 import UserDropdown from "@/components/ui/UserDropdown"
 
+// types
+interface LearnPageLesson {
+  id: string;
+  title: string;
+  description: string | null;
+  videoUrl: string | null;
+  duration: number | null;
+  order?: number;
+}
+interface LearnPageCourse {
+  id: string;
+  title: string;
+  lessons: LearnPageLesson[];
+  instructor: {
+    name: string | null;
+    image: string | null;
+  };
+  reviews: any;
+  categoryId: string;
+}
+interface ProgressItem {
+  lessonId: string;
+  isCompleted: boolean;
+  lesson: any;
+}
+
 interface LearnPageProps {
   params: Promise<{
     courseId: string
@@ -175,7 +201,12 @@ export default async function LearnPage({ params, searchParams }: LearnPageProps
 
   // Mevcut dersi belirle
   const currentLessonId = resolvedSearchParams?.lesson || course.lessons[0]?.id
-  const currentLesson = course.lessons.find(lesson => lesson.id === currentLessonId)
+  const lessons: LearnPageLesson[] = course.lessons
+  const currentIndex = lessons.findIndex((lesson: LearnPageLesson) => lesson.id === currentLessonId)
+  const previousLesson: LearnPageLesson | null = currentIndex > 0 ? lessons[currentIndex - 1] : null
+  const nextLesson: LearnPageLesson | null = currentIndex < lessons.length - 1 ? lessons[currentIndex + 1] : null
+  const currentLesson: LearnPageLesson | null = lessons[currentIndex]
+  const typedProgress: ProgressItem[] = progress
   
   // Debug için
   console.log("Learn Page - course lessons:", course.lessons)
@@ -187,7 +218,7 @@ export default async function LearnPage({ params, searchParams }: LearnPageProps
   }
 
   // İlerleme durumunu kontrol et
-  const lessonProgress = progress.find(p => p.lessonId === currentLesson.id)
+  const lessonProgress = typedProgress.find((p: ProgressItem) => p.lessonId === currentLesson.id)
   const isCompleted = lessonProgress?.isCompleted || false
 
   return (
@@ -234,6 +265,8 @@ export default async function LearnPage({ params, searchParams }: LearnPageProps
             course={course}
             userId={session.user.id}
             isCompleted={isCompleted}
+            previousLesson={previousLesson}
+            nextLesson={nextLesson}
           />
           
           {/* Comments Section */}
@@ -277,10 +310,6 @@ export default async function LearnPage({ params, searchParams }: LearnPageProps
             <span className="text-xs font-medium mt-1">Sosyal</span>
           </Link>
           <Link href="/messages" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
-            <MessageCircle className="h-6 w-6" />
-            <span className="text-xs font-medium mt-1">Mesajlar</span>
-          </Link>
-          <Link href="/contact" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
             <MessageCircle className="h-6 w-6" />
             <span className="text-xs font-medium mt-1">Mesajlar</span>
           </Link>
