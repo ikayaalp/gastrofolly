@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Play, Pause, Volume2, VolumeX, Maximize, RotateCcw, RotateCw } from "lucide-react"
+import { Play, Pause, Volume2, VolumeX, Maximize, RotateCcw, RotateCw, SkipBack, SkipForward } from "lucide-react"
 import YouTubePlayer from "./YouTubePlayer"
 
 // Lesson tipi interface olarak tanımlanıyor
@@ -243,84 +243,74 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
             {/* Control Buttons */}
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
+                {/* Önceki Ders (SkipBack) */}
                 <button
-                  onClick={() => skip(-10)}
-                  className="text-white hover:text-orange-400 transition-colors"
+                  onClick={() => {
+                    if (previousLesson) {
+                      const url = new URL(window.location.href)
+                      url.searchParams.set('lesson', previousLesson.id)
+                      window.location.href = url.toString()
+                    }
+                  }}
+                  disabled={!previousLesson}
+                  className={`text-white hover:text-orange-400 transition-colors rounded-full p-2 ${!previousLesson ? 'opacity-40 cursor-not-allowed' : ''}`}
+                  title="Önceki ders"
                 >
-                  <RotateCcw className="h-6 w-6" />
+                  <SkipBack className="h-7 w-7" />
                 </button>
 
+                {/* Play/Pause */}
                 <button
                   onClick={togglePlay}
-                  className="bg-orange-600 hover:bg-orange-700 text-white p-3 rounded-full transition-colors"
+                  className="bg-orange-600 hover:bg-orange-700 text-white p-3 rounded-full transition-colors mx-2"
+                  title={isPlaying ? "Duraklat" : "Oynat"}
                 >
                   {isPlaying ? (
-                    <Pause className="h-6 w-6" />
+                    <Pause className="h-7 w-7" />
                   ) : (
-                    <Play className="h-6 w-6 ml-1" />
+                    <Play className="h-7 w-7 ml-1" />
                   )}
                 </button>
 
+                {/* Sonraki Ders (SkipForward) */}
                 <button
-                  onClick={() => skip(10)}
-                  className="text-white hover:text-orange-400 transition-colors"
+                  onClick={() => {
+                    if (nextLesson) {
+                      const url = new URL(window.location.href)
+                      url.searchParams.set('lesson', nextLesson.id)
+                      window.location.href = url.toString()
+                    }
+                  }}
+                  disabled={!nextLesson}
+                  className={`text-white hover:text-orange-400 transition-colors rounded-full p-2 ${!nextLesson ? 'opacity-40 cursor-not-allowed' : ''}`}
+                  title="Sonraki ders"
                 >
-                  <RotateCw className="h-6 w-6" />
+                  <SkipForward className="h-7 w-7" />
                 </button>
 
-                <div className="flex items-center space-x-2">
-                  {/* Önceki ders butonu */}
-                  <button
-                    onClick={() => {
-                      if (previousLesson) {
-                        const url = new URL(window.location.href)
-                        url.searchParams.set('lesson', previousLesson.id)
-                        window.location.href = url.toString()
-                      }
-                    }}
-                    disabled={!previousLesson}
-                    className={`text-white hover:text-orange-400 transition-colors ${!previousLesson ? 'opacity-40 cursor-not-allowed' : ''}`}
-                    title="Önceki ders"
-                  >
-                    ‹
-                  </button>
-                  <button
-                    onClick={toggleMute}
-                    className="text-white hover:text-orange-400 transition-colors"
-                  >
-                    {isMuted ? (
-                      <VolumeX className="h-5 w-5" />
-                    ) : (
-                      <Volume2 className="h-5 w-5" />
-                    )}
-                  </button>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.1"
-                    value={isMuted ? 0 : volume}
-                    onChange={handleVolumeChange}
-                    className="w-20 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer"
-                  />
-                  {/* Sonraki ders butonu */}
-                  <button
-                    onClick={() => {
-                      if (nextLesson) {
-                        const url = new URL(window.location.href)
-                        url.searchParams.set('lesson', nextLesson.id)
-                        window.location.href = url.toString()
-                      }
-                    }}
-                    disabled={!nextLesson}
-                    className={`text-white hover:text-orange-400 transition-colors ${!nextLesson ? 'opacity-40 cursor-not-allowed' : ''}`}
-                    title="Sonraki ders"
-                  >
-                    ›
-                  </button>
-                </div>
+                {/* Ses kontrolü */}
+                <button
+                  onClick={toggleMute}
+                  className="text-white hover:text-orange-400 transition-colors ml-4"
+                  title={isMuted ? "Sesi Aç" : "Sesi Kapat"}
+                >
+                  {isMuted ? (
+                    <VolumeX className="h-5 w-5" />
+                  ) : (
+                    <Volume2 className="h-5 w-5" />
+                  )}
+                </button>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  value={isMuted ? 0 : volume}
+                  onChange={handleVolumeChange}
+                  className="w-20 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer"
+                />
               </div>
-
+              {/* Tam ekran */}
               <div className="flex items-center space-x-4">
                 <button
                   onClick={toggleFullscreen}
