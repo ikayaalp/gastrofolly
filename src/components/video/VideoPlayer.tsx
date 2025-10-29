@@ -44,6 +44,7 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
   const [showControls, setShowControls] = useState(true)
   const [isLoading, setIsLoading] = useState(true)
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showCenterPlay, setShowCenterPlay] = useState(false);
 
   useEffect(() => {
     const video = videoRef.current
@@ -214,10 +215,26 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
     return url.includes('youtube.com') || url.includes('youtu.be')
   }
 
+  // Video alanına tıklandığında oynat/duraklat (ve büyük ikon göster)
+  const handleVideoAreaClick = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (isPlaying) {
+      video.pause();
+      setShowCenterPlay(true);
+    } else {
+      video.play();
+      setShowCenterPlay(false);
+    }
+  };
+
   return (
-    <div ref={playerContainerRef}
+    <div
+      ref={playerContainerRef}
       className={`relative w-full h-[75vh] bg-black group flex-shrink-0 ${isFullscreen ? 'w-screen h-screen max-w-none max-h-none !rounded-none fullscreen-active z-[10000]' : ''}`}
-      style={isFullscreen ? { minHeight: '100vh', minWidth: '100vw' } : {}}>
+      style={isFullscreen ? { minHeight: '100vh', minWidth: '100vw' } : {}}
+      onClick={handleVideoAreaClick}
+    >
       {lesson.videoUrl && lesson.videoUrl.trim() !== "" ? (
         isYouTubeUrl(lesson.videoUrl) ? (
           // YouTube Player
@@ -349,22 +366,37 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
           </div>
 
           {/* Lesson Info Overlay */}
-          <div className="absolute top-4 left-4 text-white">
-            <div className="bg-black/60 backdrop-blur-sm rounded-lg p-4">
-              <h1 className="text-2xl font-bold mb-2">{lesson.title}</h1>
-              <p className="text-orange-500 mb-2">{course.title}</p>
-              <div className="flex items-center space-x-2 text-sm">
-                <span className="bg-orange-500/20 text-orange-500 px-2 py-1 rounded text-xs">
-                  Chef2.0
-                </span>
-                {isCompleted && (
-                  <span className="bg-green-500/20 text-green-500 px-2 py-1 rounded text-xs">
-                    ✓ Tamamlandı
+          {/* Tam ekran değilse başlık/açıklama overlay göster */}
+          {!isFullscreen && (
+            <div className="absolute top-4 left-4 text-white z-20">
+              <div className="bg-black/60 backdrop-blur-sm rounded-lg p-4">
+                <h1 className="text-2xl font-bold mb-2">{lesson.title}</h1>
+                <p className="text-orange-500 mb-2">{course.title}</p>
+                <div className="flex items-center space-x-2 text-sm">
+                  <span className="bg-orange-500/20 text-orange-500 px-2 py-1 rounded text-xs">
+                    Chef2.0
                   </span>
-                )}
+                  {isCompleted && (
+                    <span className="bg-green-500/20 text-green-500 px-2 py-1 rounded text-xs">
+                      ✓ Tamamlandı
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
+          )}
+          {/* Ortada büyük Play butonu */}
+          {showCenterPlay && (
+            <div className="absolute inset-0 flex justify-center items-center z-30 pointer-events-none">
+              <button
+                className="bg-black/60 rounded-full p-6 shadow-lg flex items-center justify-center border-2 border-white"
+                style={{ pointerEvents: 'auto' }}
+                onClick={handleVideoAreaClick}
+              >
+                <Play className="h-20 w-20 text-white" />
+              </button>
+            </div>
+          )}
           </>
         )
       ) : (
