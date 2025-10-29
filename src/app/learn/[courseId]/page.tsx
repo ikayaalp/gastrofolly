@@ -19,21 +19,17 @@ interface LearnPageLesson {
   duration: number | null;
   order?: number;
 }
-interface LearnPageCourse {
+interface ReviewItem {
   id: string;
-  title: string;
-  lessons: LearnPageLesson[];
-  instructor: {
-    name: string | null;
-    image: string | null;
-  };
-  reviews: any;
-  categoryId: string;
+  rating: number;
+  user: { name: string | null; image: string | null };
+  createdAt: string;
+  comment?: string | null;
 }
 interface ProgressItem {
   lessonId: string;
   isCompleted: boolean;
-  lesson: any;
+  lesson: LearnPageLesson;
 }
 
 interface LearnPageProps {
