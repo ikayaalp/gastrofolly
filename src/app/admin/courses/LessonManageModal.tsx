@@ -46,12 +46,40 @@ export default function LessonManageModal({ course, onClose }: LessonManageModal
     setShowVideoUpload(true)
   }
 
-  const handleVideoUploaded = (videoUrl: string) => {
-    setShowVideoUpload(false)
-    setSelectedLessonId(null)
-    // Client-side'da reload yap
-    if (typeof window !== 'undefined') {
-      window.location.reload()
+  const handleVideoUploaded = async (videoUrl: string) => {
+    try {
+      if (!selectedLessonId) return
+
+      // Mevcut ders bilgilerini listeden al
+      const current = course.lessons.find(l => l.id === selectedLessonId)
+      if (!current) return
+
+      const response = await fetch(`/api/admin/lessons/${selectedLessonId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: current.title,
+          description: current.description,
+          videoUrl: videoUrl,
+          duration: current.duration,
+          order: current.order,
+          isFree: current.isFree
+        })
+      })
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}))
+        alert(data.error || 'Video URL kaydedilemedi')
+      }
+    } catch (e) {
+      console.error('Video URL kaydetme hatası:', e)
+      alert('Video URL veritabanına kaydedilirken hata oluştu')
+    } finally {
+      setShowVideoUpload(false)
+      setSelectedLessonId(null)
+      if (typeof window !== 'undefined') {
+        window.location.reload()
+      }
     }
   }
 
