@@ -52,7 +52,8 @@ export default function NewCourseClient({ categories, session }: Props) {
     price: "",
     categoryId: "",
     imageUrl: "",
-    isPublished: false
+    isPublished: false,
+    isFree: false
   })
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -98,7 +99,7 @@ export default function NewCourseClient({ categories, session }: Props) {
         },
         body: JSON.stringify({
           ...formData,
-          price: parseFloat(formData.price)
+          price: formData.isFree ? 0 : parseFloat(formData.price)
         }),
       })
 
@@ -260,12 +261,26 @@ export default function NewCourseClient({ categories, session }: Props) {
                   value={formData.price}
                   onChange={handleInputChange}
                   required
+                  disabled={formData.isFree}
                   min="0"
                   step="0.01"
                   className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-orange-500 focus:outline-none"
                   placeholder="0.00"
                 />
               </div>
+            </div>
+            <div className="flex items-center space-x-3 mt-2">
+              <input
+                type="checkbox"
+                id="isFree"
+                name="isFree"
+                checked={formData.isFree}
+                onChange={handleInputChange}
+                className="w-4 h-4 text-orange-600 bg-gray-700 border-gray-600 rounded focus:ring-orange-500 focus:ring-2"
+              />
+              <label htmlFor="isFree" className="text-gray-300">
+                Ücretsiz kurs (sepete eklemeden direkt kayıt)
+              </label>
             </div>
           </div>
 

@@ -102,6 +102,7 @@ model Course {
   title       String
   description String
   price       Float
+  isFree      Boolean     @default(false)
   discountRate Float?     // İndirim oranı (0-100 arası)
   discountedPrice Float?  // İndirimli fiyat (otomatik hesaplanır)
   imageUrl    String?

@@ -174,38 +174,38 @@ export default function LessonManageModal({ course, onClose }: LessonManageModal
   // Video upload handler for lesson form
   const handleVideoUploadInForm = async (file: File) => {
     setUploadingVideo(true)
-    
     try {
-      const formData = new FormData()
-      formData.append('video', file)
-      
-      const response = await fetch('/api/upload-video-cloud', {
-        method: 'POST',
-        body: formData
+      // Firebase Storage'a yükle
+      const { storage } = await import('@/lib/firebase')
+      const { ref, uploadBytesResumable, getDownloadURL } = await import('firebase/storage')
+
+      const timestamp = Date.now()
+      const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+      const path = `videos/form/${timestamp}_${safeFileName}`
+      const storageRef = ref(storage, path)
+
+      await new Promise<void>((resolve, reject) => {
+        const uploadTask = uploadBytesResumable(storageRef, file, { contentType: file.type || 'video/mp4' })
+        uploadTask.on('state_changed', () => {}, reject, async () => {
+          try {
+            const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref)
+            // URL'i forma yaz
+            setLessonForm(prev => ({ ...prev, videoUrl: downloadUrl }))
+            
+            // Süreyi hesapla
+            const video = document.createElement('video')
+            video.src = downloadUrl
+            video.onloadedmetadata = () => {
+              const durationInMinutes = Math.round(video.duration / 60)
+              setLessonForm(prev => ({ ...prev, duration: durationInMinutes }))
+              resolve()
+            }
+            video.onerror = () => resolve() // süre alınamazsa devam et
+          } catch (e) {
+            reject(e)
+          }
+        })
       })
-      
-      const data = await response.json()
-      
-      if (response.ok) {
-        setLessonForm(prev => ({ 
-          ...prev, 
-          videoUrl: data.videoUrl,
-          duration: data.duration || prev.duration
-        }))
-        
-        // Video süresini otomatik al
-        const video = document.createElement('video')
-        video.src = data.videoUrl
-        video.onloadedmetadata = () => {
-          const durationInMinutes = Math.round(video.duration / 60)
-          setLessonForm(prev => ({ 
-            ...prev, 
-            duration: durationInMinutes 
-          }))
-        }
-      } else {
-        alert(data.error || 'Video yüklenemedi')
-      }
     } catch (error) {
       console.error('Video upload error:', error)
       alert('Video yüklenirken hata oluştu')

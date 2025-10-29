@@ -24,9 +24,10 @@ export async function POST(request: NextRequest) {
       data: {
         title: data.title,
         description: data.description,
-        price: parseFloat(data.price),
+        price: data.isFree ? 0 : parseFloat(data.price),
+        isFree: Boolean(data.isFree),
         discountRate,
-        discountedPrice,
+        discountedPrice: data.isFree ? null : discountedPrice,
         imageUrl: data.imageUrl || null,
         level: data.level,
         duration: data.duration ? parseInt(data.duration) : null,

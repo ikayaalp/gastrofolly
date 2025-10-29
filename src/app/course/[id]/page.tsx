@@ -408,6 +408,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
                   title={course.title}
                   imageUrl={course.imageUrl || undefined}
                   instructor={{ name: course.instructor.name || 'Unknown' }}
+                  isFree={course.isFree}
                 />
               )}
 

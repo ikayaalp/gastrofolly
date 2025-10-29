@@ -16,6 +16,7 @@ interface EnrollButtonProps {
   instructor: {
     name: string
   }
+  isFree?: boolean
 }
 
 export default function EnrollButton({ 
@@ -24,7 +25,8 @@ export default function EnrollButton({
   discountedPrice,
   title,
   imageUrl,
-  instructor
+  instructor,
+  isFree
 }: EnrollButtonProps) {
   const { data: session } = useSession()
   const router = useRouter()
@@ -37,6 +39,31 @@ export default function EnrollButton({
   const handleAddToCart = async () => {
     if (!session) {
       router.push("/auth/signin")
+      return
+    }
+
+    // Ücretsiz kurs ise doğrudan kayıt
+    if (isFree) {
+      setIsLoading(true)
+      try {
+        const res = await fetch('/api/enroll', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ courseId })
+        })
+        if (res.ok) {
+          router.push(`/learn/${courseId}`)
+          return
+        } else {
+          const data = await res.json().catch(() => ({}))
+          alert(data.error || 'Kursa kayıt sırasında hata oluştu')
+        }
+      } catch (e) {
+        console.error('Free enroll error:', e)
+        alert('Kayıt sırasında hata oluştu')
+      } finally {
+        setIsLoading(false)
+      }
       return
     }
 
@@ -89,17 +116,17 @@ export default function EnrollButton({
       {isLoading ? (
         <div className="flex items-center">
           <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-          Ekleniyor...
+          {isFree ? 'Kaydediliyor...' : 'Ekleniyor...'}
         </div>
       ) : isAdded ? (
         <>
           <Check className="h-5 w-5 mr-2" />
-          Eklendi!
+          {isFree ? 'Kayıt Oldun!' : 'Eklendi!'}
         </>
       ) : (
         <>
           <ShoppingCart className="h-5 w-5 mr-2" />
-          Sepete Ekle
+          {isFree ? 'Kursa Katıl' : 'Sepete Ekle'}
         </>
       )}
     </button>
