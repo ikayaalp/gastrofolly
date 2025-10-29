@@ -17,6 +17,7 @@ interface Course {
   level: string
   duration: number | null
   isPublished: boolean
+  isFree: boolean
   instructor: {
     id: string
     name: string | null
