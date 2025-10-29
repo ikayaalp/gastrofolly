@@ -116,14 +116,13 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
     };
   }, []);
 
-  // Video değiştiğinde otomatik oynat
+  // lesson değiştiğinde her zaman otomatik oynat, butonu da gizle
   useEffect(() => {
     const video = videoRef.current;
     if (video && lesson.videoUrl) {
-      const playPromise = video.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {});
-      }
+      video.currentTime = 0;
+      video.play();
+      setShowCenterPlay(false);
       setIsPlaying(true);
     }
   }, [lesson.id, lesson.videoUrl]);
@@ -264,8 +263,14 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
     return url.includes('youtube.com') || url.includes('youtu.be')
   }
 
-  // Video alanına tıklandığında oynat/duraklat (ve büyük ikon göster)
-  const handleVideoAreaClick = () => {
+  // Video alanına tıklama için div-click ile, ortadaki büyük play için button-click ile iki ayrı fonksiyon tanımla
+  const handleVideoAreaClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (
+      e.target instanceof HTMLElement &&
+      (e.target.closest('.video-control-buttons') || e.target.closest('button') || e.target.closest('input'))
+    ) {
+      return;
+    }
     const video = videoRef.current;
     if (!video) return;
     if (isPlaying) {
@@ -275,6 +280,14 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
       video.play();
       setShowCenterPlay(false);
     }
+  };
+
+  const handleCenterPlayClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation(); // Üst div'e tıklamayı tetiklemesin
+    const video = videoRef.current;
+    if (!video) return;
+    video.play();
+    setShowCenterPlay(false);
   };
 
   return (
@@ -314,7 +327,7 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
 
           {/* Video Controls */}
           <div
-            className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 transition-opacity duration-300 ${showControls || showCenterPlay ? 'opacity-100' : 'opacity-0'}`}
+            className={`video-control-buttons absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 transition-opacity duration-300 ${showControls || showCenterPlay ? 'opacity-100' : 'opacity-0'}`}
           >
             {/* Progress Bar */}
             <div className="mb-4">
@@ -444,9 +457,9 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
               <button
                 className="bg-orange-600 bg-opacity-90 rounded-full p-7 shadow-lg flex items-center justify-center border-2 border-orange-700 animate-pop pointer-events-auto hover:bg-orange-700 transition"
                 style={{ pointerEvents: 'auto' }}
-                onClick={handleVideoAreaClick}
+                onClick={handleCenterPlayClick}
               >
-                <Play className="h-20 w-20 text-white drop-shadow-md" style={{ color: '#fff6e3' }}/> 
+                <Play className="h-20 w-20 text-white drop-shadow-md" style={{ color: '#fff6e3' }}/>
               </button>
             </div>
           )}
