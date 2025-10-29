@@ -1,6 +1,8 @@
 "use client"
 
 import { useState, useRef, useCallback } from "react"
+import { storage } from "@/src/lib/firebase"
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage"
 import { Upload, X, CheckCircle, AlertCircle, FileVideo } from "lucide-react"
 
 interface VideoUploadProps {
@@ -35,76 +37,38 @@ export default function VideoUpload({ onVideoUploaded, lessonId }: VideoUploadPr
     setUploadProgress(0)
 
     try {
-      console.log('Starting video upload:', {
-        fileName: file.name,
-        fileSize: file.size,
-        fileType: file.type,
-        lessonId: lessonId
+      const timestamp = Date.now()
+      const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_")
+      const path = `videos/${lessonId || "general"}/${timestamp}_${safeFileName}`
+      const storageRef = ref(storage, path)
+
+      const uploadTask = uploadBytesResumable(storageRef, file, {
+        contentType: file.type || "video/mp4",
       })
 
-      const formData = new FormData()
-      formData.append('video', file)
-      if (lessonId) {
-        formData.append('lessonId', lessonId)
-      }
-
-      console.log('Sending request to /api/upload-video-cloud')
-      
-      const response = await fetch('/api/upload-video-cloud', {
-        method: 'POST',
-        body: formData
+      await new Promise<void>((resolve, reject) => {
+        uploadTask.on(
+          "state_changed",
+          (snapshot) => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+            setUploadProgress(Math.round(progress))
+          },
+          (err) => {
+            reject(err)
+          },
+          async () => {
+            try {
+              const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref)
+              setSuccess(`Video başarıyla yüklendi: ${file.name}`)
+              setUploadProgress(100)
+              onVideoUploaded(downloadUrl)
+              resolve()
+            } catch (e) {
+              reject(e)
+            }
+          }
+        )
       })
-
-      console.log('Response received:', {
-        status: response.status,
-        statusText: response.statusText,
-        ok: response.ok
-      })
-
-      let data
-      try {
-        data = await response.json()
-        console.log('Response data:', data)
-      } catch (jsonError) {
-        console.error('JSON parse error:', jsonError)
-        setError(`API hatası: ${response.status} - Geçersiz JSON response`)
-        return
-      }
-
-      if (response.ok) {
-        setSuccess(`Video başarıyla yüklendi: ${file.name}`)
-        onVideoUploaded(data.videoUrl)
-        setUploadProgress(100)
-      } else {
-        console.error('Video upload error response:', data)
-        console.error('Response status:', response.status)
-        console.error('Response statusText:', response.statusText)
-        
-        let errorMessage = "Video yüklenirken hata oluştu"
-        
-        console.log('Error response data:', data)
-        console.log('Response status:', response.status)
-        console.log('Response statusText:', response.statusText)
-        
-        if (data && data.error) {
-          errorMessage = `Hata: ${data.error}`
-        } else if (data && data.message) {
-          errorMessage = `Hata: ${data.message}`
-        } else if (response.status === 401) {
-          errorMessage = "Cloudinary kimlik doğrulama hatası. API anahtarlarını kontrol edin."
-        } else if (response.status === 403) {
-          errorMessage = "Cloudinary erişim hatası. Upload preset'i kontrol edin."
-        } else if (response.status === 413) {
-          errorMessage = "Video dosyası çok büyük. 500MB'dan küçük bir dosya seçin."
-        } else if (response.status === 500) {
-          errorMessage = "Sunucu hatası. Cloudinary ayarlarını kontrol edin."
-        } else {
-          errorMessage = `HTTP ${response.status}: ${response.statusText}`
-        }
-        
-        console.log('Setting error message:', errorMessage)
-        setError(errorMessage)
-      }
     } catch (error) {
       console.error("Upload error:", error)
       const errorMessage = error instanceof Error ? error.message : "Video yüklenirken hata oluştu"
