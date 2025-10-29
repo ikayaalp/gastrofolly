@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useCallback } from "react"
-import { storage } from "@/src/lib/firebase"
+import { storage } from "@/lib/firebase"
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage"
 import { Upload, X, CheckCircle, AlertCircle, FileVideo } from "lucide-react"
 
