@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import React, { useState, useRef, useEffect } from "react"
 import { Play, Pause, Volume2, VolumeX, Maximize, RotateCcw, RotateCw, SkipBack, SkipForward } from "lucide-react"
 import YouTubePlayer from "./YouTubePlayer"
 
@@ -31,6 +31,7 @@ interface VideoPlayerProps {
 
 export default function VideoPlayer({ lesson, course, userId, isCompleted, previousLesson, nextLesson }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
+  const playerContainerRef = useRef<HTMLDivElement>(null);
   const [isPlaying, setIsPlaying] = useState(false)
   
   // Debug için
@@ -42,6 +43,7 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
   const [isMuted, setIsMuted] = useState(false)
   const [showControls, setShowControls] = useState(true)
   const [isLoading, setIsLoading] = useState(true)
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
     const video = videoRef.current
@@ -77,6 +79,29 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
       video.removeEventListener('error', handleError)
     }
   }, [])
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const isFs = document.fullscreenElement === playerContainerRef.current;
+      setIsFullscreen(isFs);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
+  // Video değiştiğinde otomatik oynat
+  useEffect(() => {
+    const video = videoRef.current;
+    if (video && lesson.videoUrl) {
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {});
+      }
+      setIsPlaying(true);
+    }
+  }, [lesson.id, lesson.videoUrl]);
 
   const togglePlay = async () => {
     const video = videoRef.current
@@ -144,15 +169,14 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
   }
 
   const toggleFullscreen = () => {
-    const video = videoRef.current
-    if (!video) return
-
+    const playerContainer = playerContainerRef.current;
+    if (!playerContainer) return;
     if (document.fullscreenElement) {
-      document.exitFullscreen()
+      document.exitFullscreen();
     } else {
-      video.requestFullscreen()
+      playerContainer.requestFullscreen();
     }
-  }
+  };
 
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60)
@@ -191,7 +215,9 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
   }
 
   return (
-    <div className="relative w-full h-[75vh] bg-black group flex-shrink-0">
+    <div ref={playerContainerRef}
+      className={`relative w-full h-[75vh] bg-black group flex-shrink-0 ${isFullscreen ? 'w-screen h-screen max-w-none max-h-none !rounded-none fullscreen-active z-[10000]' : ''}`}
+      style={isFullscreen ? { minHeight: '100vh', minWidth: '100vw' } : {}}>
       {lesson.videoUrl && lesson.videoUrl.trim() !== "" ? (
         isYouTubeUrl(lesson.videoUrl) ? (
           // YouTube Player
