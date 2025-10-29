@@ -45,6 +45,8 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
   const [isLoading, setIsLoading] = useState(true)
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showCenterPlay, setShowCenterPlay] = useState(false);
+  const [isSeeking, setIsSeeking] = useState(false);
+  const wasPlayingRef = useRef(false);
 
   useEffect(() => {
     const video = videoRef.current
@@ -104,6 +106,13 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
     }
   }, [lesson.id, lesson.videoUrl]);
 
+  useEffect(() => {
+    // Eğer büyük play açıkken video oynatmaya başlarsa ikon hemen kaybolsun
+    if (isPlaying && showCenterPlay) {
+      setShowCenterPlay(false);
+    }
+  }, [isPlaying]);
+
   const togglePlay = async () => {
     const video = videoRef.current
     if (!video) return
@@ -130,14 +139,32 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
     }
   }
 
-  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const video = videoRef.current
-    if (!video) return
+  // Seek işlemi için eventler
+  const handleSeekStart = () => {
+    const video = videoRef.current;
+    if (video) {
+      wasPlayingRef.current = !video.paused;
+      video.pause();
+      setIsSeeking(true);
+    }
+  };
 
-    const newTime = parseFloat(e.target.value)
-    video.currentTime = newTime
-    setCurrentTime(newTime)
-  }
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const video = videoRef.current;
+    if (!video) return;
+    const newTime = parseFloat(e.target.value);
+    video.currentTime = newTime;
+    setCurrentTime(newTime);
+  };
+
+  const handleSeekEnd = () => {
+    const video = videoRef.current;
+    setIsSeeking(false);
+    if (video && wasPlayingRef.current) {
+      video.play();
+      setShowCenterPlay(false);
+    }
+  };
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const video = videoRef.current
@@ -263,9 +290,7 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
 
           {/* Video Controls */}
           <div
-            className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 transition-opacity duration-300 ${
-              showControls ? 'opacity-100' : 'opacity-0'
-            }`}
+            className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 transition-opacity duration-300 ${showControls || showCenterPlay ? 'opacity-100' : 'opacity-0'}`}
           >
             {/* Progress Bar */}
             <div className="mb-4">
@@ -275,6 +300,10 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
                 max={duration || 0}
                 value={currentTime}
                 onChange={handleSeek}
+                onMouseDown={handleSeekStart}
+                onMouseUp={handleSeekEnd}
+                onTouchStart={handleSeekStart}
+                onTouchEnd={handleSeekEnd}
                 className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer"
               />
               <div className="flex justify-between text-white text-sm mt-1">
@@ -389,11 +418,11 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
           {showCenterPlay && (
             <div className="absolute inset-0 flex justify-center items-center z-30 pointer-events-none">
               <button
-                className="bg-black/60 rounded-full p-6 shadow-lg flex items-center justify-center border-2 border-white"
+                className="bg-orange-600 bg-opacity-90 rounded-full p-7 shadow-lg flex items-center justify-center border-2 border-orange-700 animate-pop pointer-events-auto hover:bg-orange-700 transition"
                 style={{ pointerEvents: 'auto' }}
                 onClick={handleVideoAreaClick}
               >
-                <Play className="h-20 w-20 text-white" />
+                <Play className="h-20 w-20 text-white drop-shadow-md" style={{ color: '#fff6e3' }}/> 
               </button>
             </div>
           )}
