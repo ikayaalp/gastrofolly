@@ -10,6 +10,7 @@ interface Course {
   description: string
   price: number
   imageUrl?: string | null
+  level: string
   reviews: Array<{ rating: number }>
   instructor?: { name?: string | null }
 }
@@ -44,8 +45,6 @@ export default function AutoScrollCourses({ courses, speed = 1, intervalMs = 16 
 
   if (!courses || courses.length === 0) return null
 
-  const avg = (rs: Array<{ rating: number }>) => rs.length ? (rs.reduce((a, r) => a + r.rating, 0) / rs.length) : 0
-
   return (
     <div className="bg-black w-full">
       {/* Başlık satırı */}
@@ -73,13 +72,25 @@ export default function AutoScrollCourses({ courses, speed = 1, intervalMs = 16 
                     <Play className="h-10 w-10 text-gray-500" />
                   </div>
                 )}
-                {/* Overlay: course title and instructor on image */}
-                <div className="absolute inset-x-0 bottom-0 p-3 md:p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
-                  <h3 className="text-white font-semibold text-base md:text-lg leading-snug line-clamp-2">{course.title}</h3>
-                  <p className="text-white text-xs md:text-sm mt-1">{course.instructor?.name || "Eğitmen"}</p>
+
+                {/* Overlay: Sadece başlık, level ve buton */}
+                <div className="absolute inset-x-0 bottom-0 p-3 md:p-4 bg-gradient-to-t from-black/90 via-black/60 to-transparent">
+                  <h3 className="text-white font-semibold text-base md:text-lg leading-snug line-clamp-2 mb-2">{course.title}</h3>
+
+                  {/* Level Badge */}
+                  <div className="mb-3">
+                    <span className="inline-block px-2 py-1 text-xs font-medium bg-orange-500/20 text-orange-400 rounded">
+                      {course.level}
+                    </span>
+                  </div>
+
+                  {/* Kursa Başla Butonu */}
+                  <button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2">
+                    <Play className="h-4 w-4 fill-white" />
+                    Kursa Başla
+                  </button>
                 </div>
               </div>
-
             </div>
           </Link>
         ))}

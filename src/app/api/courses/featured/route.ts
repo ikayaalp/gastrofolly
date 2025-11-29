@@ -11,6 +11,7 @@ export async function GET() {
         description: true,
         price: true,
         imageUrl: true,
+        level: true,
         instructor: {
           select: { name: true }
         },
