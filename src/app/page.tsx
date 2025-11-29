@@ -13,6 +13,7 @@ export default function Home() {
     description: string;
     price: number;
     imageUrl?: string | null;
+    level: string;
     reviews: Array<{ rating: number }>;
   }
 
