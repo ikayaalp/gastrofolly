@@ -405,8 +405,8 @@ export default function ChefSosyalClient({
                 <button
                   onClick={() => handleCategoryChange('all')}
                   className={`w-full text-left px-3 py-2.5 rounded-lg transition-all flex justify-between items-center ${selectedCategory === 'all'
-                      ? 'bg-orange-600 text-white'
-                      : 'text-gray-300 hover:bg-[#1a1a1a] hover:text-white'
+                    ? 'bg-orange-600 text-white'
+                    : 'text-gray-300 hover:bg-[#1a1a1a] hover:text-white'
                     }`}
                 >
                   <span className="text-sm font-medium">Tümü</span>
@@ -419,8 +419,8 @@ export default function ChefSosyalClient({
                     key={category.slug}
                     onClick={() => handleCategoryChange(category.slug)}
                     className={`w-full text-left px-3 py-2.5 rounded-lg transition-all flex justify-between items-center ${selectedCategory === category.slug
-                        ? 'bg-orange-600 text-white'
-                        : 'text-gray-300 hover:bg-[#1a1a1a] hover:text-white'
+                      ? 'bg-orange-600 text-white'
+                      : 'text-gray-300 hover:bg-[#1a1a1a] hover:text-white'
                       }`}
                   >
                     <span className="text-sm font-medium">{category.name}</span>
@@ -454,7 +454,7 @@ export default function ChefSosyalClient({
                 <select
                   value={sortBy}
                   onChange={(e) => handleSortChange(e.target.value)}
-                  className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white"
+                  className="bg-black border border-gray-800 rounded-lg px-4 py-2 text-white focus:border-orange-500 focus:outline-none"
                 >
                   <option value="newest">En Yeni</option>
                   <option value="popular">En Popüler</option>
@@ -516,8 +516,8 @@ export default function ChefSosyalClient({
                                     handleLike(topic.id)
                                   }}
                                   className={`flex items-center transition-colors ${likedTopics.has(topic.id)
-                                      ? 'text-orange-400 hover:text-orange-300'
-                                      : 'hover:text-orange-400'
+                                    ? 'text-orange-400 hover:text-orange-300'
+                                    : 'hover:text-orange-400'
                                     }`}
                                 >
                                   <ThumbsUp className="h-3.5 w-3.5 mr-1" />
@@ -545,7 +545,7 @@ export default function ChefSosyalClient({
               <div className="text-center mt-8">
                 <button
                   onClick={() => loadTopics()}
-                  className="bg-gray-800 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                  className="bg-black border border-gray-800 hover:bg-gray-900 text-white px-6 py-3 rounded-lg font-medium transition-colors"
                 >
                   Daha Fazla Tartışma Yükle
                 </button>
@@ -569,7 +569,7 @@ export default function ChefSosyalClient({
       {/* Yeni Başlık Modal */}
       {showNewTopicModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-black border border-gray-800 rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-white">Yeni Başlık Aç</h2>
               <button
