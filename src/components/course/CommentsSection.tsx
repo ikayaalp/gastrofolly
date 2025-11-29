@@ -22,11 +22,11 @@ interface CommentsSectionProps {
   userId?: string
 }
 
-export default function CommentsSection({ 
-  reviews, 
-  courseId, 
+export default function CommentsSection({
+  reviews,
+  courseId,
   canComment = false,
-  userId 
+  userId
 }: CommentsSectionProps) {
   const [newComment, setNewComment] = useState("")
   const [newRating, setNewRating] = useState(5)
@@ -99,11 +99,10 @@ export default function CommentsSection({
         {[1, 2, 3, 4, 5].map((star) => (
           <Star
             key={star}
-            className={`h-5 w-5 ${
-              star <= rating 
-                ? 'text-yellow-400 fill-current' 
+            className={`h-5 w-5 ${star <= rating
+                ? 'text-yellow-400 fill-current'
                 : 'text-gray-400'
-            } ${interactive ? 'cursor-pointer hover:text-yellow-300' : ''}`}
+              } ${interactive ? 'cursor-pointer hover:text-yellow-300' : ''}`}
             onClick={interactive && onRatingChange ? () => onRatingChange(star) : undefined}
           />
         ))}
@@ -120,11 +119,11 @@ export default function CommentsSection({
   }
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-lg p-6">
+    <div className="bg-black border border-black rounded-xl shadow-lg p-6">
 
       {/* Yorum Yapma Formu */}
       {canComment && userId && (
-        <div className="mb-6 p-4 bg-gray-800 rounded-lg border border-gray-700">
+        <div className="mb-6 p-4 bg-black rounded-lg border border-orange-500/20">
           <h3 className="text-lg font-semibold text-white mb-3">Yorum Yap</h3>
           <form onSubmit={handleSubmitComment} className="space-y-3">
             <div className="flex items-center space-x-4">
@@ -137,7 +136,7 @@ export default function CommentsSection({
               <textarea
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                className="w-full px-3 py-2 bg-black border border-orange-500/30 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                 placeholder="Kurs hakkındaki düşüncelerinizi paylaşın..."
                 rows={3}
                 required
@@ -166,7 +165,7 @@ export default function CommentsSection({
           </div>
         ) : (
           reviews.map((review) => (
-            <div key={review.id} className="border-b border-gray-700 pb-6 last:border-b-0">
+            <div key={review.id} className="border-b border-orange-500/20 pb-6 last:border-b-0">
               <div className="flex items-start space-x-4">
                 {/* Avatar */}
                 <div className="flex-shrink-0">
@@ -177,7 +176,7 @@ export default function CommentsSection({
                       className="w-10 h-10 rounded-full"
                     />
                   ) : (
-                    <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center">
                       <User className="h-6 w-6 text-gray-400" />
                     </div>
                   )}
@@ -209,7 +208,7 @@ export default function CommentsSection({
                       )}
                     </div>
                   </div>
-                  
+
                   {review.comment && (
                     <p className="text-gray-300 leading-relaxed">
                       {review.comment}
