@@ -73,22 +73,16 @@ export default function AutoScrollCourses({ courses, speed = 1, intervalMs = 16 
                   </div>
                 )}
 
-                {/* Overlay: Sadece başlık, level ve buton */}
+                {/* Overlay: Sadece başlık ve level */}
                 <div className="absolute inset-x-0 bottom-0 p-3 md:p-4 bg-gradient-to-t from-black/90 via-black/60 to-transparent">
                   <h3 className="text-white font-semibold text-base md:text-lg leading-snug line-clamp-2 mb-2">{course.title}</h3>
 
                   {/* Level Badge */}
-                  <div className="mb-3">
+                  <div>
                     <span className="inline-block px-2 py-1 text-xs font-medium bg-orange-500/20 text-orange-400 rounded">
                       {course.level}
                     </span>
                   </div>
-
-                  {/* Kursa Başla Butonu */}
-                  <button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2">
-                    <Play className="h-4 w-4 fill-white" />
-                    Kursa Başla
-                  </button>
                 </div>
               </div>
             </div>
