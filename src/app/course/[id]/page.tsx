@@ -3,12 +3,12 @@ import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
-import { 
-  ChefHat, 
-  Clock, 
-  Star, 
-  Users, 
-  Play, 
+import {
+  ChefHat,
+  Clock,
+  Star,
+  Users,
+  Play,
   CheckCircle,
   Lock,
   Home,
@@ -64,15 +64,15 @@ async function getCourse(id: string) {
 export default async function CoursePage({ params }: CoursePageProps) {
   const session = await getServerSession(authOptions)
   const { id } = await params
-  
-  
+
+
   const course = await getCourse(id)
 
   if (!course) {
     notFound()
   }
 
-  const isEnrolled = session?.user?.id 
+  const isEnrolled = session?.user?.id
     ? course.enrollments.some((enrollment: { userId: string }) => enrollment.userId === session.user.id)
     : false
 
@@ -85,7 +85,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
   return (
     <div className="min-h-screen bg-black">
       {/* Desktop Header */}
-      <header className="hidden md:block fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
+      <header className="hidden md:block fixed top-0 left-0 right-0 z-50 bg-black/30 backdrop-blur-sm border-b border-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-8">
@@ -126,7 +126,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
                 </nav>
               )}
             </div>
-            
+
             <div className="flex items-center space-x-4">
               {session?.user ? (
                 <UserDropdown />
@@ -152,7 +152,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
       </header>
 
       {/* Mobile Top Bar */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-black/30 backdrop-blur-sm border-b border-black">
         <div className="flex justify-between items-center py-3 px-4">
           <Link href="/home" className="flex items-center space-x-2">
             <ChefHat className="h-6 w-6 text-orange-500" />
@@ -176,10 +176,10 @@ export default async function CoursePage({ params }: CoursePageProps) {
         </div>
       </div>
 
-      
+
 
       {/* Breadcrumb */}
-      <div className="bg-gray-900/30 border-b border-gray-800 pt-20 md:pt-24">
+      <div className="bg-black/30 border-b border-black pt-20 md:pt-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center space-x-2 text-sm">
             <Link href="/home" className="text-gray-400 hover:text-orange-500">
@@ -196,7 +196,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
           {/* Main Content */}
           <div className="lg:col-span-2">
             {/* Course Header */}
-            <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-lg overflow-hidden mb-8">
+            <div className="bg-black border border-black rounded-xl shadow-lg overflow-hidden mb-8">
               {course.imageUrl ? (
                 <img
                   src={course.imageUrl}
@@ -208,21 +208,21 @@ export default async function CoursePage({ params }: CoursePageProps) {
                   <ChefHat className="h-24 w-24 text-white" />
                 </div>
               )}
-              
+
               <div className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <span className="bg-orange-500/20 text-orange-500 px-3 py-1 rounded-full text-sm font-semibold">
                     {course.category.name}
                   </span>
-                  <span className="bg-gray-700 text-gray-300 px-3 py-1 rounded-full text-sm">
+                  <span className="bg-orange-500/20 text-orange-400 px-3 py-1 rounded-full text-sm">
                     {course.level}
                   </span>
                 </div>
-                
+
                 <h1 className="text-3xl font-bold text-white mb-4">
                   {course.title}
                 </h1>
-                
+
                 <p className="text-gray-300 mb-6">
                   {course.description}
                 </p>
@@ -235,7 +235,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
                       className="w-10 h-10 rounded-full mr-3"
                     />
                     <div>
-                      <Link 
+                      <Link
                         href={`/instructor/${course.instructor.id}`}
                         className="font-semibold text-white hover:text-orange-500 transition-colors cursor-pointer"
                       >
@@ -244,7 +244,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
                       <p className="text-sm text-gray-400">Eğitmen</p>
                     </div>
                   </div>
-                  
+
                   {averageRating > 0 && (
                     <div className="flex items-center">
                       <Star className="h-5 w-5 text-yellow-400 fill-current mr-1" />
@@ -291,13 +291,13 @@ export default async function CoursePage({ params }: CoursePageProps) {
             </div>
 
             {/* Course Content */}
-            <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-lg p-6 mb-8">
+            <div className="bg-black border border-black rounded-xl shadow-lg p-6 mb-8">
               <h2 className="text-2xl font-bold text-white mb-6">Kurs İçeriği</h2>
               <div className="space-y-4">
                 {course.lessons.map((lesson: { id: string; isFree?: boolean | null; duration?: number | null; title: string; description?: string | null }, index: number) => (
                   <div
                     key={lesson.id}
-                    className="flex items-center justify-between p-4 border border-gray-700 rounded-lg hover:border-orange-500/50 transition-colors"
+                    className="flex items-center justify-between p-4 border border-black rounded-lg hover:border-orange-500/50 transition-colors"
                   >
                     <div className="flex items-center">
                       <div className="bg-orange-500/20 text-orange-500 w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold mr-4">
@@ -332,7 +332,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
                           Ücretsiz
                         </span>
                       ) : (
-                        <span className="bg-gray-700 text-gray-300 px-2 py-1 rounded text-xs">
+                        <span className="bg-black text-gray-300 px-2 py-1 rounded text-xs border border-orange-500/30">
                           Premium
                         </span>
                       )}
@@ -343,8 +343,8 @@ export default async function CoursePage({ params }: CoursePageProps) {
             </div>
 
             {/* Yorumlar Bölümü */}
-            <CommentsSection 
-              reviews={course.reviews} 
+            <CommentsSection
+              reviews={course.reviews}
               courseId={course.id}
               canComment={false}
               userId={session?.user?.id}
@@ -353,7 +353,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
 
           {/* Sidebar */}
           <div className="lg:col-span-1">
-            <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-lg p-6 sticky top-8">
+            <div className="bg-black border border-black rounded-xl shadow-lg p-6 sticky top-8">
               <div className="text-center mb-6">
                 {course.discountedPrice && course.discountRate ? (
                   <>
@@ -394,15 +394,15 @@ export default async function CoursePage({ params }: CoursePageProps) {
                     <CheckCircle className="h-5 w-5 mr-2" />
                     Kursa Devam Et
                   </Link>
-                  <MessageButton 
+                  <MessageButton
                     instructorId={course.instructor.id}
                     instructorName={course.instructor.name || 'Eğitmen'}
                     courseId={course.id}
                   />
                 </>
               ) : (
-                <EnrollButton 
-                  courseId={course.id} 
+                <EnrollButton
+                  courseId={course.id}
                   price={course.price}
                   discountedPrice={course.discountedPrice || undefined}
                   title={course.title}
@@ -460,7 +460,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
                 </div>
               </div>
 
-              <div className="mt-6 pt-6 border-t border-gray-700">
+              <div className="mt-6 pt-6 border-t border-orange-500/20">
                 <h3 className="font-semibold text-white mb-3">
                   Bu kurs şunları içerir:
                 </h3>
@@ -489,7 +489,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
       </div>
 
       {/* Mobile Bottom Navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-gray-900/95 backdrop-blur-sm border-t border-gray-800">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-sm border-t border-black">
         <div className="flex justify-around items-center py-2">
           <Link href="/home" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
             <Home className="h-6 w-6" />
@@ -509,6 +509,6 @@ export default async function CoursePage({ params }: CoursePageProps) {
           </Link>
         </div>
       </div>
-    </div>
+    </div >
   )
 }
