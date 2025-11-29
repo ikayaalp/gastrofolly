@@ -138,18 +138,28 @@ export default function CourseRow({ title, courses, showProgress = false }: Cour
                     />
                   ) : (
                     <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-black">
-                      <Play className="h-16 w-16 text-gray-500" />
                     </div>
                   )}
 
                   {/* Gradient Overlay - Alt kısımda koyu */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"></div>
 
-                  {/* Hover Play Button */}
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                    <div className="bg-orange-500 rounded-full p-4 transform scale-75 group-hover:scale-100 transition-all duration-300 shadow-lg animate-pulse group-hover:animate-none">
+                  {/* Hover Overlay - Açıklama ile */}
+                  <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center p-6">
+                    {/* Play Button */}
+                    <div className="bg-orange-500 rounded-full p-4 transform scale-75 group-hover:scale-100 transition-all duration-300 shadow-lg mb-4">
                       <Play className="h-8 w-8 text-white fill-white" />
                     </div>
+
+                    {/* Açıklama Metni */}
+                    <p className="text-white/90 text-sm text-center leading-relaxed overflow-hidden" style={{
+                      display: '-webkit-box',
+                      WebkitLineClamp: 4,
+                      WebkitBoxOrient: 'vertical',
+                      textShadow: '0 2px 4px rgba(0,0,0,0.8)'
+                    }}>
+                      {course.description}
+                    </p>
                   </div>
 
                   {/* Progress Bar */}
