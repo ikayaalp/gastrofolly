@@ -52,7 +52,7 @@ export default function MyCoursesPage() {
 
   useEffect(() => {
     if (status === 'loading') return
-    
+
     if (!session?.user?.id) {
       router.push("/auth/signin")
       return
@@ -89,7 +89,7 @@ export default function MyCoursesPage() {
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Desktop Header */}
-      <header className="hidden md:block fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
+      <header className="hidden md:block fixed top-0 left-0 right-0 z-50 bg-black/30 backdrop-blur-sm border-b border-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-8">
@@ -128,7 +128,7 @@ export default function MyCoursesPage() {
                 </Link>
               </nav>
             </div>
-            
+
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => setIsSearchOpen(true)}
@@ -143,7 +143,7 @@ export default function MyCoursesPage() {
       </header>
 
       {/* Mobile Top Bar */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-black/30 backdrop-blur-sm border-b border-black">
         <div className="flex justify-between items-center py-3 px-4">
           <Link href="/home" className="flex items-center space-x-2">
             <ChefHat className="h-6 w-6 text-orange-500" />
@@ -194,7 +194,7 @@ export default function MyCoursesPage() {
               return (
                 <div
                   key={enrollment.id}
-                  className="bg-gray-900 border border-gray-800 rounded-xl p-6 hover:border-orange-500/50 transition-colors"
+                  className="bg-black border border-orange-500/30 rounded-xl p-6 hover:border-orange-500 transition-colors"
                 >
                   {/* Course Image */}
                   <div className="relative mb-4">
@@ -237,7 +237,7 @@ export default function MyCoursesPage() {
                       <span>İlerleme</span>
                       <span>{completedLessons}/{totalLessons} ders</span>
                     </div>
-                    <div className="w-full bg-gray-700 rounded-full h-2">
+                    <div className="w-full bg-black border border-orange-500/20 rounded-full h-2">
                       <div
                         className="bg-orange-500 h-2 rounded-full transition-all duration-300"
                         style={{ width: `${progressPercentage}%` }}
@@ -276,7 +276,7 @@ export default function MyCoursesPage() {
       </main>
 
       {/* Mobile Bottom Navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-gray-900/95 backdrop-blur-sm border-t border-gray-800">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-sm border-t border-black">
         <div className="flex justify-around items-center py-2">
           <Link href="/home" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
             <Home className="h-6 w-6" />
