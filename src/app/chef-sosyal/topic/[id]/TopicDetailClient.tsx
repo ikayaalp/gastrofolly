@@ -103,7 +103,7 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
   // Beğenme/beğenmeme işlemi
   const handleLike = async () => {
     if (!session?.user?.id) return
-    
+
     try {
       const response = await fetch('/api/forum/like', {
         method: 'POST',
@@ -112,7 +112,7 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
         },
         body: JSON.stringify({ topicId: topic.id }),
       })
-      
+
       if (response.ok) {
         const data = await response.json()
         setIsLiked(data.liked)
@@ -126,7 +126,7 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
   // Yorum beğenme/beğenmeme işlemi
   const handleCommentLike = async (postId: string) => {
     if (!session?.user?.id) return
-    
+
     try {
       const response = await fetch('/api/forum/post-like', {
         method: 'POST',
@@ -135,38 +135,38 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
         },
         body: JSON.stringify({ postId }),
       })
-      
+
       if (response.ok) {
         const data = await response.json()
-        
+
         // Comment listesini güncelle
-        setComments(prevComments => 
+        setComments(prevComments =>
           prevComments.map(comment => {
             if (comment.id === postId) {
-              return { 
-                ...comment, 
-                likeCount: data.liked ? comment.likeCount + 1 : comment.likeCount - 1 
+              return {
+                ...comment,
+                likeCount: data.liked ? comment.likeCount + 1 : comment.likeCount - 1
               }
             }
-            
+
             // Replies içinde de arayalım
             if (comment.replies) {
               const updatedReplies = comment.replies.map(reply => {
                 if (reply.id === postId) {
-                  return { 
-                    ...reply, 
-                    likeCount: data.liked ? reply.likeCount + 1 : reply.likeCount - 1 
+                  return {
+                    ...reply,
+                    likeCount: data.liked ? reply.likeCount + 1 : reply.likeCount - 1
                   }
                 }
                 return reply
               })
               return { ...comment, replies: updatedReplies }
             }
-            
+
             return comment
           })
         )
-        
+
         // Liked comments state'ini güncelle
         setLikedComments(prev => {
           const newSet = new Set(prev)
@@ -193,7 +193,7 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
     if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} dakika önce`
     if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} saat önce`
     if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)} gün önce`
-    
+
     return date.toLocaleDateString('tr-TR')
   }
 
@@ -354,7 +354,7 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
                 </nav>
               </>
             )}
-            
+
             <div className="flex items-center space-x-4">
               {session?.user ? (
                 <>
@@ -390,10 +390,10 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
       {/* Main Content */}
       <div className="pt-24 pb-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          
+
           {/* Geri Dön Butonu */}
           <div className="mb-6">
-            <Link 
+            <Link
               href="/chef-sosyal"
               className="inline-flex items-center text-orange-500 hover:text-orange-400 transition-colors"
             >
@@ -403,84 +403,86 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
           </div>
 
           {/* Başlık */}
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6">
-            <div className="flex items-start space-x-4 mb-4">
-              {getUserAvatar(topic.author)}
-              <div className="flex-1">
-                <div className="flex items-center space-x-3 mb-2">
-                  <span 
-                    className="px-2 py-1 rounded text-sm font-medium"
-                    style={{
-                      backgroundColor: `${topic.category.color || '#6b7280'}20`,
-                      color: topic.category.color || '#6b7280'
-                    }}
-                  >
-                    {topic.category.name}
-                  </span>
-                  <span className="text-gray-500 text-sm flex items-center">
-                    <Clock className="h-4 w-4 mr-1" />
-                    {formatTimeAgo(topic.createdAt.toString())}
-                  </span>
-                </div>
-                <h1 className="text-2xl font-bold text-white mb-3">
-                  {topic.title}
-                </h1>
-                <div className="flex items-center space-x-4 text-sm text-gray-400 mb-4">
-                  <span className="flex items-center">
-                    <User className="h-4 w-4 mr-1" />
-                    {topic.author.name || 'Anonim'}
-                  </span>
-                  {session?.user ? (
-                    <button 
-                      onClick={handleLike}
-                      className={`flex items-center space-x-1 transition-colors ${
-                        isLiked 
-                          ? 'text-orange-400 hover:text-orange-300' 
-                          : 'text-gray-400 hover:text-orange-400'
-                      }`}
+          <div className="bg-[#0a0a0a] border border-gray-800 rounded-xl overflow-hidden mb-6">
+            <div className="p-6">
+              <div className="flex items-start space-x-4 mb-4">
+                {getUserAvatar(topic.author)}
+                <div className="flex-1">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <span
+                      className="px-2 py-0.5 rounded text-xs font-medium"
+                      style={{
+                        backgroundColor: `${topic.category.color || '#6b7280'}20`,
+                        color: topic.category.color || '#6b7280'
+                      }}
                     >
-                      <ThumbsUp className="h-4 w-4 mr-1" />
-                      <span>{likeCount} beğeni</span>
-                    </button>
-                  ) : (
-                    <span className="flex items-center">
-                      <ThumbsUp className="h-4 w-4 mr-1" />
-                      {likeCount} beğeni
+                      {topic.category.name}
                     </span>
-                  )}
-                  <button 
-                    onClick={() => {
-                      const commentsSection = document.getElementById('comments-section')
-                      if (commentsSection) {
-                        commentsSection.scrollIntoView({ behavior: 'smooth' })
-                      }
-                    }}
-                    className="flex items-center text-gray-400 hover:text-orange-400 transition-colors"
-                  >
-                    <MessageCircle className="h-4 w-4 mr-1" />
-                    <span>{comments.length} yorum</span>
-                  </button>
+                    <span className="text-gray-500 text-xs flex items-center">
+                      <Clock className="h-3 w-3 mr-1" />
+                      {formatTimeAgo(topic.createdAt.toString())}
+                    </span>
+                  </div>
+                  <h1 className="text-2xl font-bold text-white mb-3">
+                    {topic.title}
+                  </h1>
+                  <div className="flex items-center space-x-4 text-xs text-gray-400 mb-4">
+                    <span className="flex items-center">
+                      <User className="h-3.5 w-3.5 mr-1" />
+                      {topic.author.name || 'Anonim'}
+                    </span>
+                    {session?.user ? (
+                      <button
+                        onClick={handleLike}
+                        className={`flex items-center space-x-1 transition-colors ${isLiked
+                            ? 'text-orange-400 hover:text-orange-300'
+                            : 'hover:text-orange-400'
+                          }`}
+                      >
+                        <ThumbsUp className="h-3.5 w-3.5 mr-1" />
+                        <span>{likeCount}</span>
+                      </button>
+                    ) : (
+                      <span className="flex items-center">
+                        <ThumbsUp className="h-3.5 w-3.5 mr-1" />
+                        {likeCount}
+                      </span>
+                    )}
+                    <button
+                      onClick={() => {
+                        const commentsSection = document.getElementById('comments-section')
+                        if (commentsSection) {
+                          commentsSection.scrollIntoView({ behavior: 'smooth' })
+                        }
+                      }}
+                      className="flex items-center hover:text-orange-400 transition-colors"
+                    >
+                      <MessageCircle className="h-3.5 w-3.5 mr-1" />
+                      <span>{comments.length}</span>
+                    </button>
+                  </div>
                 </div>
               </div>
+
+              <div className="bg-[#1a1a1a] rounded-lg p-4 border border-gray-800">
+                <p className="text-gray-300 whitespace-pre-wrap leading-relaxed">
+                  {topic.content}
+                </p>
+              </div>
             </div>
-            
-            <div className="bg-gray-800 rounded-lg p-4">
-              <p className="text-gray-300 whitespace-pre-wrap">
-                {topic.content}
-              </p>
-            </div>
+            <div className="h-1 bg-gradient-to-r from-orange-600 to-orange-400"></div>
           </div>
 
           {/* Yorum Ekleme Formu */}
           {session?.user && (
-            <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6">
-              <h2 className="text-xl font-semibold text-white mb-4">Yorum Ekle</h2>
+            <div className="bg-[#0a0a0a] border border-gray-800 rounded-xl p-5 mb-6">
+              <h2 className="text-lg font-semibold text-white mb-4">Yorum Ekle</h2>
               <form onSubmit={handleAddComment}>
                 <textarea
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                   rows={4}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:border-orange-500 focus:outline-none resize-none mb-4"
+                  className="w-full px-4 py-3 bg-[#1a1a1a] border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:border-orange-500 focus:outline-none resize-none mb-3"
                   placeholder="Düşüncelerinizi paylaşın..."
                   required
                 />
@@ -488,7 +490,7 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
                   <button
                     type="submit"
                     disabled={submitting || !newComment.trim()}
-                    className="bg-orange-600 text-white px-6 py-2 rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                    className="bg-orange-600 text-white px-5 py-2 rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
                   >
                     {submitting && (
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
@@ -501,83 +503,61 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
           )}
 
           {/* Yorumlar */}
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-white">
+          <div className="bg-[#0a0a0a] border border-gray-800 rounded-xl p-5">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-lg font-semibold text-white">
                 Yorumlar ({comments.length})
               </h2>
-              <button 
-                onClick={() => {
-                  const commentsSection = document.getElementById('comments-section')
-                  if (commentsSection) {
-                    commentsSection.scrollIntoView({ behavior: 'smooth' })
-                  }
-                }}
-                className="text-orange-500 hover:text-orange-400 transition-colors text-sm font-medium"
-              >
-                Yorumlara Git ↓
-              </button>
             </div>
-            
+
             {comments.length === 0 ? (
-              <div className="text-center py-8">
-                <MessageCircle className="h-12 w-12 text-gray-600 mx-auto mb-4" />
+              <div className="text-center py-12">
+                <MessageCircle className="h-12 w-12 text-gray-600 mx-auto mb-3" />
                 <p className="text-gray-400">Henüz yorum yapılmamış. İlk yorumu siz yapın!</p>
               </div>
             ) : (
-              <div id="comments-section" className="space-y-6">
+              <div id="comments-section" className="space-y-5">
                 {comments.map((comment) => (
-                  <div key={comment.id} className="border-b border-gray-800 pb-6 last:border-b-0">
-                    <div className="flex items-start space-x-4">
+                  <div key={comment.id} className="border-b border-gray-800 pb-5 last:border-b-0">
+                    <div className="flex items-start space-x-3">
                       {getUserAvatar(comment.author)}
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-3 mb-2">
-                          <span className="font-medium text-white">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <span className="font-medium text-white text-sm">
                             {comment.author.name || 'Anonim'}
                           </span>
-                          <span className="text-gray-500 text-sm flex items-center">
+                          <span className="text-gray-500 text-xs flex items-center">
                             <Clock className="h-3 w-3 mr-1" />
                             {formatTimeAgo(comment.createdAt.toString())}
                           </span>
                         </div>
-                        <p className="text-gray-300 whitespace-pre-wrap">
+                        <p className="text-gray-300 text-sm whitespace-pre-wrap mb-3">
                           {comment.content}
                         </p>
-                        <div className="flex items-center space-x-4 mt-3">
+                        <div className="flex items-center space-x-3">
                           {session?.user ? (
-                            <button 
+                            <button
                               onClick={() => handleCommentLike(comment.id)}
-                              className={`flex items-center space-x-1 px-2 py-1 rounded-lg transition-colors ${
-                                likedComments.has(comment.id)
-                                  ? 'bg-orange-600 hover:bg-orange-700'
-                                  : 'bg-gray-800 hover:bg-gray-700'
-                              }`}
+                              className={`flex items-center space-x-1 px-2.5 py-1 rounded-lg transition-colors text-xs ${likedComments.has(comment.id)
+                                  ? 'bg-orange-600 hover:bg-orange-700 text-white'
+                                  : 'bg-[#1a1a1a] hover:bg-gray-800 text-gray-400'
+                                }`}
                             >
-                              <ThumbsUp className={`h-4 w-4 ${
-                                likedComments.has(comment.id)
-                                  ? 'text-white'
-                                  : 'text-gray-400'
-                              }`} />
-                              <span className={`text-sm ${
-                                likedComments.has(comment.id)
-                                  ? 'text-white'
-                                  : 'text-gray-400'
-                              }`}>
-                                {comment.likeCount}
-                              </span>
+                              <ThumbsUp className="h-3 w-3" />
+                              <span>{comment.likeCount}</span>
                             </button>
                           ) : (
-                            <div className="flex items-center text-gray-400">
-                              <ThumbsUp className="h-4 w-4 mr-1" />
+                            <div className="flex items-center text-gray-400 text-xs">
+                              <ThumbsUp className="h-3 w-3 mr-1" />
                               {comment.likeCount}
                             </div>
                           )}
                           {session?.user && (
-                            <button 
+                            <button
                               onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
-                              className="flex items-center text-gray-400 hover:text-orange-400 transition-colors"
+                              className="flex items-center text-gray-400 hover:text-orange-400 transition-colors text-xs"
                             >
-                              <MessageCircle className="h-4 w-4 mr-1" />
+                              <MessageCircle className="h-3 w-3 mr-1" />
                               Yanıtla
                             </button>
                           )}
@@ -585,13 +565,13 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
 
                         {/* Yanıt Ekleme Formu */}
                         {replyingTo === comment.id && (
-                          <div className="mt-4 ml-4 border-l-2 border-gray-700 pl-4">
-                            <div className="bg-gray-800 rounded-lg p-4">
+                          <div className="mt-3 ml-4 border-l-2 border-orange-500/30 pl-4">
+                            <div className="bg-[#1a1a1a] rounded-lg p-3">
                               <textarea
                                 value={replyText}
                                 onChange={(e) => setReplyText(e.target.value)}
                                 rows={3}
-                                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white placeholder-gray-400 focus:border-orange-500 focus:outline-none resize-none mb-3"
+                                className="w-full px-3 py-2 bg-black border border-gray-800 rounded text-white text-sm placeholder-gray-500 focus:border-orange-500 focus:outline-none resize-none mb-2"
                                 placeholder="Yanıtınızı yazın..."
                               />
                               <div className="flex justify-end space-x-2">
@@ -600,14 +580,14 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
                                     setReplyingTo(null)
                                     setReplyText('')
                                   }}
-                                  className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-500 transition-colors"
+                                  className="px-3 py-1.5 bg-gray-800 text-white text-sm rounded hover:bg-gray-700 transition-colors"
                                 >
                                   İptal
                                 </button>
                                 <button
                                   onClick={() => handleAddReply(comment.id)}
                                   disabled={submitting || !replyText.trim()}
-                                  className="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                  className="px-3 py-1.5 bg-orange-600 text-white text-sm rounded hover:bg-orange-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                   {submitting ? 'Gönderiliyor...' : 'Yanıtla'}
                                 </button>
@@ -618,50 +598,39 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
 
                         {/* Yanıtlar */}
                         {comment.replies && comment.replies.length > 0 && (
-                          <div className="mt-4 ml-4 border-l-2 border-gray-700 pl-4 space-y-4">
+                          <div className="mt-3 ml-4 border-l-2 border-gray-800 pl-4 space-y-3">
                             {comment.replies.map((reply) => (
-                              <div key={reply.id} className="bg-gray-800 rounded-lg p-4">
-                                <div className="flex items-start space-x-3">
+                              <div key={reply.id} className="bg-[#1a1a1a] rounded-lg p-3">
+                                <div className="flex items-start space-x-2">
                                   {getUserAvatar(reply.author)}
-                                  <div className="flex-1">
-                                    <div className="flex items-center space-x-2 mb-2">
-                                      <span className="font-medium text-white text-sm">
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center space-x-2 mb-1.5">
+                                      <span className="font-medium text-white text-xs">
                                         {reply.author.name || 'Anonim'}
                                       </span>
                                       <span className="text-gray-500 text-xs flex items-center">
-                                        <Clock className="h-3 w-3 mr-1" />
+                                        <Clock className="h-2.5 w-2.5 mr-1" />
                                         {formatTimeAgo(reply.createdAt.toString())}
                                       </span>
                                     </div>
-                                    <p className="text-gray-300 text-sm whitespace-pre-wrap">
+                                    <p className="text-gray-300 text-xs whitespace-pre-wrap mb-2">
                                       {reply.content}
                                     </p>
-                                    <div className="flex items-center space-x-4 mt-2">
+                                    <div className="flex items-center space-x-3">
                                       {session?.user ? (
-                                        <button 
+                                        <button
                                           onClick={() => handleCommentLike(reply.id)}
-                                          className={`flex items-center space-x-1 px-2 py-1 rounded-lg transition-colors text-xs ${
-                                            likedComments.has(reply.id)
-                                              ? 'bg-orange-600 hover:bg-orange-700'
-                                              : 'bg-gray-800 hover:bg-gray-700'
-                                          }`}
+                                          className={`flex items-center space-x-1 px-2 py-0.5 rounded transition-colors text-xs ${likedComments.has(reply.id)
+                                              ? 'bg-orange-600 hover:bg-orange-700 text-white'
+                                              : 'bg-black hover:bg-gray-900 text-gray-400'
+                                            }`}
                                         >
-                                          <ThumbsUp className={`h-3 w-3 ${
-                                            likedComments.has(reply.id)
-                                              ? 'text-white'
-                                              : 'text-gray-400'
-                                          }`} />
-                                          <span className={`text-xs ${
-                                            likedComments.has(reply.id)
-                                              ? 'text-white'
-                                              : 'text-gray-400'
-                                          }`}>
-                                            {reply.likeCount}
-                                          </span>
+                                          <ThumbsUp className="h-2.5 w-2.5" />
+                                          <span>{reply.likeCount}</span>
                                         </button>
                                       ) : (
                                         <div className="flex items-center text-gray-400 text-xs">
-                                          <ThumbsUp className="h-3 w-3 mr-1" />
+                                          <ThumbsUp className="h-2.5 w-2.5 mr-1" />
                                           {reply.likeCount}
                                         </div>
                                       )}
