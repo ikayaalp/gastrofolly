@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
-import { ChefHat, Play, Clock, BookOpen, Star, ArrowRight, Home, Users, MessageCircle, Search, Phone } from "lucide-react"
+import { ChefHat, Play, Clock, BookOpen, Star, Home, Users, MessageCircle, Search } from "lucide-react"
 import UserDropdown from "@/components/ui/UserDropdown"
 import SearchModal from "@/components/ui/SearchModal"
 
@@ -163,7 +163,7 @@ export default function MyCoursesPage() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-20 md:pt-24 pb-20 md:pb-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Kurslarım</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">Kaldığın Yerden Devam Et</h1>
           <p className="text-gray-400">
             Kayıtlı olduğunuz kurslar ve ilerleme durumunuz
           </p>
@@ -184,91 +184,91 @@ export default function MyCoursesPage() {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {enrollments.map((enrollment) => {
               const course = enrollment.course
               const totalLessons = course._count.lessons
               const completedLessons = 0 // Bu değer gerçek uygulamada veritabanından gelecek
               const progressPercentage = totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0
 
+              // Rating hesaplama
+              const averageRating = course.reviews.length > 0
+                ? course.reviews.reduce((sum, review) => sum + review.rating, 0) / course.reviews.length
+                : 0
+
               return (
-                <div
+                <Link
                   key={enrollment.id}
-                  className="bg-black border border-orange-500/30 rounded-xl p-6 hover:border-orange-500 transition-colors"
+                  href={`/learn/${course.id}`}
+                  className="group block"
                 >
-                  {/* Course Image */}
-                  <div className="relative mb-4">
-                    {course.imageUrl ? (
-                      <Image
-                        src={course.imageUrl}
-                        alt={course.title}
-                        width={400}
-                        height={200}
-                        className="w-full h-48 object-cover rounded-lg"
-                      />
-                    ) : (
-                      <div className="w-full h-48 bg-gradient-to-br from-orange-400 to-red-500 rounded-lg flex items-center justify-center">
-                        <ChefHat className="h-16 w-16 text-white" />
+                  <div className="bg-[#1a1a1a] rounded-lg overflow-hidden border-b-4 border-orange-500 hover:border-orange-400 transition-all hover:scale-105">
+                    {/* Course Image */}
+                    <div className="relative h-40 overflow-hidden">
+                      {course.imageUrl ? (
+                        <Image
+                          src={course.imageUrl}
+                          alt={course.title}
+                          width={400}
+                          height={160}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center">
+                          <ChefHat className="h-12 w-12 text-white" />
+                        </div>
+                      )}
+
+                      {/* Progress Overlay for video-style cards */}
+                      {progressPercentage > 0 && (
+                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="text-center">
+                            <Play className="h-12 w-12 text-white mx-auto mb-2" />
+                            <p className="text-white text-sm font-medium">Kaldığın Yerden Devam Et</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Course Info */}
+                    <div className="p-4">
+                      <h3 className="text-white font-semibold text-base mb-2 line-clamp-1">
+                        {course.title}
+                      </h3>
+
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center">
+                            <ChefHat className="h-3 w-3 text-white" />
+                          </div>
+                          <span className="text-gray-400 text-sm">{course.instructor.name}</span>
+                        </div>
+
+                        <div className="flex items-center space-x-1">
+                          <Star className="h-4 w-4 text-orange-500 fill-orange-500" />
+                          <span className="text-white text-sm font-medium">
+                            {averageRating > 0 ? averageRating.toFixed(1) : '0.0'}
+                          </span>
+                        </div>
                       </div>
-                    )}
-                    <div className="absolute top-3 left-3">
-                      <span className="bg-orange-600 text-white px-2 py-1 rounded text-xs font-medium">
-                        {course.category.name}
-                      </span>
+
+                      {/* Progress Bar */}
+                      {progressPercentage > 0 && (
+                        <div className="mt-3">
+                          <div className="w-full bg-gray-800 rounded-full h-1.5">
+                            <div
+                              className="bg-orange-500 h-1.5 rounded-full transition-all duration-300"
+                              style={{ width: `${progressPercentage}%` }}
+                            ></div>
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">
+                            %{Math.round(progressPercentage)} tamamlandı
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
-
-                  {/* Course Info */}
-                  <div className="mb-4">
-                    <h3 className="text-lg font-semibold text-white mb-2 line-clamp-2">
-                      {course.title}
-                    </h3>
-                    <p className="text-gray-400 text-sm mb-2">
-                      Eğitmen: {course.instructor.name}
-                    </p>
-                    <p className="text-gray-300 text-sm line-clamp-2">
-                      {course.description}
-                    </p>
-                  </div>
-
-                  {/* Progress */}
-                  <div className="mb-4">
-                    <div className="flex justify-between text-sm text-gray-400 mb-2">
-                      <span>İlerleme</span>
-                      <span>{completedLessons}/{totalLessons} ders</span>
-                    </div>
-                    <div className="w-full bg-black border border-orange-500/20 rounded-full h-2">
-                      <div
-                        className="bg-orange-500 h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${progressPercentage}%` }}
-                      ></div>
-                    </div>
-                    <p className="text-xs text-gray-500 mt-1">
-                      %{Math.round(progressPercentage)} tamamlandı
-                    </p>
-                  </div>
-
-                  {/* Course Stats */}
-                  <div className="flex items-center justify-between text-sm text-gray-400 mb-4">
-                    <div className="flex items-center space-x-1">
-                      <Clock className="h-4 w-4" />
-                      <span>{course.lessons.length} ders</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <Users className="h-4 w-4" />
-                      <span>{course._count.enrollments} öğrenci</span>
-                    </div>
-                  </div>
-
-                  {/* Continue Button */}
-                  <Link
-                    href={`/learn/${course.id}`}
-                    className="w-full bg-orange-600 text-white py-2 px-4 rounded-lg font-semibold hover:bg-orange-700 transition-colors flex items-center justify-center"
-                  >
-                    <Play className="h-4 w-4 mr-2" />
-                    Devam Et
-                  </Link>
-                </div>
+                </Link>
               )
             })}
           </div>
