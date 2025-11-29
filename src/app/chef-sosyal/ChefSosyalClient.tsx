@@ -398,7 +398,7 @@ export default function ChefSosyalClient({
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
 
           {/* Sidebar - Kategoriler */}
-          <div className="lg:col-span-1">
+          <div className="hidden lg:block lg:col-span-1">
             <div className="bg-[#0a0a0a] border border-gray-800 rounded-xl p-5 sticky top-24">
               <h2 className="text-lg font-bold text-white mb-4">Kategoriler</h2>
               <div className="space-y-1">
@@ -560,7 +560,7 @@ export default function ChefSosyalClient({
       {session?.user && (
         <button
           onClick={() => setShowNewTopicModal(true)}
-          className="fixed bottom-6 right-6 bg-orange-600 hover:bg-orange-700 text-white p-4 rounded-full shadow-lg transition-colors md:hidden"
+          className="fixed bottom-24 right-6 bg-orange-600 hover:bg-orange-700 text-white p-4 rounded-full shadow-lg transition-colors md:hidden"
         >
           <Plus className="h-6 w-6" />
         </button>
