@@ -145,9 +145,14 @@ export default function HeroSection({ courses }: HeroSectionProps) {
           <div className={`max-w-4xl mx-auto -mt-16 transition-all duration-500 ease-in-out ${isTransitioning ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
 
             {/* Başlık */}
-            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight drop-shadow-lg">
+            <h1 className="text-4xl md:text-6xl font-bold text-white mb-3 leading-tight drop-shadow-lg">
               {course.title}
             </h1>
+
+            {/* Eğitmen Adı */}
+            <p className="text-lg md:text-xl text-gray-300 mb-6 drop-shadow-md">
+              Şef {course.instructor.name}
+            </p>
 
             {/* Level Badge */}
             <div className="flex justify-center mb-8">
@@ -160,9 +165,9 @@ export default function HeroSection({ courses }: HeroSectionProps) {
             <div className="flex justify-center">
               <Link
                 href={`/course/${course.id}`}
-                className="bg-orange-600 hover:bg-orange-700 text-white px-10 py-4 rounded-xl font-bold text-lg transition-all transform hover:scale-105 shadow-lg hover:shadow-orange-600/20 flex items-center justify-center gap-2"
+                className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2.5 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-orange-600/20 flex items-center justify-center gap-2"
               >
-                <Play className="h-6 w-6 fill-current" />
+                <Play className="h-5 w-5 fill-current" />
                 Kursa Başla
               </Link>
             </div>
