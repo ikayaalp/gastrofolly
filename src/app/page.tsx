@@ -17,12 +17,24 @@ export default function Home() {
   }
 
   const [featured, setFeatured] = useState<FeaturedCourse[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/courses/featured")
-      .then((r) => r.json())
-      .then((d: { courses?: FeaturedCourse[] }) => setFeatured(d.courses || []))
-      .catch(() => setFeatured([]));
+    // Sayfa yüklenince hemen fetch başlat
+    const fetchCourses = async () => {
+      try {
+        const response = await fetch("/api/courses/featured");
+        const data = await response.json();
+        setFeatured(data.courses || []);
+      } catch (error) {
+        console.error("Error loading courses:", error);
+        setFeatured([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCourses();
   }, []);
 
   const handleSignUpClick = () => {
@@ -78,7 +90,7 @@ export default function Home() {
               <span className="text-orange-500"> Yolculuk</span>
             </h1>
             <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
-              Profesyonel şeflerden öğren, mutfakta ustalaş. 
+              Profesyonel şeflerden öğren, mutfakta ustalaş.
               Video dersler, uygulamalı projeler ve sertifikalar ile gastronomi kariyerine başla.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -145,7 +157,7 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Course Card 1 */}
             <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-lg overflow-hidden hover:shadow-xl hover:border-orange-500/50 transition-all">
-              <div className="h-48 bg-cover bg-center" style={{backgroundImage: "url('https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&q=80')"}}></div>
+              <div className="h-48 bg-cover bg-center" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&q=80')" }}></div>
               <div className="p-6">
                 <h3 className="text-xl font-semibold text-white mb-2">
                   Temel Mutfak Teknikleri
@@ -165,7 +177,7 @@ export default function Home() {
 
             {/* Course Card 2 */}
             <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-lg overflow-hidden hover:shadow-xl hover:border-orange-500/50 transition-all">
-              <div className="h-48 bg-cover bg-center" style={{backgroundImage: "url('https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=800&q=80')"}}></div>
+              <div className="h-48 bg-cover bg-center" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=800&q=80')" }}></div>
               <div className="p-6">
                 <h3 className="text-xl font-semibold text-white mb-2">
                   Türk Mutfağı Klasikleri
@@ -185,7 +197,7 @@ export default function Home() {
 
             {/* Course Card 3 */}
             <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-lg overflow-hidden hover:shadow-xl hover:border-orange-500/50 transition-all">
-              <div className="h-48 bg-cover bg-center" style={{backgroundImage: "url('https://images.unsplash.com/photo-1519915028121-7d3463d20b13?w=800&q=80')"}}></div>
+              <div className="h-48 bg-cover bg-center" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1519915028121-7d3463d20b13?w=800&q=80')" }}></div>
               <div className="p-6">
                 <h3 className="text-xl font-semibold text-white mb-2">
                   Pastane Sanatı
