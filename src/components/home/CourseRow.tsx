@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Star, Clock, Users, Play, ChevronLeft, ChevronRight } from "lucide-react"
+import { Star, Play, ChevronLeft, ChevronRight } from "lucide-react"
 import { useRef, useState, useEffect } from "react"
 
 interface Course {
@@ -87,16 +87,6 @@ export default function CourseRow({ title, courses, showProgress = false }: Cour
     return sum / reviews.length
   }
 
-  const formatDuration = (minutes?: number | null) => {
-    if (!minutes) return "N/A"
-    const hours = Math.floor(minutes / 60)
-    const mins = minutes % 60
-    if (hours > 0) {
-      return `${hours}s ${mins}dk`
-    }
-    return `${mins}dk`
-  }
-
   return (
     <div className="w-full">
       <div className="mb-6 px-4 sm:px-6 lg:px-8">
@@ -134,15 +124,13 @@ export default function CourseRow({ title, courses, showProgress = false }: Cour
         >
           {courses.map((course) => {
             const averageRating = calculateAverageRating(course.reviews)
-
-            // showProgress true ise learn sayfasına, değilse course detay sayfasına git
             const linkHref = showProgress ? `/learn/${course.id}` : `/course/${course.id}`
 
             return (
               <Link key={course.id} href={linkHref}>
                 <div className="bg-black border border-gray-800 rounded-xl overflow-hidden hover:border-orange-500/50 transition-all duration-300 group cursor-pointer min-w-[320px] w-[320px] flex-shrink-0">
-                  {/* Course Image */}
-                  <div className="relative h-48 bg-black overflow-hidden">
+                  {/* Course Image - Büyütüldü */}
+                  <div className="relative h-64 bg-black overflow-hidden">
                     {course.imageUrl ? (
                       <img
                         src={course.imageUrl}
@@ -170,9 +158,9 @@ export default function CourseRow({ title, courses, showProgress = false }: Cour
                     )}
                   </div>
 
-                  {/* Course Info */}
+                  {/* Course Info - Sadeleştirilmiş */}
                   <div className="p-4">
-                    <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-orange-500 transition-colors overflow-hidden" style={{
+                    <h3 className="text-lg font-semibold text-white mb-3 group-hover:text-orange-500 transition-colors overflow-hidden" style={{
                       display: '-webkit-box',
                       WebkitLineClamp: 2,
                       WebkitBoxOrient: 'vertical',
@@ -183,42 +171,7 @@ export default function CourseRow({ title, courses, showProgress = false }: Cour
                       {course.title}
                     </h3>
 
-                    <p className="text-gray-400 text-sm mb-3 overflow-hidden" style={{
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                      lineHeight: '1.4',
-                      minHeight: '2.8em',
-                      maxHeight: '2.8em'
-                    }}>
-                      {course.description}
-                    </p>
-
-                    {/* Instructor */}
-                    <div className="flex items-center mb-3">
-                      <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center mr-2">
-                        <span className="text-xs font-bold text-white">
-                          {course.instructor.name?.charAt(0) || "?"}
-                        </span>
-                      </div>
-                      <span className="text-sm text-gray-400">
-                        {course.instructor.name || "Bilinmeyen Eğitmen"}
-                      </span>
-                    </div>
-
-                    {/* Course Stats */}
-                    <div className="flex items-center justify-between text-sm text-gray-400 mb-3">
-                      <div className="flex items-center">
-                        <Clock className="h-4 w-4 mr-1" />
-                        {formatDuration(course.duration)}
-                      </div>
-                      <div className="flex items-center">
-                        <Users className="h-4 w-4 mr-1" />
-                        {course._count.enrollments}
-                      </div>
-                    </div>
-
-                    {/* Rating and Price */}
+                    {/* Sadece Rating ve Price */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
                         <Star className="h-4 w-4 text-yellow-400 fill-current mr-1" />
@@ -226,28 +179,25 @@ export default function CourseRow({ title, courses, showProgress = false }: Cour
                           {averageRating.toFixed(1)} ({course.reviews.length})
                         </span>
                       </div>
-                      <div className="flex flex-col items-end min-h-[3rem]">
+                      <div className="flex flex-col items-end">
                         {course.discountedPrice && course.discountRate ? (
                           <>
                             <span className="text-lg font-bold text-green-400">
                               ₺{course.discountedPrice.toLocaleString('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                             </span>
                             <div className="flex items-center space-x-2 mt-1">
-                              <span className="text-sm text-gray-400 line-through">
+                              <span className="text-xs text-gray-400 line-through">
                                 ₺{course.price.toLocaleString('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                               </span>
                               <span className="text-xs bg-red-600 text-white px-1.5 py-0.5 rounded">
-                                %{course.discountRate.toFixed(0)} İNDİRİM
+                                %{course.discountRate.toFixed(0)}
                               </span>
                             </div>
                           </>
                         ) : (
-                          <div className="flex flex-col items-end">
-                            <span className="text-lg font-bold text-orange-500">
-                              ₺{course.price.toLocaleString('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                            </span>
-                            <div className="h-6"></div>
-                          </div>
+                          <span className="text-lg font-bold text-orange-500">
+                            ₺{course.price.toLocaleString('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                          </span>
                         )}
                       </div>
                     </div>
