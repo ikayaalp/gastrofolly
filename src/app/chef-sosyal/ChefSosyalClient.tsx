@@ -554,6 +554,7 @@ export default function ChefSosyalClient({
           </div>
         </div>
       </div>
+      {/* ismail kayaalp */}
 
       {/* Floating Action Button - Mobil */}
       {session?.user && (
