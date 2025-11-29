@@ -65,6 +65,7 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
   const [isLiked, setIsLiked] = useState(false)
   const [likeCount, setLikeCount] = useState(topic.likeCount)
   const [likedComments, setLikedComments] = useState<Set<string>>(new Set())
+  const [showCommentForm, setShowCommentForm] = useState(false)
 
   // Sayfa yüklendiğinde kullanıcının bu başlığı beğenip beğenmediğini kontrol et
   useEffect(() => {
@@ -435,8 +436,8 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
                       <button
                         onClick={handleLike}
                         className={`flex items-center space-x-1 transition-colors ${isLiked
-                            ? 'text-orange-400 hover:text-orange-300'
-                            : 'hover:text-orange-400'
+                          ? 'text-orange-400 hover:text-orange-300'
+                          : 'hover:text-orange-400'
                           }`}
                       >
                         <ThumbsUp className="h-3.5 w-3.5 mr-1" />
@@ -474,9 +475,19 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
           </div>
 
           {/* Yorum Ekleme Formu */}
-          {session?.user && (
-            <div className="bg-[#0a0a0a] border border-gray-800 rounded-xl p-5 mb-6">
-              <h2 className="text-lg font-semibold text-white mb-4">Yorum Ekle</h2>
+          {session?.user && showCommentForm && (
+            <div id="comment-form" className="bg-[#0a0a0a] border border-gray-800 rounded-xl p-5 mb-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-semibold text-white">Yorum Ekle</h2>
+                <button
+                  onClick={() => setShowCommentForm(false)}
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
               <form onSubmit={handleAddComment}>
                 <textarea
                   value={newComment}
@@ -485,8 +496,16 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
                   className="w-full px-4 py-3 bg-[#1a1a1a] border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:border-orange-500 focus:outline-none resize-none mb-3"
                   placeholder="Düşüncelerinizi paylaşın..."
                   required
+                  autoFocus
                 />
-                <div className="flex justify-end">
+                <div className="flex justify-end space-x-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowCommentForm(false)}
+                    className="px-5 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                  >
+                    İptal
+                  </button>
                   <button
                     type="submit"
                     disabled={submitting || !newComment.trim()}
@@ -539,8 +558,8 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
                             <button
                               onClick={() => handleCommentLike(comment.id)}
                               className={`flex items-center space-x-1 px-2.5 py-1 rounded-lg transition-colors text-xs ${likedComments.has(comment.id)
-                                  ? 'bg-orange-600 hover:bg-orange-700 text-white'
-                                  : 'bg-[#1a1a1a] hover:bg-gray-800 text-gray-400'
+                                ? 'bg-orange-600 hover:bg-orange-700 text-white'
+                                : 'bg-[#1a1a1a] hover:bg-gray-800 text-gray-400'
                                 }`}
                             >
                               <ThumbsUp className="h-3 w-3" />
@@ -621,8 +640,8 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
                                         <button
                                           onClick={() => handleCommentLike(reply.id)}
                                           className={`flex items-center space-x-1 px-2 py-0.5 rounded transition-colors text-xs ${likedComments.has(reply.id)
-                                              ? 'bg-orange-600 hover:bg-orange-700 text-white'
-                                              : 'bg-black hover:bg-gray-900 text-gray-400'
+                                            ? 'bg-orange-600 hover:bg-orange-700 text-white'
+                                            : 'bg-black hover:bg-gray-900 text-gray-400'
                                             }`}
                                         >
                                           <ThumbsUp className="h-2.5 w-2.5" />
@@ -672,6 +691,24 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
           </Link>
         </div>
       </div>
+
+      {/* Floating Action Button for New Comment */}
+      {session?.user && !showCommentForm && (
+        <button
+          onClick={() => {
+            setShowCommentForm(true)
+            setTimeout(() => {
+              const formElement = document.getElementById('comment-form')
+              if (formElement) {
+                formElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+              }
+            }, 100)
+          }}
+          className="fixed bottom-24 right-6 bg-orange-600 hover:bg-orange-700 text-white p-4 rounded-full shadow-lg transition-all hover:scale-110 z-40"
+        >
+          <MessageCircle className="h-6 w-6" />
+        </button>
+      )}
     </div>
   )
 }
