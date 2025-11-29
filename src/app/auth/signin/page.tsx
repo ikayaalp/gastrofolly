@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from "react"
 import Link from "next/link"
 import { signIn } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { ChefHat, Eye, EyeOff, AlertCircle } from "lucide-react"
+import { ChefHat, Eye, EyeOff } from "lucide-react"
 
 function SignInForm() {
   const [email, setEmail] = useState("")
@@ -13,7 +13,6 @@ function SignInForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [successMessage, setSuccessMessage] = useState("")
-  const [bgImages, setBgImages] = useState<string[]>([])
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -23,28 +22,6 @@ function SignInForm() {
       setSuccessMessage(message)
     }
   }, [searchParams])
-
-  useEffect(() => {
-    let isMounted = true
-    const fetchImages = async () => {
-      try {
-        const res = await fetch("/api/search?q=ar")
-        const data = await res.json()
-        if (isMounted && Array.isArray(data?.courses)) {
-          const imgs = data.courses
-            .map((c: { imageUrl?: string | null }) => c.imageUrl)
-            .filter((u: string | null | undefined): u is string => Boolean(u))
-          setBgImages(imgs)
-        }
-      } catch (e) {
-        // ignore
-      }
-    }
-    fetchImages()
-    return () => {
-      isMounted = false
-    }
-  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -74,29 +51,8 @@ function SignInForm() {
     signIn("google", { callbackUrl: "/home" })
   }
 
-  const FALLBACK_IMAGES: string[] = [
-    "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?q=80&w=1200&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1512058564366-18510be2db19?q=80&w=1200&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1200&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1526318472351-c75fcf070305?q=80&w=1200&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=1200&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1484723091739-30a097e8f929?q=80&w=1200&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=1200&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1467003909585-2f8a72700288?q=80&w=1200&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1200&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1499028344343-cd173ffc68a9?q=80&w=1200&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?q=80&w=1200&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1498654896293-37aacf113fd9?q=80&w=1200&auto=format&fit=crop",
-  ]
-
-  const sources = [...bgImages, ...FALLBACK_IMAGES]
-  const tiles = sources.length
-    ? Array.from({ length: 48 }, (_, i) => sources[i % sources.length])
-    : FALLBACK_IMAGES
-
   return (
     <div className="relative min-h-screen overflow-hidden py-12 px-4 sm:px-6 lg:px-8">
-
       <div className="max-w-md mx-auto w-full space-y-8">
         <div>
           <div className="flex justify-center">
@@ -129,7 +85,7 @@ function SignInForm() {
                 {error}
               </div>
             )}
-            
+
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-300">
                 E-posta adresi
@@ -262,6 +218,3 @@ export default function SignIn() {
     </Suspense>
   )
 }
-
-
-//ismail kayaalp
