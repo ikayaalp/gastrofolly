@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Play, ChevronLeft, ChevronRight } from "lucide-react"
+import { Star, Play, ChevronLeft, ChevronRight } from "lucide-react"
 import { useRef, useState, useEffect } from "react"
 
 interface Course {
@@ -182,18 +182,28 @@ export default function CourseRow({ title, courses, showProgress = false }: Cour
                       {course.title}
                     </h3>
 
-                    {/* Level Badge */}
-                    <div className="mb-3">
-                      <span className="inline-block px-2 py-1 text-xs font-medium bg-orange-500/20 text-orange-400 rounded">
-                        {course.level}
-                      </span>
-                    </div>
+                    {/* Alt bilgiler - Eğitmen ve Puan */}
+                    <div className="flex items-center justify-between">
+                      {/* Eğitmen */}
+                      <div className="flex items-center overflow-hidden">
+                        <div className="w-5 h-5 rounded-full bg-orange-500 flex items-center justify-center mr-2 flex-shrink-0">
+                          <span className="text-xs font-bold text-white">
+                            {course.instructor.name?.charAt(0) || "?"}
+                          </span>
+                        </div>
+                        <span className="text-xs text-white/90 truncate" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}>
+                          {course.instructor.name || "Bilinmeyen Eğitmen"}
+                        </span>
+                      </div>
 
-                    {/* Kursa Başla Butonu */}
-                    <button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2">
-                      <Play className="h-4 w-4 fill-white" />
-                      Kursa Başla
-                    </button>
+                      {/* Puan */}
+                      <div className="flex items-center flex-shrink-0 ml-2">
+                        <Star className="h-4 w-4 text-yellow-400 fill-current mr-1" />
+                        <span className="text-sm text-white/90 font-semibold whitespace-nowrap" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}>
+                          {averageRating.toFixed(1)}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </Link>
