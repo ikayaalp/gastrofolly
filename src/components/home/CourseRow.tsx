@@ -128,7 +128,7 @@ export default function CourseRow({ title, courses, showProgress = false }: Cour
 
             return (
               <Link key={course.id} href={linkHref}>
-                <div className="relative bg-black border border-gray-800 rounded-xl overflow-hidden hover:border-orange-500/50 transition-all duration-300 group cursor-pointer min-w-[400px] w-[400px] h-[320px] flex-shrink-0">
+                <div className="relative bg-black border border-gray-800 rounded-xl overflow-hidden hover:border-orange-500/50 transition-all duration-300 group cursor-pointer min-w-[320px] w-[320px] h-[256px] flex-shrink-0">
                   {/* Course Image - Tam kart boyutunda */}
                   {course.imageUrl ? (
                     <img
