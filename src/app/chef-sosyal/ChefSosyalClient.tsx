@@ -56,10 +56,10 @@ interface ChefSosyalClientProps {
   initialTopics: Topic[]
 }
 
-export default function ChefSosyalClient({ 
-  session, 
-  initialCategories, 
-  initialTopics 
+export default function ChefSosyalClient({
+  session,
+  initialCategories,
+  initialTopics
 }: ChefSosyalClientProps) {
   const [categories, setCategories] = useState(initialCategories)
   const [topics, setTopics] = useState(initialTopics)
@@ -116,7 +116,7 @@ export default function ChefSosyalClient({
   // Like/Unlike işlemi
   const handleLike = async (topicId: string) => {
     if (!session?.user?.id) return
-    
+
     try {
       const response = await fetch('/api/forum/like', {
         method: 'POST',
@@ -125,19 +125,19 @@ export default function ChefSosyalClient({
         },
         body: JSON.stringify({ topicId }),
       })
-      
+
       if (response.ok) {
         const data = await response.json()
-        
+
         // Topic listesini güncelle
-        setTopics(prevTopics => 
-          prevTopics.map(topic => 
-            topic.id === topicId 
+        setTopics(prevTopics =>
+          prevTopics.map(topic =>
+            topic.id === topicId
               ? { ...topic, likeCount: data.liked ? topic.likeCount + 1 : topic.likeCount - 1 }
               : topic
           )
         )
-        
+
         // Liked topics state'ini güncelle
         setLikedTopics(prev => {
           const newSet = new Set(prev)
@@ -163,7 +163,7 @@ export default function ChefSosyalClient({
         sort,
         limit: '10'
       })
-      
+
       const response = await fetch(`/api/forum/topics?${params}`)
       const data = await response.json()
       setTopics(data.topics)
@@ -229,7 +229,7 @@ export default function ChefSosyalClient({
     if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} dakika önce`
     if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} saat önce`
     if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)} gün önce`
-    
+
     return date.toLocaleDateString('tr-TR')
   }
 
@@ -319,7 +319,7 @@ export default function ChefSosyalClient({
                 </nav>
               </>
             )}
-            
+
             <div className="flex items-center space-x-4">
               {session?.user ? (
                 <>
@@ -369,22 +369,24 @@ export default function ChefSosyalClient({
       </div>
 
       {/* Hero Section */}
-      <section className="pt-16 md:pt-32 pb-12 bg-gradient-to-b from-gray-900 to-black">
+      <section className="pt-16 md:pt-28 pb-8 bg-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              Chef Sosyal
-            </h1>
-            <p className="text-xl text-gray-300 mb-6 max-w-3xl mx-auto">
-              Gastronomi tutkunlarının buluşma noktası. Tariflerinizi paylaşın, deneyimlerinizi aktarın, sorularınızı sorun!
-            </p>
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
+                Chef Sosyal
+              </h1>
+              <p className="text-gray-400">
+                Gastronomi tutkunlarının buluşma noktası
+              </p>
+            </div>
             {session?.user && (
-              <button 
+              <button
                 onClick={() => setShowNewTopicModal(true)}
-                className="bg-orange-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-orange-700 transition-colors flex items-center space-x-2 mx-auto"
+                className="hidden md:flex bg-orange-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-orange-700 transition-colors items-center space-x-2"
               >
                 <Plus className="h-5 w-5" />
-                <span>Yeni Başlık Aç</span>
+                <span>Yeni Tartışma</span>
               </button>
             )}
           </div>
@@ -394,22 +396,21 @@ export default function ChefSosyalClient({
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          
+
           {/* Sidebar - Kategoriler */}
           <div className="lg:col-span-1">
-            <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 sticky top-24">
-              <h2 className="text-xl font-bold text-white mb-4">Kategoriler</h2>
-              <div className="space-y-2">
+            <div className="bg-[#0a0a0a] border border-gray-800 rounded-xl p-5 sticky top-24">
+              <h2 className="text-lg font-bold text-white mb-4">Kategoriler</h2>
+              <div className="space-y-1">
                 <button
                   onClick={() => handleCategoryChange('all')}
-                  className={`w-full text-left p-3 rounded-lg transition-colors flex justify-between items-center ${
-                    selectedCategory === 'all'
-                      ? 'bg-orange-600 text-white' 
-                      : 'text-gray-300 hover:bg-gray-800 hover:text-white'
-                  }`}
+                  className={`w-full text-left px-3 py-2.5 rounded-lg transition-all flex justify-between items-center ${selectedCategory === 'all'
+                      ? 'bg-orange-600 text-white'
+                      : 'text-gray-300 hover:bg-[#1a1a1a] hover:text-white'
+                    }`}
                 >
-                  <span>Tümü</span>
-                  <span className="text-sm opacity-70">
+                  <span className="text-sm font-medium">Tümü</span>
+                  <span className="text-xs bg-black/30 px-2 py-0.5 rounded-full">
                     {categories.reduce((sum, cat) => sum + cat._count.topics, 0)}
                   </span>
                 </button>
@@ -417,24 +418,23 @@ export default function ChefSosyalClient({
                   <button
                     key={category.slug}
                     onClick={() => handleCategoryChange(category.slug)}
-                    className={`w-full text-left p-3 rounded-lg transition-colors flex justify-between items-center ${
-                      selectedCategory === category.slug
-                        ? 'bg-orange-600 text-white' 
-                        : 'text-gray-300 hover:bg-gray-800 hover:text-white'
-                    }`}
+                    className={`w-full text-left px-3 py-2.5 rounded-lg transition-all flex justify-between items-center ${selectedCategory === category.slug
+                        ? 'bg-orange-600 text-white'
+                        : 'text-gray-300 hover:bg-[#1a1a1a] hover:text-white'
+                      }`}
                   >
-                    <span>{category.name}</span>
-                    <span className="text-sm opacity-70">{category._count.topics}</span>
+                    <span className="text-sm font-medium">{category.name}</span>
+                    <span className="text-xs bg-black/30 px-2 py-0.5 rounded-full">{category._count.topics}</span>
                   </button>
                 ))}
               </div>
 
               {/* Popüler Etiketler */}
-              <div className="mt-8">
-                <h3 className="text-lg font-semibold text-white mb-4">Popüler Etiketler</h3>
+              <div className="mt-6 pt-6 border-t border-gray-800">
+                <h3 className="text-sm font-semibold text-white mb-3">Popüler Etiketler</h3>
                 <div className="flex flex-wrap gap-2">
-                  {['#makarna', '#et-yemekleri', '#tatlı', '#vegan', '#mutfak-ekipmanları', '#pastane'].map((tag) => (
-                    <span key={tag} className="bg-gray-800 text-gray-300 px-3 py-1 rounded-full text-sm hover:bg-gray-700 cursor-pointer">
+                  {['#makarna', '#et-yemekleri', '#tatlı', '#vegan'].map((tag) => (
+                    <span key={tag} className="bg-[#1a1a1a] text-gray-400 px-2.5 py-1 rounded-full text-xs hover:bg-gray-800 hover:text-orange-400 cursor-pointer transition-colors">
                       {tag}
                     </span>
                   ))}
@@ -451,7 +451,7 @@ export default function ChefSosyalClient({
                 <p className="text-gray-400 mt-1">Topluluktan en yeni konular</p>
               </div>
               <div className="flex items-center space-x-3">
-                <select 
+                <select
                   value={sortBy}
                   onChange={(e) => handleSortChange(e.target.value)}
                   className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white"
@@ -473,65 +473,67 @@ export default function ChefSosyalClient({
               ) : (
                 topics.map((topic) => (
                   <Link key={topic.id} href={`/chef-sosyal/topic/${topic.id}`}>
-                    <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 hover:border-gray-700 transition-colors cursor-pointer">
-                    <div className="flex items-start space-x-4">
-                      {getUserAvatar(topic.author)}
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-3 mb-2">
-                          <span 
-                            className="px-2 py-1 rounded text-sm font-medium"
-                            style={{ 
-                              backgroundColor: `${topic.category.color || '#6b7280'}20`,
-                              color: topic.category.color || '#6b7280'
-                            }}
-                          >
-                            {topic.category.name}
-                          </span>
-                          <span className="text-gray-500 text-sm flex items-center">
-                            <Clock className="h-4 w-4 mr-1" />
-                            {formatTimeAgo(topic.createdAt.toString())}
-                          </span>
-                        </div>
-                        <h3 className="text-xl font-semibold text-white mb-2 hover:text-orange-400 transition-colors">
-                          {topic.title}
-                        </h3>
-                        <p className="text-gray-300 mb-4 line-clamp-2">
-                          {topic.content}
-                        </p>
-                        <div className="flex items-center space-x-4 text-sm text-gray-400">
-                          <span className="flex items-center">
-                            <User className="h-4 w-4 mr-1" />
-                            {topic.author.name || 'Anonim'}
-                          </span>
-                          <span className="flex items-center">
-                            <MessageCircle className="h-4 w-4 mr-1" />
-                            {topic._count.posts} yanıt
-                          </span>
-                          {session?.user ? (
-                            <button 
-                              onClick={(e) => {
-                                e.preventDefault()
-                                e.stopPropagation()
-                                handleLike(topic.id)
-                              }}
-                              className={`flex items-center transition-colors ${
-                                likedTopics.has(topic.id) 
-                                  ? 'text-orange-400 hover:text-orange-300' 
-                                  : 'text-gray-400 hover:text-orange-400'
-                              }`}
-                            >
-                              <ThumbsUp className="h-4 w-4 mr-1" />
-                              <span>{topic.likeCount} beğeni</span>
-                            </button>
-                          ) : (
-                            <span className="flex items-center">
-                              <ThumbsUp className="h-4 w-4 mr-1" />
-                              {topic.likeCount} beğeni
-                            </span>
-                          )}
+                    <div className="group bg-[#0a0a0a] border border-gray-800 rounded-xl overflow-hidden hover:border-orange-500/50 transition-all hover:shadow-lg hover:shadow-orange-500/10">
+                      <div className="p-5">
+                        <div className="flex items-start space-x-4">
+                          {getUserAvatar(topic.author)}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center space-x-2 mb-2">
+                              <span
+                                className="px-2 py-0.5 rounded text-xs font-medium"
+                                style={{
+                                  backgroundColor: `${topic.category.color || '#6b7280'}20`,
+                                  color: topic.category.color || '#6b7280'
+                                }}
+                              >
+                                {topic.category.name}
+                              </span>
+                              <span className="text-gray-500 text-xs flex items-center">
+                                <Clock className="h-3 w-3 mr-1" />
+                                {formatTimeAgo(topic.createdAt.toString())}
+                              </span>
+                            </div>
+                            <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-orange-400 transition-colors line-clamp-2">
+                              {topic.title}
+                            </h3>
+                            <p className="text-gray-400 text-sm mb-3 line-clamp-2">
+                              {topic.content}
+                            </p>
+                            <div className="flex items-center space-x-4 text-xs text-gray-500">
+                              <span className="flex items-center">
+                                <User className="h-3.5 w-3.5 mr-1" />
+                                {topic.author.name || 'Anonim'}
+                              </span>
+                              <span className="flex items-center">
+                                <MessageCircle className="h-3.5 w-3.5 mr-1" />
+                                {topic._count.posts}
+                              </span>
+                              {session?.user ? (
+                                <button
+                                  onClick={(e) => {
+                                    e.preventDefault()
+                                    e.stopPropagation()
+                                    handleLike(topic.id)
+                                  }}
+                                  className={`flex items-center transition-colors ${likedTopics.has(topic.id)
+                                      ? 'text-orange-400 hover:text-orange-300'
+                                      : 'hover:text-orange-400'
+                                    }`}
+                                >
+                                  <ThumbsUp className="h-3.5 w-3.5 mr-1" />
+                                  <span>{topic.likeCount}</span>
+                                </button>
+                              ) : (
+                                <span className="flex items-center">
+                                  <ThumbsUp className="h-3.5 w-3.5 mr-1" />
+                                  {topic.likeCount}
+                                </span>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
+                      <div className="h-1 bg-gradient-to-r from-orange-600 to-orange-400 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
                     </div>
                   </Link>
                 ))
@@ -541,7 +543,7 @@ export default function ChefSosyalClient({
             {/* Daha Fazla Yükle */}
             {!loading && topics.length > 0 && (
               <div className="text-center mt-8">
-                <button 
+                <button
                   onClick={() => loadTopics()}
                   className="bg-gray-800 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
                 >
@@ -555,7 +557,7 @@ export default function ChefSosyalClient({
 
       {/* Floating Action Button - Mobil */}
       {session?.user && (
-        <button 
+        <button
           onClick={() => setShowNewTopicModal(true)}
           className="fixed bottom-6 right-6 bg-orange-600 hover:bg-orange-700 text-white p-4 rounded-full shadow-lg transition-colors md:hidden"
         >
