@@ -13,7 +13,7 @@ export default function SubscriptionBanner() {
             borderColor: "border-gray-500/50",
         },
         {
-            name: "Chef D party",
+            name: "D partie",
             price: "399",
             icon: Crown,
             color: "from-orange-600 to-red-600",
