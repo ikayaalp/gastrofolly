@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Star, MessageCircle, User, Trash2, Send } from "lucide-react"
+import { Star, MessageCircle, User, Trash2, Send, X, Edit } from "lucide-react"
 import Image from "next/image"
 
 interface Review {
@@ -34,6 +34,7 @@ export default function CommentsSection({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [deletingReviewId, setDeletingReviewId] = useState<string | null>(null)
   const [hoveredStar, setHoveredStar] = useState(0)
+  const [showCommentModal, setShowCommentModal] = useState(false)
 
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -56,6 +57,7 @@ export default function CommentsSection({
       if (response.ok) {
         setNewComment("")
         setNewRating(5)
+        setShowCommentModal(false)
         if (typeof window !== 'undefined') {
           window.location.reload()
         }
@@ -122,50 +124,27 @@ export default function CommentsSection({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center space-x-3">
-        <div className="bg-orange-500/10 p-2 rounded-lg">
-          <MessageCircle className="h-6 w-6 text-orange-500" />
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <div className="bg-orange-500/10 p-2 rounded-lg">
+            <MessageCircle className="h-6 w-6 text-orange-500" />
+          </div>
+          <h2 className="text-2xl font-bold text-white">
+            Yorumlar {reviews.length > 0 && `(${reviews.length})`}
+          </h2>
         </div>
-        <h2 className="text-2xl font-bold text-white">
-          Yorumlar {reviews.length > 0 && `(${reviews.length})`}
-        </h2>
-      </div>
 
-      {/* Yorum Yapma Formu */}
-      {canComment && userId && (
-        <div className="bg-[#0a0a0a] border border-gray-800 rounded-xl p-6">
-          <h3 className="text-lg font-bold text-white mb-4">Yorum Yap</h3>
-          <form onSubmit={handleSubmitComment} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Puanınız
-              </label>
-              {renderStars(newRating, true, setNewRating)}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Yorumunuz
-              </label>
-              <textarea
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                className="w-full px-4 py-3 bg-black border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all resize-none"
-                placeholder="Kurs hakkındaki düşüncelerinizi paylaşın..."
-                rows={4}
-                required
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={isSubmitting || !newComment.trim()}
-              className="bg-gradient-to-r from-orange-600 to-orange-500 text-white px-6 py-3 rounded-lg font-medium hover:from-orange-700 hover:to-orange-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 shadow-lg hover:shadow-orange-500/50"
-            >
-              <Send className="h-4 w-4" />
-              <span>{isSubmitting ? 'Gönderiliyor...' : 'Yorum Gönder'}</span>
-            </button>
-          </form>
-        </div>
-      )}
+        {/* Yorum Yap Butonu */}
+        {canComment && userId && (
+          <button
+            onClick={() => setShowCommentModal(true)}
+            className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2.5 rounded-lg font-medium transition-all flex items-center space-x-2 shadow-lg hover:shadow-orange-500/50"
+          >
+            <Edit className="h-4 w-4" />
+            <span>Yorum Yap</span>
+          </button>
+        )}
+      </div>
 
       {/* Yorumlar Listesi */}
       <div className="space-y-4">
@@ -176,7 +155,16 @@ export default function CommentsSection({
             </div>
             <h3 className="text-lg font-semibold text-white mb-2">Henüz yorum yapılmamış</h3>
             {canComment && (
-              <p className="text-gray-400 text-sm">İlk yorumu sen yap!</p>
+              <>
+                <p className="text-gray-400 text-sm mb-4">İlk yorumu sen yap!</p>
+                <button
+                  onClick={() => setShowCommentModal(true)}
+                  className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-lg font-medium transition-all inline-flex items-center space-x-2"
+                >
+                  <Edit className="h-5 w-5" />
+                  <span>Yorum Yap</span>
+                </button>
+              </>
             )}
           </div>
         ) : (
@@ -238,6 +226,69 @@ export default function CommentsSection({
           ))
         )}
       </div>
+
+      {/* Yorum Yapma Modal */}
+      {showCommentModal && canComment && userId && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <div className="bg-[#0a0a0a] border border-gray-800 rounded-xl w-full max-w-2xl shadow-2xl shadow-orange-500/10">
+            {/* Modal Header */}
+            <div className="p-6 border-b border-gray-800 flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="bg-orange-500/10 p-2 rounded-lg">
+                  <Edit className="h-6 w-6 text-orange-500" />
+                </div>
+                <h3 className="text-xl font-bold text-white">Yorum Yap</h3>
+              </div>
+              <button
+                onClick={() => setShowCommentModal(false)}
+                className="text-gray-400 hover:text-white hover:bg-gray-800 p-2 rounded-lg transition-all"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <form onSubmit={handleSubmitComment} className="p-6 space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-3">
+                  Puanınız
+                </label>
+                {renderStars(newRating, true, setNewRating)}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-3">
+                  Yorumunuz
+                </label>
+                <textarea
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  className="w-full px-4 py-3 bg-black border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all resize-none"
+                  placeholder="Kurs hakkındaki düşüncelerinizi paylaşın..."
+                  rows={6}
+                  required
+                />
+              </div>
+              <div className="flex items-center justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={() => setShowCommentModal(false)}
+                  className="px-6 py-3 text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg font-medium transition-all"
+                >
+                  İptal
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting || !newComment.trim()}
+                  className="bg-gradient-to-r from-orange-600 to-orange-500 text-white px-6 py-3 rounded-lg font-medium hover:from-orange-700 hover:to-orange-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 shadow-lg hover:shadow-orange-500/50"
+                >
+                  <Send className="h-4 w-4" />
+                  <span>{isSubmitting ? 'Gönderiliyor...' : 'Yorum Gönder'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
