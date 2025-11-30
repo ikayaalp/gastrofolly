@@ -16,10 +16,13 @@ import {
   X,
   Home,
   Users,
-  MessageCircle
+  MessageCircle,
+  Bell
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
+import UserDropdown from "@/components/ui/UserDropdown"
+
 
 interface User {
   id: string
@@ -313,34 +316,60 @@ export default function MessagesClient({ session }: Props) {
 
   return (
     <div className="min-h-screen bg-black">
-      {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
+      {/* Desktop Header */}
+      <header className="hidden md:block fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-2">
-              <ChefHat className="h-8 w-8 text-orange-500" />
-              <span className="text-2xl font-bold text-white">Chef2.0</span>
+            <div className="flex items-center space-x-8">
+              <Link href="/home" className="flex items-center space-x-2">
+                <ChefHat className="h-8 w-8 text-orange-500" />
+                <span className="text-2xl font-bold text-white">Chef2.0</span>
+                {session?.user?.role === 'INSTRUCTOR' && (
+                  <span className="bg-blue-600 text-white px-2 py-1 rounded text-sm font-medium">Eğitmen</span>
+                )}
+                {session?.user?.role === 'ADMIN' && (
+                  <span className="bg-orange-600 text-white px-2 py-1 rounded text-sm font-medium">Admin</span>
+                )}
+              </Link>
+              <nav className="flex space-x-6">
+                <Link href="/home" className="text-gray-300 hover:text-white transition-colors">
+                  Ana Sayfa
+                </Link>
+                <Link href="/my-courses" className="text-gray-300 hover:text-white transition-colors">
+                  Kurslarım
+                </Link>
+                {session?.user?.role === 'INSTRUCTOR' && (
+                  <>
+                    <Link href="/instructor-dashboard" className="text-gray-300 hover:text-white transition-colors">
+                      Eğitmen Paneli
+                    </Link>
+                    <Link href="/instructor-dashboard/courses" className="text-gray-300 hover:text-white transition-colors">
+                      Kurslarımı Yönet
+                    </Link>
+                  </>
+                )}
+                {session?.user?.role === 'ADMIN' && (
+                  <>
+                    <Link href="/admin" className="text-gray-300 hover:text-white transition-colors">
+                      Admin Paneli
+                    </Link>
+                    <Link href="/admin/courses" className="text-gray-300 hover:text-white transition-colors">
+                      Kurs Yönetimi
+                    </Link>
+                  </>
+                )}
+                <Link href="/chef-sosyal" className="text-gray-300 hover:text-white transition-colors">
+                  Chef Sosyal
+                </Link>
+                <Link href="/messages" className="text-white font-semibold">
+                  Mesajlar
+                </Link>
+                <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
+                  İletişim
+                </Link>
+              </nav>
             </div>
-            <nav className="hidden md:flex space-x-8">
-              <Link href="/home" className="text-gray-300 hover:text-orange-500 transition-colors">
-                Ana Sayfa
-              </Link>
-              <Link href="/my-courses" className="text-gray-300 hover:text-orange-500 transition-colors">
-                Kurslarım
-              </Link>
-              <Link href="/favorites" className="text-gray-300 hover:text-orange-500 transition-colors">
-                Favorilerim
-              </Link>
-              <Link href="/chef-sosyal" className="text-gray-300 hover:text-orange-500 transition-colors">
-                Chef Sosyal
-              </Link>
-              <Link href="/messages" className="text-orange-500 transition-colors">
-                Mesajlar
-              </Link>
-              <Link href="/contact" className="text-gray-300 hover:text-orange-500 transition-colors">
-                İletişim
-              </Link>
-            </nav>
+
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => setShowNewMessageModal(true)}
@@ -349,12 +378,41 @@ export default function MessagesClient({ session }: Props) {
                 <Plus className="h-4 w-4" />
                 <span className="hidden sm:inline">Yeni Sohbet</span>
               </button>
+              <button className="text-gray-300 hover:text-white">
+                <Bell className="h-5 w-5" />
+              </button>
+              <UserDropdown />
             </div>
           </div>
         </div>
       </header>
 
-      <div className="pt-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20 md:pb-6">
+      {/* Mobile Top Bar */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
+        <div className="flex justify-between items-center py-3 px-4">
+          <Link href="/home" className="flex items-center space-x-2">
+            <ChefHat className="h-6 w-6 text-orange-500" />
+            <span className="text-lg font-bold text-white">Chef2.0</span>
+            {session?.user?.role === 'INSTRUCTOR' && (
+              <span className="bg-blue-600 text-white px-2 py-1 rounded text-xs font-medium">Eğitmen</span>
+            )}
+            {session?.user?.role === 'ADMIN' && (
+              <span className="bg-orange-600 text-white px-2 py-1 rounded text-xs font-medium">Admin</span>
+            )}
+          </Link>
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => setShowNewMessageModal(true)}
+              className="p-2 text-gray-300 hover:text-white transition-colors"
+            >
+              <Plus className="h-5 w-5" />
+            </button>
+            <UserDropdown />
+          </div>
+        </div>
+      </div>
+
+      <div className="pt-16 md:pt-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20 md:pb-6">
         {/* Mobile Chat Overlay */}
         {showMobileChat && selectedConversation && (
           <div className="lg:hidden fixed inset-0 z-50 bg-black" style={{ height: '100dvh' }}>
