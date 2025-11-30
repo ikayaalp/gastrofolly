@@ -13,7 +13,9 @@ import {
   Lock,
   Home,
   BookOpen,
-  MessageCircle
+  MessageCircle,
+  Crown,
+  Zap
 } from "lucide-react"
 import EnrollButton from "@/components/course/EnrollButton"
 import FavoriteButton from "@/components/course/FavoriteButton"
@@ -388,12 +390,12 @@ export default async function CoursePage({ params }: CoursePageProps) {
                   {/* Abonelik Mesajı */}
                   {/* Abonelik Mesajı */}
                   <div className={`border rounded-xl p-6 mb-6 text-center ${course.level === 'BEGINNER' ? 'bg-gray-900/60 border-gray-700' :
-                      course.level === 'INTERMEDIATE' ? 'bg-orange-900/20 border-orange-500/30' :
-                        'bg-purple-900/20 border-purple-500/30'
+                    course.level === 'INTERMEDIATE' ? 'bg-orange-900/20 border-orange-500/30' :
+                      'bg-purple-900/20 border-purple-500/30'
                     }`}>
                     <div className={`rounded-full p-3 w-16 h-16 mx-auto mb-4 flex items-center justify-center ${course.level === 'BEGINNER' ? 'bg-gray-700' :
-                        course.level === 'INTERMEDIATE' ? 'bg-orange-600' :
-                          'bg-purple-600'
+                      course.level === 'INTERMEDIATE' ? 'bg-orange-600' :
+                        'bg-purple-600'
                       }`}>
                       {course.level === 'BEGINNER' ? <BookOpen className="h-8 w-8 text-white" /> :
                         course.level === 'INTERMEDIATE' ? <Crown className="h-8 w-8 text-white" /> :
