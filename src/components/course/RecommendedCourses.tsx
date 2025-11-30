@@ -107,13 +107,6 @@ export default function RecommendedCourses({ courses, currentCourseId }: Recomme
                       {course.category.name}
                     </span>
                   </div>
-
-                  {/* Fiyat Badge */}
-                  <div className="absolute bottom-3 right-3">
-                    <span className="bg-black/70 backdrop-blur-sm text-white px-3 py-1.5 rounded-lg text-sm font-bold">
-                      ₺{course.price.toLocaleString('tr-TR')}
-                    </span>
-                  </div>
                 </div>
 
                 {/* Kurs Bilgileri */}
