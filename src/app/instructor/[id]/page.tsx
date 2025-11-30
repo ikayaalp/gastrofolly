@@ -63,22 +63,22 @@ export default async function InstructorPage({ params }: InstructorPageProps) {
   }
 
   const totalStudents = instructor.createdCourses.reduce(
-    (acc, course) => acc + course._count.enrollments,
+    (acc: number, course: typeof instructor.createdCourses[0]) => acc + course._count.enrollments,
     0
   )
 
   const totalLessons = instructor.createdCourses.reduce(
-    (acc, course) => acc + course._count.lessons,
+    (acc: number, course: typeof instructor.createdCourses[0]) => acc + course._count.lessons,
     0
   )
 
   const totalReviews = instructor.createdCourses.reduce(
-    (acc, course) => acc + course._count.reviews,
+    (acc: number, course: typeof instructor.createdCourses[0]) => acc + course._count.reviews,
     0
   )
 
   const averageRating = totalReviews > 0
-    ? instructor.createdCourses.reduce((acc, course) => {
+    ? instructor.createdCourses.reduce((acc: number, course: typeof instructor.createdCourses[0]) => {
       // Burada gerçek rating hesaplaması yapılabilir
       return acc + 4.5 // Örnek değer
     }, 0) / instructor.createdCourses.length
@@ -315,7 +315,7 @@ export default async function InstructorPage({ params }: InstructorPageProps) {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {instructor.createdCourses.map((course) => (
+                    {instructor.createdCourses.map((course: typeof instructor.createdCourses[0]) => (
                       <Link
                         key={course.id}
                         href={`/course/${course.id}`}
@@ -330,7 +330,7 @@ export default async function InstructorPage({ params }: InstructorPageProps) {
                                 alt={course.title}
                                 width={400}
                                 height={200}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                 unoptimized={true}
                               />
                             ) : (
@@ -339,7 +339,7 @@ export default async function InstructorPage({ params }: InstructorPageProps) {
                               </div>
                             )}
 
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
 
                             <div className="absolute top-3 left-3">
                               <span className="bg-black/60 backdrop-blur-md text-white border border-white/10 px-3 py-1 rounded-full text-xs font-medium">
@@ -367,20 +367,7 @@ export default async function InstructorPage({ params }: InstructorPageProps) {
 
                             <div className="mt-auto pt-4 border-t border-gray-800 flex items-center justify-between">
                               <div className="flex items-center space-x-2">
-                                {course.discountedPrice ? (
-                                  <div className="flex flex-col">
-                                    <span className="text-xs text-gray-500 line-through">
-                                      ₺{course.price.toLocaleString('tr-TR')}
-                                    </span>
-                                    <span className="text-lg font-bold text-white">
-                                      ₺{course.discountedPrice.toLocaleString('tr-TR')}
-                                    </span>
-                                  </div>
-                                ) : (
-                                  <span className="text-lg font-bold text-white">
-                                    ₺{course.price.toLocaleString('tr-TR')}
-                                  </span>
-                                )}
+                                {/* Fiyat bilgisi kaldırıldı */}
                               </div>
 
                               <div className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center group-hover:bg-orange-500 transition-colors">
