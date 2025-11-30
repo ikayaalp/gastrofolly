@@ -704,9 +704,9 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
               }
             }, 100)
           }}
-          className="fixed bottom-24 right-6 bg-orange-600 hover:bg-orange-700 text-white p-4 rounded-full shadow-lg transition-all hover:scale-110 z-40"
+          className="fixed bottom-24 right-8 md:right-[15%] lg:right-[calc(50%-24rem)] bg-orange-600 hover:bg-orange-700 text-white p-5 rounded-full shadow-lg transition-all hover:scale-110 z-40"
         >
-          <MessageCircle className="h-6 w-6" />
+          <MessageCircle className="h-8 w-8" />
         </button>
       )}
     </div>
