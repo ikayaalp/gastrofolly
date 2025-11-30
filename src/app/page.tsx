@@ -110,6 +110,30 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Subscription Banner */}
+      <section className="py-8 bg-gradient-to-r from-orange-900/40 via-orange-800/40 to-red-900/40 border-y border-orange-500/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex-1 text-center md:text-left">
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">
+                Tüm Kurslara Sınırsız Erişim!
+              </h2>
+              <p className="text-lg text-gray-200">
+                Premium üyelikle tüm eğitimlere, yeni içeriklere ve daha fazlasına erişin. Sadece <span className="font-bold text-orange-300">199₺/Aylık</span>
+              </p>
+            </div>
+            <div className="flex-shrink-0">
+              <Link
+                href="/subscription"
+                className="inline-block bg-orange-600 hover:bg-orange-700 text-white text-lg font-bold px-8 py-4 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg"
+              >
+                Premium Üye Ol
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Auto Scrolling Courses */}
       {featured.length > 0 && (
         <AutoScrollCourses courses={featured} />

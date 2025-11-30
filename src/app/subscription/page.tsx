@@ -1,11 +1,66 @@
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import Link from "next/link"
-import { ChefHat, Check, Crown, Sparkles, BookOpen, Award, Users, MessageCircle, Home } from "lucide-react"
+import { ChefHat, Check, Crown, Sparkles, BookOpen, Award, Users, MessageCircle, Home, Zap, Star } from "lucide-react"
 import UserDropdown from "@/components/ui/UserDropdown"
 
 export default async function SubscriptionPage() {
     const session = await getServerSession(authOptions)
+
+    const plans = [
+        {
+            name: "Commis",
+            price: "199",
+            period: "Aylık",
+            icon: BookOpen,
+            color: "from-gray-600 to-gray-700",
+            borderColor: "border-gray-500/50",
+            buttonColor: "bg-gray-600 hover:bg-gray-700",
+            features: [
+                "Temel içerikler",
+                "Sertifika desteği",
+                "Topluluk erişimi",
+                "Mobil erişim"
+            ]
+        },
+        {
+            name: "Chef D party",
+            price: "399",
+            period: "Aylık",
+            icon: Crown,
+            color: "from-orange-600 to-red-600",
+            borderColor: "border-orange-500/50",
+            buttonColor: "bg-orange-600 hover:bg-orange-700",
+            popular: true,
+            features: [
+                "Tüm kurslara sınırsız erişim",
+                "Yeni içeriklere anında erişim",
+                "Tamamlama sertifikaları",
+                "Premium topluluk erişimi",
+                "Eğitmenlerle doğrudan iletişim",
+                "Mobil ve masaüstü erişim",
+                "Öncelikli destek"
+            ]
+        },
+        {
+            name: "Executive",
+            price: "599",
+            period: "Aylık",
+            icon: Zap,
+            color: "from-purple-600 to-pink-600",
+            borderColor: "border-purple-500/50",
+            buttonColor: "bg-purple-600 hover:bg-purple-700",
+            features: [
+                "Premium'daki tüm özellikler",
+                "1-1 mentorluk seansları",
+                "Özel proje incelemeleri",
+                "Kariyer danışmanlığı",
+                "Sınırsız canlı workshop",
+                "VIP topluluk erişimi",
+                "7/24 öncelikli destek"
+            ]
+        }
+    ]
 
     return (
         <div className="min-h-screen bg-black">
@@ -81,103 +136,80 @@ export default async function SubscriptionPage() {
 
             {/* Main Content */}
             <div className="pt-20 md:pt-24 pb-20 md:pb-8">
-                <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                     {/* Hero Section */}
                     <div className="text-center mb-16">
-                        <div className="inline-flex items-center gap-2 bg-gradient-to-r from-red-600/20 to-orange-600/20 border border-red-500/30 rounded-full px-6 py-2 mb-6">
+                        <div className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-600/20 to-red-600/20 border border-orange-500/30 rounded-full px-6 py-2 mb-6">
                             <Sparkles className="h-5 w-5 text-orange-400" />
                             <span className="text-orange-400 font-semibold">Premium Üyelik</span>
                         </div>
                         <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
                             Seni Bekleyen Eşsiz Deneyime<br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-500">
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500">
                                 Hemen Başla!
                             </span>
                         </h1>
                         <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-                            Neo Skoladaki tüm eğitimlere sınırsız erişim, premium içerikler ve daha fazlası!
+                            Tüm eğitimlere sınırsız erişim, premium içerikler ve daha fazlası!
                         </p>
                     </div>
 
-                    {/* Pricing Card */}
-                    <div className="max-w-2xl mx-auto mb-16">
-                        <div className="bg-gradient-to-br from-red-900/40 via-red-800/40 to-black/40 border-2 border-red-500/50 rounded-2xl p-8 relative overflow-hidden">
-                            {/* Background Pattern */}
-                            <div className="absolute inset-0 opacity-10">
-                                <div className="absolute inset-0 bg-gradient-to-br from-red-500 to-orange-500"></div>
-                            </div>
+                    {/* Pricing Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+                        {plans.map((plan) => {
+                            const Icon = plan.icon
+                            return (
+                                <div
+                                    key={plan.name}
+                                    className={`relative bg-gradient-to-br ${plan.color.replace('from-', 'from-').replace('to-', 'to-')}/20 border-2 ${plan.borderColor} rounded-2xl p-8 ${plan.popular ? 'md:scale-110 md:shadow-2xl' : ''} transition-all duration-300 hover:scale-105`}
+                                >
+                                    {/* Popular Badge */}
+                                    {plan.popular && (
+                                        <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                                            <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-1 rounded-full text-sm font-bold flex items-center gap-1">
+                                                <Star className="h-4 w-4" />
+                                                EN POPÜLER
+                                            </div>
+                                        </div>
+                                    )}
 
-                            <div className="relative z-10">
-                                {/* Badge */}
-                                <div className="flex justify-center mb-6">
-                                    <div className="bg-red-600 rounded-full p-4">
-                                        <Crown className="h-12 w-12 text-white" />
+                                    {/* Icon */}
+                                    <div className="flex justify-center mb-6">
+                                        <div className={`bg-gradient-to-br ${plan.color} rounded-full p-4`}>
+                                            <Icon className="h-10 w-10 text-white" />
+                                        </div>
                                     </div>
-                                </div>
 
-                                {/* Plan Name */}
-                                <h2 className="text-3xl font-bold text-white text-center mb-2">PREMIUM</h2>
-                                <p className="text-gray-300 text-center text-lg mb-8">Neo Skoladaki Tüm Eğitimler!</p>
+                                    {/* Plan Name */}
+                                    <h3 className="text-2xl font-bold text-white text-center mb-2">{plan.name}</h3>
 
-                                {/* Price */}
-                                <div className="text-center mb-8">
-                                    <div className="text-6xl font-bold text-white mb-2">
-                                        199 ₺
+                                    {/* Price */}
+                                    <div className="text-center mb-6">
+                                        <div className="text-5xl font-bold text-white mb-1">
+                                            {plan.price} ₺
+                                        </div>
+                                        <p className="text-gray-300">/ {plan.period}</p>
                                     </div>
-                                    <p className="text-gray-300 text-xl">/ Taksitli Ödeme</p>
-                                </div>
 
-                                {/* CTA Buttons */}
-                                <div className="flex flex-col gap-4 mb-8">
-                                    <button className="w-full bg-red-600 hover:bg-red-700 text-white text-lg font-bold py-4 rounded-xl transition-all duration-300 transform hover:scale-105">
-                                        Üyeliğini Başlat
+                                    {/* CTA Button */}
+                                    <button className={`w-full ${plan.buttonColor} text-white text-lg font-bold py-3 rounded-xl transition-all duration-300 mb-6`}>
+                                        Başlat
                                     </button>
-                                    <button className="w-full bg-black/50 hover:bg-black/70 border-2 border-red-500/50 text-white text-lg font-semibold py-4 rounded-xl transition-all duration-300">
-                                        Hediye Et
-                                    </button>
-                                </div>
 
-                                {/* Features */}
-                                <div className="space-y-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="bg-green-500/20 rounded-full p-1">
-                                            <Check className="h-5 w-5 text-green-400" />
-                                        </div>
-                                        <span className="text-white">Tüm kurslara sınırsız erişim</span>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <div className="bg-green-500/20 rounded-full p-1">
-                                            <Check className="h-5 w-5 text-green-400" />
-                                        </div>
-                                        <span className="text-white">Yeni eklenen tüm içeriklere anında erişim</span>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <div className="bg-green-500/20 rounded-full p-1">
-                                            <Check className="h-5 w-5 text-green-400" />
-                                        </div>
-                                        <span className="text-white">Tamamlama sertifikaları</span>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <div className="bg-green-500/20 rounded-full p-1">
-                                            <Check className="h-5 w-5 text-green-400" />
-                                        </div>
-                                        <span className="text-white">Premium topluluk erişimi</span>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <div className="bg-green-500/20 rounded-full p-1">
-                                            <Check className="h-5 w-5 text-green-400" />
-                                        </div>
-                                        <span className="text-white">Eğitmenlerle doğrudan iletişim</span>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <div className="bg-green-500/20 rounded-full p-1">
-                                            <Check className="h-5 w-5 text-green-400" />
-                                        </div>
-                                        <span className="text-white">Mobil ve masaüstü erişim</span>
+                                    {/* Features */}
+                                    <div className="space-y-3">
+                                        {plan.features.map((feature, index) => (
+                                            <div key={index} className="flex items-start gap-3">
+                                                <div className="bg-green-500/20 rounded-full p-1 flex-shrink-0 mt-0.5">
+                                                    <Check className="h-4 w-4 text-green-400" />
+                                                </div>
+                                                <span className="text-gray-300 text-sm">{feature}</span>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
-                            </div>
-                        </div>
+                            )
+                        })}
                     </div>
 
                     {/* Benefits Grid */}
@@ -205,20 +237,6 @@ export default async function SubscriptionPage() {
                             <h3 className="text-xl font-bold text-white mb-2">Topluluk</h3>
                             <p className="text-gray-400">Premium üyelerle networking</p>
                         </div>
-                    </div>
-
-                    {/* FAQ or Additional Info */}
-                    <div className="bg-black border border-gray-800 rounded-xl p-8 text-center">
-                        <h3 className="text-2xl font-bold text-white mb-4">Sorularınız mı var?</h3>
-                        <p className="text-gray-300 mb-6">
-                            Premium üyelik hakkında daha fazla bilgi almak için bizimle iletişime geçin.
-                        </p>
-                        <Link
-                            href="/contact"
-                            className="inline-block bg-orange-600 hover:bg-orange-700 text-white px-8 py-3 rounded-lg font-semibold transition-colors"
-                        >
-                            İletişime Geç
-                        </Link>
                     </div>
                 </div>
             </div>
