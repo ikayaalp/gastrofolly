@@ -424,10 +424,15 @@ export default async function CoursePage({ params }: CoursePageProps) {
                   {/* Abonelik Butonu */}
                   <Link
                     href="/subscription"
-                    className="w-full bg-red-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-red-700 transition-colors flex items-center justify-center mb-3"
+                    className={`w-full text-white py-3 px-4 rounded-lg font-semibold transition-colors flex items-center justify-center mb-3 ${course.level === 'BEGINNER' ? 'bg-gray-600 hover:bg-gray-700' :
+                      course.level === 'INTERMEDIATE' ? 'bg-orange-600 hover:bg-orange-700' :
+                        'bg-purple-600 hover:bg-purple-700'
+                      }`}
                   >
                     <CheckCircle className="h-5 w-5 mr-2" />
-                    Premium Üye Ol
+                    {course.level === 'BEGINNER' ? 'Commis Ol' :
+                      course.level === 'INTERMEDIATE' ? 'Chef D party Ol' :
+                        'Executive Ol'}
                   </Link>
                 </>
               )}
