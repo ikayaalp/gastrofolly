@@ -4,11 +4,11 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import Image from "next/image"
-import { 
-  ChefHat, 
-  Star, 
-  Users, 
-  Play, 
+import {
+  ChefHat,
+  Star,
+  Users,
+  Play,
   Clock,
   BookOpen,
   Home,
@@ -63,25 +63,25 @@ export default async function InstructorPage({ params }: InstructorPageProps) {
   }
 
   const totalStudents = instructor.createdCourses.reduce(
-    (acc, course) => acc + course._count.enrollments, 
+    (acc, course) => acc + course._count.enrollments,
     0
   )
 
   const totalLessons = instructor.createdCourses.reduce(
-    (acc, course) => acc + course._count.lessons, 
+    (acc, course) => acc + course._count.lessons,
     0
   )
 
   const totalReviews = instructor.createdCourses.reduce(
-    (acc, course) => acc + course._count.reviews, 
+    (acc, course) => acc + course._count.reviews,
     0
   )
 
-  const averageRating = totalReviews > 0 
+  const averageRating = totalReviews > 0
     ? instructor.createdCourses.reduce((acc, course) => {
-        // Burada gerçek rating hesaplaması yapılabilir
-        return acc + 4.5 // Örnek değer
-      }, 0) / instructor.createdCourses.length
+      // Burada gerçek rating hesaplaması yapılabilir
+      return acc + 4.5 // Örnek değer
+    }, 0) / instructor.createdCourses.length
     : 0
 
   return (
@@ -129,7 +129,7 @@ export default async function InstructorPage({ params }: InstructorPageProps) {
                 </Link>
               </nav>
             </div>
-            
+
             <div className="flex items-center space-x-4">
               {session?.user ? (
                 <UserDropdown />
@@ -197,64 +197,67 @@ export default async function InstructorPage({ params }: InstructorPageProps) {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Instructor Info */}
             <div className="lg:col-span-1">
-              <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 sticky top-8">
+              <div className="bg-black border border-gray-800 rounded-xl p-6 sticky top-24 shadow-xl shadow-orange-900/5">
                 <div className="text-center">
-                  <div className="w-24 h-24 mx-auto mb-4">
+                  <div className="w-24 h-24 mx-auto mb-4 relative">
                     {instructor.image ? (
                       <Image
                         src={instructor.image}
                         alt={instructor.name || "Eğitmen"}
                         width={96}
                         height={96}
-                        className="w-24 h-24 rounded-full object-cover"
+                        className="w-24 h-24 rounded-full object-cover border-2 border-orange-500/50"
                       />
                     ) : (
-                      <div className="w-24 h-24 rounded-full bg-orange-600 flex items-center justify-center">
+                      <div className="w-24 h-24 rounded-full bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center border-2 border-orange-500/50">
                         <ChefHat className="h-12 w-12 text-white" />
                       </div>
                     )}
+                    <div className="absolute bottom-0 right-0 bg-black rounded-full p-1 border border-gray-800">
+                      <div className="bg-green-500 w-3 h-3 rounded-full"></div>
+                    </div>
                   </div>
-                  
-                  <h1 className="text-2xl font-bold text-white mb-2">
+
+                  <h1 className="text-2xl font-bold text-white mb-1">
                     {instructor.name}
                   </h1>
-                  
-                  <p className="text-gray-400 mb-4">Eğitmen</p>
+
+                  <p className="text-orange-500 text-sm font-medium mb-4">Profesyonel Eğitmen</p>
 
                   {averageRating > 0 && (
-                    <div className="flex items-center justify-center mb-4">
-                      <Star className="h-5 w-5 text-yellow-400 fill-current mr-1" />
-                      <span className="font-semibold text-white">
+                    <div className="flex items-center justify-center mb-6 bg-gray-900/50 py-2 rounded-lg border border-gray-800">
+                      <Star className="h-4 w-4 text-yellow-500 fill-yellow-500 mr-1.5" />
+                      <span className="font-bold text-white mr-1">
                         {averageRating.toFixed(1)}
                       </span>
-                      <span className="text-gray-400 ml-1">
+                      <span className="text-gray-500 text-sm">
                         ({totalReviews} değerlendirme)
                       </span>
                     </div>
                   )}
 
                   <div className="grid grid-cols-2 gap-4 text-center mb-6">
-                    <div>
-                      <div className="text-2xl font-bold text-orange-500">
+                    <div className="bg-gray-900/30 p-3 rounded-lg border border-gray-800">
+                      <div className="text-xl font-bold text-white mb-1">
                         {instructor._count.createdCourses}
                       </div>
-                      <div className="text-sm text-gray-400">Kurs</div>
+                      <div className="text-xs text-gray-500 uppercase tracking-wider">Kurs</div>
                     </div>
-                    <div>
-                      <div className="text-2xl font-bold text-orange-500">
+                    <div className="bg-gray-900/30 p-3 rounded-lg border border-gray-800">
+                      <div className="text-xl font-bold text-white mb-1">
                         {totalStudents}
                       </div>
-                      <div className="text-sm text-gray-400">Öğrenci</div>
+                      <div className="text-xs text-gray-500 uppercase tracking-wider">Öğrenci</div>
                     </div>
                   </div>
 
                   {/* Action Buttons */}
                   <div className="space-y-3">
-                    <InstructorShareButton 
+                    <InstructorShareButton
                       instructorId={instructor.id}
                       instructorName={instructor.name || 'Unknown'}
                     />
-                    <MessageButton 
+                    <MessageButton
                       instructorId={instructor.id}
                       instructorName={instructor.name || 'Unknown'}
                     />
@@ -266,118 +269,127 @@ export default async function InstructorPage({ params }: InstructorPageProps) {
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-8">
               {/* About Section */}
-              <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-                <h2 className="text-2xl font-bold text-white mb-4">Hakkında</h2>
+              <div className="bg-black border border-gray-800 rounded-xl p-8 shadow-lg">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="bg-orange-500/10 p-2 rounded-lg">
+                    <Users className="h-6 w-6 text-orange-500" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-white">Hakkında</h2>
+                </div>
                 <div className="prose prose-invert max-w-none">
-                  <p className="text-gray-300 leading-relaxed">
-                    {instructor.name} deneyimli bir eğitmen olarak gastronomi dünyasında önemli bir yer edinmiştir. 
+                  <p className="text-gray-300 leading-relaxed text-lg">
+                    {instructor.name} deneyimli bir eğitmen olarak gastronomi dünyasında önemli bir yer edinmiştir.
                     Profesyonel mutfak deneyimi ve öğretme tutkusu ile öğrencilerine en iyi eğitimi sunmaktadır.
                   </p>
-                  <p className="text-gray-300 leading-relaxed mt-4">
-                    Uzmanlık alanları arasında modern mutfak teknikleri, geleneksel yemek kültürü ve 
-                    yaratıcı sunum teknikleri bulunmaktadır. Öğrencilerinin başarısı için sürekli 
+                  <p className="text-gray-400 leading-relaxed mt-4">
+                    Uzmanlık alanları arasında modern mutfak teknikleri, geleneksel yemek kültürü ve
+                    yaratıcı sunum teknikleri bulunmaktadır. Öğrencilerinin başarısı için sürekli
                     kendini geliştiren ve güncel teknikleri takip eden bir eğitmendir.
                   </p>
                 </div>
               </div>
 
               {/* Courses Section */}
-              <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-                <h2 className="text-2xl font-bold text-white mb-6">
-                  Yayınlanan Kurslar
-                </h2>
-                
+              <div>
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+                    <div className="bg-orange-500/10 p-2 rounded-lg">
+                      <BookOpen className="h-6 w-6 text-orange-500" />
+                    </div>
+                    Yayınlanan Kurslar
+                  </h2>
+                  <span className="text-gray-500 text-sm">{instructor.createdCourses.length} kurs</span>
+                </div>
+
                 {instructor.createdCourses.length === 0 ? (
-                  <div className="text-center py-12">
-                    <BookOpen className="h-16 w-16 text-gray-600 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold text-white mb-2">
+                  <div className="bg-black border border-gray-800 rounded-xl p-12 text-center">
+                    <div className="bg-gray-900 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <BookOpen className="h-10 w-10 text-gray-600" />
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-2">
                       Henüz Kurs Yok
                     </h3>
-                    <p className="text-gray-400">
-                      Bu eğitmen henüz kurs yayınlamamış.
+                    <p className="text-gray-400 max-w-md mx-auto">
+                      Bu eğitmen henüz kurs yayınlamamış. Takipte kalın!
                     </p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {instructor.createdCourses.map((course) => (
-                      <div
+                      <Link
                         key={course.id}
-                        className="bg-gray-800 border border-gray-700 rounded-xl overflow-hidden hover:border-orange-500/50 transition-colors"
+                        href={`/course/${course.id}`}
+                        className="group block"
                       >
-                        {/* Course Image */}
-                        <div className="relative">
-                          {course.imageUrl ? (
-                            <Image
-                              src={course.imageUrl}
-                              alt={course.title}
-                              width={400}
-                              height={200}
-                              className="w-full h-48 object-cover"
-                              unoptimized={true}
-                            />
-                          ) : (
-                            <div className="w-full h-48 bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center">
-                              <ChefHat className="h-16 w-16 text-white" />
+                        <div className="bg-black border border-gray-800 rounded-xl overflow-hidden hover:border-orange-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/10 h-full flex flex-col">
+                          {/* Course Image */}
+                          <div className="relative h-48 overflow-hidden">
+                            {course.imageUrl ? (
+                              <Image
+                                src={course.imageUrl}
+                                alt={course.title}
+                                width={400}
+                                height={200}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                unoptimized={true}
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-gradient-to-br from-orange-900 to-black flex items-center justify-center">
+                                <ChefHat className="h-12 w-12 text-orange-500/50" />
+                              </div>
+                            )}
+
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
+
+                            <div className="absolute top-3 left-3">
+                              <span className="bg-black/60 backdrop-blur-md text-white border border-white/10 px-3 py-1 rounded-full text-xs font-medium">
+                                {course.category.name}
+                              </span>
                             </div>
-                          )}
-                          
-                          <div className="absolute top-3 left-3">
-                            <span className="bg-orange-500/20 text-orange-500 px-2 py-1 rounded text-xs font-semibold">
-                              {course.category.name}
-                            </span>
                           </div>
-                        </div>
 
-                        {/* Course Info */}
-                        <div className="p-6">
-                          <h3 className="text-lg font-semibold text-white mb-2 line-clamp-2">
-                            {course.title}
-                          </h3>
+                          {/* Course Info */}
+                          <div className="p-5 flex flex-col flex-grow">
+                            <h3 className="text-lg font-bold text-white mb-2 line-clamp-2 group-hover:text-orange-500 transition-colors">
+                              {course.title}
+                            </h3>
 
-                          <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center space-x-4 text-sm text-gray-400">
+                            <div className="flex items-center space-x-4 text-sm text-gray-400 mb-4">
                               <div className="flex items-center">
-                                <Play className="h-4 w-4 mr-1" />
-                                {course._count.lessons}
+                                <Play className="h-3.5 w-3.5 mr-1.5 text-orange-500" />
+                                {course._count.lessons} Ders
                               </div>
                               <div className="flex items-center">
-                                <Users className="h-4 w-4 mr-1" />
+                                <Users className="h-3.5 w-3.5 mr-1.5 text-orange-500" />
                                 {course._count.enrollments}
                               </div>
-                              <div className="flex items-center">
-                                <Clock className="h-4 w-4 mr-1" />
-                                {Math.round(Math.random() * 10 + 5)}h
+                            </div>
+
+                            <div className="mt-auto pt-4 border-t border-gray-800 flex items-center justify-between">
+                              <div className="flex items-center space-x-2">
+                                {course.discountedPrice ? (
+                                  <div className="flex flex-col">
+                                    <span className="text-xs text-gray-500 line-through">
+                                      ₺{course.price.toLocaleString('tr-TR')}
+                                    </span>
+                                    <span className="text-lg font-bold text-white">
+                                      ₺{course.discountedPrice.toLocaleString('tr-TR')}
+                                    </span>
+                                  </div>
+                                ) : (
+                                  <span className="text-lg font-bold text-white">
+                                    ₺{course.price.toLocaleString('tr-TR')}
+                                  </span>
+                                )}
+                              </div>
+
+                              <div className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center group-hover:bg-orange-500 transition-colors">
+                                <Play className="h-4 w-4 text-white ml-0.5" />
                               </div>
                             </div>
                           </div>
-
-                          <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center space-x-2">
-                              {course.discountedPrice ? (
-                                <>
-                                  <span className="text-lg font-bold text-green-400">
-                                    ₺{course.discountedPrice.toLocaleString('tr-TR')}
-                                  </span>
-                                  <span className="text-sm text-gray-400 line-through">
-                                    ₺{course.price.toLocaleString('tr-TR')}
-                                  </span>
-                                </>
-                              ) : (
-                                <span className="text-lg font-bold text-orange-500">
-                                  ₺{course.price.toLocaleString('tr-TR')}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-
-                          <Link
-                            href={`/course/${course.id}`}
-                            className="w-full bg-orange-600 text-white py-2 px-4 rounded-lg font-semibold hover:bg-orange-700 transition-colors flex items-center justify-center"
-                          >
-                            Kursa Git
-                          </Link>
                         </div>
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 )}
