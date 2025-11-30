@@ -216,18 +216,18 @@ export default async function CoursePage({ params }: CoursePageProps) {
                   </span>
                   <div className="flex items-center gap-2">
                     {course.level === 'BEGINNER' && (
-                      <span className="bg-gradient-to-r from-gray-600/20 to-gray-700/20 border border-gray-500/30 text-gray-300 px-4 py-1.5 rounded-full text-sm font-semibold">
-                        📦 Commis Paketi - 199₺/ay
+                      <span className="bg-gray-800 text-gray-300 border border-gray-700 px-3 py-1 rounded-full text-sm font-semibold">
+                        Commis
                       </span>
                     )}
                     {course.level === 'INTERMEDIATE' && (
-                      <span className="bg-gradient-to-r from-orange-600/20 to-red-600/20 border border-orange-500/30 text-orange-400 px-4 py-1.5 rounded-full text-sm font-semibold">
-                        👑 Chef D party Paketi - 399₺/ay
+                      <span className="bg-orange-900/40 text-orange-400 border border-orange-500/30 px-3 py-1 rounded-full text-sm font-semibold">
+                        Chef D party
                       </span>
                     )}
                     {course.level === 'ADVANCED' && (
-                      <span className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 text-purple-400 px-4 py-1.5 rounded-full text-sm font-semibold">
-                        ⚡ Executive Paketi - 599₺/ay
+                      <span className="bg-purple-900/40 text-purple-400 border border-purple-500/30 px-3 py-1 rounded-full text-sm font-semibold">
+                        Executive
                       </span>
                     )}
                   </div>
@@ -386,17 +386,36 @@ export default async function CoursePage({ params }: CoursePageProps) {
               ) : (
                 <>
                   {/* Abonelik Mesajı */}
-                  <div className="bg-gradient-to-br from-red-900/40 via-red-800/40 to-black/40 border border-red-500/30 rounded-xl p-6 mb-6 text-center">
-                    <div className="bg-red-600 rounded-full p-3 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                      <CheckCircle className="h-8 w-8 text-white" />
+                  {/* Abonelik Mesajı */}
+                  <div className={`border rounded-xl p-6 mb-6 text-center ${course.level === 'BEGINNER' ? 'bg-gray-900/60 border-gray-700' :
+                      course.level === 'INTERMEDIATE' ? 'bg-orange-900/20 border-orange-500/30' :
+                        'bg-purple-900/20 border-purple-500/30'
+                    }`}>
+                    <div className={`rounded-full p-3 w-16 h-16 mx-auto mb-4 flex items-center justify-center ${course.level === 'BEGINNER' ? 'bg-gray-700' :
+                        course.level === 'INTERMEDIATE' ? 'bg-orange-600' :
+                          'bg-purple-600'
+                      }`}>
+                      {course.level === 'BEGINNER' ? <BookOpen className="h-8 w-8 text-white" /> :
+                        course.level === 'INTERMEDIATE' ? <Crown className="h-8 w-8 text-white" /> :
+                          <Zap className="h-8 w-8 text-white" />}
                     </div>
-                    <h3 className="text-xl font-bold text-white mb-2">Premium Üyelik Gerekli</h3>
-                    <p className="text-gray-300 mb-4">
-                      Bu kursa ve tüm diğer kurslara erişmek için premium üye olun!
+                    <h3 className="text-xl font-bold text-white mb-2">
+                      {course.level === 'BEGINNER' ? 'Commis Paketi Gerekli' :
+                        course.level === 'INTERMEDIATE' ? 'Chef D party Paketi Gerekli' :
+                          'Executive Paketi Gerekli'}
+                    </h3>
+                    <p className="text-gray-300 mb-4 text-sm">
+                      Bu kursa erişmek için {
+                        course.level === 'BEGINNER' ? 'Commis' :
+                          course.level === 'INTERMEDIATE' ? 'Chef D party' :
+                            'Executive'
+                      } veya üstü bir pakete sahip olmalısınız.
                     </p>
                     <div className="text-3xl font-bold text-white mb-1">
-                      199 ₺
-                      <span className="text-sm text-gray-300 ml-2">/ Taksitli</span>
+                      {course.level === 'BEGINNER' ? '199 ₺' :
+                        course.level === 'INTERMEDIATE' ? '399 ₺' :
+                          '599 ₺'}
+                      <span className="text-sm text-gray-400 ml-2 font-normal">/ Aylık</span>
                     </div>
                   </div>
 
