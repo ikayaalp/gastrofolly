@@ -58,7 +58,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
       try {
         const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`)
         const data = await response.json()
-        
+
         if (response.ok) {
           setCourses(data.courses || [])
           setHasSearched(true)
@@ -101,57 +101,62 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       {/* Backdrop */}
-      <div 
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+      <div
+        className="fixed inset-0 bg-black/80 backdrop-blur-md"
         onClick={onClose}
       />
 
       {/* Modal */}
       <div className="relative min-h-screen flex items-start justify-center p-4 pt-16">
-        <div className="relative bg-gray-900 border border-gray-700 rounded-xl shadow-2xl w-full max-w-2xl">
+        <div className="relative bg-gradient-to-br from-gray-900 via-black to-gray-900 border border-orange-500/20 rounded-2xl shadow-2xl shadow-orange-500/10 w-full max-w-2xl">
+          {/* Decorative gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 via-transparent to-purple-500/5 rounded-2xl pointer-events-none"></div>
+
           {/* Header */}
-          <div className="flex items-center border-b border-gray-700 p-4">
+          <div className="relative flex items-center border-b border-gray-800 p-6">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-orange-400" />
               <input
                 ref={inputRef}
                 type="text"
                 placeholder="Kurs, eğitmen veya kategori ara..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+                className="w-full pl-12 pr-4 py-4 bg-black/40 border-2 border-orange-500/30 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300"
               />
             </div>
             <button
               onClick={onClose}
-              className="ml-4 p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
+              className="ml-4 p-2.5 text-gray-400 hover:text-white hover:bg-orange-500/10 rounded-xl transition-all duration-300 border border-transparent hover:border-orange-500/30"
             >
               <X className="h-5 w-5" />
             </button>
           </div>
 
           {/* Results */}
-          <div className="max-h-96 overflow-y-auto">
+          <div className="relative max-h-96 overflow-y-auto">
             {loading && (
-              <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
-                <span className="ml-3 text-gray-400">Aranıyor...</span>
+              <div className="flex items-center justify-center py-12">
+                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-t-2 border-orange-500"></div>
+                <span className="ml-3 text-gray-300 font-medium">Aranıyor...</span>
               </div>
             )}
 
             {!loading && hasSearched && courses.length === 0 && (
-              <div className="text-center py-8 text-gray-400">
-                <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>&quot;{query}&quot; için sonuç bulunamadı</p>
+              <div className="text-center py-12 text-gray-400">
+                <div className="bg-orange-500/10 rounded-full p-4 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                  <Search className="h-8 w-8 text-orange-400" />
+                </div>
+                <p className="text-lg font-medium text-white">&quot;{query}&quot; için sonuç bulunamadı</p>
                 <p className="text-sm mt-2">Farklı anahtar kelimeler deneyin</p>
               </div>
             )}
 
             {!loading && courses.length > 0 && (
-              <div className="p-4 space-y-4">
+              <div className="p-4 space-y-3">
                 {courses.map((course) => {
                   const averageRating = calculateAverageRating(course.reviews)
-                  
+
                   return (
                     <Link
                       key={course.id}
@@ -159,47 +164,47 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                       onClick={onClose}
                       className="block"
                     >
-                      <div className="flex items-start space-x-4 p-3 rounded-lg hover:bg-gray-800 transition-colors group">
+                      <div className="flex items-start space-x-4 p-4 rounded-xl bg-black/40 border border-gray-800 hover:border-orange-500/50 hover:bg-black/60 transition-all duration-300 group">
                         {/* Course Image */}
-                        <div className="w-20 h-16 bg-gray-700 rounded-lg overflow-hidden flex-shrink-0">
+                        <div className="w-24 h-20 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg overflow-hidden flex-shrink-0 border border-gray-700">
                           {course.imageUrl ? (
                             <img
                               src={course.imageUrl}
                               alt={course.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
-                              <Search className="h-6 w-6 text-gray-500" />
+                              <Search className="h-6 w-6 text-gray-600" />
                             </div>
                           )}
                         </div>
 
                         {/* Course Info */}
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-white group-hover:text-orange-500 transition-colors line-clamp-1">
+                          <h3 className="font-semibold text-white group-hover:text-orange-400 transition-colors line-clamp-1 text-lg">
                             {course.title}
                           </h3>
                           <p className="text-sm text-gray-400 line-clamp-2 mt-1">
                             {course.description}
                           </p>
-                          
-                          <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
-                            <span>{course.instructor.name}</span>
-                            <span>{course.category.name}</span>
-                            
+
+                          <div className="flex items-center flex-wrap gap-3 mt-3 text-xs text-gray-500">
+                            <span className="text-gray-400">{course.instructor.name}</span>
+                            <span className="px-2 py-1 bg-orange-500/10 text-orange-400 rounded-md border border-orange-500/20">{course.category.name}</span>
+
                             {averageRating > 0 && (
-                              <div className="flex items-center">
+                              <div className="flex items-center bg-yellow-500/10 px-2 py-1 rounded-md border border-yellow-500/20">
                                 <Star className="h-3 w-3 text-yellow-400 fill-current mr-1" />
-                                <span>{averageRating.toFixed(1)}</span>
+                                <span className="text-yellow-400 font-medium">{averageRating.toFixed(1)}</span>
                               </div>
                             )}
-                            
+
                             <div className="flex items-center">
                               <Users className="h-3 w-3 mr-1" />
                               <span>{course._count.enrollments}</span>
                             </div>
-                            
+
                             <div className="flex items-center">
                               <Clock className="h-3 w-3 mr-1" />
                               <span>{formatDuration(course.duration)}</span>
@@ -209,7 +214,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
                         {/* Price */}
                         <div className="text-right flex-shrink-0">
-                          <span className="text-lg font-bold text-orange-500">
+                          <span className="text-xl font-bold text-orange-500">
                             ₺{course.price}
                           </span>
                         </div>
@@ -221,9 +226,11 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
             )}
 
             {!loading && !hasSearched && query.length === 0 && (
-              <div className="text-center py-8 text-gray-400">
-                <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Arama yapmak için yazın...</p>
+              <div className="text-center py-12 text-gray-400">
+                <div className="bg-orange-500/10 rounded-full p-4 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                  <Search className="h-8 w-8 text-orange-400" />
+                </div>
+                <p className="text-lg font-medium text-white">Arama yapmak için yazın...</p>
                 <p className="text-sm mt-2">Kurs adı, eğitmen veya kategori arayabilirsiniz</p>
               </div>
             )}
