@@ -311,43 +311,50 @@ export default function MessagesClient({ session }: Props) {
     })
   }
 
-  //ismail kayaalp nasılsın
   return (
     <div className="min-h-screen bg-black">
       {/* Header */}
-      <header className="bg-[#0a0a0a]/80 backdrop-blur-md border-b border-gray-800 sticky top-0 z-40">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-4">
-              <Link href="/home" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
-                <ChefHat className="h-8 w-8 text-orange-500" />
-                <span className="text-2xl font-bold text-white">Chef2.0</span>
-              </Link>
-              <div className="h-6 w-px bg-gray-600"></div>
-              <div className="flex items-center space-x-2">
-                <div className="relative">
-                  <MessageSquare className="h-6 w-6 text-orange-500" />
-                  {unreadCount > 0 && (
-                    <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-lg animate-pulse">
-                      {unreadCount > 99 ? '99+' : unreadCount}
-                    </div>
-                  )}
-                </div>
-                <h1 className="text-xl font-bold text-white">Mesajlar</h1>
-              </div>
+            <div className="flex items-center space-x-2">
+              <ChefHat className="h-8 w-8 text-orange-500" />
+              <span className="text-2xl font-bold text-white">Chef2.0</span>
             </div>
-            <button
-              onClick={() => setShowNewMessageModal(true)}
-              className="bg-gradient-to-r from-orange-600 to-orange-500 text-white px-4 py-2 rounded-lg hover:from-orange-700 hover:to-orange-600 transition-all flex items-center space-x-2 shadow-lg"
-            >
-              <Plus className="h-4 w-4" />
-              <span className="hidden sm:inline">Yeni Sohbet</span>
-            </button>
+            <nav className="hidden md:flex space-x-8">
+              <Link href="/home" className="text-gray-300 hover:text-orange-500 transition-colors">
+                Ana Sayfa
+              </Link>
+              <Link href="/my-courses" className="text-gray-300 hover:text-orange-500 transition-colors">
+                Kurslarım
+              </Link>
+              <Link href="/favorites" className="text-gray-300 hover:text-orange-500 transition-colors">
+                Favorilerim
+              </Link>
+              <Link href="/chef-sosyal" className="text-gray-300 hover:text-orange-500 transition-colors">
+                Chef Sosyal
+              </Link>
+              <Link href="/messages" className="text-orange-500 transition-colors">
+                Mesajlar
+              </Link>
+              <Link href="/contact" className="text-gray-300 hover:text-orange-500 transition-colors">
+                İletişim
+              </Link>
+            </nav>
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => setShowNewMessageModal(true)}
+                className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors flex items-center space-x-2"
+              >
+                <Plus className="h-4 w-4" />
+                <span className="hidden sm:inline">Yeni Sohbet</span>
+              </button>
+            </div>
           </div>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20 md:pb-6">
+      <div className="pt-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20 md:pb-6">
         {/* Mobile Chat Overlay */}
         {showMobileChat && selectedConversation && (
           <div className="lg:hidden fixed inset-0 z-50 bg-black" style={{ height: '100dvh' }}>
