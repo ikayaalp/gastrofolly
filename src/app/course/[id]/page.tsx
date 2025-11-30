@@ -354,37 +354,6 @@ export default async function CoursePage({ params }: CoursePageProps) {
           {/* Sidebar */}
           <div className="lg:col-span-1">
             <div className="bg-black border border-black rounded-xl shadow-lg p-6 sticky top-8">
-              <div className="text-center mb-6">
-                {course.discountedPrice && course.discountRate ? (
-                  <>
-                    <div className="mb-2">
-                      <p className="text-3xl font-bold text-green-400 mb-1">
-                        ₺{course.discountedPrice.toLocaleString('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                      </p>
-                      <div className="flex items-center justify-center space-x-3">
-                        <span className="text-lg text-gray-400 line-through">
-                          ₺{course.price.toLocaleString('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                        </span>
-                        <span className="bg-red-600 text-white px-2 py-1 rounded text-sm font-semibold">
-                          %{course.discountRate.toFixed(0)} İNDİRİM
-                        </span>
-                      </div>
-                    </div>
-                    <p className="text-gray-400">Tek seferlik ödeme</p>
-                    <p className="text-sm text-orange-400 mt-1">
-                      ₺{(course.price - course.discountedPrice).toLocaleString('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} tasarruf edin!
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-3xl font-bold text-orange-500 mb-2">
-                      ₺{course.price.toLocaleString('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                    </p>
-                    <p className="text-gray-400">Tek seferlik ödeme</p>
-                  </>
-                )}
-              </div>
-
               {isEnrolled ? (
                 <>
                   <Link
@@ -401,15 +370,31 @@ export default async function CoursePage({ params }: CoursePageProps) {
                   />
                 </>
               ) : (
-                <EnrollButton
-                  courseId={course.id}
-                  price={course.price}
-                  discountedPrice={course.discountedPrice || undefined}
-                  title={course.title}
-                  imageUrl={course.imageUrl || undefined}
-                  instructor={{ name: course.instructor.name || 'Unknown' }}
-                  isFree={course.isFree}
-                />
+                <>
+                  {/* Abonelik Mesajı */}
+                  <div className="bg-gradient-to-br from-red-900/40 via-red-800/40 to-black/40 border border-red-500/30 rounded-xl p-6 mb-6 text-center">
+                    <div className="bg-red-600 rounded-full p-3 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                      <CheckCircle className="h-8 w-8 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-2">Premium Üyelik Gerekli</h3>
+                    <p className="text-gray-300 mb-4">
+                      Bu kursa ve tüm diğer kurslara erişmek için premium üye olun!
+                    </p>
+                    <div className="text-3xl font-bold text-white mb-1">
+                      199 ₺
+                      <span className="text-sm text-gray-300 ml-2">/ Taksitli</span>
+                    </div>
+                  </div>
+
+                  {/* Abonelik Butonu */}
+                  <Link
+                    href="/subscription"
+                    className="w-full bg-red-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-red-700 transition-colors flex items-center justify-center mb-3"
+                  >
+                    <CheckCircle className="h-5 w-5 mr-2" />
+                    Premium Üye Ol
+                  </Link>
+                </>
               )}
 
               {/* Favorite Button */}

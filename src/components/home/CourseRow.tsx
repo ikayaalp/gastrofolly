@@ -8,9 +8,6 @@ interface Course {
   id: string
   title: string
   description: string
-  price: number
-  discountRate?: number | null
-  discountedPrice?: number | null
   imageUrl?: string | null
   level: string
   duration?: number | null
