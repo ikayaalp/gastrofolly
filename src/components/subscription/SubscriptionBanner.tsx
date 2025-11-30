@@ -43,10 +43,6 @@ export default function SubscriptionBanner() {
             <div className="relative z-10">
                 {/* Header */}
                 <div className="text-center mb-8">
-                    <div className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-600/20 to-purple-600/20 border border-orange-500/30 rounded-full px-4 py-2 mb-4">
-                        <Crown className="h-4 w-4 text-orange-400" />
-                        <span className="text-sm font-semibold text-orange-300">Premium Üyelik</span>
-                    </div>
                     <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
                         Tüm Kurslara
                         <span className="block text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-purple-400">
