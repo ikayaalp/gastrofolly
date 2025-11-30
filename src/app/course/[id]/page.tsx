@@ -214,9 +214,23 @@ export default async function CoursePage({ params }: CoursePageProps) {
                   <span className="bg-orange-500/20 text-orange-500 px-3 py-1 rounded-full text-sm font-semibold">
                     {course.category.name}
                   </span>
-                  <span className="bg-orange-500/20 text-orange-400 px-3 py-1 rounded-full text-sm">
-                    {course.level}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    {course.level === 'BEGINNER' && (
+                      <span className="bg-gradient-to-r from-gray-600/20 to-gray-700/20 border border-gray-500/30 text-gray-300 px-4 py-1.5 rounded-full text-sm font-semibold">
+                        📦 Commis Paketi - 199₺/ay
+                      </span>
+                    )}
+                    {course.level === 'INTERMEDIATE' && (
+                      <span className="bg-gradient-to-r from-orange-600/20 to-red-600/20 border border-orange-500/30 text-orange-400 px-4 py-1.5 rounded-full text-sm font-semibold">
+                        👑 Chef D party Paketi - 399₺/ay
+                      </span>
+                    )}
+                    {course.level === 'ADVANCED' && (
+                      <span className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 text-purple-400 px-4 py-1.5 rounded-full text-sm font-semibold">
+                        ⚡ Executive Paketi - 599₺/ay
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <h1 className="text-3xl font-bold text-white mb-4">

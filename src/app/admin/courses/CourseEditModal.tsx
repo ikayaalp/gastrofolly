@@ -74,10 +74,10 @@ export default function CourseEditModal({ course, categories, instructors, onClo
     setLoading(true)
 
     try {
-      const url = course 
-        ? `/api/admin/courses/${course.id}` 
+      const url = course
+        ? `/api/admin/courses/${course.id}`
         : '/api/admin/courses'
-      
+
       const method = course ? 'PUT' : 'POST'
 
       const response = await fetch(url, {
@@ -115,9 +115,9 @@ export default function CourseEditModal({ course, categories, instructors, onClo
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target
-    const newValue = type === 'checkbox' ? (e.target as HTMLInputElement).checked 
-                  : type === 'number' ? parseFloat(value) || 0 
-                  : value
+    const newValue = type === 'checkbox' ? (e.target as HTMLInputElement).checked
+      : type === 'number' ? parseFloat(value) || 0
+        : value
 
     // İndirim oranı değiştiğinde indirimli fiyatı hesapla
     if (name === 'discountRate') {
@@ -153,7 +153,7 @@ export default function CourseEditModal({ course, categories, instructors, onClo
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex items-center justify-center min-h-screen px-4">
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-        
+
         <div className="relative bg-gray-900 border border-gray-700 rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
           <div className="p-6">
             {/* Header */}
@@ -297,9 +297,9 @@ export default function CourseEditModal({ course, categories, instructors, onClo
                     required
                     className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
                   >
-                    <option value="BEGINNER">Başlangıç</option>
-                    <option value="INTERMEDIATE">Orta</option>
-                    <option value="ADVANCED">İleri</option>
+                    <option value="BEGINNER">Commis (Başlangıç)</option>
+                    <option value="INTERMEDIATE">Chef D party (Orta)</option>
+                    <option value="ADVANCED">Executive (İleri)</option>
                   </select>
                 </div>
 
@@ -341,7 +341,7 @@ export default function CourseEditModal({ course, categories, instructors, onClo
                 <label className="block text-sm font-medium text-gray-300 mb-2">
                   Kurs Resmi
                 </label>
-                <ImageUpload 
+                <ImageUpload
                   onImageUploaded={handleImageUploaded}
                   currentImageUrl={formData.imageUrl}
                   type="course"
