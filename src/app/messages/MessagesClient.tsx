@@ -15,7 +15,8 @@ import {
   Plus,
   X,
   Home,
-  Users
+  Users,
+  MessageCircle
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -430,8 +431,8 @@ export default function MessagesClient({ session }: Props) {
                               <div className="flex-1">
                                 <div
                                   className={`px-4 py-3 rounded-2xl shadow-lg ${message.user.id === session.user.id
-                                      ? 'bg-gradient-to-r from-orange-600 to-orange-500 text-white rounded-br-sm'
-                                      : 'bg-[#1a1a1a] text-gray-100 rounded-bl-sm'
+                                    ? 'bg-gradient-to-r from-orange-600 to-orange-500 text-white rounded-br-sm'
+                                    : 'bg-[#1a1a1a] text-gray-100 rounded-bl-sm'
                                     }`}
                                 >
                                   <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">{message.content}</p>
@@ -463,8 +464,8 @@ export default function MessagesClient({ session }: Props) {
                                   >
                                     <div
                                       className={`px-4 py-2.5 rounded-xl text-sm max-w-[85%] shadow ${reply.user.id === session.user.id
-                                          ? 'bg-orange-500/80 text-white'
-                                          : 'bg-[#1a1a1a] text-gray-100'
+                                        ? 'bg-orange-500/80 text-white'
+                                        : 'bg-[#1a1a1a] text-gray-100'
                                         }`}
                                     >
                                       <p className="whitespace-pre-wrap break-words">{reply.content}</p>
@@ -582,9 +583,9 @@ export default function MessagesClient({ session }: Props) {
                           setShowMobileChat(true)
                         }}
                         className={`p-4 border-b border-gray-800 cursor-pointer hover:bg-[#1a1a1a] transition-all ${selectedConversation?.otherUser.id === conversation.otherUser.id &&
-                            selectedConversation?.course.id === conversation.course.id
-                            ? 'bg-gradient-to-r from-orange-600/20 to-transparent border-l-4 border-l-orange-500'
-                            : ''
+                          selectedConversation?.course.id === conversation.course.id
+                          ? 'bg-gradient-to-r from-orange-600/20 to-transparent border-l-4 border-l-orange-500'
+                          : ''
                           }`}
                       >
                         <div className="flex items-start space-x-3">
@@ -718,8 +719,8 @@ export default function MessagesClient({ session }: Props) {
                                 <div className="flex-1">
                                   <div
                                     className={`px-4 py-3 rounded-2xl shadow-lg ${message.user.id === session.user.id
-                                        ? 'bg-gradient-to-r from-orange-600 to-orange-500 text-white rounded-br-sm'
-                                        : 'bg-[#1a1a1a] text-gray-100 rounded-bl-sm'
+                                      ? 'bg-gradient-to-r from-orange-600 to-orange-500 text-white rounded-br-sm'
+                                      : 'bg-[#1a1a1a] text-gray-100 rounded-bl-sm'
                                       }`}
                                   >
                                     <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">{message.content}</p>
@@ -751,8 +752,8 @@ export default function MessagesClient({ session }: Props) {
                                     >
                                       <div
                                         className={`px-4 py-2.5 rounded-xl text-sm max-w-[85%] shadow ${reply.user.id === session.user.id
-                                            ? 'bg-orange-500/80 text-white'
-                                            : 'bg-[#1a1a1a] text-gray-100'
+                                          ? 'bg-orange-500/80 text-white'
+                                          : 'bg-[#1a1a1a] text-gray-100'
                                           }`}
                                       >
                                         <p className="whitespace-pre-wrap break-words">{reply.content}</p>
@@ -929,7 +930,7 @@ export default function MessagesClient({ session }: Props) {
       )}
 
       {/* Mobile Bottom Navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-gray-900/95 backdrop-blur-sm border-t border-gray-800">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-t border-gray-800">
         <div className="flex justify-around items-center py-2">
           <Link href="/home" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
             <Home className="h-6 w-6" />
@@ -945,7 +946,7 @@ export default function MessagesClient({ session }: Props) {
           </Link>
           <Link href="/messages" className="flex flex-col items-center py-2 px-3 text-orange-500 relative">
             <div className="relative">
-              <MessageSquare className="h-6 w-6" />
+              <MessageCircle className="h-6 w-6" />
               {unreadCount > 0 && (
                 <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">
                   {unreadCount > 9 ? '9+' : unreadCount}
