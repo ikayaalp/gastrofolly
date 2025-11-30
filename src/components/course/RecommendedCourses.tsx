@@ -1,7 +1,8 @@
 "use client"
 
 import Link from "next/link"
-import { Star, Users, Clock } from "lucide-react"
+import Image from "next/image"
+import { Star, Users, Clock, TrendingUp } from "lucide-react"
 
 interface Course {
   id: string
@@ -34,7 +35,6 @@ interface RecommendedCoursesProps {
 }
 
 export default function RecommendedCourses({ courses, currentCourseId }: RecommendedCoursesProps) {
-  // Mevcut kursu hariç tut ve maksimum 3 kurs göster
   const recommendedCourses = courses
     .filter(course => course.id !== currentCourseId)
     .slice(0, 3)
@@ -53,7 +53,7 @@ export default function RecommendedCourses({ courses, currentCourseId }: Recomme
     const totalMinutes = lessons.reduce((acc, lesson) => acc + (lesson.duration || 0), 0)
     const hours = Math.floor(totalMinutes / 60)
     const minutes = totalMinutes % 60
-    
+
     if (hours > 0) {
       return `${hours}s ${minutes > 0 ? `${minutes}dk` : ''}`
     }
@@ -61,9 +61,14 @@ export default function RecommendedCourses({ courses, currentCourseId }: Recomme
   }
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-lg p-6 mt-8">
-      <h2 className="text-xl font-bold text-white mb-6">Önerilen Kurslar</h2>
-      
+    <div className="space-y-6">
+      <div className="flex items-center space-x-3">
+        <div className="bg-orange-500/10 p-2 rounded-lg">
+          <TrendingUp className="h-6 w-6 text-orange-500" />
+        </div>
+        <h2 className="text-2xl font-bold text-white">Önerilen Kurslar</h2>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {recommendedCourses.map((course) => {
           const averageRating = calculateAverageRating(course.reviews)
@@ -73,69 +78,74 @@ export default function RecommendedCourses({ courses, currentCourseId }: Recomme
             <Link
               key={course.id}
               href={`/course/${course.id}`}
-              className="group"
+              className="group block"
             >
-              <div className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden hover:border-orange-500/50 transition-colors">
+              <div className="bg-[#0a0a0a] rounded-xl border border-gray-800 overflow-hidden hover:border-orange-500/50 transition-all hover:shadow-lg hover:shadow-orange-500/10">
                 {/* Kurs Resmi */}
-                <div className="relative h-48 bg-gray-700 overflow-hidden">
+                <div className="relative h-48 bg-gray-900 overflow-hidden">
                   {course.imageUrl ? (
-                    <img
+                    <Image
                       src={course.imageUrl}
                       alt={course.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      fill
+                      className="object-cover group-hover:scale-110 transition-transform duration-500"
                     />
                   ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-orange-400 to-red-600 flex items-center justify-center">
-                      <span className="text-white text-4xl font-bold">
+                    <div className="w-full h-full bg-gradient-to-br from-orange-600 to-orange-400 flex items-center justify-center">
+                      <span className="text-white text-5xl font-bold">
                         {course.title.charAt(0)}
                       </span>
                     </div>
                   )}
-                  
+
+                  {/* Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+
                   {/* Kategori Badge */}
                   <div className="absolute top-3 left-3">
-                    <span className="bg-orange-600 text-white px-2 py-1 rounded-full text-xs font-medium">
+                    <span className="bg-orange-600 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg">
                       {course.category.name}
                     </span>
                   </div>
 
                   {/* Fiyat Badge */}
-                  <div className="absolute top-3 right-3">
-                    <span className="bg-black/70 text-white px-2 py-1 rounded-full text-sm font-bold">
+                  <div className="absolute bottom-3 right-3">
+                    <span className="bg-black/70 backdrop-blur-sm text-white px-3 py-1.5 rounded-lg text-sm font-bold">
                       ₺{course.price.toLocaleString('tr-TR')}
                     </span>
                   </div>
                 </div>
 
                 {/* Kurs Bilgileri */}
-                <div className="p-4">
-                  <h3 className="font-bold text-white text-lg mb-2 group-hover:text-orange-500 transition-colors line-clamp-2">
+                <div className="p-5">
+                  <h3 className="font-bold text-white text-lg mb-2 group-hover:text-orange-500 transition-colors line-clamp-2 leading-tight">
                     {course.title}
                   </h3>
-                  
+
                   <p className="text-gray-400 text-sm mb-3">
                     {course.instructor.name}
                   </p>
 
                   {course.description && (
-                    <p className="text-gray-300 text-sm mb-4 line-clamp-2">
+                    <p className="text-gray-500 text-sm mb-4 line-clamp-2">
                       {course.description}
                     </p>
                   )}
 
-                  <div className="flex items-center justify-between text-sm text-gray-400">
-                    <div className="flex items-center space-x-4">
+                  {/* Stats */}
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center space-x-3">
                       {/* Rating */}
                       {course.reviews.length > 0 && (
                         <div className="flex items-center space-x-1">
-                          <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                          <span>{averageRating.toFixed(1)}</span>
-                          <span>({course._count.reviews})</span>
+                          <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
+                          <span className="text-white font-medium">{averageRating.toFixed(1)}</span>
+                          <span className="text-gray-500">({course._count.reviews})</span>
                         </div>
                       )}
 
                       {/* Öğrenci Sayısı */}
-                      <div className="flex items-center space-x-1">
+                      <div className="flex items-center space-x-1 text-gray-400">
                         <Users className="h-4 w-4" />
                         <span>{course._count.enrollments}</span>
                       </div>
@@ -143,9 +153,9 @@ export default function RecommendedCourses({ courses, currentCourseId }: Recomme
 
                     {/* Süre */}
                     {totalDuration && (
-                      <div className="flex items-center space-x-1">
+                      <div className="flex items-center space-x-1 text-gray-400">
                         <Clock className="h-4 w-4" />
-                        <span>{totalDuration}</span>
+                        <span className="text-sm">{totalDuration}</span>
                       </div>
                     )}
                   </div>

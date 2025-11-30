@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { Star, MessageCircle, User, Trash2 } from "lucide-react"
+import { Star, MessageCircle, User, Trash2, Send } from "lucide-react"
+import Image from "next/image"
 
 interface Review {
   id: string
@@ -32,6 +33,7 @@ export default function CommentsSection({
   const [newRating, setNewRating] = useState(5)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [deletingReviewId, setDeletingReviewId] = useState<string | null>(null)
+  const [hoveredStar, setHoveredStar] = useState(0)
 
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -54,7 +56,6 @@ export default function CommentsSection({
       if (response.ok) {
         setNewComment("")
         setNewRating(5)
-        // Sayfayı yenile veya state'i güncelle
         if (typeof window !== 'undefined') {
           window.location.reload()
         }
@@ -78,7 +79,6 @@ export default function CommentsSection({
       })
 
       if (response.ok) {
-        // Sayfayı yenile veya state'i güncelle
         if (typeof window !== 'undefined') {
           window.location.reload()
         }
@@ -99,11 +99,13 @@ export default function CommentsSection({
         {[1, 2, 3, 4, 5].map((star) => (
           <Star
             key={star}
-            className={`h-5 w-5 ${star <= rating
-                ? 'text-yellow-400 fill-current'
-                : 'text-gray-400'
-              } ${interactive ? 'cursor-pointer hover:text-yellow-300' : ''}`}
+            className={`h-5 w-5 transition-all ${star <= (interactive && hoveredStar > 0 ? hoveredStar : rating)
+                ? 'text-yellow-400 fill-yellow-400'
+                : 'text-gray-600'
+              } ${interactive ? 'cursor-pointer hover:scale-110' : ''}`}
             onClick={interactive && onRatingChange ? () => onRatingChange(star) : undefined}
+            onMouseEnter={interactive ? () => setHoveredStar(star) : undefined}
+            onMouseLeave={interactive ? () => setHoveredStar(0) : undefined}
           />
         ))}
       </div>
@@ -119,88 +121,104 @@ export default function CommentsSection({
   }
 
   return (
-    <div className="bg-black border border-black rounded-xl shadow-lg p-6">
+    <div className="space-y-6">
+      <div className="flex items-center space-x-3">
+        <div className="bg-orange-500/10 p-2 rounded-lg">
+          <MessageCircle className="h-6 w-6 text-orange-500" />
+        </div>
+        <h2 className="text-2xl font-bold text-white">
+          Yorumlar {reviews.length > 0 && `(${reviews.length})`}
+        </h2>
+      </div>
 
       {/* Yorum Yapma Formu */}
       {canComment && userId && (
-        <div className="mb-6 p-4 bg-black rounded-lg border border-orange-500/20">
-          <h3 className="text-lg font-semibold text-white mb-3">Yorum Yap</h3>
-          <form onSubmit={handleSubmitComment} className="space-y-3">
-            <div className="flex items-center space-x-4">
-              <label className="text-sm font-medium text-gray-300">
-                Puan:
+        <div className="bg-[#0a0a0a] border border-gray-800 rounded-xl p-6">
+          <h3 className="text-lg font-bold text-white mb-4">Yorum Yap</h3>
+          <form onSubmit={handleSubmitComment} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Puanınız
               </label>
               {renderStars(newRating, true, setNewRating)}
             </div>
             <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Yorumunuz
+              </label>
               <textarea
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
-                className="w-full px-3 py-2 bg-black border border-orange-500/30 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                className="w-full px-4 py-3 bg-black border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all resize-none"
                 placeholder="Kurs hakkındaki düşüncelerinizi paylaşın..."
-                rows={3}
+                rows={4}
                 required
               />
             </div>
             <button
               type="submit"
               disabled={isSubmitting || !newComment.trim()}
-              className="bg-orange-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-orange-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-gradient-to-r from-orange-600 to-orange-500 text-white px-6 py-3 rounded-lg font-medium hover:from-orange-700 hover:to-orange-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 shadow-lg hover:shadow-orange-500/50"
             >
-              {isSubmitting ? 'Gönderiliyor...' : 'Yorum Gönder'}
+              <Send className="h-4 w-4" />
+              <span>{isSubmitting ? 'Gönderiliyor...' : 'Yorum Gönder'}</span>
             </button>
           </form>
         </div>
       )}
 
       {/* Yorumlar Listesi */}
-      <div className="space-y-6">
+      <div className="space-y-4">
         {reviews.length === 0 ? (
-          <div className="text-center py-8">
-            <MessageCircle className="h-12 w-12 text-gray-600 mx-auto mb-4" />
-            <p className="text-gray-400">Henüz yorum yapılmamış.</p>
+          <div className="bg-[#0a0a0a] border border-gray-800 rounded-xl p-12 text-center">
+            <div className="bg-gray-900/50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <MessageCircle className="h-10 w-10 text-gray-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-white mb-2">Henüz yorum yapılmamış</h3>
             {canComment && (
-              <p className="text-gray-500 text-sm mt-2">İlk yorumu sen yap!</p>
+              <p className="text-gray-400 text-sm">İlk yorumu sen yap!</p>
             )}
           </div>
         ) : (
           reviews.map((review) => (
-            <div key={review.id} className="border-b border-orange-500/20 pb-6 last:border-b-0">
+            <div key={review.id} className="bg-[#0a0a0a] border border-gray-800 rounded-xl p-6 hover:border-gray-700 transition-all">
               <div className="flex items-start space-x-4">
                 {/* Avatar */}
                 <div className="flex-shrink-0">
                   {review.user.image ? (
-                    <img
+                    <Image
                       src={review.user.image}
                       alt={review.user.name || 'Kullanıcı'}
-                      className="w-10 h-10 rounded-full"
+                      width={48}
+                      height={48}
+                      className="rounded-full"
                     />
                   ) : (
-                    <div className="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center">
-                      <User className="h-6 w-6 text-gray-400" />
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-600 to-orange-400 flex items-center justify-center">
+                      <User className="h-6 w-6 text-white" />
                     </div>
                   )}
                 </div>
 
                 {/* Yorum İçeriği */}
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-2">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between mb-3">
                     <div>
-                      <h4 className="font-medium text-white">
+                      <h4 className="font-semibold text-white text-lg">
                         {review.user.name || 'Anonim Kullanıcı'}
                       </h4>
-                      <p className="text-sm text-gray-400">
+                      <p className="text-sm text-gray-500 mt-1">
                         {formatDate(review.createdAt)}
                       </p>
                     </div>
                     <div className="flex items-center space-x-3">
                       {renderStars(review.rating)}
-                      {/* Silme Butonu - Sadece yorumu yazan kişi görebilir */}
+                      {/* Silme Butonu */}
                       {userId && review.userId === userId && (
                         <button
                           onClick={() => handleDeleteComment(review.id)}
                           disabled={deletingReviewId === review.id}
-                          className="text-gray-400 hover:text-red-500 transition-colors p-1 rounded"
+                          className="text-gray-500 hover:text-red-500 hover:bg-red-500/10 transition-all p-2 rounded-lg"
                           title="Yorumu sil"
                         >
                           <Trash2 className={`h-4 w-4 ${deletingReviewId === review.id ? 'animate-spin' : ''}`} />
