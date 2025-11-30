@@ -156,9 +156,21 @@ export default function HeroSection({ courses }: HeroSectionProps) {
 
             {/* Level Badge */}
             <div className="flex justify-center mb-8">
-              <span className="bg-orange-600/90 text-white px-4 py-1.5 rounded-full text-sm font-semibold tracking-wide uppercase backdrop-blur-sm">
-                {course.level}
-              </span>
+              {course.level === 'BEGINNER' && (
+                <span className="bg-gray-800 text-gray-300 border border-gray-700 px-4 py-1.5 rounded-full text-sm font-semibold tracking-wide uppercase backdrop-blur-sm">
+                  Commis
+                </span>
+              )}
+              {course.level === 'INTERMEDIATE' && (
+                <span className="bg-orange-600/90 text-white px-4 py-1.5 rounded-full text-sm font-semibold tracking-wide uppercase backdrop-blur-sm">
+                  Chef D party
+                </span>
+              )}
+              {course.level === 'ADVANCED' && (
+                <span className="bg-purple-600/90 text-white px-4 py-1.5 rounded-full text-sm font-semibold tracking-wide uppercase backdrop-blur-sm">
+                  Executive
+                </span>
+              )}
             </div>
 
             {/* Action Buttons */}
