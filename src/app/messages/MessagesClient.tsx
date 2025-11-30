@@ -366,43 +366,347 @@ export default function MessagesClient({ session }: Props) {
                 </Link>
                 <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
                   İletişim
-                </div>
+                </Link>
+              </nav>
             </div>
-          </header>
 
-          {/* Mobile Top Bar */}
-          <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
-            <div className="flex justify-between items-center py-3 px-4">
-              <Link href="/home" className="flex items-center space-x-2">
-                <ChefHat className="h-6 w-6 text-orange-500" />
-                <span className="text-lg font-bold text-white">Chef2.0</span>
-                {session?.user?.role === 'INSTRUCTOR' && (
-                  <span className="bg-blue-600 text-white px-2 py-1 rounded text-xs font-medium">Eğitmen</span>
+            <div className="flex items-center space-x-4">
+              <button className="text-gray-300 hover:text-white">
+                <Bell className="h-5 w-5" />
+              </button>
+              <UserDropdown />
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Mobile Top Bar */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
+        <div className="flex justify-between items-center py-3 px-4">
+          <Link href="/home" className="flex items-center space-x-2">
+            <ChefHat className="h-6 w-6 text-orange-500" />
+            <span className="text-lg font-bold text-white">Chef2.0</span>
+            {session?.user?.role === 'INSTRUCTOR' && (
+              <span className="bg-blue-600 text-white px-2 py-1 rounded text-xs font-medium">Eğitmen</span>
+            )}
+            {session?.user?.role === 'ADMIN' && (
+              <span className="bg-orange-600 text-white px-2 py-1 rounded text-xs font-medium">Admin</span>
+            )}
+          </Link>
+          <div className="flex items-center space-x-3">
+            <UserDropdown />
+          </div>
+        </div>
+      </div>
+
+      <div className="pt-16 md:pt-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20 md:pb-6">
+        {/* Mobile Chat Overlay */}
+        {showMobileChat && selectedConversation && (
+          <div className="lg:hidden fixed inset-0 z-50 bg-black" style={{ height: '100dvh' }}>
+            <div className="h-full flex flex-col">
+              {/* Mobile Chat Header */}
+              <div className="bg-[#0a0a0a]/50 backdrop-blur-sm border-b border-gray-800 p-4 flex items-center justify-between flex-shrink-0">
+                <div className="flex items-center space-x-3">
+                  <button
+                    onClick={() => {
+                      setSelectedConversation(null)
+                      setShowMobileChat(false)
+                    }}
+                    className="text-gray-400 hover:text-white"
+                  >
+                    <ChevronLeft className="h-6 w-6" />
+                  </button>
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-600 to-orange-400 flex items-center justify-center ring-2 ring-gray-700">
+                    {selectedConversation.otherUser.image ? (
+                      <Image
+                        src={selectedConversation.otherUser.image}
+                        alt={selectedConversation.otherUser.name || 'User'}
+                        width={40}
+                        height={40}
+                        className="rounded-full"
+                      />
+                    ) : (
+                      <User className="h-5 w-5 text-white" />
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="text-white font-semibold">
+                      {selectedConversation.otherUser.name}
+                    </h3>
+                    <p className="text-orange-400 text-xs flex items-center">
+                      <BookOpen className="h-3 w-3 mr-1" />
+                      {selectedConversation.course.title}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Mobile Chat Messages */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-6 min-h-0 pb-4" style={{
+                maxHeight: 'calc(100vh - 200px)',
+                overflowY: 'auto',
+                scrollBehavior: 'smooth'
+              }}>
+                {messages.length === 0 ? (
+                  <div className="h-full flex items-center justify-center text-gray-400 py-12">
+                    <div className="text-center">
+                      <MessageSquare className="h-16 w-16 mx-auto mb-4 text-gray-600" />
+                      <p className="font-medium text-lg">Henüz mesaj yok</p>
+                      <p className="text-sm mt-2">İlk mesajınızı gönderin ve eğitmeninizle iletişime geçin</p>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {messages.map((message) => (
+                      <div key={message.id} className="space-y-3">
+                        {/* Ana Mesaj */}
+                        <div
+                          className={`flex ${message.user.id === session.user.id ? 'justify-end' : 'justify-start'}`}
+                        >
+                          <div className={`max-w-[75%] ${message.user.id === session.user.id ? 'order-2' : 'order-1'}`}>
+                            <div className="flex items-end space-x-2 mb-1">
+                              {message.user.id !== session.user.id && (
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-600 to-orange-400 flex items-center justify-center flex-shrink-0">
+                                  {message.user.image ? (
+                                    <Image
+                                      src={message.user.image}
+                                      alt={message.user.name || 'User'}
+                                      width={32}
+                                      height={32}
+                                      className="rounded-full"
+                                    />
+                                  ) : (
+                                    <User className="h-4 w-4 text-white" />
+                                  )}
+                                </div>
+                              )}
+                              <div className="flex-1">
+                                <div
+                                  className={`px-4 py-3 rounded-2xl shadow-lg ${message.user.id === session.user.id
+                                    ? 'bg-gradient-to-r from-orange-600 to-orange-500 text-white rounded-br-sm'
+                                    : 'bg-[#1a1a1a] text-gray-100 rounded-bl-sm'
+                                    }`}
+                                >
+                                  <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">{message.content}</p>
+                                </div>
+                                <div className="flex items-center justify-between mt-1 px-2">
+                                  <p className={`text-xs ${message.user.id === session.user.id ? 'text-orange-300' : 'text-gray-400'
+                                    }`}>
+                                    {formatMessageTime(message.createdAt)}
+                                  </p>
+                                  {message.user.id !== session.user.id && (
+                                    <button
+                                      onClick={() => setReplyingTo(message)}
+                                      className="text-xs text-orange-400 hover:text-orange-300 transition-colors"
+                                    >
+                                      Yanıtla
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Yanıtlar */}
+                            {message.replies.length > 0 && (
+                              <div className="ml-10 mt-3 space-y-2">
+                                {message.replies.map((reply) => (
+                                  <div
+                                    key={reply.id}
+                                    className={`flex ${reply.user.id === session.user.id ? 'justify-end' : 'justify-start'}`}
+                                  >
+                                    <div
+                                      className={`px-4 py-2.5 rounded-xl text-sm max-w-[85%] shadow ${reply.user.id === session.user.id
+                                        ? 'bg-orange-500/80 text-white'
+                                        : 'bg-[#1a1a1a] text-gray-100'
+                                        }`}
+                                    >
+                                      <p className="whitespace-pre-wrap break-words">{reply.content}</p>
+                                      <p className={`text-xs mt-1 ${reply.user.id === session.user.id ? 'text-orange-200' : 'text-gray-300'
+                                        }`}>
+                                        {formatMessageTime(reply.createdAt)}
+                                      </p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    <div ref={messagesEndRef} />
+                  </>
                 )}
-                {session?.user?.role === 'ADMIN' && (
-                  <span className="bg-orange-600 text-white px-2 py-1 rounded text-xs font-medium">Admin</span>
+              </div>
+
+              {/* Mobile Chat Input */}
+              {replyingTo && (
+                <div className="px-4 py-2 bg-[#0a0a0a]/80 backdrop-blur-sm border-t border-gray-800 flex items-center justify-between flex-shrink-0">
+                  <div className="flex items-center space-x-2 text-sm flex-1">
+                    <ChevronLeft className="h-4 w-4 text-orange-500 rotate-180 flex-shrink-0" />
+                    <span className="text-gray-300 text-xs truncate">
+                      <span className="text-orange-400 font-medium">{replyingTo.user.name}</span> kullanıcısına yanıt
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => setReplyingTo(null)}
+                    className="text-gray-400 hover:text-white transition-colors flex-shrink-0 p-1"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
+
+              <div className="p-3 border-t border-gray-800 bg-[#0a0a0a]/95 backdrop-blur-sm flex-shrink-0 sticky bottom-0">
+                <div className="flex space-x-2 items-end">
+                  <textarea
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="Mesajınızı yazın..."
+                    className="flex-1 bg-[#1a1a1a] text-white p-3 rounded-xl border border-gray-800 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 resize-none transition-all max-h-32"
+                    rows={1}
+                    disabled={sending}
+                    style={{
+                      minHeight: '44px',
+                      maxHeight: '120px',
+                      lineHeight: '20px'
+                    }}
+                    onInput={(e) => {
+                      const target = e.target as HTMLTextAreaElement;
+                      target.style.height = 'auto';
+                      target.style.height = Math.min(target.scrollHeight, 120) + 'px';
+                    }}
+                  />
+                  <button
+                    onClick={sendMessage}
+                    disabled={!newMessage.trim() || sending}
+                    className="bg-gradient-to-r from-orange-600 to-orange-500 text-white px-4 py-3 rounded-xl hover:from-orange-700 hover:to-orange-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-lg mb-1"
+                  >
+                    <Send className="h-5 w-5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6" style={{ height: 'calc(100vh - 140px)' }}>
+          {/* Konuşma Listesi */}
+          <div className={`lg:col-span-1 ${showMobileChat ? 'hidden lg:block' : 'block'}`}>
+            <div className="bg-[#0a0a0a] backdrop-blur-sm rounded-xl border border-gray-800 flex flex-col shadow-xl" style={{ height: 'calc(100vh - 140px)' }}>
+              <div className="p-4 border-b border-gray-800 space-y-3">
+                <button
+                  onClick={() => setShowNewMessageModal(true)}
+                  className="w-full bg-orange-600 text-white px-4 py-2.5 rounded-lg hover:bg-orange-700 transition-colors flex items-center justify-center space-x-2 font-medium shadow-lg"
+                >
+                  <Plus className="h-5 w-5" />
+                  <span>Yeni Sohbet</span>
+                </button>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Konuşmalarda ara..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full bg-[#1a1a1a] text-white pl-10 pr-4 py-2.5 rounded-lg border border-gray-800 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition-all"
+                  />
+                </div>
+              </div>
+
+              <div className="flex-1 overflow-y-auto">
+                {loading ? (
+                  <div className="p-8 text-center text-gray-400">
+                    <Clock className="h-8 w-8 mx-auto mb-3 animate-spin text-orange-500" />
+                    <p className="text-sm">Yükleniyor...</p>
+                  </div>
+                ) : conversations.length === 0 ? (
+                  <div className="p-8 text-center text-gray-400">
+                    <MessageSquare className="h-12 w-12 mx-auto mb-3 text-gray-600" />
+                    <p className="font-medium">Henüz konuşma yok</p>
+                    <p className="text-sm mt-1">Eğitmeninize ilk mesajınızı gönderin</p>
+                  </div>
+                ) : (
+                  conversations
+                    .filter(conv =>
+                      conv.otherUser.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                      conv.course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                      conv.lastMessage.content.toLowerCase().includes(searchTerm.toLowerCase())
+                    )
+                    .map((conversation) => (
+                      <div
+                        key={conversation.otherUser.id + conversation.course.id}
+                        onClick={() => {
+                          setSelectedConversation(conversation)
+                          setShowMobileChat(true)
+                        }}
+                        className={`p-4 border-b border-gray-800 cursor-pointer hover:bg-[#1a1a1a] transition-all ${selectedConversation?.otherUser.id === conversation.otherUser.id &&
+                          selectedConversation?.course.id === conversation.course.id
+                          ? 'bg-gradient-to-r from-orange-600/20 to-transparent border-l-4 border-l-orange-500'
+                          : ''
+                          }`}
+                      >
+                        <div className="flex items-start space-x-3">
+                          <div className="relative flex-shrink-0">
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-600 to-orange-400 flex items-center justify-center ring-2 ring-gray-700">
+                              {conversation.otherUser.image ? (
+                                <Image
+                                  src={conversation.otherUser.image}
+                                  alt={conversation.otherUser.name || 'User'}
+                                  width={48}
+                                  height={48}
+                                  className="rounded-full"
+                                />
+                              ) : (
+                                <User className="h-6 w-6 text-white" />
+                              )}
+                            </div>
+                            {conversation.unreadCount > 0 && (
+                              <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-lg">
+                                {conversation.unreadCount}
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex justify-between items-start mb-1">
+                              <h3 className="text-white font-semibold truncate text-sm">
+                                {conversation.otherUser.name}
+                              </h3>
+                              <span className="text-gray-400 text-xs flex-shrink-0 ml-2">
+                                {formatTime(conversation.lastMessageTime)}
+                              </span>
+                            </div>
+                            <p className="text-orange-400 text-xs mb-1.5 flex items-center">
+                              <BookOpen className="h-3 w-3 mr-1" />
+                              {conversation.course.title}
+                            </p>
+                            <p className="text-gray-400 text-sm line-clamp-1">
+                              {conversation.lastMessage.content}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))
                 )}
-              </Link>
-              <div className="flex items-center space-x-3">
-                <UserDropdown />
               </div>
             </div>
           </div>
 
-          <div className="pt-16 md:pt-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20 md:pb-6">
-            {/* Mobile Chat Overlay */}
-            {showMobileChat && selectedConversation && (
-              <div className="lg:hidden fixed inset-0 z-50 bg-black" style={{ height: '100dvh' }}>
-                <div className="h-full flex flex-col">
-                  {/* Mobile Chat Header */}
-                  <div className="bg-[#0a0a0a]/50 backdrop-blur-sm border-b border-gray-800 p-4 flex items-center justify-between flex-shrink-0">
+          {/* Mesaj Alanı */}
+          <div className={`lg:col-span-2 ${showMobileChat ? 'block' : 'hidden lg:block'}`}>
+            {selectedConversation ? (
+              <div className="bg-[#0a0a0a] backdrop-blur-sm rounded-xl border border-gray-800 flex flex-col shadow-xl" style={{ height: 'calc(100vh - 140px)' }}>
+                {/* Mesaj Header */}
+                <div className="p-4 border-b border-gray-800 bg-[#0a0a0a]/50">
+                  <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <button
                         onClick={() => {
                           setSelectedConversation(null)
                           setShowMobileChat(false)
                         }}
-                        className="text-gray-400 hover:text-white"
+                        className="lg:hidden text-gray-400 hover:text-white"
                       >
                         <ChevronLeft className="h-6 w-6" />
                       </button>
@@ -430,582 +734,288 @@ export default function MessagesClient({ session }: Props) {
                       </div>
                     </div>
                   </div>
-
-                  {/* Mobile Chat Messages */}
-                  <div className="flex-1 overflow-y-auto p-4 space-y-6 min-h-0 pb-4" style={{
-                    maxHeight: 'calc(100vh - 200px)',
-                    overflowY: 'auto',
-                    scrollBehavior: 'smooth'
-                  }}>
-                    {messages.length === 0 ? (
-                      <div className="h-full flex items-center justify-center text-gray-400 py-12">
-                        <div className="text-center">
-                          <MessageSquare className="h-16 w-16 mx-auto mb-4 text-gray-600" />
-                          <p className="font-medium text-lg">Henüz mesaj yok</p>
-                          <p className="text-sm mt-2">İlk mesajınızı gönderin ve eğitmeninizle iletişime geçin</p>
-                        </div>
-                      </div>
-                    ) : (
-                      <>
-                        {messages.map((message) => (
-                          <div key={message.id} className="space-y-3">
-                            {/* Ana Mesaj */}
-                            <div
-                              className={`flex ${message.user.id === session.user.id ? 'justify-end' : 'justify-start'}`}
-                            >
-                              <div className={`max-w-[75%] ${message.user.id === session.user.id ? 'order-2' : 'order-1'}`}>
-                                <div className="flex items-end space-x-2 mb-1">
-                                  {message.user.id !== session.user.id && (
-                                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-600 to-orange-400 flex items-center justify-center flex-shrink-0">
-                                      {message.user.image ? (
-                                        <Image
-                                          src={message.user.image}
-                                          alt={message.user.name || 'User'}
-                                          width={32}
-                                          height={32}
-                                          className="rounded-full"
-                                        />
-                                      ) : (
-                                        <User className="h-4 w-4 text-white" />
-                                      )}
-                                    </div>
-                                  )}
-                                  <div className="flex-1">
-                                    <div
-                                      className={`px-4 py-3 rounded-2xl shadow-lg ${message.user.id === session.user.id
-                                        ? 'bg-gradient-to-r from-orange-600 to-orange-500 text-white rounded-br-sm'
-                                        : 'bg-[#1a1a1a] text-gray-100 rounded-bl-sm'
-                                        }`}
-                                    >
-                                      <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">{message.content}</p>
-                                    </div>
-                                    <div className="flex items-center justify-between mt-1 px-2">
-                                      <p className={`text-xs ${message.user.id === session.user.id ? 'text-orange-300' : 'text-gray-400'
-                                        }`}>
-                                        {formatMessageTime(message.createdAt)}
-                                      </p>
-                                      {message.user.id !== session.user.id && (
-                                        <button
-                                          onClick={() => setReplyingTo(message)}
-                                          className="text-xs text-orange-400 hover:text-orange-300 transition-colors"
-                                        >
-                                          Yanıtla
-                                        </button>
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-
-                                {/* Yanıtlar */}
-                                {message.replies.length > 0 && (
-                                  <div className="ml-10 mt-3 space-y-2">
-                                    {message.replies.map((reply) => (
-                                      <div
-                                        key={reply.id}
-                                        className={`flex ${reply.user.id === session.user.id ? 'justify-end' : 'justify-start'}`}
-                                      >
-                                        <div
-                                          className={`px-4 py-2.5 rounded-xl text-sm max-w-[85%] shadow ${reply.user.id === session.user.id
-                                            ? 'bg-orange-500/80 text-white'
-                                            : 'bg-[#1a1a1a] text-gray-100'
-                                            }`}
-                                        >
-                                          <p className="whitespace-pre-wrap break-words">{reply.content}</p>
-                                          <p className={`text-xs mt-1 ${reply.user.id === session.user.id ? 'text-orange-200' : 'text-gray-300'
-                                            }`}>
-                                            {formatMessageTime(reply.createdAt)}
-                                          </p>
-                                        </div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                        <div ref={messagesEndRef} />
-                      </>
-                    )}
-                  </div>
-
-                  {/* Mobile Chat Input */}
-                  {replyingTo && (
-                    <div className="px-4 py-2 bg-[#0a0a0a]/80 backdrop-blur-sm border-t border-gray-800 flex items-center justify-between flex-shrink-0">
-                      <div className="flex items-center space-x-2 text-sm flex-1">
-                        <ChevronLeft className="h-4 w-4 text-orange-500 rotate-180 flex-shrink-0" />
-                        <span className="text-gray-300 text-xs truncate">
-                          <span className="text-orange-400 font-medium">{replyingTo.user.name}</span> kullanıcısına yanıt
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => setReplyingTo(null)}
-                        className="text-gray-400 hover:text-white transition-colors flex-shrink-0 p-1"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
-                  )}
-
-                  <div className="p-3 border-t border-gray-800 bg-[#0a0a0a]/95 backdrop-blur-sm flex-shrink-0 sticky bottom-0">
-                    <div className="flex space-x-2 items-end">
-                      <textarea
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        onKeyPress={handleKeyPress}
-                        placeholder="Mesajınızı yazın..."
-                        className="flex-1 bg-[#1a1a1a] text-white p-3 rounded-xl border border-gray-800 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 resize-none transition-all max-h-32"
-                        rows={1}
-                        disabled={sending}
-                        style={{
-                          minHeight: '44px',
-                          maxHeight: '120px',
-                          lineHeight: '20px'
-                        }}
-                        onInput={(e) => {
-                          const target = e.target as HTMLTextAreaElement;
-                          target.style.height = 'auto';
-                          target.style.height = Math.min(target.scrollHeight, 120) + 'px';
-                        }}
-                      />
-                      <button
-                        onClick={sendMessage}
-                        disabled={!newMessage.trim() || sending}
-                        className="bg-gradient-to-r from-orange-600 to-orange-500 text-white px-4 py-3 rounded-xl hover:from-orange-700 hover:to-orange-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-lg mb-1"
-                      >
-                        <Send className="h-5 w-5" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6" style={{ height: 'calc(100vh - 140px)' }}>
-              {/* Konuşma Listesi */}
-              <div className={`lg:col-span-1 ${showMobileChat ? 'hidden lg:block' : 'block'}`}>
-                <div className="bg-[#0a0a0a] backdrop-blur-sm rounded-xl border border-gray-800 flex flex-col shadow-xl" style={{ height: 'calc(100vh - 140px)' }}>
-                  <div className="p-4 border-b border-gray-800 space-y-3">
-                    <button
-                      onClick={() => setShowNewMessageModal(true)}
-                      className="w-full bg-orange-600 text-white px-4 py-2.5 rounded-lg hover:bg-orange-700 transition-colors flex items-center justify-center space-x-2 font-medium shadow-lg"
-                    >
-                      <Plus className="h-5 w-5" />
-                      <span>Yeni Sohbet</span>
-                    </button>
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                      <input
-                        type="text"
-                        placeholder="Konuşmalarda ara..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full bg-[#1a1a1a] text-white pl-10 pr-4 py-2.5 rounded-lg border border-gray-800 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition-all"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex-1 overflow-y-auto">
-                    {loading ? (
-                      <div className="p-8 text-center text-gray-400">
-                        <Clock className="h-8 w-8 mx-auto mb-3 animate-spin text-orange-500" />
-                        <p className="text-sm">Yükleniyor...</p>
-                      </div>
-                    ) : conversations.length === 0 ? (
-                      <div className="p-8 text-center text-gray-400">
-                        <MessageSquare className="h-12 w-12 mx-auto mb-3 text-gray-600" />
-                        <p className="font-medium">Henüz konuşma yok</p>
-                        <p className="text-sm mt-1">Eğitmeninize ilk mesajınızı gönderin</p>
-                      </div>
-                    ) : (
-                      conversations
-                        .filter(conv =>
-                          conv.otherUser.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          conv.course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          conv.lastMessage.content.toLowerCase().includes(searchTerm.toLowerCase())
-                        )
-                        .map((conversation) => (
-                          <div
-                            key={conversation.otherUser.id + conversation.course.id}
-                            onClick={() => {
-                              setSelectedConversation(conversation)
-                              setShowMobileChat(true)
-                            }}
-                            className={`p-4 border-b border-gray-800 cursor-pointer hover:bg-[#1a1a1a] transition-all ${selectedConversation?.otherUser.id === conversation.otherUser.id &&
-                              selectedConversation?.course.id === conversation.course.id
-                              ? 'bg-gradient-to-r from-orange-600/20 to-transparent border-l-4 border-l-orange-500'
-                              : ''
-                              }`}
-                          >
-                            <div className="flex items-start space-x-3">
-                              <div className="relative flex-shrink-0">
-                                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-600 to-orange-400 flex items-center justify-center ring-2 ring-gray-700">
-                                  {conversation.otherUser.image ? (
-                                    <Image
-                                      src={conversation.otherUser.image}
-                                      alt={conversation.otherUser.name || 'User'}
-                                      width={48}
-                                      height={48}
-                                      className="rounded-full"
-                                    />
-                                  ) : (
-                                    <User className="h-6 w-6 text-white" />
-                                  )}
-                                </div>
-                                {conversation.unreadCount > 0 && (
-                                  <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-lg">
-                                    {conversation.unreadCount}
-                                  </div>
-                                )}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex justify-between items-start mb-1">
-                                  <h3 className="text-white font-semibold truncate text-sm">
-                                    {conversation.otherUser.name}
-                                  </h3>
-                                  <span className="text-gray-400 text-xs flex-shrink-0 ml-2">
-                                    {formatTime(conversation.lastMessageTime)}
-                                  </span>
-                                </div>
-                                <p className="text-orange-400 text-xs mb-1.5 flex items-center">
-                                  <BookOpen className="h-3 w-3 mr-1" />
-                                  {conversation.course.title}
-                                </p>
-                                <p className="text-gray-400 text-sm line-clamp-1">
-                                  {conversation.lastMessage.content}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        ))
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Mesaj Alanı */}
-              <div className={`lg:col-span-2 ${showMobileChat ? 'block' : 'hidden lg:block'}`}>
-                {selectedConversation ? (
-                  <div className="bg-[#0a0a0a] backdrop-blur-sm rounded-xl border border-gray-800 flex flex-col shadow-xl" style={{ height: 'calc(100vh - 140px)' }}>
-                    {/* Mesaj Header */}
-                    <div className="p-4 border-b border-gray-800 bg-[#0a0a0a]/50">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <button
-                            onClick={() => {
-                              setSelectedConversation(null)
-                              setShowMobileChat(false)
-                            }}
-                            className="lg:hidden text-gray-400 hover:text-white"
-                          >
-                            <ChevronLeft className="h-6 w-6" />
-                          </button>
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-600 to-orange-400 flex items-center justify-center ring-2 ring-gray-700">
-                            {selectedConversation.otherUser.image ? (
-                              <Image
-                                src={selectedConversation.otherUser.image}
-                                alt={selectedConversation.otherUser.name || 'User'}
-                                width={40}
-                                height={40}
-                                className="rounded-full"
-                              />
-                            ) : (
-                              <User className="h-5 w-5 text-white" />
-                            )}
-                          </div>
-                          <div>
-                            <h3 className="text-white font-semibold">
-                              {selectedConversation.otherUser.name}
-                            </h3>
-                            <p className="text-orange-400 text-xs flex items-center">
-                              <BookOpen className="h-3 w-3 mr-1" />
-                              {selectedConversation.course.title}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Mesajlar */}
-                    <div className="flex-1 overflow-y-auto p-4 space-y-6" style={{
-                      maxHeight: 'calc(100vh - 300px)',
-                      overflowY: 'auto',
-                      scrollBehavior: 'smooth'
-                    }}>
-                      {messages.length === 0 ? (
-                        <div className="h-full flex items-center justify-center text-gray-400 py-12">
-                          <div className="text-center">
-                            <MessageSquare className="h-16 w-16 mx-auto mb-4 text-gray-600" />
-                            <p className="font-medium text-lg">Henüz mesaj yok</p>
-                            <p className="text-sm mt-2">İlk mesajınızı gönderin ve eğitmeninizle iletişime geçin</p>
-                          </div>
-                        </div>
-                      ) : (
-                        <>
-                          {messages.map((message) => (
-                            <div key={message.id} className="space-y-3">
-                              {/* Ana Mesaj */}
-                              <div
-                                className={`flex ${message.user.id === session.user.id ? 'justify-end' : 'justify-start'}`}
-                              >
-                                <div className={`max-w-[75%] ${message.user.id === session.user.id ? 'order-2' : 'order-1'}`}>
-                                  <div className="flex items-end space-x-2 mb-1">
-                                    {message.user.id !== session.user.id && (
-                                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-600 to-orange-400 flex items-center justify-center flex-shrink-0">
-                                        {message.user.image ? (
-                                          <Image
-                                            src={message.user.image}
-                                            alt={message.user.name || 'User'}
-                                            width={32}
-                                            height={32}
-                                            className="rounded-full"
-                                          />
-                                        ) : (
-                                          <User className="h-4 w-4 text-white" />
-                                        )}
-                                      </div>
-                                    )}
-                                    <div className="flex-1">
-                                      <div
-                                        className={`px-4 py-3 rounded-2xl shadow-lg ${message.user.id === session.user.id
-                                          ? 'bg-gradient-to-r from-orange-600 to-orange-500 text-white rounded-br-sm'
-                                          : 'bg-[#1a1a1a] text-gray-100 rounded-bl-sm'
-                                          }`}
-                                      >
-                                        <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">{message.content}</p>
-                                      </div>
-                                      <div className="flex items-center justify-between mt-1 px-2">
-                                        <p className={`text-xs ${message.user.id === session.user.id ? 'text-orange-300' : 'text-gray-400'
-                                          }`}>
-                                          {formatMessageTime(message.createdAt)}
-                                        </p>
-                                        {message.user.id !== session.user.id && (
-                                          <button
-                                            onClick={() => setReplyingTo(message)}
-                                            className="text-xs text-orange-400 hover:text-orange-300 transition-colors"
-                                          >
-                                            Yanıtla
-                                          </button>
-                                        )}
-                                      </div>
-                                    </div>
-                                  </div>
-
-                                  {/* Yanıtlar */}
-                                  {message.replies.length > 0 && (
-                                    <div className="ml-10 mt-3 space-y-2">
-                                      {message.replies.map((reply) => (
-                                        <div
-                                          key={reply.id}
-                                          className={`flex ${reply.user.id === session.user.id ? 'justify-end' : 'justify-start'}`}
-                                        >
-                                          <div
-                                            className={`px-4 py-2.5 rounded-xl text-sm max-w-[85%] shadow ${reply.user.id === session.user.id
-                                              ? 'bg-orange-500/80 text-white'
-                                              : 'bg-[#1a1a1a] text-gray-100'
-                                              }`}
-                                          >
-                                            <p className="whitespace-pre-wrap break-words">{reply.content}</p>
-                                            <p className={`text-xs mt-1 ${reply.user.id === session.user.id ? 'text-orange-200' : 'text-gray-300'
-                                              }`}>
-                                              {formatMessageTime(reply.createdAt)}
-                                            </p>
-                                          </div>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                          <div ref={messagesEndRef} />
-                        </>
-                      )}
-                    </div>
-
-                    {/* Yanıtlama Bildirimi */}
-                    {replyingTo && (
-                      <div className="px-4 py-2 bg-[#0a0a0a]/50 border-t border-gray-800 flex items-center justify-between">
-                        <div className="flex items-center space-x-2 text-sm">
-                          <ChevronLeft className="h-4 w-4 text-orange-500 rotate-180" />
-                          <span className="text-gray-400">
-                            <span className="text-orange-400">{replyingTo.user.name}</span> kullanıcısına yanıt veriyorsunuz
-                          </span>
-                        </div>
-                        <button
-                          onClick={() => setReplyingTo(null)}
-                          className="text-gray-400 hover:text-white transition-colors"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      </div>
-                    )}
-
-                    {/* Mesaj Gönderme */}
-                    <div className="p-4 border-t border-gray-700 bg-gray-900/50">
-                      <div className="flex space-x-3">
-                        <textarea
-                          value={newMessage}
-                          onChange={(e) => setNewMessage(e.target.value)}
-                          onKeyPress={handleKeyPress}
-                          placeholder="Mesajınızı yazın..."
-                          className="flex-1 bg-gray-700/50 text-white p-3 rounded-xl border border-gray-600 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 resize-none transition-all"
-                          rows={2}
-                          disabled={sending}
-                        />
-                        <button
-                          onClick={sendMessage}
-                          disabled={!newMessage.trim() || sending}
-                          className="bg-gradient-to-r from-orange-600 to-orange-500 text-white px-5 py-2 rounded-xl hover:from-orange-700 hover:to-orange-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 shadow-lg self-end"
-                        >
-                          <Send className="h-5 w-5" />
-                          <span className="hidden sm:inline">Gönder</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700 h-full flex items-center justify-center shadow-xl">
-                    <div className="text-center text-gray-400 p-8">
-                      <MessageSquare className="h-20 w-20 mx-auto mb-4 text-gray-600" />
-                      <h3 className="text-white font-semibold text-lg mb-2">Konuşma Seçin</h3>
-                      <p className="text-sm">Mesajlaşmak istediğiniz eğitmeni seçin</p>
-                      <button
-                        onClick={() => setShowNewMessageModal(true)}
-                        className="mt-4 bg-gradient-to-r from-orange-600 to-orange-500 text-white px-6 py-2.5 rounded-lg hover:from-orange-700 hover:to-orange-600 transition-all inline-flex items-center space-x-2 shadow-lg"
-                      >
-                        <Plus className="h-4 w-4" />
-                        <span>Yeni Sohbet Başlat</span>
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Yeni Mesaj Modal */}
-          {showNewMessageModal && (
-            <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-              <div className="bg-gray-800 rounded-2xl border border-gray-700 w-full max-w-2xl max-h-[80vh] flex flex-col shadow-2xl">
-                <div className="p-6 border-b border-gray-700 flex justify-between items-center">
-                  <h3 className="text-white font-semibold text-xl">Yeni Mesaj Başlat</h3>
-                  <button
-                    onClick={() => setShowNewMessageModal(false)}
-                    className="text-gray-400 hover:text-white transition-colors"
-                  >
-                    <X className="h-6 w-6" />
-                  </button>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-6">
-                  {instructors.length === 0 ? (
-                    <div className="text-center text-gray-400 py-12">
-                      <BookOpen className="h-16 w-16 mx-auto mb-4 text-gray-600" />
-                      <p className="font-medium text-lg mb-2">Henüz kursa kayıtlı değilsiniz</p>
-                      <p className="text-sm">Eğitmeninize mesaj atabilmek için önce bir kursa kaydolmanız gerekiyor</p>
-                      <Link
-                        href="/home"
-                        className="mt-4 inline-block bg-gradient-to-r from-orange-600 to-orange-500 text-white px-6 py-2.5 rounded-lg hover:from-orange-700 hover:to-orange-600 transition-all"
-                      >
-                        Kursları İncele
-                      </Link>
+                {/* Mesajlar */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-6" style={{
+                  maxHeight: 'calc(100vh - 300px)',
+                  overflowY: 'auto',
+                  scrollBehavior: 'smooth'
+                }}>
+                  {messages.length === 0 ? (
+                    <div className="h-full flex items-center justify-center text-gray-400 py-12">
+                      <div className="text-center">
+                        <MessageSquare className="h-16 w-16 mx-auto mb-4 text-gray-600" />
+                        <p className="font-medium text-lg">Henüz mesaj yok</p>
+                        <p className="text-sm mt-2">İlk mesajınızı gönderin ve eğitmeninizle iletişime geçin</p>
+                      </div>
                     </div>
                   ) : (
-                    <div className="space-y-4">
-                      {instructors.map((instructor) => (
-                        <div key={instructor.id} className="bg-gray-700/30 rounded-xl p-4 border border-gray-600">
-                          <div className="flex items-center space-x-3 mb-3">
-                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-600 to-orange-400 flex items-center justify-center ring-2 ring-gray-600">
-                              {instructor.image ? (
-                                <Image
-                                  src={instructor.image}
-                                  alt={instructor.name || 'User'}
-                                  width={48}
-                                  height={48}
-                                  className="rounded-full"
-                                />
-                              ) : (
-                                <User className="h-6 w-6 text-white" />
+                    <>
+                      {messages.map((message) => (
+                        <div key={message.id} className="space-y-3">
+                          {/* Ana Mesaj */}
+                          <div
+                            className={`flex ${message.user.id === session.user.id ? 'justify-end' : 'justify-start'}`}
+                          >
+                            <div className={`max-w-[75%] ${message.user.id === session.user.id ? 'order-2' : 'order-1'}`}>
+                              <div className="flex items-end space-x-2 mb-1">
+                                {message.user.id !== session.user.id && (
+                                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-600 to-orange-400 flex items-center justify-center flex-shrink-0">
+                                    {message.user.image ? (
+                                      <Image
+                                        src={message.user.image}
+                                        alt={message.user.name || 'User'}
+                                        width={32}
+                                        height={32}
+                                        className="rounded-full"
+                                      />
+                                    ) : (
+                                      <User className="h-4 w-4 text-white" />
+                                    )}
+                                  </div>
+                                )}
+                                <div className="flex-1">
+                                  <div
+                                    className={`px-4 py-3 rounded-2xl shadow-lg ${message.user.id === session.user.id
+                                      ? 'bg-gradient-to-r from-orange-600 to-orange-500 text-white rounded-br-sm'
+                                      : 'bg-[#1a1a1a] text-gray-100 rounded-bl-sm'
+                                      }`}
+                                  >
+                                    <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">{message.content}</p>
+                                  </div>
+                                  <div className="flex items-center justify-between mt-1 px-2">
+                                    <p className={`text-xs ${message.user.id === session.user.id ? 'text-orange-300' : 'text-gray-400'
+                                      }`}>
+                                      {formatMessageTime(message.createdAt)}
+                                    </p>
+                                    {message.user.id !== session.user.id && (
+                                      <button
+                                        onClick={() => setReplyingTo(message)}
+                                        className="text-xs text-orange-400 hover:text-orange-300 transition-colors"
+                                      >
+                                        Yanıtla
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Yanıtlar */}
+                              {message.replies.length > 0 && (
+                                <div className="ml-10 mt-3 space-y-2">
+                                  {message.replies.map((reply) => (
+                                    <div
+                                      key={reply.id}
+                                      className={`flex ${reply.user.id === session.user.id ? 'justify-end' : 'justify-start'}`}
+                                    >
+                                      <div
+                                        className={`px-4 py-2.5 rounded-xl text-sm max-w-[85%] shadow ${reply.user.id === session.user.id
+                                          ? 'bg-orange-500/80 text-white'
+                                          : 'bg-[#1a1a1a] text-gray-100'
+                                          }`}
+                                      >
+                                        <p className="whitespace-pre-wrap break-words">{reply.content}</p>
+                                        <p className={`text-xs mt-1 ${reply.user.id === session.user.id ? 'text-orange-200' : 'text-gray-300'
+                                          }`}>
+                                          {formatMessageTime(reply.createdAt)}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
                               )}
                             </div>
-                            <div className="flex-1">
-                              <h4 className="text-white font-semibold">{instructor.name}</h4>
-                              <p className="text-gray-400 text-sm">{instructor.email}</p>
-                            </div>
-                          </div>
-
-                          <div className="space-y-2">
-                            <p className="text-gray-400 text-sm font-medium">Kayıtlı Kurslar:</p>
-                            {instructor.courses.map((course) => (
-                              <button
-                                key={course.id}
-                                onClick={() => startNewConversation(instructor, course)}
-                                className="w-full flex items-center space-x-3 p-3 bg-gray-600/30 hover:bg-gray-600/50 rounded-lg border border-gray-600 hover:border-orange-500 transition-all text-left group"
-                              >
-                                <div className="w-12 h-12 bg-gray-700 rounded-lg overflow-hidden flex-shrink-0">
-                                  {course.imageUrl ? (
-                                    <Image
-                                      src={course.imageUrl}
-                                      alt={course.title}
-                                      width={48}
-                                      height={48}
-                                      className="w-full h-full object-cover"
-                                    />
-                                  ) : (
-                                    <div className="w-full h-full flex items-center justify-center">
-                                      <BookOpen className="h-6 w-6 text-gray-500" />
-                                    </div>
-                                  )}
-                                </div>
-                                <div className="flex-1">
-                                  <h5 className="text-white font-medium text-sm group-hover:text-orange-400 transition-colors">{course.title}</h5>
-                                  {course.lessonCount && (
-                                    <p className="text-gray-400 text-xs">{course.lessonCount} ders</p>
-                                  )}
-                                </div>
-                                <ChevronLeft className="h-5 w-5 text-gray-400 group-hover:text-orange-400 rotate-180 transition-colors" />
-                              </button>
-                            ))}
                           </div>
                         </div>
                       ))}
-                    </div>
+                      <div ref={messagesEndRef} />
+                    </>
                   )}
+                </div>
+
+                {/* Yanıtlama Bildirimi */}
+                {replyingTo && (
+                  <div className="px-4 py-2 bg-[#0a0a0a]/50 border-t border-gray-800 flex items-center justify-between">
+                    <div className="flex items-center space-x-2 text-sm">
+                      <ChevronLeft className="h-4 w-4 text-orange-500 rotate-180" />
+                      <span className="text-gray-400">
+                        <span className="text-orange-400">{replyingTo.user.name}</span> kullanıcısına yanıt veriyorsunuz
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => setReplyingTo(null)}
+                      className="text-gray-400 hover:text-white transition-colors"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
+
+                {/* Mesaj Gönderme */}
+                <div className="p-4 border-t border-gray-700 bg-gray-900/50">
+                  <div className="flex space-x-3">
+                    <textarea
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      placeholder="Mesajınızı yazın..."
+                      className="flex-1 bg-gray-700/50 text-white p-3 rounded-xl border border-gray-600 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 resize-none transition-all"
+                      rows={2}
+                      disabled={sending}
+                    />
+                    <button
+                      onClick={sendMessage}
+                      disabled={!newMessage.trim() || sending}
+                      className="bg-gradient-to-r from-orange-600 to-orange-500 text-white px-5 py-2 rounded-xl hover:from-orange-700 hover:to-orange-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 shadow-lg self-end"
+                    >
+                      <Send className="h-5 w-5" />
+                      <span className="hidden sm:inline">Gönder</span>
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-
-          {/* Mobile Bottom Navigation */}
-          <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-t border-gray-800">
-            <div className="flex justify-around items-center py-2">
-              <Link href="/home" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
-                <Home className="h-6 w-6" />
-                <span className="text-xs font-medium mt-1">Ana Sayfa</span>
-              </Link>
-              <Link href="/my-courses" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
-                <BookOpen className="h-6 w-6" />
-                <span className="text-xs font-medium mt-1">Kurslarım</span>
-              </Link>
-              <Link href="/chef-sosyal" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
-                <Users className="h-6 w-6" />
-                <span className="text-xs font-medium mt-1">Sosyal</span>
-              </Link>
-              <Link href="/messages" className="flex flex-col items-center py-2 px-3 text-orange-500 relative">
-                <div className="relative">
-                  <MessageCircle className="h-6 w-6" />
-                  {unreadCount > 0 && (
-                    <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">
-                      {unreadCount > 9 ? '9+' : unreadCount}
-                    </div>
-                  )}
+            ) : (
+              <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700 h-full flex items-center justify-center shadow-xl">
+                <div className="text-center text-gray-400 p-8">
+                  <MessageSquare className="h-20 w-20 mx-auto mb-4 text-gray-600" />
+                  <h3 className="text-white font-semibold text-lg mb-2">Konuşma Seçin</h3>
+                  <p className="text-sm">Mesajlaşmak istediğiniz eğitmeni seçin</p>
+                  <button
+                    onClick={() => setShowNewMessageModal(true)}
+                    className="mt-4 bg-gradient-to-r from-orange-600 to-orange-500 text-white px-6 py-2.5 rounded-lg hover:from-orange-700 hover:to-orange-600 transition-all inline-flex items-center space-x-2 shadow-lg"
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span>Yeni Sohbet Başlat</span>
+                  </button>
                 </div>
-                <span className="text-xs font-medium mt-1">Mesajlar</span>
-              </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Yeni Mesaj Modal */}
+      {showNewMessageModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 rounded-2xl border border-gray-700 w-full max-w-2xl max-h-[80vh] flex flex-col shadow-2xl">
+            <div className="p-6 border-b border-gray-700 flex justify-between items-center">
+              <h3 className="text-white font-semibold text-xl">Yeni Mesaj Başlat</h3>
+              <button
+                onClick={() => setShowNewMessageModal(false)}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6">
+              {instructors.length === 0 ? (
+                <div className="text-center text-gray-400 py-12">
+                  <BookOpen className="h-16 w-16 mx-auto mb-4 text-gray-600" />
+                  <p className="font-medium text-lg mb-2">Henüz kursa kayıtlı değilsiniz</p>
+                  <p className="text-sm">Eğitmeninize mesaj atabilmek için önce bir kursa kaydolmanız gerekiyor</p>
+                  <Link
+                    href="/home"
+                    className="mt-4 inline-block bg-gradient-to-r from-orange-600 to-orange-500 text-white px-6 py-2.5 rounded-lg hover:from-orange-700 hover:to-orange-600 transition-all"
+                  >
+                    Kursları İncele
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {instructors.map((instructor) => (
+                    <div key={instructor.id} className="bg-gray-700/30 rounded-xl p-4 border border-gray-600">
+                      <div className="flex items-center space-x-3 mb-3">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-600 to-orange-400 flex items-center justify-center ring-2 ring-gray-600">
+                          {instructor.image ? (
+                            <Image
+                              src={instructor.image}
+                              alt={instructor.name || 'User'}
+                              width={48}
+                              height={48}
+                              className="rounded-full"
+                            />
+                          ) : (
+                            <User className="h-6 w-6 text-white" />
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="text-white font-semibold">{instructor.name}</h4>
+                          <p className="text-gray-400 text-sm">{instructor.email}</p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <p className="text-gray-400 text-sm font-medium">Kayıtlı Kurslar:</p>
+                        {instructor.courses.map((course) => (
+                          <button
+                            key={course.id}
+                            onClick={() => startNewConversation(instructor, course)}
+                            className="w-full flex items-center space-x-3 p-3 bg-gray-600/30 hover:bg-gray-600/50 rounded-lg border border-gray-600 hover:border-orange-500 transition-all text-left group"
+                          >
+                            <div className="w-12 h-12 bg-gray-700 rounded-lg overflow-hidden flex-shrink-0">
+                              {course.imageUrl ? (
+                                <Image
+                                  src={course.imageUrl}
+                                  alt={course.title}
+                                  width={48}
+                                  height={48}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <BookOpen className="h-6 w-6 text-gray-500" />
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex-1">
+                              <h5 className="text-white font-medium text-sm group-hover:text-orange-400 transition-colors">{course.title}</h5>
+                              {course.lessonCount && (
+                                <p className="text-gray-400 text-xs">{course.lessonCount} ders</p>
+                              )}
+                            </div>
+                            <ChevronLeft className="h-5 w-5 text-gray-400 group-hover:text-orange-400 rotate-180 transition-colors" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
-        )
+      )}
+
+      {/* Mobile Bottom Navigation */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-t border-gray-800">
+        <div className="flex justify-around items-center py-2">
+          <Link href="/home" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+            <Home className="h-6 w-6" />
+            <span className="text-xs font-medium mt-1">Ana Sayfa</span>
+          </Link>
+          <Link href="/my-courses" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+            <BookOpen className="h-6 w-6" />
+            <span className="text-xs font-medium mt-1">Kurslarım</span>
+          </Link>
+          <Link href="/chef-sosyal" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+            <Users className="h-6 w-6" />
+            <span className="text-xs font-medium mt-1">Sosyal</span>
+          </Link>
+          <Link href="/messages" className="flex flex-col items-center py-2 px-3 text-orange-500 relative">
+            <div className="relative">
+              <MessageCircle className="h-6 w-6" />
+              {unreadCount > 0 && (
+                <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </div>
+              )}
+            </div>
+            <span className="text-xs font-medium mt-1">Mesajlar</span>
+          </Link>
+        </div>
+      </div>
+    </div>
+  )
 }
