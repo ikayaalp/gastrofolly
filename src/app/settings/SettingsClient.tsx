@@ -1,7 +1,11 @@
 "use client"
 
 import { useState } from "react"
+import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
 import { User, Mail, Lock, Camera, Save, Eye, EyeOff, Calendar, Award } from "lucide-react"
+import { storage } from "@/lib/firebase"
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 
 interface UserData {
   id: string
@@ -22,6 +26,8 @@ interface SettingsClientProps {
 }
 
 export default function SettingsClient({ user }: SettingsClientProps) {
+  const { data: session, update } = useSession()
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState("profile")
   const [profileData, setProfileData] = useState({
     name: user.name || "",
@@ -75,26 +81,18 @@ export default function SettingsClient({ user }: SettingsClientProps) {
     try {
       let imageUrl = profileData.image
 
-      // Eğer dosya seçildiyse önce yükle
+      // Eğer dosya seçildiyse önce Firebase'e yükle
       if (selectedFile) {
-        const formData = new FormData()
-        formData.append('file', selectedFile)
-        formData.append('type', 'profile')
+        // Dosya uzantısını al
+        const fileExtension = selectedFile.name.split('.').pop()
+        const fileName = `profile-${user.id}-${Date.now()}.${fileExtension}`
+        const storageRef = ref(storage, `profile-images/${user.id}/${fileName}`)
 
-        const uploadResponse = await fetch('/api/upload-image-cloud', {
-          method: 'POST',
-          body: formData
-        })
+        // Dosyayı yükle
+        const snapshot = await uploadBytes(storageRef, selectedFile)
 
-        if (!uploadResponse.ok) {
-          const errorData = await uploadResponse.json()
-          setMessage(errorData.error || "Dosya yüklenemedi")
-          setLoading(false)
-          return
-        }
-
-        const uploadData = await uploadResponse.json()
-        imageUrl = uploadData.url
+        // Download URL'ini al
+        imageUrl = await getDownloadURL(snapshot.ref)
       }
 
       const response = await fetch("/api/user/update-profile", {
@@ -112,6 +110,19 @@ export default function SettingsClient({ user }: SettingsClientProps) {
 
       if (response.ok) {
         setMessage("Profil başarıyla güncellendi!")
+
+        // Session'ı güncelle
+        await update({
+          ...session,
+          user: {
+            ...session?.user,
+            image: imageUrl,
+            name: profileData.name
+          }
+        })
+
+        router.refresh() // Sayfayı yenile (server component'leri güncellemek için)
+
         setSelectedFile(null)
         setTimeout(() => setMessage(""), 3000)
       } else {
@@ -203,8 +214,8 @@ export default function SettingsClient({ user }: SettingsClientProps) {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === tab.id
-                    ? 'border-orange-500 text-orange-500'
-                    : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-300'
+                  ? 'border-orange-500 text-orange-500'
+                  : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-300'
                   }`}
               >
                 <Icon className="h-5 w-5" />
@@ -218,8 +229,8 @@ export default function SettingsClient({ user }: SettingsClientProps) {
       {/* Message */}
       {message && (
         <div className={`p-4 rounded-lg ${message.includes('başarıyla')
-            ? 'bg-green-900/50 border border-green-700 text-green-400'
-            : 'bg-red-900/50 border border-red-700 text-red-400'
+          ? 'bg-green-900/50 border border-green-700 text-green-400'
+          : 'bg-red-900/50 border border-red-700 text-red-400'
           }`}>
           {message}
         </div>
@@ -481,8 +492,8 @@ export default function SettingsClient({ user }: SettingsClientProps) {
                     Hesap Türü
                   </label>
                   <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${user.role === 'ADMIN' ? 'bg-red-500/20 text-red-400' :
-                      user.role === 'INSTRUCTOR' ? 'bg-blue-500/20 text-blue-400' :
-                        'bg-green-500/20 text-green-400'
+                    user.role === 'INSTRUCTOR' ? 'bg-blue-500/20 text-blue-400' :
+                      'bg-green-500/20 text-green-400'
                     }`}>
                     {getRoleName(user.role)}
                   </span>
