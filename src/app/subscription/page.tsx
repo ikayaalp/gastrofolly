@@ -35,7 +35,6 @@ export default async function SubscriptionPage() {
             features: [
                 "Tüm kurslara sınırsız erişim",
                 "Yeni içeriklere anında erişim",
-                "Tamamlama sertifikaları",
                 "Premium topluluk erişimi",
                 "Eğitmenlerle doğrudan iletişim",
                 "Mobil ve masaüstü erişim",
