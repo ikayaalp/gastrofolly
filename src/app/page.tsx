@@ -87,11 +87,11 @@ export default function Home() {
         {/* Background Grid */}
         <div className="absolute inset-0 z-0">
           {/* Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/90 to-black z-10"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/80 to-black z-10"></div>
 
           {/* Course Images Grid */}
-          <div className="grid grid-cols-6 gap-2 opacity-40">
-            {featured.length > 0 && featured.slice(0, 18).map((course, index) => (
+          <div className="grid grid-cols-6 grid-rows-2 gap-2 opacity-60">
+            {featured.length > 0 && featured.slice(0, 12).map((course, index) => (
               <div key={index} className="aspect-square overflow-hidden">
                 <img
                   src={course.imageUrl || 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&q=80'}
@@ -101,7 +101,7 @@ export default function Home() {
               </div>
             ))}
             {/* Fill remaining slots if not enough courses */}
-            {featured.length < 18 && Array.from({ length: 18 - featured.length }).map((_, index) => (
+            {featured.length < 12 && Array.from({ length: 12 - featured.length }).map((_, index) => (
               <div key={`placeholder-${index}`} className="aspect-square overflow-hidden bg-gray-900">
                 <img
                   src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&q=80"
