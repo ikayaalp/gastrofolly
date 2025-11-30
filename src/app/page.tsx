@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { ChefHat, Play, Star, Users } from "lucide-react";
+import { ChefHat, Play, Star, Users, Crown, BookOpen, Zap, ArrowRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import AutoScrollCourses from "@/components/home/AutoScrollCourses";
 import { useRouter } from "next/navigation";
@@ -111,25 +111,84 @@ export default function Home() {
       </section>
 
       {/* Subscription Banner */}
-      <section className="py-8 bg-gradient-to-r from-orange-900/40 via-orange-800/40 to-red-900/40 border-y border-orange-500/30">
+      <section className="py-12 bg-gradient-to-br from-orange-900/20 via-black to-purple-900/20 border-y border-orange-500/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex-1 text-center md:text-left">
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">
-                Tüm Kurslara Sınırsız Erişim!
-              </h2>
-              <p className="text-lg text-gray-200">
-                Premium üyelikle tüm eğitimlere, yeni içeriklere ve daha fazlasına erişin. Sadece <span className="font-bold text-orange-300">199₺/Aylık</span>
-              </p>
+          {/* Header */}
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-600/20 to-purple-600/20 border border-orange-500/30 rounded-full px-4 py-2 mb-4">
+              <Crown className="h-4 w-4 text-orange-400" />
+              <span className="text-sm font-semibold text-orange-300">Premium Üyelik</span>
             </div>
-            <div className="flex-shrink-0">
-              <Link
-                href="/subscription"
-                className="inline-block bg-orange-600 hover:bg-orange-700 text-white text-lg font-bold px-8 py-4 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg"
-              >
-                Premium Üye Ol
-              </Link>
+            <h2 className="text-3xl md:text-5xl font-bold text-white mb-3">
+              Tüm Kurslara
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-purple-400">
+                Sınırsız Erişim!
+              </span>
+            </h2>
+            <p className="text-gray-300 max-w-2xl mx-auto text-lg">
+              Size en uygun paketi seçin ve gastronomi dünyasında ustalaşın
+            </p>
+          </div>
+
+          {/* Plans Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            {/* Commis Plan */}
+            <div className="relative bg-black/40 backdrop-blur-sm border-2 border-gray-500/50 rounded-xl p-6 transition-all duration-300 hover:scale-105">
+              <div className="flex justify-center mb-4">
+                <div className="bg-gradient-to-br from-gray-600 to-gray-700 rounded-full p-3">
+                  <BookOpen className="h-6 w-6 text-white" />
+                </div>
+              </div>
+              <h3 className="text-xl font-bold text-white text-center mb-2">Commis</h3>
+              <div className="text-center mb-4">
+                <div className="text-4xl font-bold text-white">199₺</div>
+                <p className="text-gray-400 text-sm">/ Aylık</p>
+              </div>
             </div>
+
+            {/* Chef D party Plan - Popular */}
+            <div className="relative bg-black/40 backdrop-blur-sm border-2 border-orange-500/50 rounded-xl p-6 transition-all duration-300 md:scale-105 hover:scale-110 shadow-xl shadow-orange-500/20">
+              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-3 py-1 rounded-full text-xs font-bold">
+                  EN POPÜLER
+                </div>
+              </div>
+              <div className="flex justify-center mb-4">
+                <div className="bg-gradient-to-br from-orange-600 to-red-600 rounded-full p-3">
+                  <Crown className="h-6 w-6 text-white" />
+                </div>
+              </div>
+              <h3 className="text-xl font-bold text-white text-center mb-2">Chef D party</h3>
+              <div className="text-center mb-4">
+                <div className="text-4xl font-bold text-white">399₺</div>
+                <p className="text-gray-400 text-sm">/ Aylık</p>
+              </div>
+            </div>
+
+            {/* Executive Plan */}
+            <div className="relative bg-black/40 backdrop-blur-sm border-2 border-purple-500/50 rounded-xl p-6 transition-all duration-300 hover:scale-105">
+              <div className="flex justify-center mb-4">
+                <div className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-full p-3">
+                  <Zap className="h-6 w-6 text-white" />
+                </div>
+              </div>
+              <h3 className="text-xl font-bold text-white text-center mb-2">Executive</h3>
+              <div className="text-center mb-4">
+                <div className="text-4xl font-bold text-white">599₺</div>
+                <p className="text-gray-400 text-sm">/ Aylık</p>
+              </div>
+            </div>
+          </div>
+
+          {/* CTA */}
+          <div className="text-center">
+            <Link
+              href="/subscription"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white font-bold px-8 py-4 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-orange-500/50"
+            >
+              Tüm Paketleri İncele
+              <ArrowRight className="h-5 w-5" />
+            </Link>
           </div>
         </div>
       </section>
