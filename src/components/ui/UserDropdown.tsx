@@ -43,15 +43,15 @@ export default function UserDropdown() {
         <span className="hidden md:block text-sm font-medium">
           {session.user.name}
         </span>
-        <ChevronDown 
+        <ChevronDown
           className={`h-4 w-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
         />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-72 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50">
+        <div className="absolute right-0 mt-2 w-72 bg-[#0a0a0a] border border-gray-800 rounded-lg shadow-xl z-50">
           {/* Kullanıcı Bilgileri */}
-          <div className="px-4 py-3 border-b border-gray-700">
+          <div className="px-4 py-3 border-b border-gray-800">
             <div className="flex items-center space-x-3">
               <div className="w-12 h-12 rounded-full bg-orange-600 flex items-center justify-center">
                 <span className="text-2xl">👨‍🍳</span>
@@ -64,8 +64,8 @@ export default function UserDropdown() {
                   {session.user.email}
                 </p>
                 <p className="text-orange-500 text-xs font-medium">
-                  {session.user.role === 'ADMIN' ? 'Yönetici' : 
-                   session.user.role === 'INSTRUCTOR' ? 'Eğitmen' : 'Öğrenci'}
+                  {session.user.role === 'ADMIN' ? 'Yönetici' :
+                    session.user.role === 'INSTRUCTOR' ? 'Eğitmen' : 'Öğrenci'}
                 </p>
               </div>
             </div>
@@ -76,34 +76,34 @@ export default function UserDropdown() {
             <Link
               href="/dashboard"
               onClick={() => setIsOpen(false)}
-              className="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+              className="flex items-center px-4 py-2 text-gray-300 hover:bg-[#1a1a1a] hover:text-white transition-colors"
             >
               <User className="h-4 w-4 mr-3" />
               Profilim
             </Link>
-            
+
             <Link
               href="/my-courses"
               onClick={() => setIsOpen(false)}
-              className="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+              className="flex items-center px-4 py-2 text-gray-300 hover:bg-[#1a1a1a] hover:text-white transition-colors"
             >
               <BookOpen className="h-4 w-4 mr-3" />
               Kurslarım
             </Link>
-            
+
             <Link
               href="/favorites"
               onClick={() => setIsOpen(false)}
-              className="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+              className="flex items-center px-4 py-2 text-gray-300 hover:bg-[#1a1a1a] hover:text-white transition-colors"
             >
               <Heart className="h-4 w-4 mr-3" />
               Favorilerim
             </Link>
-            
+
             <Link
               href="/messages"
               onClick={() => setIsOpen(false)}
-              className="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+              className="flex items-center px-4 py-2 text-gray-300 hover:bg-[#1a1a1a] hover:text-white transition-colors"
             >
               <MessageCircle className="h-4 w-4 mr-3" />
               Mesajlar
@@ -113,7 +113,7 @@ export default function UserDropdown() {
               <Link
                 href="/messages"
                 onClick={() => setIsOpen(false)}
-                className="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+                className="flex items-center px-4 py-2 text-gray-300 hover:bg-[#1a1a1a] hover:text-white transition-colors"
               >
                 <MessageSquare className="h-4 w-4 mr-3" />
                 Mesajlarım
@@ -125,7 +125,7 @@ export default function UserDropdown() {
                 <Link
                   href="/admin"
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+                  className="flex items-center px-4 py-2 text-gray-300 hover:bg-[#1a1a1a] hover:text-white transition-colors"
                 >
                   <User className="h-4 w-4 mr-3" />
                   Admin Paneli
@@ -133,7 +133,7 @@ export default function UserDropdown() {
                 <Link
                   href="/admin/courses"
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+                  className="flex items-center px-4 py-2 text-gray-300 hover:bg-[#1a1a1a] hover:text-white transition-colors"
                 >
                   <Play className="h-4 w-4 mr-3" />
                   Kurs Yönetimi
@@ -144,7 +144,7 @@ export default function UserDropdown() {
             <Link
               href="/settings"
               onClick={() => setIsOpen(false)}
-              className="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+              className="flex items-center px-4 py-2 text-gray-300 hover:bg-[#1a1a1a] hover:text-white transition-colors"
             >
               <Settings className="h-4 w-4 mr-3" />
               Ayarlar
@@ -152,10 +152,10 @@ export default function UserDropdown() {
           </div>
 
           {/* Çıkış */}
-          <div className="border-t border-gray-700 py-2">
+          <div className="border-t border-gray-800 py-2">
             <button
               onClick={handleSignOut}
-              className="flex items-center w-full px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+              className="flex items-center w-full px-4 py-2 text-gray-300 hover:bg-[#1a1a1a] hover:text-white transition-colors"
             >
               <LogOut className="h-4 w-4 mr-3" />
               Çıkış Yap
