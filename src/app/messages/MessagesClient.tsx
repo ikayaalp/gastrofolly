@@ -897,87 +897,109 @@ export default function MessagesClient({ session }: Props) {
 
       {/* Yeni Mesaj Modal */}
       {showNewMessageModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 rounded-2xl border border-gray-700 w-full max-w-2xl max-h-[80vh] flex flex-col shadow-2xl">
-            <div className="p-6 border-b border-gray-700 flex justify-between items-center">
-              <h3 className="text-white font-semibold text-xl">Yeni Mesaj Başlat</h3>
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <div className="bg-[#0a0a0a] rounded-2xl border border-gray-800 w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl shadow-orange-500/10">
+            {/* Header */}
+            <div className="p-6 border-b border-gray-800 flex justify-between items-center bg-gradient-to-r from-gray-900/50 to-transparent">
+              <div className="flex items-center space-x-3">
+                <div className="bg-orange-500/10 p-2 rounded-lg">
+                  <MessageSquare className="h-6 w-6 text-orange-500" />
+                </div>
+                <h3 className="text-white font-bold text-xl">Yeni Mesaj Başlat</h3>
+              </div>
               <button
                 onClick={() => setShowNewMessageModal(false)}
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-gray-400 hover:text-white hover:bg-gray-800 p-2 rounded-lg transition-all"
               >
-                <X className="h-6 w-6" />
+                <X className="h-5 w-5" />
               </button>
             </div>
 
+            {/* Content */}
             <div className="flex-1 overflow-y-auto p-6">
               {instructors.length === 0 ? (
-                <div className="text-center text-gray-400 py-12">
-                  <BookOpen className="h-16 w-16 mx-auto mb-4 text-gray-600" />
-                  <p className="font-medium text-lg mb-2">Henüz kursa kayıtlı değilsiniz</p>
-                  <p className="text-sm">Eğitmeninize mesaj atabilmek için önce bir kursa kaydolmanız gerekiyor</p>
+                <div className="text-center text-gray-400 py-16">
+                  <div className="bg-gray-900/50 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 border border-gray-800">
+                    <BookOpen className="h-12 w-12 text-gray-600" />
+                  </div>
+                  <h4 className="font-bold text-xl text-white mb-3">Henüz kursa kayıtlı değilsiniz</h4>
+                  <p className="text-sm text-gray-400 mb-6 max-w-md mx-auto">
+                    Eğitmeninize mesaj atabilmek için önce bir kursa kaydolmanız gerekiyor
+                  </p>
                   <Link
                     href="/home"
-                    className="mt-4 inline-block bg-gradient-to-r from-orange-600 to-orange-500 text-white px-6 py-2.5 rounded-lg hover:from-orange-700 hover:to-orange-600 transition-all"
+                    className="inline-flex items-center space-x-2 bg-gradient-to-r from-orange-600 to-orange-500 text-white px-6 py-3 rounded-lg hover:from-orange-700 hover:to-orange-600 transition-all font-medium shadow-lg hover:shadow-orange-500/50"
                   >
-                    Kursları İncele
+                    <BookOpen className="h-5 w-5" />
+                    <span>Kursları İncele</span>
                   </Link>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-6">
                   {instructors.map((instructor) => (
-                    <div key={instructor.id} className="bg-gray-700/30 rounded-xl p-4 border border-gray-600">
-                      <div className="flex items-center space-x-3 mb-3">
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-600 to-orange-400 flex items-center justify-center ring-2 ring-gray-600">
+                    <div key={instructor.id} className="bg-black rounded-xl p-5 border border-gray-800 hover:border-gray-700 transition-all">
+                      {/* Instructor Info */}
+                      <div className="flex items-center space-x-4 mb-5">
+                        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-orange-600 to-orange-400 flex items-center justify-center ring-2 ring-gray-800 flex-shrink-0">
                           {instructor.image ? (
                             <Image
                               src={instructor.image}
                               alt={instructor.name || 'User'}
-                              width={48}
-                              height={48}
+                              width={56}
+                              height={56}
                               className="rounded-full"
                             />
                           ) : (
-                            <User className="h-6 w-6 text-white" />
+                            <User className="h-7 w-7 text-white" />
                           )}
                         </div>
-                        <div className="flex-1">
-                          <h4 className="text-white font-semibold">{instructor.name}</h4>
-                          <p className="text-gray-400 text-sm">{instructor.email}</p>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-white font-bold text-lg">{instructor.name}</h4>
+                          <p className="text-gray-400 text-sm truncate">{instructor.email}</p>
                         </div>
                       </div>
 
-                      <div className="space-y-2">
-                        <p className="text-gray-400 text-sm font-medium">Kayıtlı Kurslar:</p>
-                        {instructor.courses.map((course) => (
-                          <button
-                            key={course.id}
-                            onClick={() => startNewConversation(instructor, course)}
-                            className="w-full flex items-center space-x-3 p-3 bg-gray-600/30 hover:bg-gray-600/50 rounded-lg border border-gray-600 hover:border-orange-500 transition-all text-left group"
-                          >
-                            <div className="w-12 h-12 bg-gray-700 rounded-lg overflow-hidden flex-shrink-0">
-                              {course.imageUrl ? (
-                                <Image
-                                  src={course.imageUrl}
-                                  alt={course.title}
-                                  width={48}
-                                  height={48}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center">
-                                  <BookOpen className="h-6 w-6 text-gray-500" />
-                                </div>
-                              )}
-                            </div>
-                            <div className="flex-1">
-                              <h5 className="text-white font-medium text-sm group-hover:text-orange-400 transition-colors">{course.title}</h5>
-                              {course.lessonCount && (
-                                <p className="text-gray-400 text-xs">{course.lessonCount} ders</p>
-                              )}
-                            </div>
-                            <ChevronLeft className="h-5 w-5 text-gray-400 group-hover:text-orange-400 rotate-180 transition-colors" />
-                          </button>
-                        ))}
+                      {/* Courses */}
+                      <div className="space-y-3">
+                        <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider">Kayıtlı Kurslar</p>
+                        <div className="space-y-2">
+                          {instructor.courses.map((course) => (
+                            <button
+                              key={course.id}
+                              onClick={() => startNewConversation(instructor, course)}
+                              className="w-full flex items-center space-x-3 p-3 bg-gray-900/50 hover:bg-gray-800 rounded-lg border border-gray-800 hover:border-orange-500/50 transition-all text-left group"
+                            >
+                              <div className="w-12 h-12 bg-gray-800 rounded-lg overflow-hidden flex-shrink-0 border border-gray-700">
+                                {course.imageUrl ? (
+                                  <Image
+                                    src={course.imageUrl}
+                                    alt={course.title}
+                                    width={48}
+                                    height={48}
+                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <BookOpen className="h-6 w-6 text-gray-600" />
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h5 className="text-white font-semibold text-sm group-hover:text-orange-400 transition-colors truncate">
+                                  {course.title}
+                                </h5>
+                                {course.lessonCount && (
+                                  <p className="text-gray-500 text-xs mt-0.5">
+                                    {course.lessonCount} ders
+                                  </p>
+                                )}
+                              </div>
+                              <div className="flex-shrink-0">
+                                <ChevronLeft className="h-5 w-5 text-gray-500 group-hover:text-orange-400 rotate-180 transition-all group-hover:translate-x-1" />
+                              </div>
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   ))}
