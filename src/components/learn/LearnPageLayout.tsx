@@ -15,7 +15,8 @@ import {
     Clock,
     Star,
     TrendingUp,
-    Award
+    Award,
+    Bell
 } from "lucide-react"
 import UserDropdown from "@/components/ui/UserDropdown"
 import VideoPlayer from "@/components/video/VideoPlayer"
@@ -69,6 +70,7 @@ interface LearnPageLayoutProps {
     session: {
         user: {
             id: string;
+            role?: string;
         };
     }
     isCompleted: boolean
@@ -121,12 +123,82 @@ export default function LearnPageLayout({
 
     return (
         <div className="min-h-screen bg-black">
+            {/* Desktop Header */}
+            <header className="hidden md:block fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex justify-between items-center py-4">
+                        <div className="flex items-center space-x-8">
+                            <Link href="/home" className="flex items-center space-x-2">
+                                <ChefHat className="h-8 w-8 text-orange-500" />
+                                <span className="text-2xl font-bold text-white">Chef2.0</span>
+                                {session?.user?.role === 'INSTRUCTOR' && (
+                                    <span className="bg-blue-600 text-white px-2 py-1 rounded text-sm font-medium">Eğitmen</span>
+                                )}
+                                {session?.user?.role === 'ADMIN' && (
+                                    <span className="bg-orange-600 text-white px-2 py-1 rounded text-sm font-medium">Admin</span>
+                                )}
+                            </Link>
+                            <nav className="flex space-x-6">
+                                <Link href="/home" className="text-gray-300 hover:text-white transition-colors">
+                                    Ana Sayfa
+                                </Link>
+                                <Link href="/my-courses" className="text-white font-semibold">
+                                    Kurslarım
+                                </Link>
+                                {session?.user?.role === 'INSTRUCTOR' && (
+                                    <>
+                                        <Link href="/instructor-dashboard" className="text-gray-300 hover:text-white transition-colors">
+                                            Eğitmen Paneli
+                                        </Link>
+                                        <Link href="/instructor-dashboard/courses" className="text-gray-300 hover:text-white transition-colors">
+                                            Kurslarımı Yönet
+                                        </Link>
+                                    </>
+                                )}
+                                {session?.user?.role === 'ADMIN' && (
+                                    <>
+                                        <Link href="/admin" className="text-gray-300 hover:text-white transition-colors">
+                                            Admin Paneli
+                                        </Link>
+                                        <Link href="/admin/courses" className="text-gray-300 hover:text-white transition-colors">
+                                            Kurs Yönetimi
+                                        </Link>
+                                    </>
+                                )}
+                                <Link href="/chef-sosyal" className="text-gray-300 hover:text-white transition-colors">
+                                    Chef Sosyal
+                                </Link>
+                                <Link href="/messages" className="text-gray-300 hover:text-white transition-colors">
+                                    Mesajlar
+                                </Link>
+                                <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
+                                    İletişim
+                                </Link>
+                            </nav>
+                        </div>
+
+                        <div className="flex items-center space-x-4">
+                            <button className="text-gray-300 hover:text-white">
+                                <Bell className="h-5 w-5" />
+                            </button>
+                            <UserDropdown />
+                        </div>
+                    </div>
+                </div>
+            </header>
+
             {/* Mobile Top Bar */}
             <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
                 <div className="flex justify-between items-center py-3 px-4">
                     <Link href="/home" className="flex items-center space-x-2">
                         <ChefHat className="h-6 w-6 text-orange-500" />
                         <span className="text-lg font-bold text-white">Chef2.0</span>
+                        {session?.user?.role === 'INSTRUCTOR' && (
+                            <span className="bg-blue-600 text-white px-2 py-1 rounded text-xs font-medium">Eğitmen</span>
+                        )}
+                        {session?.user?.role === 'ADMIN' && (
+                            <span className="bg-orange-600 text-white px-2 py-1 rounded text-xs font-medium">Admin</span>
+                        )}
                     </Link>
                     <div className="flex items-center space-x-3">
                         <button
@@ -299,8 +371,8 @@ export default function LearnPageLayout({
                                 <button
                                     onClick={() => setActiveTab('overview')}
                                     className={`px-6 py-4 font-medium text-sm whitespace-nowrap transition-all ${activeTab === 'overview'
-                                            ? 'text-orange-500 border-b-2 border-orange-500'
-                                            : 'text-gray-400 hover:text-white'
+                                        ? 'text-orange-500 border-b-2 border-orange-500'
+                                        : 'text-gray-400 hover:text-white'
                                         }`}
                                 >
                                     Genel Bakış
@@ -308,8 +380,8 @@ export default function LearnPageLayout({
                                 <button
                                     onClick={() => setActiveTab('lessons')}
                                     className={`px-6 py-4 font-medium text-sm whitespace-nowrap transition-all ${activeTab === 'lessons'
-                                            ? 'text-orange-500 border-b-2 border-orange-500'
-                                            : 'text-gray-400 hover:text-white'
+                                        ? 'text-orange-500 border-b-2 border-orange-500'
+                                        : 'text-gray-400 hover:text-white'
                                         }`}
                                 >
                                     Dersler ({totalLessons})
@@ -317,8 +389,8 @@ export default function LearnPageLayout({
                                 <button
                                     onClick={() => setActiveTab('comments')}
                                     className={`px-6 py-4 font-medium text-sm whitespace-nowrap transition-all ${activeTab === 'comments'
-                                            ? 'text-orange-500 border-b-2 border-orange-500'
-                                            : 'text-gray-400 hover:text-white'
+                                        ? 'text-orange-500 border-b-2 border-orange-500'
+                                        : 'text-gray-400 hover:text-white'
                                         }`}
                                 >
                                     Yorumlar ({course.reviews.length})
@@ -326,8 +398,8 @@ export default function LearnPageLayout({
                                 <button
                                     onClick={() => setActiveTab('recommended')}
                                     className={`px-6 py-4 font-medium text-sm whitespace-nowrap transition-all ${activeTab === 'recommended'
-                                            ? 'text-orange-500 border-b-2 border-orange-500'
-                                            : 'text-gray-400 hover:text-white'
+                                        ? 'text-orange-500 border-b-2 border-orange-500'
+                                        : 'text-gray-400 hover:text-white'
                                         }`}
                                 >
                                     Önerilen Kurslar
@@ -403,16 +475,16 @@ export default function LearnPageLayout({
                                                 key={lesson.id}
                                                 href={`/learn/${course.id}?lesson=${lesson.id}`}
                                                 className={`block bg-[#0a0a0a] border rounded-xl p-4 transition-all hover:border-orange-500/50 ${isCurrent
-                                                        ? 'border-orange-500 bg-orange-500/5'
-                                                        : 'border-gray-800'
+                                                    ? 'border-orange-500 bg-orange-500/5'
+                                                    : 'border-gray-800'
                                                     }`}
                                             >
                                                 <div className="flex items-center space-x-4">
                                                     <div className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 ${isLessonCompleted
-                                                            ? 'bg-green-500/10'
-                                                            : isCurrent
-                                                                ? 'bg-orange-500/10'
-                                                                : 'bg-gray-800'
+                                                        ? 'bg-green-500/10'
+                                                        : isCurrent
+                                                            ? 'bg-orange-500/10'
+                                                            : 'bg-gray-800'
                                                         }`}>
                                                         {isLessonCompleted ? (
                                                             <CheckCircle className="h-6 w-6 text-green-500" />
