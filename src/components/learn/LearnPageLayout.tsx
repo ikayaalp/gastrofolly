@@ -19,13 +19,7 @@ interface LearnPageLesson {
     order?: number;
 }
 
-interface ReviewItem {
-    id: string;
-    rating: number;
-    user: { name: string | null; image: string | null };
-    createdAt: string;
-    comment?: string | null;
-}
+
 
 interface ProgressItem {
     lessonId: string;
@@ -34,13 +28,55 @@ interface ProgressItem {
 }
 
 interface LearnPageLayoutProps {
-    course: any // Using any for complex nested types to avoid duplication, or we can define them properly if needed
+    course: {
+        id: string;
+        title: string;
+        instructor: {
+            name: string | null;
+            image: string | null;
+        };
+        lessons: Array<{
+            id: string;
+            title: string;
+            description: string | null;
+            duration: number | null;
+            order: number;
+            isFree: boolean;
+        }>;
+        reviews: Array<{
+            id: string;
+            rating: number;
+            comment?: string | null;
+            userId: string;
+            user: { name: string | null; image: string | null };
+            createdAt: Date;
+        }>;
+    }
     currentLesson: LearnPageLesson
-    session: any
+    session: {
+        user: {
+            id: string;
+        };
+    }
     isCompleted: boolean
     previousLesson: LearnPageLesson | null
     nextLesson: LearnPageLesson | null
-    recommendedCourses: any[]
+    recommendedCourses: Array<{
+        id: string;
+        title: string;
+        description: string;
+        price: number;
+        imageUrl: string | null;
+        instructor: {
+            name: string | null;
+            image: string | null;
+        };
+        category: { name: string };
+        level: string;
+        lessons: Array<{ id: string; duration: number | null }>;
+        reviews: Array<{ rating: number }>;
+        _count: { enrollments: number; lessons: number; reviews: number };
+    }>
     progress: ProgressItem[]
     successParam?: string
     fraudBypassedParam?: string
