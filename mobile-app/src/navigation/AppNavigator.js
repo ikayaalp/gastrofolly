@@ -18,6 +18,17 @@ import { Home, BookOpen, Users, MessageCircle } from 'lucide-react-native';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
+const HomeStack = createNativeStackNavigator();
+
+// Home Stack Navigator (includes CourseDetail)
+function HomeStackNavigator() {
+    return (
+        <HomeStack.Navigator screenOptions={{ headerShown: false }}>
+            <HomeStack.Screen name="HomeMain" component={HomeScreen} />
+            <HomeStack.Screen name="CourseDetail" component={CourseDetailScreen} />
+        </HomeStack.Navigator>
+    );
+}
 
 function TabNavigator() {
     return (
@@ -47,7 +58,7 @@ function TabNavigator() {
         >
             <Tab.Screen
                 name="Home"
-                component={HomeScreen}
+                component={HomeStackNavigator}
                 options={{
                     tabBarLabel: 'Ana Sayfa',
                     tabBarIcon: ({ color, size }) => (
@@ -97,7 +108,6 @@ export default function AppNavigator() {
                 <Stack.Screen name="Login" component={LoginScreen} />
                 <Stack.Screen name="Register" component={RegisterScreen} />
                 <Stack.Screen name="EmailVerification" component={EmailVerificationScreen} />
-                <Stack.Screen name="CourseDetail" component={CourseDetailScreen} />
             </Stack.Navigator>
         </NavigationContainer>
     );

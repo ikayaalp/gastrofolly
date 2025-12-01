@@ -20,11 +20,10 @@ import {
     Lock,
     CheckCircle,
     ArrowLeft,
-    Heart,
-    Share2,
 } from 'lucide-react-native';
 import axios from 'axios';
 import config from '../api/config';
+import UserDropdown from '../components/UserDropdown';
 
 const { width } = Dimensions.get('window');
 
@@ -118,20 +117,16 @@ export default function CourseDetailScreen({ route, navigation }) {
 
     return (
         <View style={styles.container}>
-            {/* Header */}
+            {/* Header - Same as HomeScreen */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                     <ArrowLeft size={24} color="white" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Kurs Detayı</Text>
-                <View style={styles.headerActions}>
-                    <TouchableOpacity style={styles.iconButton}>
-                        <Heart size={22} color="white" />
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.iconButton}>
-                        <Share2 size={22} color="white" />
-                    </TouchableOpacity>
+                <View style={styles.logoContainer}>
+                    <ChefHat size={28} color="#ea580c" />
+                    <Text style={styles.logoText}>Chef2.0</Text>
                 </View>
+                <UserDropdown navigation={navigation} />
             </View>
 
             <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
@@ -165,6 +160,24 @@ export default function CourseDetailScreen({ route, navigation }) {
 
                     {/* Description */}
                     <Text style={styles.description}>{course.description}</Text>
+
+                    {/* Subscribe Button - Moved here */}
+                    {!isEnrolled && (
+                        <TouchableOpacity
+                            style={[styles.subscribeButtonInline, { backgroundColor: levelInfo.color }]}
+                        >
+                            <Text style={styles.subscribeButtonText}>
+                                {levelInfo.name} Paketine Abone Ol - {levelInfo.price}/ay
+                            </Text>
+                        </TouchableOpacity>
+                    )}
+
+                    {isEnrolled && (
+                        <TouchableOpacity style={styles.enrolledButtonInline}>
+                            <CheckCircle size={20} color="white" />
+                            <Text style={styles.enrolledButtonText}>Kursa Devam Et</Text>
+                        </TouchableOpacity>
+                    )}
 
                     {/* Instructor */}
                     {course.instructor && (
@@ -270,28 +283,6 @@ export default function CourseDetailScreen({ route, navigation }) {
                     </View>
                 </View>
             </ScrollView>
-
-            {/* Bottom CTA */}
-            <View style={styles.bottomContainer}>
-                {isEnrolled ? (
-                    <TouchableOpacity style={styles.enrolledButton}>
-                        <CheckCircle size={20} color="white" />
-                        <Text style={styles.enrolledButtonText}>Kursa Devam Et</Text>
-                    </TouchableOpacity>
-                ) : (
-                    <>
-                        <View style={styles.priceContainer}>
-                            <Text style={styles.priceLabel}>{levelInfo.name} Paketi</Text>
-                            <Text style={styles.priceText}>{levelInfo.price}/ay</Text>
-                        </View>
-                        <TouchableOpacity
-                            style={[styles.subscribeButton, { backgroundColor: levelInfo.color }]}
-                        >
-                            <Text style={styles.subscribeButtonText}>Abone Ol</Text>
-                        </TouchableOpacity>
-                    </>
-                )}
-            </View>
         </View>
     );
 }
@@ -342,26 +333,23 @@ const styles = StyleSheet.create({
     backButton: {
         padding: 4,
     },
-    headerTitle: {
-        color: 'white',
-        fontSize: 18,
-        fontWeight: '600',
-        flex: 1,
-        textAlign: 'center',
-        marginHorizontal: 16,
-    },
-    headerActions: {
+    logoContainer: {
         flexDirection: 'row',
+        alignItems: 'center',
         gap: 8,
+        flex: 1,
+        justifyContent: 'center',
     },
-    iconButton: {
-        padding: 4,
+    logoText: {
+        color: 'white',
+        fontSize: 20,
+        fontWeight: 'bold',
     },
     scrollView: {
         flex: 1,
     },
     scrollContent: {
-        paddingBottom: 100,
+        paddingBottom: 120, // Space for bottom tab bar
     },
     imageContainer: {
         position: 'relative',
@@ -591,51 +579,39 @@ const styles = StyleSheet.create({
         color: '#d1d5db',
         fontSize: 14,
     },
-    bottomContainer: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        backgroundColor: '#0a0a0a',
-        borderTopWidth: 1,
-        borderTopColor: '#1f2937',
-        padding: 16,
-        paddingBottom: 24,
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 12,
-    },
-    priceContainer: {
-        flex: 1,
-    },
-    priceLabel: {
-        color: '#9ca3af',
-        fontSize: 12,
-    },
-    priceText: {
-        color: 'white',
-        fontSize: 20,
-        fontWeight: 'bold',
-    },
-    subscribeButton: {
-        paddingVertical: 14,
-        paddingHorizontal: 32,
+    subscribeButtonInline: {
+        paddingVertical: 16,
+        paddingHorizontal: 24,
         borderRadius: 12,
+        alignItems: 'center',
+        marginVertical: 20,
+        shadowColor: '#ea580c',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 5,
     },
     subscribeButtonText: {
         color: 'white',
         fontSize: 16,
         fontWeight: 'bold',
+        textAlign: 'center',
     },
-    enrolledButton: {
-        flex: 1,
+    enrolledButtonInline: {
         backgroundColor: '#10b981',
-        paddingVertical: 14,
+        paddingVertical: 16,
+        paddingHorizontal: 24,
         borderRadius: 12,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
         gap: 8,
+        marginVertical: 20,
+        shadowColor: '#10b981',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 5,
     },
     enrolledButtonText: {
         color: 'white',
