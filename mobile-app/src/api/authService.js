@@ -45,7 +45,6 @@ const authService = {
     // Login user
     login: async (email, password) => {
         try {
-            // Try real API first
             const response = await api.post(config.API_ENDPOINTS.LOGIN, {
                 email,
                 password,
@@ -63,31 +62,6 @@ const authService = {
 
             return { success: true, data: response.data };
         } catch (error) {
-            // If mobile-login endpoint doesn't exist (404), use mock login for testing
-            if (error.response?.status === 404) {
-                console.log('Mobile login endpoint not found, using mock authentication for testing');
-
-                // Mock successful login for testing
-                const mockToken = 'mock-jwt-token-' + Date.now();
-                const mockUser = {
-                    id: '1',
-                    name: email.split('@')[0],
-                    email: email,
-                    role: 'STUDENT',
-                };
-
-                await AsyncStorage.setItem('authToken', mockToken);
-                await AsyncStorage.setItem('userData', JSON.stringify(mockUser));
-
-                return {
-                    success: true,
-                    data: {
-                        token: mockToken,
-                        user: mockUser,
-                    },
-                };
-            }
-
             return {
                 success: false,
                 error: error.response?.data?.message || 'Giriş başarısız oldu',
