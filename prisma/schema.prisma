@@ -62,6 +62,8 @@ model User {
   role                  UserRole  @default(STUDENT)
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
+  subscriptionPlan      String?   // "Commis", "Chef D party", "Executive"
+  subscriptionEndDate   DateTime? // Abonelik bitiş tarihi
 
   accounts      Account[]
   sessions      Session[]
@@ -204,8 +206,9 @@ model Payment {
 
   userId   String
   user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  courseId String
-  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId String?
+  course   Course? @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  subscriptionPlan String? // Abonelik ödemesi ise plan adı
 }
 
 enum PaymentStatus {

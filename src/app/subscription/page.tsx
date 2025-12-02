@@ -1,11 +1,51 @@
-import { getServerSession } from "next-auth/next"
-import { authOptions } from "@/lib/auth"
-import Link from "next/link"
-import { ChefHat, Check, Crown, Sparkles, BookOpen, Award, Users, MessageCircle, Home, Zap, Star } from "lucide-react"
-import UserDropdown from "@/components/ui/UserDropdown"
+"use client"
 
-export default async function SubscriptionPage() {
-    const session = await getServerSession(authOptions)
+import { useSession } from "next-auth/react"
+import Link from "next/link"
+import { ChefHat, Check, Crown, Sparkles, BookOpen, Award, Users, MessageCircle, Home, Zap, Star, Loader2 } from "lucide-react"
+import UserDropdown from "@/components/ui/UserDropdown"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { toast } from "react-hot-toast"
+
+export default function SubscriptionPage() {
+    const { data: session } = useSession()
+    const router = useRouter()
+    const [loading, setLoading] = useState<string | null>(null)
+
+    const handleSubscription = async (planName: string, price: string) => {
+        if (!session) {
+            router.push("/auth/signin?callbackUrl=/subscription")
+            return
+        }
+
+        try {
+            setLoading(planName)
+            const response = await fetch("/api/iyzico/initialize-subscription", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    planName,
+                    price,
+                }),
+            })
+
+            const data = await response.json()
+
+            if (data.success && data.paymentPageUrl) {
+                window.location.href = data.paymentPageUrl
+            } else {
+                toast.error(data.error || "Ödeme başlatılamadı")
+                setLoading(null)
+            }
+        } catch (error) {
+            console.error("Subscription error:", error)
+            toast.error("Bir hata oluştu")
+            setLoading(null)
+        }
+    }
 
     const plans = [
         {
@@ -157,6 +197,7 @@ export default async function SubscriptionPage() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
                         {plans.map((plan) => {
                             const Icon = plan.icon
+                            const isLoading = loading === plan.name
                             return (
                                 <div
                                     key={plan.name}
@@ -191,8 +232,19 @@ export default async function SubscriptionPage() {
                                     </div>
 
                                     {/* CTA Button */}
-                                    <button className={`w-full ${plan.buttonColor} text-white text-lg font-bold py-3 rounded-xl transition-all duration-300 mb-6`}>
-                                        Başlat
+                                    <button
+                                        onClick={() => handleSubscription(plan.name, plan.price)}
+                                        disabled={!!loading}
+                                        className={`w-full ${plan.buttonColor} text-white text-lg font-bold py-3 rounded-xl transition-all duration-300 mb-6 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed`}
+                                    >
+                                        {isLoading ? (
+                                            <>
+                                                <Loader2 className="h-5 w-5 animate-spin" />
+                                                İşleniyor...
+                                            </>
+                                        ) : (
+                                            "Başlat"
+                                        )}
                                     </button>
 
                                     {/* Features */}

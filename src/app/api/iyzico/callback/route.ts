@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const token = searchParams.get('token')
     const conversationIdParam = searchParams.get('conversationId')
-    
+
     // Debug: Tüm parametreleri ve headers'ları logla
     console.log('Callback URL:', request.url)
     console.log('Search params:', Object.fromEntries(searchParams.entries()))
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     // Token yoksa, POST body'de olabilir mi kontrol et
     if (!token) {
       console.error('No token found in callback URL')
-      
+
       // Referer'dan token'ı çıkarmayı dene
       const referer = request.headers.get('referer')
       if (referer) {
@@ -39,14 +39,14 @@ export async function GET(request: NextRequest) {
           // Token'ı referer'dan al ve tekrar işle
           searchParams.set('token', refererToken)
           const result = await retrieveCheckoutForm(refererToken)
-          
+
           console.log('Iyzico callback result (from referer):', result)
-          
+
           // Aynı success/fail kontrolünü yap
           if (result.status === 'success' && result.paymentStatus === 'SUCCESS') {
             // Başarılı ödeme akışı (aşağıdaki kodla aynı)
             const conversationId = result.conversationId
-            
+
             let payments = await prisma.payment.findMany({
               where: {
                 stripePaymentId: conversationId,
@@ -144,7 +144,7 @@ export async function GET(request: NextRequest) {
             if (result.errorMessage) {
               userFriendlyError = result.errorMessage
             }
-            
+
             const html = `
               <!DOCTYPE html>
               <html>
@@ -169,11 +169,11 @@ export async function GET(request: NextRequest) {
           }
         }
       }
-      
+
       // ConversationId parametresi varsa pending payment'ları başarılı kabul et
       if (conversationIdParam) {
         console.log('No token but conversationId found, marking pending payments as completed')
-        
+
         // Bu conversationId ile ilişkili pending payment'ları bul
         const payments = await prisma.payment.findMany({
           where: {
@@ -260,7 +260,7 @@ export async function GET(request: NextRequest) {
           headers: { 'Content-Type': 'text/html' }
         })
       }
-      
+
       console.error('No token found in callback URL or referer - cannot verify payment status')
       const html = `
         <!DOCTYPE html>
@@ -301,7 +301,7 @@ export async function GET(request: NextRequest) {
     // BAŞARILI ÖDEME - Enrollment oluştur ve my-courses'a yönlendir
     if (result.status === 'success' && result.paymentStatus === 'SUCCESS') {
       const conversationId = result.conversationId
-      
+
       // Bu conversationId ile ilişkili tüm pending payment kayıtlarını bul
       let payments = await prisma.payment.findMany({
         where: {
@@ -383,7 +383,7 @@ export async function GET(request: NextRequest) {
             }
           })
         }
-        
+
         courseIds.push(payment.courseId)
       }
 
@@ -422,7 +422,7 @@ export async function GET(request: NextRequest) {
         paymentId: result.paymentId,
         fraudStatus: result.fraudStatus
       })
-      
+
       // Hata mesajını daha kullanıcı dostu hale getir
       let userFriendlyError = 'payment_failed'
       if (result.fraudStatus === 1) {
@@ -438,7 +438,7 @@ export async function GET(request: NextRequest) {
       } else if (result.errorMessage) {
         userFriendlyError = result.errorMessage
       }
-      
+
       const html = `
         <!DOCTYPE html>
         <html>
