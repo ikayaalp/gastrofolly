@@ -5,12 +5,30 @@ import { prisma } from "@/lib/prisma"
 import HomePageClient from "./HomePageClient"
 
 async function getHomeData(userId?: string) {
+  // Kullanıcı bilgilerini ve ödemelerini al (Erişim kontrolü için)
+  let user = null;
+  if (userId) {
+    user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        subscriptionEndDate: true,
+        payments: {
+          where: { status: 'COMPLETED', amount: { gt: 0 } },
+          select: { courseId: true }
+        }
+      }
+    });
+  }
+
+  const isSubscriptionValid = user?.subscriptionEndDate && new Date(user.subscriptionEndDate) > new Date();
+  const purchasedCourseIds = user?.payments.map(p => p.courseId) || [];
+
   const [
     featuredCourses,
     popularCourses,
     recentCourses,
     categories,
-    userEnrollments
+    rawUserEnrollments
   ] = await Promise.all([
     // Öne çıkan kurslar
     prisma.course.findMany({
@@ -80,6 +98,14 @@ async function getHomeData(userId?: string) {
       take: 6
     }) : []
   ])
+
+  // Enrollments filtreleme: Abonelik yoksa sadece satın alınan veya ücretsiz kursları göster
+  const userEnrollments = rawUserEnrollments.filter(enrollment => {
+    if (isSubscriptionValid) return true; // Abonelik varsa hepsi görünür
+    if (enrollment.course.price === 0) return true; // Ücretsizse görünür
+    if (purchasedCourseIds.includes(enrollment.courseId)) return true; // Satın alınmışsa görünür
+    return false; // Aksi halde (sadece abonelikle erişilen ama süresi bitmiş) gizle
+  });
 
   return {
     featuredCourses,
