@@ -45,7 +45,14 @@ interface LearnPageProps {
 
 async function getCourseWithProgress(courseId: string, userId: string) {
   console.log('Learn Page - getCourseWithProgress:', { courseId, userId })
-  
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { subscriptionPlan: true, subscriptionEndDate: true }
+  })
+
+  const hasActiveSubscription = user?.subscriptionPlan && user?.subscriptionEndDate && new Date(user.subscriptionEndDate) > new Date()
+
   const enrollment = await prisma.enrollment.findUnique({
     where: {
       userId_courseId: {
@@ -56,9 +63,10 @@ async function getCourseWithProgress(courseId: string, userId: string) {
   })
 
   console.log('Learn Page - enrollment found:', enrollment)
+  console.log('Learn Page - hasActiveSubscription:', hasActiveSubscription)
 
-  if (!enrollment) {
-    console.log('Learn Page - No enrollment found, checking all enrollments for user:', userId)
+  if (!enrollment && !hasActiveSubscription) {
+    console.log('Learn Page - No enrollment and no active subscription found for user:', userId)
     const allEnrollments = await prisma.enrollment.findMany({
       where: { userId },
       select: { courseId: true, createdAt: true }
@@ -203,7 +211,7 @@ export default async function LearnPage({ params, searchParams }: LearnPageProps
   const nextLesson: LearnPageLesson | null = currentIndex < lessons.length - 1 ? lessons[currentIndex + 1] : null
   const currentLesson: LearnPageLesson | null = lessons[currentIndex]
   const typedProgress: ProgressItem[] = progress
-  
+
   // Debug için
   console.log("Learn Page - course lessons:", course.lessons)
   console.log("Learn Page - currentLesson:", currentLesson)
@@ -241,7 +249,7 @@ export default async function LearnPage({ params, searchParams }: LearnPageProps
               <div>
                 <h3 className="text-green-400 font-semibold text-lg">Ödeme Başarılı!</h3>
                 <p className="text-gray-300 text-sm">
-                  {resolvedSearchParams?.fraud_bypassed 
+                  {resolvedSearchParams?.fraud_bypassed
                     ? "Ödeme tamamlandı. Kursunuza hoş geldiniz!"
                     : "Kursunuz başarıyla satın alındı. İyi öğrenmeler!"
                   }
@@ -264,18 +272,18 @@ export default async function LearnPage({ params, searchParams }: LearnPageProps
             previousLesson={previousLesson}
             nextLesson={nextLesson}
           />
-          
+
           {/* Comments Section */}
           <div className="p-6">
-            <CommentsSection 
-              reviews={course.reviews} 
+            <CommentsSection
+              reviews={course.reviews}
               courseId={course.id}
               canComment={true}
               userId={session.user.id}
             />
-            
+
             {/* Recommended Courses */}
-            <RecommendedCourses 
+            <RecommendedCourses
               courses={recommendedCourses}
               currentCourseId={course.id}
             />

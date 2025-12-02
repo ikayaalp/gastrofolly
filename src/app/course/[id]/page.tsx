@@ -423,7 +423,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
 
                   {/* Abonelik Butonu */}
                   <Link
-                    href="/subscription"
+                    href={`/subscription?courseId=${course.id}`}
                     className={`w-full text-white py-3 px-4 rounded-lg font-semibold transition-colors flex items-center justify-center mb-3 ${course.level === 'BEGINNER' ? 'bg-gray-600 hover:bg-gray-700' :
                       course.level === 'INTERMEDIATE' ? 'bg-orange-600 hover:bg-orange-700' :
                         'bg-purple-600 hover:bg-purple-700'

@@ -5,17 +5,19 @@ import Link from "next/link"
 import { ChefHat, Check, Crown, Sparkles, BookOpen, Award, Users, MessageCircle, Home, Zap, Star, Loader2 } from "lucide-react"
 import UserDropdown from "@/components/ui/UserDropdown"
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { toast } from "react-hot-toast"
 
 export default function SubscriptionPage() {
     const { data: session } = useSession()
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const courseId = searchParams.get("courseId")
     const [loading, setLoading] = useState<string | null>(null)
 
     const handleSubscription = async (planName: string, price: string) => {
         if (!session) {
-            router.push("/auth/signin?callbackUrl=/subscription")
+            router.push(`/auth/signin?callbackUrl=/subscription${courseId ? `?courseId=${courseId}` : ''}`)
             return
         }
 
@@ -29,6 +31,7 @@ export default function SubscriptionPage() {
                 body: JSON.stringify({
                     planName,
                     price,
+                    courseId,
                 }),
             })
 

@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json()
-        const { planName, price } = body
+        const { planName, price, courseId } = body
 
         if (!planName || !price) {
             return NextResponse.json(
@@ -44,11 +44,13 @@ export async function POST(request: NextRequest) {
                 status: "PENDING",
                 userId: user.id,
                 subscriptionPlan: planName,
+                courseId: courseId || undefined,
             }
         })
 
         // 2. İyzico ödeme isteği hazırla
-        const callbackUrl = `${process.env.NEXTAUTH_URL}/api/iyzico/subscription-callback`
+        const origin = request.nextUrl.origin
+        const callbackUrl = `${origin}/api/iyzico/subscription-callback`
 
         // İsim soyisim ayrıştırma (basitçe)
         const nameParts = (user.name || "Misafir Kullanıcı").split(" ")
