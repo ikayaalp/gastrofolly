@@ -21,11 +21,7 @@ async function handleCallback(request: NextRequest) {
             const tokenFromForm = formData?.get('token') as string
 
             if (!tokenFromForm) {
-                const url = request.nextUrl.clone()
-                url.pathname = '/subscription'
-                url.search = ''
-                url.searchParams.set('error', 'token_missing')
-                return NextResponse.redirect(url)
+                return NextResponse.redirect(new URL('/subscription?error=token_missing', request.url))
             }
 
             return handlePayment(tokenFromForm, request)
@@ -35,11 +31,7 @@ async function handleCallback(request: NextRequest) {
 
     } catch (error) {
         console.error("Subscription callback error:", error)
-        const url = request.nextUrl.clone()
-        url.pathname = '/subscription'
-        url.search = ''
-        url.searchParams.set('error', 'system_error')
-        return NextResponse.redirect(url)
+        return NextResponse.redirect(new URL('/subscription?error=system_error', request.url))
     }
 }
 
@@ -60,19 +52,11 @@ async function handlePayment(token: string, request: NextRequest) {
         })
 
         if (!payment) {
-            const url = request.nextUrl.clone()
-            url.pathname = '/subscription'
-            url.search = ''
-            url.searchParams.set('error', 'payment_not_found')
-            return NextResponse.redirect(url)
+            return NextResponse.redirect(new URL('/subscription?error=payment_not_found', request.url))
         }
 
         if (payment.status === 'COMPLETED') {
-            const url = request.nextUrl.clone()
-            url.pathname = '/home'
-            url.search = ''
-            url.searchParams.set('success', 'already_completed')
-            return NextResponse.redirect(url)
+            return NextResponse.redirect(new URL('/home?success=already_completed', request.url))
         }
 
         // Ödemeyi güncelle
@@ -100,23 +84,12 @@ async function handlePayment(token: string, request: NextRequest) {
         }
 
         if (payment.courseId) {
-            const url = request.nextUrl.clone()
-            url.pathname = `/learn/${payment.courseId}`
-            url.search = '' // Clear existing search params
-            url.searchParams.set('success', 'true')
-            return NextResponse.redirect(url)
+            return NextResponse.redirect(new URL(`/learn/${payment.courseId}?success=true`, request.url))
         }
 
-        const url = request.nextUrl.clone()
-        url.pathname = '/home'
-        url.search = ''
-        url.searchParams.set('subscription', 'success')
-        return NextResponse.redirect(url)
+        return NextResponse.redirect(new URL('/home?subscription=success', request.url))
     } else {
-        const url = request.nextUrl.clone()
-        url.pathname = '/subscription'
-        url.search = ''
-        url.searchParams.set('error', result.errorMessage || 'payment_failed')
-        return NextResponse.redirect(url)
+        const errorMsg = result.errorMessage || 'payment_failed'
+        return NextResponse.redirect(new URL(`/subscription?error=${encodeURIComponent(errorMsg)}`, request.url))
     }
 }
