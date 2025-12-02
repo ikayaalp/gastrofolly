@@ -27,21 +27,30 @@ export async function POST(request: NextRequest) {
 
         // Aboneliği iptal et
         // Yeni Kural:
-        // 1. Sadece subscriptionPlan'i null yap (Böylece yeni kursa kayıt olamaz)
-        // 2. Tarihleri KORU (Böylece süresi bitene kadar izlemeye devam edebilir)
+        // 1. Progress kayıtlarını SİL (Kaldığın yerden devam et gözükmesin)
+        // 2. Aboneliği hemen sonlandır (My Courses ve Home'da kurslar gözükmesin)
+        // 3. Enrollment kayıtlarını KORU (Kursiyer sayısı değişmesin)
 
+        // 1. Kullanıcının tüm Progress kayıtlarını sil
+        await prisma.progress.deleteMany({
+            where: { userId: user.id }
+        })
+
+        // 2. Aboneliği hemen iptal et
         await prisma.user.update({
             where: { id: user.id },
             data: {
                 subscriptionPlan: null,
-                // subscriptionStartDate ve subscriptionEndDate'e dokunmuyoruz
-                // Böylece kullanıcı süresi bitene kadar haklarını kullanabilir
+                subscriptionEndDate: new Date(), // Şu an iptal (geçmiş tarih)
+                subscriptionStartDate: null
             }
         })
 
+        // NOT: Enrollment kayıtları korunur (kursiyer sayısı değişmez)
+
         return NextResponse.json({
             success: true,
-            message: "Abonelik iptal edildi. Süreniz bitene kadar içeriklere erişebilirsiniz."
+            message: "Abonelik iptal edildi"
         })
 
     } catch (error) {
