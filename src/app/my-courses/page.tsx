@@ -14,6 +14,7 @@ interface Enrollment {
   userId: string
   courseId: string
   createdAt: Date
+  hasProgress: boolean
   course: {
     id: string
     title: string
@@ -217,14 +218,14 @@ export default function MyCoursesPage() {
                       )}
 
                       {/* Progress Overlay for video-style cards */}
-                      {progressPercentage > 0 && (
-                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <div className="text-center">
-                            <Play className="h-12 w-12 text-white mx-auto mb-2" />
-                            <p className="text-white text-sm font-medium">Kaldığın Yerden Devam Et</p>
-                          </div>
+                      <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="text-center">
+                          <Play className="h-12 w-12 text-white mx-auto mb-2" />
+                          <p className="text-white text-sm font-medium">
+                            Kursa Devam Et
+                          </p>
                         </div>
-                      )}
+                      </div>
                     </div>
 
                     {/* Course Info */}
@@ -250,7 +251,7 @@ export default function MyCoursesPage() {
                       </div>
 
                       {/* Progress Bar */}
-                      {progressPercentage > 0 && (
+                      {enrollment.hasProgress && progressPercentage > 0 && (
                         <div className="mt-3">
                           <div className="w-full bg-gray-800 rounded-full h-1.5">
                             <div

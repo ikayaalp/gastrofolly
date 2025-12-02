@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Share2, Copy, Check, Facebook, Twitter, Linkedin, Mail } from "lucide-react"
 
 interface ShareButtonProps {
@@ -11,8 +11,12 @@ interface ShareButtonProps {
 export default function ShareButton({ courseId, courseTitle }: ShareButtonProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [courseUrl, setCourseUrl] = useState('')
 
-  const courseUrl = `${window.location.origin}/course/${courseId}`
+  useEffect(() => {
+    setCourseUrl(`${window.location.origin}/course/${courseId}`)
+  }, [courseId])
+
   const shareText = `${courseTitle} kursunu Chef2.0'da keşfet!`
 
   const handleCopyLink = async () => {
@@ -86,8 +90,8 @@ export default function ShareButton({ courseId, courseTitle }: ShareButtonProps)
                   <button
                     onClick={handleCopyLink}
                     className={`px-3 py-2 rounded text-sm font-medium transition-colors ${copied
-                        ? 'bg-green-600 text-white'
-                        : 'bg-orange-600 text-white hover:bg-orange-700'
+                      ? 'bg-green-600 text-white'
+                      : 'bg-orange-600 text-white hover:bg-orange-700'
                       }`}
                   >
                     {copied ? (

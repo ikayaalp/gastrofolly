@@ -63,16 +63,30 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' }
     })
 
-    // Enrollments filtreleme: Abonelik yoksa sadece satın alınan veya ücretsiz kursları göster
-    const enrollments = rawEnrollments.filter(enrollment => {
-      if (isSubscriptionValid) return true // Abonelik varsa hepsi görünür
-      if (enrollment.course.price === 0) return true // Ücretsizse görünür
-      if (purchasedCourseIds.includes(enrollment.courseId)) return true // Satın alınmışsa görünür
-      return false // Aksi halde (sadece abonelikle erişilen ama süresi bitmiş) gizle
+    // Kullanıcının her kurs için ilerleme durumunu al
+    const progressData = await prisma.progress.findMany({
+      where: { userId },
+      select: { courseId: true }
     })
 
+    // Her kurs için ilerleme olup olmadığını belirle
+    const courseIdsWithProgress = new Set(progressData.map(p => p.courseId))
+
+    // Enrollments filtreleme: Abonelik yoksa sadece satın alınan veya ücretsiz kursları göster
+    const enrollments = rawEnrollments
+      .filter(enrollment => {
+        if (isSubscriptionValid) return true // Abonelik varsa hepsi görünür
+        if (enrollment.course.price === 0) return true // Ücretsizse görünür
+        if (purchasedCourseIds.includes(enrollment.courseId)) return true // Satın alınmışsa görünür
+        return false // Aksi halde (sadece abonelikle erişilen ama süresi bitmiş) gizle
+      })
+      .map(enrollment => ({
+        ...enrollment,
+        hasProgress: courseIdsWithProgress.has(enrollment.courseId)
+      }))
+
     return NextResponse.json({
-      courses: enrollments
+      enrollments: enrollments
     })
   } catch (error) {
     console.error('Error fetching user courses:', error)

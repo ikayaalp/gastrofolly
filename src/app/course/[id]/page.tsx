@@ -108,6 +108,18 @@ export default async function CoursePage({ params }: CoursePageProps) {
 
   const totalDuration = course.lessons.reduce((acc: number, lesson: { duration: number | null }) => acc + (lesson.duration || 0), 0)
 
+  // Kullanıcının bu kursta ilerleme kaydı var mı kontrol et
+  let hasProgress = false
+  if (session?.user?.id && isEnrolled) {
+    const userProgress = await prisma.progress.findFirst({
+      where: {
+        userId: session.user.id,
+        courseId: course.id
+      }
+    })
+    hasProgress = !!userProgress
+  }
+
   return (
     <div className="min-h-screen bg-black">
       {/* Desktop Header */}
@@ -398,10 +410,13 @@ export default async function CoursePage({ params }: CoursePageProps) {
                 <>
                   <Link
                     href={`/learn/${course.id}`}
-                    className="w-full bg-green-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-green-700 transition-colors flex items-center justify-center mb-3"
+                    className={`w-full text-white py-3 px-4 rounded-lg font-semibold transition-colors flex items-center justify-center mb-3 ${hasProgress
+                        ? 'bg-green-600 hover:bg-green-700'
+                        : 'bg-orange-600 hover:bg-orange-700'
+                      }`}
                   >
                     <CheckCircle className="h-5 w-5 mr-2" />
-                    Kursa Devam Et
+                    {hasProgress ? 'Kursa Devam Et' : 'Kursa Başla'}
                   </Link>
                   <MessageButton
                     instructorId={course.instructor.id}
