@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json()
-        const { planName, price, courseId } = body
+        const { planName, price, courseId, billingPeriod, discountCode } = body
 
         if (!planName || !price) {
             return NextResponse.json(
@@ -45,6 +45,8 @@ export async function POST(request: NextRequest) {
                 userId: user.id,
                 subscriptionPlan: planName,
                 courseId: courseId || undefined,
+                billingPeriod: billingPeriod || "monthly",
+                discountCode: discountCode || undefined,
             }
         })
 

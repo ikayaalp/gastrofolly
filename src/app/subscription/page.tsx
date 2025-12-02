@@ -16,39 +16,15 @@ function SubscriptionContent() {
     const planParam = searchParams.get("plan") // URL'den plan parametresini al
     const [loading, setLoading] = useState<string | null>(null)
 
-    const handleSubscription = async (planName: string, price: string) => {
+    const handleSubscription = (planName: string) => {
         if (!session) {
             router.push(`/auth/signin?callbackUrl=/subscription${courseId ? `?courseId=${courseId}` : ''}`)
             return
         }
 
-        try {
-            setLoading(planName)
-            const response = await fetch("/api/iyzico/initialize-subscription", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    planName,
-                    price,
-                    courseId,
-                }),
-            })
-
-            const data = await response.json()
-
-            if (data.success && data.paymentPageUrl) {
-                window.location.href = data.paymentPageUrl
-            } else {
-                toast.error(data.error || "Ödeme başlatılamadı")
-                setLoading(null)
-            }
-        } catch (error) {
-            console.error("Subscription error:", error)
-            toast.error("Bir hata oluştu")
-            setLoading(null)
-        }
+        // Checkout sayfasına yönlendir
+        const checkoutUrl = `/checkout?plan=${encodeURIComponent(planName)}${courseId ? `&courseId=${courseId}` : ''}`
+        router.push(checkoutUrl)
     }
 
 
@@ -113,7 +89,7 @@ function SubscriptionContent() {
         if (planParam && session) {
             const plan = plans.find(p => p.name === planParam)
             if (plan) {
-                handleSubscription(plan.name, plan.price)
+                handleSubscription(plan.name)
             }
         }
     }, [planParam, session])
@@ -250,7 +226,7 @@ function SubscriptionContent() {
 
                                     {/* CTA Button */}
                                     <button
-                                        onClick={() => handleSubscription(plan.name, plan.price)}
+                                        onClick={() => handleSubscription(plan.name)}
                                         disabled={!!loading}
                                         className={`w-full ${plan.buttonColor} text-white text-lg font-bold py-3 rounded-xl transition-all duration-300 mb-6 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed`}
                                     >

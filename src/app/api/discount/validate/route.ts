@@ -1,54 +1,76 @@
 import { NextRequest, NextResponse } from "next/server"
-
-// Örnek indirim kodları - Gerçek uygulamada veritabanından gelecek
-const DISCOUNT_CODES = {
-  'WELCOME10': { percentage: 10, minAmount: 0, maxDiscount: 100 },
-  'STUDENT20': { percentage: 20, minAmount: 50, maxDiscount: 200 },
-  'CHEF15': { percentage: 15, minAmount: 100, maxDiscount: 300 },
-  'NEWUSER': { percentage: 25, minAmount: 0, maxDiscount: 150 },
-  'BULK30': { percentage: 30, minAmount: 200, maxDiscount: 500 },
-  'VIP50': { percentage: 50, minAmount: 500, maxDiscount: 1000 }
-}
+import { prisma } from "@/lib/prisma"
 
 export async function POST(request: NextRequest) {
   try {
-    const { code, subtotal } = await request.json()
+    const { code } = await request.json()
 
-    if (!code || !subtotal) {
-      return NextResponse.json({ error: 'Geçersiz istek' }, { status: 400 })
+    if (!code) {
+      return NextResponse.json(
+        { valid: false, error: "İndirim kodu giriniz" },
+        { status: 400 }
+      )
     }
 
-    const discountInfo = DISCOUNT_CODES[code as keyof typeof DISCOUNT_CODES]
+    // İndirim kodunu bul
+    const discountCode = await prisma.discountCode.findUnique({
+      where: { code: code.toUpperCase() }
+    })
 
-    if (!discountInfo) {
-      return NextResponse.json({ error: 'Geçersiz indirim kodu' }, { status: 400 })
+    // Kod bulunamadı
+    if (!discountCode) {
+      return NextResponse.json(
+        { valid: false, error: "Geçersiz indirim kodu" },
+        { status: 404 }
+      )
     }
 
-    // Minimum tutar kontrolü
-    if (subtotal < discountInfo.minAmount) {
-      return NextResponse.json({ 
-        error: `Bu kod için minimum ₺${discountInfo.minAmount} alışveriş gerekli` 
-      }, { status: 400 })
+    // Kod aktif değil
+    if (!discountCode.isActive) {
+      return NextResponse.json(
+        { valid: false, error: "Bu indirim kodu artık geçerli değil" },
+        { status: 400 }
+      )
     }
 
-    // İndirim hesaplama
-    const discountAmount = Math.min(
-      (subtotal * discountInfo.percentage) / 100,
-      discountInfo.maxDiscount
-    )
+    // Tarih kontrolü
+    const now = new Date()
+    if (now < discountCode.validFrom) {
+      return NextResponse.json(
+        { valid: false, error: "Bu indirim kodu henüz geçerli değil" },
+        { status: 400 }
+      )
+    }
 
+    if (now > discountCode.validUntil) {
+      return NextResponse.json(
+        { valid: false, error: "Bu indirim kodunun süresi dolmuş" },
+        { status: 400 }
+      )
+    }
+
+    // Kullanım limiti kontrolü
+    if (discountCode.maxUses !== null && discountCode.usedCount >= discountCode.maxUses) {
+      return NextResponse.json(
+        { valid: false, error: "Bu indirim kodu kullanım limitine ulaşmış" },
+        { status: 400 }
+      )
+    }
+
+    // Geçerli kod
     return NextResponse.json({
+      valid: true,
       discount: {
-        code,
-        percentage: discountInfo.percentage,
-        amount: Math.round(discountAmount)
+        type: discountCode.discountType,
+        value: discountCode.discountValue,
+        code: discountCode.code
       }
     })
 
   } catch (error) {
-    console.error('Discount validation error:', error)
+    console.error("Discount validation error:", error)
     return NextResponse.json(
-      { error: 'Sunucu hatası' },
+      { valid: false, error: "Bir hata oluştu" },
       { status: 500 }
     )
   }
