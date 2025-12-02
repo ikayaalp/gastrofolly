@@ -33,6 +33,35 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    // İlerleme kaydedilmiş ama enrollment'ı olmayan kursları bul ve enrollment oluştur
+    // Bu, "Kaldığın yerden devam et" özelliğinin çalışmasını sağlar
+    const userProgress = await prisma.progress.findMany({
+      where: { userId },
+      select: { courseId: true },
+      distinct: ['courseId']
+    })
+
+    for (const progress of userProgress) {
+      const existingEnrollment = await prisma.enrollment.findUnique({
+        where: {
+          userId_courseId: {
+            userId,
+            courseId: progress.courseId
+          }
+        }
+      })
+
+      if (!existingEnrollment) {
+        console.log(`Auto-enrolling user ${userId} to course ${progress.courseId} based on progress`)
+        await prisma.enrollment.create({
+          data: {
+            userId,
+            courseId: progress.courseId
+          }
+        })
+      }
+    }
+
     const enrollments = await prisma.enrollment.findMany({
       where: { userId },
       include: {
