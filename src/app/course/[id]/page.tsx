@@ -252,23 +252,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
                   <span className="bg-orange-500/20 text-orange-500 px-3 py-1 rounded-full text-sm font-semibold">
                     {course.category.name}
                   </span>
-                  <div className="flex items-center gap-2">
-                    {course.level === 'BEGINNER' && (
-                      <span className="bg-gray-800 text-gray-300 border border-gray-700 px-3 py-1 rounded-full text-sm font-semibold">
-                        Commis
-                      </span>
-                    )}
-                    {course.level === 'INTERMEDIATE' && (
-                      <span className="bg-orange-900/40 text-orange-400 border border-orange-500/30 px-3 py-1 rounded-full text-sm font-semibold">
-                        Chef D party
-                      </span>
-                    )}
-                    {course.level === 'ADVANCED' && (
-                      <span className="bg-purple-900/40 text-purple-400 border border-purple-500/30 px-3 py-1 rounded-full text-sm font-semibold">
-                        Executive
-                      </span>
-                    )}
-                  </div>
+
                 </div>
 
                 <h1 className="text-3xl font-bold text-white mb-4">
