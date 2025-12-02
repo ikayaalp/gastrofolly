@@ -36,6 +36,7 @@ export async function GET(request: NextRequest) {
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: {
+        subscriptionPlan: true,
         subscriptionEndDate: true,
         payments: {
           where: { status: 'COMPLETED', amount: { gt: 0 } },
@@ -46,6 +47,14 @@ export async function GET(request: NextRequest) {
 
     const isSubscriptionValid = user?.subscriptionEndDate && new Date(user.subscriptionEndDate) > new Date()
     const purchasedCourseIds = user?.payments.map(p => p.courseId) || []
+
+    // Abonelik seviyesini belirle
+    let userSubscriptionLevel = 0 // 0: yok, 1: Commis, 2: Chef D party, 3: Executive
+    if (isSubscriptionValid && user?.subscriptionPlan) {
+      if (user.subscriptionPlan === 'Commis') userSubscriptionLevel = 1
+      else if (user.subscriptionPlan === 'Chef D party') userSubscriptionLevel = 2
+      else if (user.subscriptionPlan === 'Executive') userSubscriptionLevel = 3
+    }
 
     const rawEnrollments = await prisma.enrollment.findMany({
       where: { userId },
@@ -72,13 +81,23 @@ export async function GET(request: NextRequest) {
     // Her kurs için ilerleme olup olmadığını belirle
     const courseIdsWithProgress = new Set(progressData.map(p => p.courseId))
 
-    // Enrollments filtreleme: Abonelik yoksa sadece satın alınan veya ücretsiz kursları göster
+    // Enrollments filtreleme: Abonelik seviyesine göre kursları filtrele
     const enrollments = rawEnrollments
       .filter(enrollment => {
-        if (isSubscriptionValid) return true // Abonelik varsa hepsi görünür
-        if (enrollment.course.price === 0) return true // Ücretsizse görünür
-        if (purchasedCourseIds.includes(enrollment.courseId)) return true // Satın alınmışsa görünür
-        return false // Aksi halde (sadece abonelikle erişilen ama süresi bitmiş) gizle
+        const course = enrollment.course
+
+        // Ücretsiz kurslar her zaman görünür
+        if (course.price === 0) return true
+
+        // Satın alınmış kurslar her zaman görünür
+        if (purchasedCourseIds.includes(enrollment.courseId)) return true
+
+        // Abonelik yoksa, sadece ücretsiz ve satın alınmış kurslar görünür
+        if (!isSubscriptionValid) return false
+
+        // Abonelik varsa, seviyeye göre filtrele
+        const courseLevelValue = course.level === 'BEGINNER' ? 1 : course.level === 'INTERMEDIATE' ? 2 : 3
+        return userSubscriptionLevel >= courseLevelValue
       })
       .map(enrollment => ({
         ...enrollment,
