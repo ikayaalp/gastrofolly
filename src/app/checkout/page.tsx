@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react"
 import Link from "next/link"
-import { ChefHat, Check, Crown, BookOpen, Zap, Home, Users, MessageCircle, Loader2, Tag, X } from "lucide-react"
+import { ChefHat, Check, Crown, BookOpen, Zap, Home, Users, MessageCircle, Loader2, Tag, X, LucideIcon } from "lucide-react"
 import UserDropdown from "@/components/ui/UserDropdown"
 import { useState, Suspense, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -22,7 +22,7 @@ function CheckoutContent() {
   const [validatingCode, setValidatingCode] = useState(false)
 
   // Plan bilgileri
-  const plans: Record<string, { price: number, icon: any, color: string }> = {
+  const plans: Record<string, { price: number, icon: LucideIcon, color: string }> = {
     "Commis": { price: 199, icon: BookOpen, color: "from-gray-600 to-gray-700" },
     "Chef D party": { price: 399, icon: Crown, color: "from-orange-600 to-red-600" },
     "Executive": { price: 599, icon: Zap, color: "from-purple-600 to-pink-600" }
@@ -194,8 +194,8 @@ function CheckoutContent() {
                   <button
                     onClick={() => setBillingPeriod("monthly")}
                     className={`p-4 rounded-xl border-2 transition-all ${billingPeriod === "monthly"
-                        ? "border-orange-500 bg-orange-500/10"
-                        : "border-gray-700 hover:border-gray-600"
+                      ? "border-orange-500 bg-orange-500/10"
+                      : "border-gray-700 hover:border-gray-600"
                       }`}
                   >
                     <div className="text-white font-semibold mb-1">Aylık</div>
@@ -206,8 +206,8 @@ function CheckoutContent() {
                   <button
                     onClick={() => setBillingPeriod("yearly")}
                     className={`p-4 rounded-xl border-2 transition-all relative ${billingPeriod === "yearly"
-                        ? "border-orange-500 bg-orange-500/10"
-                        : "border-gray-700 hover:border-gray-600"
+                      ? "border-orange-500 bg-orange-500/10"
+                      : "border-gray-700 hover:border-gray-600"
                       }`}
                   >
                     <div className="absolute -top-2 -right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">
