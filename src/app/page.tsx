@@ -140,7 +140,7 @@ export default function Home() {
       </section>
 
       {/* Subscription Banner */}
-      <section className="py-12 bg-gradient-to-br from-orange-900/20 via-black to-purple-900/20 border-y border-orange-500/20">
+      <section className="py-16 bg-gradient-to-br from-orange-900/20 via-black to-purple-900/20 border-y border-orange-500/20 mb-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="text-center mb-10">
