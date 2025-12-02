@@ -99,7 +99,7 @@ export default async function AboutPage() {
               </div>
               <h3 className="text-xl font-bold text-white mb-4">Misyonumuz</h3>
               <p className="text-gray-400">
-                Gastronomi eğitimini demokratikleştirmek ve herkesin mutfak sanatını öğrenebileceği 
+                Gastronomi eğitimini demokratikleştirmek ve herkesin mutfak sanatını öğrenebileceği
                 bir platform oluşturmak.
               </p>
             </div>
@@ -109,7 +109,7 @@ export default async function AboutPage() {
               </div>
               <h3 className="text-xl font-bold text-white mb-4">Vizyonumuz</h3>
               <p className="text-gray-400">
-                Türkiye&apos;nin en büyük online gastronomi eğitim platformu olmak ve 
+                Türkiye&apos;nin en büyük online gastronomi eğitim platformu olmak ve
                 dünya çapında tanınan bir marka haline gelmek.
               </p>
             </div>
@@ -119,7 +119,7 @@ export default async function AboutPage() {
               </div>
               <h3 className="text-xl font-bold text-white mb-4">Değerlerimiz</h3>
               <p className="text-gray-400">
-                Kalite, yenilikçilik, erişilebilirlik ve sürekli öğrenme 
+                Kalite, yenilikçilik, erişilebilirlik ve sürekli öğrenme
                 ilkelerini benimser, öğrencilerimizin başarısını öncelik olarak görürüz.
               </p>
             </div>
@@ -128,7 +128,7 @@ export default async function AboutPage() {
       </section>
 
       {/* Co-Founders Section */}
-      <section className="py-16 bg-gray-900">
+      <section className="py-16 bg-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-white mb-4">
@@ -138,17 +138,17 @@ export default async function AboutPage() {
               Chef2.0&apos;ı hayata geçiren vizyoner ekibimizle tanışın
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* İsmail Kayaalp */}
-            <div className="bg-gray-800 rounded-xl p-6 text-center border border-gray-700 hover:border-orange-500 transition-colors">
-              <div className="w-24 h-24 rounded-full bg-orange-600 flex items-center justify-center mx-auto mb-4">
+            <div className="relative group bg-gradient-to-br from-purple-900/20 via-gray-900 to-pink-900/20 rounded-xl p-6 text-center border-2 border-purple-500/30 hover:border-purple-500 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/50">
+              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-500 shadow-lg group-hover:shadow-purple-500/50">
                 <span className="text-3xl">👨‍💼</span>
               </div>
               <h3 className="text-xl font-bold text-white mb-2">İbrahim Kayaalp</h3>
               <p className="text-orange-500 font-medium mb-3">Co-Founder & CEO</p>
               <p className="text-gray-400 text-sm mb-4">
-                Teknoloji ve gastronomi alanında 10+ yıllık deneyime sahip. 
+                Teknoloji ve gastronomi alanında 10+ yıllık deneyime sahip.
                 Platform&apos;un vizyonunu belirleme ve stratejik yönlendirme konularında liderlik ediyor.
               </p>
               <div className="flex justify-center space-x-3">
@@ -165,14 +165,14 @@ export default async function AboutPage() {
             </div>
 
             {/* İbrahim Kayaalp */}
-            <div className="bg-gray-800 rounded-xl p-6 text-center border border-gray-700 hover:border-orange-500 transition-colors">
-              <div className="w-24 h-24 rounded-full bg-orange-600 flex items-center justify-center mx-auto mb-4">
+            <div className="relative group bg-gradient-to-br from-purple-900/20 via-gray-900 to-pink-900/20 rounded-xl p-6 text-center border-2 border-purple-500/30 hover:border-purple-500 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/50">
+              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-500 shadow-lg group-hover:shadow-purple-500/50">
                 <span className="text-3xl">👨‍💻</span>
               </div>
               <h3 className="text-xl font-bold text-white mb-2">İsmail Kayaalp</h3>
               <p className="text-orange-500 font-medium mb-3">Co-Founder & CTO</p>
               <p className="text-gray-400 text-sm mb-4">
-                Yazılım geliştirme ve sistem mimarisi konularında uzman. 
+                Yazılım geliştirme ve sistem mimarisi konularında uzman.
                 Platform&apos;un teknik altyapısını tasarlama ve geliştirme süreçlerini yönetiyor.
               </p>
               <div className="flex justify-center space-x-3">
@@ -189,14 +189,14 @@ export default async function AboutPage() {
             </div>
 
             {/* Zeynep Berre Uçan Kayaalp */}
-            <div className="bg-gray-800 rounded-xl p-6 text-center border border-gray-700 hover:border-orange-500 transition-colors">
-              <div className="w-24 h-24 rounded-full bg-orange-600 flex items-center justify-center mx-auto mb-4">
+            <div className="relative group bg-gradient-to-br from-purple-900/20 via-gray-900 to-pink-900/20 rounded-xl p-6 text-center border-2 border-purple-500/30 hover:border-purple-500 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/50">
+              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-500 shadow-lg group-hover:shadow-purple-500/50">
                 <span className="text-3xl">👩‍🍳</span>
               </div>
               <h3 className="text-xl font-bold text-white mb-2">Berre Zeynep Uçan Kayaalp</h3>
               <p className="text-orange-500 font-medium mb-3">Co-Founder & Head of Content</p>
               <p className="text-gray-400 text-sm mb-4">
-                Gastronomi eğitimi ve içerik üretimi alanında uzman. 
+                Gastronomi eğitimi ve içerik üretimi alanında uzman.
                 Eğitim programlarının kalitesi ve eğitmen seçimi süreçlerini yönetiyor.
               </p>
               <div className="flex justify-center space-x-3">
@@ -258,7 +258,7 @@ export default async function AboutPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12 border-t border-gray-800">
+      <footer className="bg-black text-white py-12 border-t border-orange-500/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>

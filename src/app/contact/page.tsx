@@ -71,7 +71,7 @@ export default async function ContactPage() {
                 </nav>
               </>
             )}
-            
+
             <div className="flex items-center space-x-4">
               {session?.user ? (
                 <>
@@ -160,7 +160,7 @@ export default async function ContactPage() {
               <h2 className="text-3xl font-bold text-white mb-8">
                 İletişim Bilgileri
               </h2>
-              
+
               <div className="space-y-6">
                 {/* Telefon */}
                 <div className="flex items-start space-x-4">
@@ -170,8 +170,8 @@ export default async function ContactPage() {
                   <div>
                     <h3 className="text-lg font-semibold text-white mb-1">Telefon</h3>
                     <p className="text-gray-300">Test desteği için</p>
-                    <a 
-                      href="tel:05352509333" 
+                    <a
+                      href="tel:05352509333"
                       className="text-orange-500 hover:text-orange-400 font-medium text-lg"
                     >
                       0535 250 93 33
@@ -187,8 +187,8 @@ export default async function ContactPage() {
                   <div>
                     <h3 className="text-lg font-semibold text-white mb-1">E-posta</h3>
                     <p className="text-gray-300">Genel sorularınız için</p>
-                    <a 
-                      href="mailto:info@chef2.0.com" 
+                    <a
+                      href="mailto:info@chef2.0.com"
                       className="text-orange-500 hover:text-orange-400 font-medium"
                     >
                       info@chef2.0.com
@@ -216,7 +216,7 @@ export default async function ContactPage() {
               <h2 className="text-3xl font-bold text-white mb-8">
                 Mesaj Gönderin
               </h2>
-              
+
               <form className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
@@ -244,7 +244,7 @@ export default async function ContactPage() {
                     />
                   </div>
                 </div>
-                
+
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
                     E-posta
@@ -257,7 +257,7 @@ export default async function ContactPage() {
                     placeholder="ornek@email.com"
                   />
                 </div>
-                
+
                 <div>
                   <label htmlFor="subject" className="block text-sm font-medium text-gray-300 mb-2">
                     Konu
@@ -274,7 +274,7 @@ export default async function ContactPage() {
                     <option value="general">Genel Soru</option>
                   </select>
                 </div>
-                
+
                 <div>
                   <label htmlFor="message" className="block text-sm font-medium text-gray-300 mb-2">
                     Mesaj
@@ -287,7 +287,7 @@ export default async function ContactPage() {
                     placeholder="Mesajınızı buraya yazın..."
                   ></textarea>
                 </div>
-                
+
                 <button
                   type="submit"
                   className="w-full bg-orange-600 hover:bg-orange-700 text-white px-8 py-3 rounded-lg font-semibold transition-colors"
@@ -301,14 +301,14 @@ export default async function ContactPage() {
       </section>
 
       {/* SSS Bölümü */}
-      <section className="py-16 bg-gray-900">
+      <section className="py-16 bg-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-white mb-8 text-center">
             Sık Sorulan Sorular
           </h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-gray-800 rounded-xl p-6">
+            <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 hover:border-orange-500/50 transition-colors">
               <h3 className="text-lg font-semibold text-white mb-3">
                 Test sırasında sorun yaşıyorum, ne yapmalıyım?
               </h3>
@@ -316,8 +316,8 @@ export default async function ContactPage() {
                 İsmail Kayaalp ile iletişime geçin: <strong className="text-orange-400">0535 250 93 33</strong>
               </p>
             </div>
-            
-            <div className="bg-gray-800 rounded-xl p-6">
+
+            <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 hover:border-orange-500/50 transition-colors">
               <h3 className="text-lg font-semibold text-white mb-3">
                 Video izlerken sorun yaşıyorum
               </h3>
@@ -325,8 +325,8 @@ export default async function ContactPage() {
                 Video player ile ilgili teknik sorunlar için yukarıdaki telefon numarasını arayın.
               </p>
             </div>
-            
-            <div className="bg-gray-800 rounded-xl p-6">
+
+            <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 hover:border-orange-500/50 transition-colors">
               <h3 className="text-lg font-semibold text-white mb-3">
                 Kurs satın alma sorunu
               </h3>
@@ -334,8 +334,8 @@ export default async function ContactPage() {
                 Ödeme işlemleri ile ilgili sorunlarınız için İsmail Kayaalp ile iletişime geçin.
               </p>
             </div>
-            
-            <div className="bg-gray-800 rounded-xl p-6">
+
+            <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 hover:border-orange-500/50 transition-colors">
               <h3 className="text-lg font-semibold text-white mb-3">
                 Hesap sorunları
               </h3>
@@ -348,7 +348,7 @@ export default async function ContactPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-black text-white py-12 border-t border-gray-800">
+      <footer className="bg-black text-white py-12 border-t border-orange-500/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
