@@ -98,20 +98,23 @@ export async function GET(request: NextRequest) {
                 }
               })
 
-              const existingEnrollment = await prisma.enrollment.findFirst({
-                where: {
-                  userId: userId,
-                  courseId: payment.courseId
-                }
-              })
-
-              if (!existingEnrollment) {
-                await prisma.enrollment.create({
-                  data: {
+              // Enrollment oluşturma (sadece kurs ödemeleri için)
+              if (payment.courseId) {
+                const existingEnrollment = await prisma.enrollment.findFirst({
+                  where: {
                     userId: userId,
-                    courseId: payment.courseId,
+                    courseId: payment.courseId
                   }
                 })
+
+                if (!existingEnrollment) {
+                  await prisma.enrollment.create({
+                    data: {
+                      userId: userId,
+                      courseId: payment.courseId,
+                    }
+                  })
+                }
               }
             }
 
@@ -219,20 +222,23 @@ export async function GET(request: NextRequest) {
             }
           })
 
-          const existingEnrollment = await prisma.enrollment.findFirst({
-            where: {
-              userId: userId,
-              courseId: payment.courseId
-            }
-          })
-
-          if (!existingEnrollment) {
-            await prisma.enrollment.create({
-              data: {
+          // Enrollment oluşturma (sadece kurs ödemeleri için)
+          if (payment.courseId) {
+            const existingEnrollment = await prisma.enrollment.findFirst({
+              where: {
                 userId: userId,
-                courseId: payment.courseId,
+                courseId: payment.courseId
               }
             })
+
+            if (!existingEnrollment) {
+              await prisma.enrollment.create({
+                data: {
+                  userId: userId,
+                  courseId: payment.courseId,
+                }
+              })
+            }
           }
         }
 
@@ -367,24 +373,26 @@ export async function GET(request: NextRequest) {
           }
         })
 
-        // Enrollment kontrolü ve oluşturma
-        const existingEnrollment = await prisma.enrollment.findFirst({
-          where: {
-            userId: userId,
-            courseId: payment.courseId
-          }
-        })
-
-        if (!existingEnrollment) {
-          await prisma.enrollment.create({
-            data: {
+        // Enrollment kontrolü ve oluşturma (sadece kurs ödemeleri için)
+        if (payment.courseId) {
+          const existingEnrollment = await prisma.enrollment.findFirst({
+            where: {
               userId: userId,
-              courseId: payment.courseId,
+              courseId: payment.courseId
             }
           })
-        }
 
-        courseIds.push(payment.courseId)
+          if (!existingEnrollment) {
+            await prisma.enrollment.create({
+              data: {
+                userId: userId,
+                courseId: payment.courseId,
+              }
+            })
+          }
+
+          courseIds.push(payment.courseId)
+        }
       }
 
       console.log(`✅ SUCCESSFUL PAYMENT: User ${userId} enrolled in courses:`, courseIds)
