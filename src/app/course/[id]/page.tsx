@@ -74,8 +74,32 @@ export default async function CoursePage({ params }: CoursePageProps) {
     notFound()
   }
 
+  // Kullanıcının abonelik durumunu kontrol et
+  let hasActiveSubscription = false
+  let userSubscriptionLevel = 0 // 0: yok, 1: Commis, 2: Chef D party, 3: Executive
+
+  if (session?.user?.id) {
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { subscriptionPlan: true, subscriptionEndDate: true }
+    })
+
+    if (user?.subscriptionPlan && user?.subscriptionEndDate && new Date(user.subscriptionEndDate) > new Date()) {
+      hasActiveSubscription = true
+      // Abonelik seviyesini belirle
+      if (user.subscriptionPlan === 'Commis') userSubscriptionLevel = 1
+      else if (user.subscriptionPlan === 'Chef D party') userSubscriptionLevel = 2
+      else if (user.subscriptionPlan === 'Executive') userSubscriptionLevel = 3
+    }
+  }
+
+  // Kurs seviyesini belirle
+  const courseLevelValue = course.level === 'BEGINNER' ? 1 : course.level === 'INTERMEDIATE' ? 2 : 3
+
+  // Kullanıcı enrollment'a sahip mi veya aboneliği kursu kapsıyor mu?
   const isEnrolled = session?.user?.id
-    ? course.enrollments.some((enrollment: { userId: string }) => enrollment.userId === session.user.id)
+    ? course.enrollments.some((enrollment: { userId: string }) => enrollment.userId === session.user.id) ||
+    (hasActiveSubscription && userSubscriptionLevel >= courseLevelValue)
     : false
 
   const averageRating = course.reviews.length > 0
