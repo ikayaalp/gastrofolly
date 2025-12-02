@@ -21,7 +21,27 @@ async function handleCallback(request: NextRequest) {
             const tokenFromForm = formData?.get('token') as string
 
             if (!tokenFromForm) {
-                return NextResponse.redirect(new URL('/subscription?error=token_missing', request.url))
+                const html = `
+                    <!DOCTYPE html>
+                    <html>
+                        <head>
+                            <meta charset="utf-8">
+                            <title>Redirecting...</title>
+                        </head>
+                        <body>
+                            <script>
+                                window.location.href = '/subscription?error=token_missing';
+                            </script>
+                            <noscript>
+                                <meta http-equiv="refresh" content="0; url=/subscription?error=token_missing">
+                            </noscript>
+                        </body>
+                    </html>
+                `
+                return new NextResponse(html, {
+                    status: 200,
+                    headers: { 'Content-Type': 'text/html' }
+                })
             }
 
             return handlePayment(tokenFromForm, request)
@@ -31,7 +51,27 @@ async function handleCallback(request: NextRequest) {
 
     } catch (error) {
         console.error("Subscription callback error:", error)
-        return NextResponse.redirect(new URL('/subscription?error=system_error', request.url))
+        const html = `
+            <!DOCTYPE html>
+            <html>
+                <head>
+                    <meta charset="utf-8">
+                    <title>Redirecting...</title>
+                </head>
+                <body>
+                    <script>
+                        window.location.href = '/subscription?error=system_error';
+                    </script>
+                    <noscript>
+                        <meta http-equiv="refresh" content="0; url=/subscription?error=system_error">
+                    </noscript>
+                </body>
+            </html>
+        `
+        return new NextResponse(html, {
+            status: 200,
+            headers: { 'Content-Type': 'text/html' }
+        })
     }
 }
 
@@ -42,24 +82,25 @@ async function handlePayment(token: string, request: NextRequest) {
         status: result.status,
         paymentStatus: result.paymentStatus,
         conversationId: result.conversationId,
+        basketId: result.basketId,
         paymentId: result.paymentId
     })
 
     if (result.status === "success" && result.paymentStatus === "SUCCESS") {
-        const conversationId = result.conversationId
+        const basketId = result.basketId // basketId bizim payment.id'miz
 
-        // Ödemeyi bul
+        // Ödemeyi bul - basketId ile ara
         const payment = await prisma.payment.findFirst({
             where: {
                 OR: [
-                    { id: conversationId },
-                    { stripePaymentId: conversationId }
+                    { id: basketId },
+                    { stripePaymentId: basketId }
                 ]
             }
         })
 
         console.log('Payment lookup result:', {
-            conversationId,
+            basketId,
             paymentFound: !!payment,
             paymentId: payment?.id,
             paymentStatus: payment?.status
@@ -82,11 +123,51 @@ async function handlePayment(token: string, request: NextRequest) {
                 take: 5
             })
             console.error('Payment not found. Recent subscription payments:', allSubscriptionPayments)
-            return NextResponse.redirect(new URL('/subscription?error=payment_not_found', request.url))
+            const html = `
+                <!DOCTYPE html>
+                <html>
+                    <head>
+                        <meta charset="utf-8">
+                        <title>Redirecting...</title>
+                    </head>
+                    <body>
+                        <script>
+                            window.location.href = '/subscription?error=payment_not_found';
+                        </script>
+                        <noscript>
+                            <meta http-equiv="refresh" content="0; url=/subscription?error=payment_not_found">
+                        </noscript>
+                    </body>
+                </html>
+            `
+            return new NextResponse(html, {
+                status: 200,
+                headers: { 'Content-Type': 'text/html' }
+            })
         }
 
         if (payment.status === 'COMPLETED') {
-            return NextResponse.redirect(new URL('/home?success=already_completed', request.url))
+            const html = `
+                <!DOCTYPE html>
+                <html>
+                    <head>
+                        <meta charset="utf-8">
+                        <title>Redirecting...</title>
+                    </head>
+                    <body>
+                        <script>
+                            window.location.href = '/home?success=already_completed';
+                        </script>
+                        <noscript>
+                            <meta http-equiv="refresh" content="0; url=/home?success=already_completed">
+                        </noscript>
+                    </body>
+                </html>
+            `
+            return new NextResponse(html, {
+                status: 200,
+                headers: { 'Content-Type': 'text/html' }
+            })
         }
 
         // Ödemeyi güncelle
@@ -94,7 +175,7 @@ async function handlePayment(token: string, request: NextRequest) {
             where: { id: payment.id },
             data: {
                 status: 'COMPLETED',
-                stripePaymentId: result.paymentId || conversationId
+                stripePaymentId: result.paymentId || result.conversationId
             }
         })
 
@@ -113,13 +194,91 @@ async function handlePayment(token: string, request: NextRequest) {
             })
         }
 
+        // Eğer courseId varsa (abonelik + kurs kombinasyonu), enrollment oluştur
         if (payment.courseId) {
-            return NextResponse.redirect(new URL(`/learn/${payment.courseId}?success=true`, request.url))
+            const existingEnrollment = await prisma.enrollment.findFirst({
+                where: {
+                    userId: payment.userId,
+                    courseId: payment.courseId
+                }
+            })
+
+            if (!existingEnrollment) {
+                await prisma.enrollment.create({
+                    data: {
+                        userId: payment.userId,
+                        courseId: payment.courseId
+                    }
+                })
+                console.log(`✅ Enrollment created for course: ${payment.courseId}`)
+            }
+
+            const html = `
+                <!DOCTYPE html>
+                <html>
+                    <head>
+                        <meta charset="utf-8">
+                        <title>Redirecting...</title>
+                    </head>
+                    <body>
+                        <script>
+                            window.location.href = '/learn/${payment.courseId}?success=true';
+                        </script>
+                        <noscript>
+                            <meta http-equiv="refresh" content="0; url=/learn/${payment.courseId}?success=true">
+                        </noscript>
+                    </body>
+                </html>
+            `
+            return new NextResponse(html, {
+                status: 200,
+                headers: { 'Content-Type': 'text/html' }
+            })
         }
 
-        return NextResponse.redirect(new URL('/home?subscription=success', request.url))
+        const html = `
+            <!DOCTYPE html>
+            <html>
+                <head>
+                    <meta charset="utf-8">
+                    <title>Redirecting...</title>
+                </head>
+                <body>
+                    <script>
+                        window.location.href = '/home?subscription=success';
+                    </script>
+                    <noscript>
+                        <meta http-equiv="refresh" content="0; url=/home?subscription=success">
+                    </noscript>
+                </body>
+            </html>
+        `
+        return new NextResponse(html, {
+            status: 200,
+            headers: { 'Content-Type': 'text/html' }
+        })
     } else {
         const errorMsg = result.errorMessage || 'payment_failed'
-        return NextResponse.redirect(new URL(`/subscription?error=${encodeURIComponent(errorMsg)}`, request.url))
+        const html = `
+            <!DOCTYPE html>
+            <html>
+                <head>
+                    <meta charset="utf-8">
+                    <title>Redirecting...</title>
+                </head>
+                <body>
+                    <script>
+                        window.location.href = '/subscription?error=${encodeURIComponent(errorMsg)}';
+                    </script>
+                    <noscript>
+                        <meta http-equiv="refresh" content="0; url=/subscription?error=${encodeURIComponent(errorMsg)}">
+                    </noscript>
+                </body>
+            </html>
+        `
+        return new NextResponse(html, {
+            status: 200,
+            headers: { 'Content-Type': 'text/html' }
+        })
     }
 }

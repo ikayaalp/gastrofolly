@@ -106,11 +106,11 @@ export async function POST(request: NextRequest) {
         const result = await createCheckoutForm(paymentRequest)
 
         if (result.status === "success" && result.paymentPageUrl) {
-            // StripePaymentId (conversationId) güncelle
+            // StripePaymentId'yi payment.id olarak tut (callback'te bununla arayacağız)
             await prisma.payment.update({
                 where: { id: payment.id },
                 data: {
-                    stripePaymentId: result.conversationId
+                    stripePaymentId: payment.id // payment.id'yi saklayalım
                 }
             })
 
