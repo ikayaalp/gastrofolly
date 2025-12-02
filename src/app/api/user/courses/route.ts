@@ -33,7 +33,21 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const enrollments = await prisma.enrollment.findMany({
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        subscriptionEndDate: true,
+        payments: {
+          where: { status: 'COMPLETED', amount: { gt: 0 } },
+          select: { courseId: true }
+        }
+      }
+    })
+
+    const isSubscriptionValid = user?.subscriptionEndDate && new Date(user.subscriptionEndDate) > new Date()
+    const purchasedCourseIds = user?.payments.map(p => p.courseId) || []
+
+    const rawEnrollments = await prisma.enrollment.findMany({
       where: { userId },
       include: {
         course: {
@@ -47,6 +61,14 @@ export async function GET(request: NextRequest) {
         }
       },
       orderBy: { createdAt: 'desc' }
+    })
+
+    // Enrollments filtreleme: Abonelik yoksa sadece satın alınan veya ücretsiz kursları göster
+    const enrollments = rawEnrollments.filter(enrollment => {
+      if (isSubscriptionValid) return true // Abonelik varsa hepsi görünür
+      if (enrollment.course.price === 0) return true // Ücretsizse görünür
+      if (purchasedCourseIds.includes(enrollment.courseId)) return true // Satın alınmışsa görünür
+      return false // Aksi halde (sadece abonelikle erişilen ama süresi bitmiş) gizle
     })
 
     return NextResponse.json({
