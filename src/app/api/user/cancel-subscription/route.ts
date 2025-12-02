@@ -25,24 +25,23 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        // Aboneliği iptal et (Planı ve tarihleri sıfırla)
-        // Not: Gerçek bir abonelik sistemi (recurring payment) olsaydı,
-        // burada ödeme sağlayıcısına (Iyzico) iptal isteği göndermemiz gerekirdi.
-        // Şu anki sistemde 30 günlük tek seferlik ödeme olduğu için
-        // sadece veritabanındaki abonelik bilgisini siliyoruz.
+        // Aboneliği iptal et
+        // Yeni Kural:
+        // 1. Sadece subscriptionPlan'i null yap (Böylece yeni kursa kayıt olamaz)
+        // 2. Tarihleri KORU (Böylece süresi bitene kadar izlemeye devam edebilir)
 
         await prisma.user.update({
             where: { id: user.id },
             data: {
                 subscriptionPlan: null,
-                subscriptionStartDate: null,
-                subscriptionEndDate: null
+                // subscriptionStartDate ve subscriptionEndDate'e dokunmuyoruz
+                // Böylece kullanıcı süresi bitene kadar haklarını kullanabilir
             }
         })
 
         return NextResponse.json({
             success: true,
-            message: "Abonelik başarıyla iptal edildi"
+            message: "Abonelik iptal edildi. Süreniz bitene kadar içeriklere erişebilirsiniz."
         })
 
     } catch (error) {

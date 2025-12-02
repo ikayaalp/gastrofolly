@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma"
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: "Giriş yapmanız gerekiyor" },
@@ -63,6 +63,19 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Kullanıcının aboneliği var mı kontrol et
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { subscriptionPlan: true }
+    })
+
+    if (!user?.subscriptionPlan && !course.isFree) {
+      return NextResponse.json(
+        { error: "Bu kursa kayıt olmak için aktif bir aboneliğiniz olmalıdır." },
+        { status: 403 }
+      )
+    }
+
     // Kullanıcıyı kursa kaydet
     const enrollment = await prisma.enrollment.create({
       data: {
@@ -71,19 +84,10 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // Başarılı ödeme kaydı oluştur (demo amaçlı)
-    await prisma.payment.create({
-      data: {
-        userId: session.user.id,
-        courseId: courseId,
-        amount: course.price,
-        currency: 'TRY',
-        status: 'COMPLETED',
-        stripePaymentId: `demo_payment_${Date.now()}`,
-      }
-    })
+    // Not: Artık her kayıt için fake ödeme oluşturmuyoruz.
+    // Erişim kontrolü abonelik üzerinden yapılıyor.
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
       message: "Kursa başarıyla kayıt oldunuz!",
       enrollmentId: enrollment.id

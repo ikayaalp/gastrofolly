@@ -48,10 +48,21 @@ async function getCourseWithProgress(courseId: string, userId: string) {
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { subscriptionPlan: true, subscriptionEndDate: true }
+    select: {
+      subscriptionPlan: true,
+      subscriptionEndDate: true,
+      payments: {
+        where: {
+          courseId: courseId,
+          status: 'COMPLETED',
+          amount: { gt: 0 }
+        }
+      }
+    }
   })
 
-  const hasActiveSubscription = user?.subscriptionPlan && user?.subscriptionEndDate && new Date(user.subscriptionEndDate) > new Date()
+  // Abonelik süresi devam ediyor mu? (Plan iptal edilmiş olsa bile tarih bitmediyse devam eder)
+  const isSubscriptionValid = user?.subscriptionEndDate && new Date(user.subscriptionEndDate) > new Date()
 
   const enrollment = await prisma.enrollment.findUnique({
     where: {
@@ -59,19 +70,38 @@ async function getCourseWithProgress(courseId: string, userId: string) {
         userId,
         courseId
       }
+    },
+    include: {
+      course: {
+        select: { isFree: true }
+      }
     }
   })
 
   console.log('Learn Page - enrollment found:', enrollment)
-  console.log('Learn Page - hasActiveSubscription:', hasActiveSubscription)
+  console.log('Learn Page - isSubscriptionValid:', isSubscriptionValid)
 
-  if (!enrollment && !hasActiveSubscription) {
-    console.log('Learn Page - No enrollment and no active subscription found for user:', userId)
-    const allEnrollments = await prisma.enrollment.findMany({
-      where: { userId },
-      select: { courseId: true, createdAt: true }
-    })
-    console.log('Learn Page - All enrollments for user:', allEnrollments)
+  // Erişim Kontrolü
+  if (enrollment) {
+    // 1. Kurs ücretsiz mi?
+    if (enrollment.course.isFree) {
+      // Erişim izni var
+    }
+    // 2. Satın alınmış mı?
+    else if (user?.payments && user.payments.length > 0) {
+      // Erişim izni var
+    }
+    // 3. Abonelik ile mi gelmiş?
+    else {
+      // Abonelik süresi bitmişse erişimi kes
+      if (!isSubscriptionValid) {
+        console.log('Learn Page - Subscription expired for subscription-based enrollment')
+        return null
+      }
+    }
+  } else {
+    // Kayıt yoksa erişim yok
+    console.log('Learn Page - No enrollment found for user:', userId)
     return null
   }
 
