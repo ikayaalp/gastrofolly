@@ -100,9 +100,31 @@ async function getCourseWithProgress(courseId: string, userId: string) {
       }
     }
   } else {
-    // Kayıt yoksa erişim yok
-    console.log('Learn Page - No enrollment found for user:', userId)
-    return null
+    // Kayıt yoksa ama abonelik varsa, otomatik kayıt oluştur
+    if (isSubscriptionValid) {
+      console.log('Learn Page - Valid subscription found, auto-enrolling user:', userId)
+      const newEnrollment = await prisma.enrollment.create({
+        data: {
+          userId,
+          courseId
+        },
+        include: {
+          course: {
+            select: { isFree: true }
+          }
+        }
+      })
+      // Enrollment oluşturuldu, devam et
+      // newEnrollment değişkenini enrollment olarak kullanabilirdik ama
+      // aşağıdaki kod akışı enrollment değişkenine bağlı değil, sadece null dönmemesi yeterli.
+      // Ancak enrollment değişkeni const olduğu için yeniden atayamayız.
+      // Bu yüzden sadece loglayıp devam ediyoruz, çünkü aşağıda enrollment değişkeni kullanılmıyor.
+      // Sadece return { course, progress } yapılıyor.
+    } else {
+      // Kayıt yok ve abonelik yok -> erişim yok
+      console.log('Learn Page - No enrollment found for user:', userId)
+      return null
+    }
   }
 
   const course = await prisma.course.findUnique({
