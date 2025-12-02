@@ -4,11 +4,11 @@ import { useSession } from "next-auth/react"
 import Link from "next/link"
 import { ChefHat, Check, Crown, Sparkles, BookOpen, Award, Users, MessageCircle, Home, Zap, Star, Loader2 } from "lucide-react"
 import UserDropdown from "@/components/ui/UserDropdown"
-import { useState } from "react"
+import { useState, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { toast } from "react-hot-toast"
 
-export default function SubscriptionPage() {
+function SubscriptionContent() {
     const { data: session } = useSession()
     const router = useRouter()
     const searchParams = useSearchParams()
@@ -317,5 +317,17 @@ export default function SubscriptionPage() {
                 </div>
             </div>
         </div>
+    )
+}
+
+export default function SubscriptionPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-black flex items-center justify-center">
+                <Loader2 className="h-8 w-8 text-orange-500 animate-spin" />
+            </div>
+        }>
+            <SubscriptionContent />
+        </Suspense>
     )
 }
