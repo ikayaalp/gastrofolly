@@ -38,6 +38,13 @@ async function handleCallback(request: NextRequest) {
 async function handlePayment(token: string, request: NextRequest) {
     const result = await retrieveCheckoutForm(token)
 
+    console.log('Subscription callback - Payment result:', {
+        status: result.status,
+        paymentStatus: result.paymentStatus,
+        conversationId: result.conversationId,
+        paymentId: result.paymentId
+    })
+
     if (result.status === "success" && result.paymentStatus === "SUCCESS") {
         const conversationId = result.conversationId
 
@@ -51,7 +58,30 @@ async function handlePayment(token: string, request: NextRequest) {
             }
         })
 
+        console.log('Payment lookup result:', {
+            conversationId,
+            paymentFound: !!payment,
+            paymentId: payment?.id,
+            paymentStatus: payment?.status
+        })
+
         if (!payment) {
+            // Debug: Tüm pending subscription payments'ları listele
+            const allSubscriptionPayments = await prisma.payment.findMany({
+                where: {
+                    subscriptionPlan: { not: null }
+                },
+                select: {
+                    id: true,
+                    stripePaymentId: true,
+                    subscriptionPlan: true,
+                    status: true,
+                    createdAt: true
+                },
+                orderBy: { createdAt: 'desc' },
+                take: 5
+            })
+            console.error('Payment not found. Recent subscription payments:', allSubscriptionPayments)
             return NextResponse.redirect(new URL('/subscription?error=payment_not_found', request.url))
         }
 
