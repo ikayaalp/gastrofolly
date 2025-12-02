@@ -98,6 +98,22 @@ export async function GET(request: NextRequest) {
                 }
               })
 
+              // Abonelik güncelleme
+              if (payment.subscriptionPlan) {
+                const now = new Date()
+                const endDate = new Date(now.setMonth(now.getMonth() + 1)) // 1 aylık abonelik
+
+                await prisma.user.update({
+                  where: { id: userId },
+                  data: {
+                    subscriptionPlan: payment.subscriptionPlan,
+                    subscriptionStartDate: new Date(),
+                    subscriptionEndDate: endDate
+                  }
+                })
+                console.log(`✅ Subscription updated for user ${userId}: ${payment.subscriptionPlan}`)
+              }
+
               // Enrollment oluşturma (sadece kurs ödemeleri için)
               if (payment.courseId) {
                 const existingEnrollment = await prisma.enrollment.findFirst({
@@ -221,6 +237,22 @@ export async function GET(request: NextRequest) {
               stripePaymentId: payment.stripePaymentId,
             }
           })
+
+          // Abonelik güncelleme
+          if (payment.subscriptionPlan) {
+            const now = new Date()
+            const endDate = new Date(now.setMonth(now.getMonth() + 1)) // 1 aylık abonelik
+
+            await prisma.user.update({
+              where: { id: userId },
+              data: {
+                subscriptionPlan: payment.subscriptionPlan,
+                subscriptionStartDate: new Date(),
+                subscriptionEndDate: endDate
+              }
+            })
+            console.log(`✅ Subscription updated for user ${userId}: ${payment.subscriptionPlan}`)
+          }
 
           // Enrollment oluşturma (sadece kurs ödemeleri için)
           if (payment.courseId) {
@@ -372,6 +404,22 @@ export async function GET(request: NextRequest) {
             stripePaymentId: result.paymentId || conversationId,
           }
         })
+
+        // Abonelik güncelleme
+        if (payment.subscriptionPlan) {
+          const now = new Date()
+          const endDate = new Date(now.setMonth(now.getMonth() + 1)) // 1 aylık abonelik
+
+          await prisma.user.update({
+            where: { id: userId },
+            data: {
+              subscriptionPlan: payment.subscriptionPlan,
+              subscriptionStartDate: new Date(),
+              subscriptionEndDate: endDate
+            }
+          })
+          console.log(`✅ Subscription updated for user ${userId}: ${payment.subscriptionPlan}`)
+        }
 
         // Enrollment kontrolü ve oluşturma (sadece kurs ödemeleri için)
         if (payment.courseId) {
