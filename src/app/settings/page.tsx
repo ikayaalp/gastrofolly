@@ -17,6 +17,9 @@ async function getUserData(userId: string) {
       image: true,
       role: true,
       createdAt: true,
+      subscriptionPlan: true,
+      subscriptionStartDate: true,
+      subscriptionEndDate: true,
       _count: {
         select: {
           enrollments: true,
@@ -82,7 +85,7 @@ export default async function SettingsPage() {
                 </Link>
               </nav>
             </div>
-            
+
             <div className="flex items-center space-x-4">
               <button className="text-gray-300 hover:text-white transition-colors">
                 <Search className="h-5 w-5" />

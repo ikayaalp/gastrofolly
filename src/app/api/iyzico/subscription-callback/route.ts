@@ -189,6 +189,7 @@ async function handlePayment(token: string, request: NextRequest) {
                 where: { id: payment.userId },
                 data: {
                     subscriptionPlan: planName,
+                    subscriptionStartDate: new Date(),
                     subscriptionEndDate: endDate
                 }
             })

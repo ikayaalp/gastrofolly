@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import { User, Mail, Lock, Camera, Save, Eye, EyeOff, Calendar, Award } from "lucide-react"
+import { User, Mail, Lock, Camera, Save, Eye, EyeOff, Calendar, Award, Crown } from "lucide-react"
 import { storage } from "@/lib/firebase"
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 
@@ -14,6 +14,9 @@ interface UserData {
   image: string | null
   role: string
   createdAt: Date
+  subscriptionPlan: string | null
+  subscriptionStartDate: Date | null
+  subscriptionEndDate: Date | null
   _count: {
     enrollments: number
     reviews: number
@@ -198,9 +201,40 @@ export default function SettingsClient({ user }: SettingsClientProps) {
 
   const tabs = [
     { id: "profile", name: "Profil Bilgileri", icon: User },
+    { id: "subscription", name: "Abonelik", icon: Crown },
     { id: "password", name: "Şifre Değiştir", icon: Lock },
     { id: "account", name: "Hesap Bilgileri", icon: Award }
   ]
+
+  const handleCancelSubscription = async () => {
+    if (!confirm('Aboneliğinizi iptal etmek istediğinizden emin misiniz? Bu işlem geri alınamaz ve mevcut aboneliğiniz hemen sona erer.')) {
+      return
+    }
+
+    setLoading(true)
+    setMessage("")
+
+    try {
+      const response = await fetch("/api/user/cancel-subscription", {
+        method: "POST",
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setMessage("Abonelik başarıyla iptal edildi")
+        router.refresh()
+        setTimeout(() => setMessage(""), 3000)
+      } else {
+        setMessage(data.error || "Abonelik iptal edilemedi")
+      }
+    } catch (error) {
+      console.error("Cancel subscription error:", error)
+      setMessage("Bir hata oluştu")
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="space-y-8">
@@ -322,6 +356,78 @@ export default function SettingsClient({ user }: SettingsClientProps) {
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {activeTab === "subscription" && (
+        <div className="bg-[#0a0a0a] border border-gray-800 rounded-xl p-6">
+          <h2 className="text-xl font-bold text-white mb-6">Abonelik Bilgileri</h2>
+
+          {user.subscriptionPlan ? (
+            <div className="space-y-6">
+              <div className="bg-gradient-to-r from-orange-900/20 to-red-900/20 border border-orange-500/30 rounded-xl p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-4">
+                    <div className="bg-orange-600 rounded-full p-3">
+                      <Crown className="h-8 w-8 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-white">{user.subscriptionPlan}</h3>
+                      <p className="text-orange-400 text-sm font-medium">Aktif Abonelik</p>
+                    </div>
+                  </div>
+                  <span className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm font-semibold">
+                    Aktif
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 border-t border-orange-500/20 pt-6">
+                  <div>
+                    <p className="text-gray-400 text-sm mb-1">Başlangıç Tarihi</p>
+                    <p className="text-white font-medium">
+                      {user.subscriptionStartDate ? formatDate(user.subscriptionStartDate) : '-'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400 text-sm mb-1">Yenileme Tarihi</p>
+                    <p className="text-white font-medium">
+                      {user.subscriptionEndDate ? formatDate(user.subscriptionEndDate) : '-'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+                <h4 className="text-white font-semibold mb-2">Abonelik Yönetimi</h4>
+                <p className="text-gray-400 text-sm mb-4">
+                  Aboneliğinizi iptal ederseniz, mevcut dönem sonuna kadar erişiminiz devam etmez ve anında sona erer.
+                </p>
+                <button
+                  onClick={handleCancelSubscription}
+                  disabled={loading}
+                  className="text-red-400 hover:text-red-300 text-sm font-medium transition-colors disabled:opacity-50"
+                >
+                  {loading ? "İşleniyor..." : "Aboneliği İptal Et"}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-12 bg-gray-900/30 rounded-xl border border-gray-800">
+              <div className="bg-gray-800 rounded-full p-4 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                <Crown className="h-8 w-8 text-gray-500" />
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-2">Aktif Abonelik Bulunamadı</h3>
+              <p className="text-gray-400 mb-6 max-w-md mx-auto">
+                Henüz bir aboneliğiniz bulunmuyor. Premium içeriklere erişmek için hemen abone olun.
+              </p>
+              <button
+                onClick={() => router.push('/subscription')}
+                className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+              >
+                Planları İncele
+              </button>
+            </div>
+          )}
         </div>
       )}
 

@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react"
 import Link from "next/link"
 import { ChefHat, Check, Crown, Sparkles, BookOpen, Award, Users, MessageCircle, Home, Zap, Star, Loader2 } from "lucide-react"
 import UserDropdown from "@/components/ui/UserDropdown"
-import { useState, Suspense } from "react"
+import { useState, Suspense, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { toast } from "react-hot-toast"
 
@@ -13,6 +13,7 @@ function SubscriptionContent() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const courseId = searchParams.get("courseId")
+    const planParam = searchParams.get("plan") // URL'den plan parametresini al
     const [loading, setLoading] = useState<string | null>(null)
 
     const handleSubscription = async (planName: string, price: string) => {
@@ -49,6 +50,9 @@ function SubscriptionContent() {
             setLoading(null)
         }
     }
+
+
+
 
     const plans = [
         {
@@ -103,6 +107,16 @@ function SubscriptionContent() {
             ]
         }
     ]
+
+    // Eğer plan parametresi varsa, direkt o planı başlat
+    useEffect(() => {
+        if (planParam && session) {
+            const plan = plans.find(p => p.name === planParam)
+            if (plan) {
+                handleSubscription(plan.name, plan.price)
+            }
+        }
+    }, [planParam, session])
 
     return (
         <div className="min-h-screen bg-black">
