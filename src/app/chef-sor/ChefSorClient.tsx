@@ -12,7 +12,9 @@ import {
   Home,
   Users,
   MessageCircle,
-  GraduationCap
+  GraduationCap,
+  Copy,
+  Check
 } from 'lucide-react'
 import UserDropdown from '@/components/ui/UserDropdown'
 
@@ -48,6 +50,7 @@ export default function ChefSorClient({ session }: Props) {
   const [instructors, setInstructors] = useState<Instructor[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [copiedEmail, setCopiedEmail] = useState<string | null>(null)
 
   useEffect(() => {
     if (session?.user?.id) {
@@ -79,7 +82,19 @@ export default function ChefSorClient({ session }: Props) {
   const handleEmailClick = (email: string, name: string | null) => {
     const subject = encodeURIComponent('Kurs Hakkında Soru')
     const body = encodeURIComponent(`Merhaba ${name || 'Hocam'},\n\n`)
-    window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_blank')
+    // Gmail compose URL
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&to=${email}&su=${subject}&body=${body}`
+    window.open(gmailUrl, '_blank')
+  }
+
+  const copyEmail = async (email: string) => {
+    try {
+      await navigator.clipboard.writeText(email)
+      setCopiedEmail(email)
+      setTimeout(() => setCopiedEmail(null), 2000)
+    } catch (err) {
+      console.error('Failed to copy email:', err)
+    }
   }
 
   return (
@@ -264,23 +279,35 @@ export default function ChefSorClient({ session }: Props) {
                         <h3 className="text-xl font-bold text-white mb-1 truncate">
                           {instructor.name || 'İsimsiz Eğitmen'}
                         </h3>
-                        <p className="text-sm text-gray-400 truncate">
-                          {instructor.email}
-                        </p>
-                        <div className="flex items-center mt-2 text-xs text-orange-500">
+
+                        {/* Copyable Email */}
+                        <button
+                          onClick={() => copyEmail(instructor.email)}
+                          className="group flex items-center space-x-2 text-sm text-gray-400 hover:text-orange-400 transition-colors mb-2"
+                          title={copiedEmail === instructor.email ? 'Kopyalandı!' : 'Kopyala'}
+                        >
+                          <span className="truncate">{instructor.email}</span>
+                          {copiedEmail === instructor.email ? (
+                            <Check className="h-3 w-3 text-green-500 flex-shrink-0" />
+                          ) : (
+                            <Copy className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+                          )}
+                        </button>
+
+                        <div className="flex items-center text-xs text-orange-500">
                           <BookOpen className="h-3 w-3 mr-1" />
                           <span>{instructor.courses.length} Kurs</span>
                         </div>
                       </div>
                     </div>
 
-                    {/* Email Button */}
+                    {/* Gmail Button */}
                     <button
                       onClick={() => handleEmailClick(instructor.email, instructor.name)}
                       className="w-full bg-gradient-to-r from-orange-600 to-red-600 text-white py-3 px-4 rounded-lg hover:from-orange-700 hover:to-red-700 transition-all duration-300 flex items-center justify-center space-x-2 font-semibold shadow-lg hover:shadow-orange-500/50"
                     >
                       <Mail className="h-5 w-5" />
-                      <span>Mail Gönder</span>
+                      <span>Gmail&apos;de Gönder</span>
                     </button>
                   </div>
 
