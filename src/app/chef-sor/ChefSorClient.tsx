@@ -1,250 +1,85 @@
-"use client"
+'use client'
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { 
-  MessageCircle, 
-  Send, 
-  ChefHat, 
-  BookOpen, 
-  Users,
-  Search,
-  Clock,
-  Star,
+import { useState, useEffect } from 'react'
+import Link from 'next/link'
+import Image from 'next/image'
+import {
+  ChefHat,
+  Mail,
+  BookOpen,
+  User,
+  Loader2,
   Home,
-  Bell
-} from "lucide-react"
-import UserDropdown from "@/components/ui/UserDropdown"
+  Users,
+  MessageCircle,
+  GraduationCap
+} from 'lucide-react'
+import UserDropdown from '@/components/ui/UserDropdown'
+
+interface Course {
+  id: string
+  title: string
+  imageUrl: string | null
+}
 
 interface Instructor {
   id: string
   name: string | null
   email: string
   image: string | null
-}
-
-interface Course {
-  id: string
-  title: string
-  description: string
-  price: number
-  imageUrl: string | null
-  isPublished: boolean
-  createdAt: Date
-  instructor: Instructor
-  category: {
-    name: string
-  }
-  _count: {
-    enrollments: number
-  }
-}
-
-interface Message {
-  id: string
-  content: string
-  createdAt: Date
-  user: {
-    id: string
-    name: string | null
-    email: string
-    image: string | null
-  }
-  course: {
-    id: string
-    title: string
-    imageUrl: string | null
-  }
-  replies: Array<{
-    id: string
-    content: string
-    createdAt: Date
-    user: {
-      id: string
-      name: string | null
-      email: string
-      image: string | null
-    }
-  }>
+  courses: Course[]
 }
 
 interface Session {
-  user: {
+  user?: {
     id: string
-    name?: string | null | undefined
-    email?: string | null | undefined
-    image?: string | null | undefined
-    role?: string | undefined
+    name?: string | null
+    email?: string | null
+    image?: string | null
+    role?: string
   }
 }
 
-interface ChefSorClientProps {
-  enrolledCourses: Course[]
-  session: Session
-  selectedInstructorId?: string
+interface Props {
+  session: Session | null
 }
 
-export default function ChefSorClient({ enrolledCourses, session, selectedInstructorId }: ChefSorClientProps) {
-  const [activeTab, setActiveTab] = useState<'history' | 'new'>('history')
-  const [selectedInstructor, setSelectedInstructor] = useState<Instructor | null>(null)
-  const [messages, setMessages] = useState<Message[]>([])
-  const [newMessage, setNewMessage] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [conversationHistory, setConversationHistory] = useState<Array<{
-    instructor: Instructor
-    lastMessage: string
-    lastMessageTime: Date
-    unreadCount: number
-  }>>([])
+export default function ChefSorClient({ session }: Props) {
+  const [instructors, setInstructors] = useState<Instructor[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  // Benzersiz eğitmenleri al
-  const uniqueInstructors = enrolledCourses.reduce((acc, course) => {
-    const instructor = course.instructor
-    if (!acc.find(i => i.id === instructor.id)) {
-      acc.push(instructor)
+  useEffect(() => {
+    if (session?.user?.id) {
+      fetchInstructors()
+    } else {
+      setLoading(false)
     }
-    return acc
-  }, [] as Instructor[])
+  }, [session])
 
-  // Filtrelenmiş eğitmenler
-  const filteredInstructors = uniqueInstructors.filter(instructor =>
-    instructor.name?.toLowerCase().includes(searchTerm.toLowerCase())
-  )
-
-  // Chef&apos;e Sorı yükle (eğitmen bazında)
-  const loadMessages = async (instructorId: string) => {
+  const fetchInstructors = async () => {
     try {
-      // Bu eğitmenle olan tüm kurslardan Chef&apos;e Sorı getir
-      const instructorCourses = enrolledCourses.filter(c => c.instructor.id === instructorId)
-      if (instructorCourses.length === 0) return
-      
-      // İlk kursu kullan (kurs seçimi kaldırıldı)
-      const courseId = instructorCourses[0].id
-      const response = await fetch(`/api/messages?courseId=${courseId}&instructorId=${instructorId}`)
-      if (response.ok) {
-        const data = await response.json()
-        setMessages(data.messages || [])
+      setLoading(true)
+      const response = await fetch('/api/chef-sor/instructors')
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch instructors')
       }
-    } catch (error) {
-      console.error('Error loading messages:', error)
-    }
-  }
 
-  // Sohbet geçmişini yükle (sadece mesajı olan eğitmenler)
-  const loadConversationHistory = async () => {
-    try {
-      // Her eğitmen için son mesajı getir
-      const history = []
-      for (const instructor of uniqueInstructors) {
-        const instructorCourses = enrolledCourses.filter(c => c.instructor.id === instructor.id)
-        if (instructorCourses.length > 0) {
-          const courseId = instructorCourses[0].id
-          const response = await fetch(`/api/messages?courseId=${courseId}&instructorId=${instructor.id}`)
-          if (response.ok) {
-            const data = await response.json()
-            const messages = data.messages || []
-            // Sadece mesajı olan eğitmenleri ekle
-            if (messages.length > 0) {
-              const lastMessage = messages[messages.length - 1]
-              const replies = lastMessage.replies || []
-              const allMessages = [...messages, ...replies]
-              const sortedMessages = allMessages.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
-              const latestMessage = sortedMessages[sortedMessages.length - 1]
-              
-              history.push({
-                instructor,
-                lastMessage: latestMessage.content,
-                lastMessageTime: latestMessage.createdAt,
-                unreadCount: 0 // Şimdilik 0, daha sonra implement edilebilir
-              })
-            }
-          }
-        }
-      }
-      
-      // Tarihe göre sırala (en yeni üstte)
-      history.sort((a, b) => new Date(b.lastMessageTime).getTime() - new Date(a.lastMessageTime).getTime())
-      setConversationHistory(history)
-    } catch (error) {
-      console.error('Error loading conversation history:', error)
-    }
-  }
-
-  // Mesaj gönder
-  const sendMessage = async () => {
-    if (!newMessage.trim() || !selectedInstructor) return
-
-    setIsLoading(true)
-    try {
-      // İlk kursu kullan (kurs seçimi kaldırıldı)
-      const instructorCourses = enrolledCourses.filter(c => c.instructor.id === selectedInstructor.id)
-      if (instructorCourses.length === 0) return
-      
-      const courseId = instructorCourses[0].id
-      const response = await fetch('/api/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          content: newMessage.trim(),
-          courseId: courseId
-        })
-      })
-
-      if (response.ok) {
-        setNewMessage("")
-        loadMessages(selectedInstructor.id)
-        loadConversationHistory() // Geçmişi güncelle
-      }
-    } catch (error) {
-      console.error('Error sending message:', error)
+      const data = await response.json()
+      setInstructors(data.instructors || [])
+    } catch (err) {
+      console.error('Error fetching instructors:', err)
+      setError('Hocalar yüklenirken bir hata oluştu')
     } finally {
-      setIsLoading(false)
+      setLoading(false)
     }
   }
 
-  // URL'den gelen instructorId ile eğitmeni otomatik seç
-  useEffect(() => {
-    if (selectedInstructorId && uniqueInstructors.length > 0) {
-      const instructor = uniqueInstructors.find(i => i.id === selectedInstructorId)
-      if (instructor) {
-        setSelectedInstructor(instructor)
-        setActiveTab('history')
-        loadMessages(instructor.id)
-      }
-    }
-  }, [selectedInstructorId, uniqueInstructors, enrolledCourses])
-
-  // Sohbet geçmişini yükle
-  useEffect(() => {
-    loadConversationHistory()
-  }, [uniqueInstructors, enrolledCourses])
-
-  // Eğitmen seçildiğinde
-  const handleInstructorSelect = (instructor: Instructor) => {
-    setSelectedInstructor(instructor)
-    setActiveTab('history')
-    loadMessages(instructor.id)
-  }
-
-  // Yeni sohbet başlat
-  const handleNewChat = (instructor: Instructor) => {
-    setSelectedInstructor(instructor)
-    setActiveTab('history')
-    setMessages([]) // Yeni sohbet için Chef&apos;e Sorı temizle
-  }
-
-  const formatTime = (date: Date) => {
-    return new Date(date).toLocaleString('tr-TR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
+  const handleEmailClick = (email: string, name: string | null) => {
+    const subject = encodeURIComponent('Kurs Hakkında Soru')
+    const body = encodeURIComponent(`Merhaba ${name || 'Hocam'},\n\n`)
+    window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_blank')
   }
 
   return (
@@ -261,43 +96,56 @@ export default function ChefSorClient({ enrolledCourses, session, selectedInstru
                   <span className="bg-orange-600 text-white px-2 py-1 rounded text-sm font-medium">Admin</span>
                 )}
               </Link>
-              <nav className="flex space-x-6">
-                <Link href="/home" className="text-gray-300 hover:text-white transition-colors">
-                  Ana Sayfa
-                </Link>
-                <Link href="/my-courses" className="text-gray-300 hover:text-white transition-colors">
-                  Kurslarım
-                </Link>
-                {session?.user?.role === 'ADMIN' && (
-                  <>
-                    <Link href="/admin" className="text-gray-300 hover:text-white transition-colors">
-                      Admin Paneli
-                    </Link>
-                    <Link href="/admin/courses" className="text-gray-300 hover:text-white transition-colors">
-                      Kurs Yönetimi
-                    </Link>
-                  </>
-                )}
-                <Link href="/chef-sosyal" className="text-gray-300 hover:text-white transition-colors">
-                  Chef Sosyal
-                </Link>
-                <Link href="/chef-sor" className="text-white font-semibold">
-                  Chef&apos;e Sor
-                </Link>
-                <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
-                  İletişim
-                </Link>
-              </nav>
+              {session?.user && (
+                <nav className="hidden md:flex space-x-6">
+                  <Link href="/home" className="text-gray-300 hover:text-white transition-colors">
+                    Ana Sayfa
+                  </Link>
+                  <Link href="/my-courses" className="text-gray-300 hover:text-white transition-colors">
+                    Kurslarım
+                  </Link>
+                  {session.user.role === 'ADMIN' && (
+                    <>
+                      <Link href="/admin" className="text-gray-300 hover:text-white transition-colors">
+                        Admin Paneli
+                      </Link>
+                      <Link href="/admin/courses" className="text-gray-300 hover:text-white transition-colors">
+                        Kurs Yönetimi
+                      </Link>
+                    </>
+                  )}
+                  <Link href="/chef-sosyal" className="text-gray-300 hover:text-white transition-colors">
+                    Chef Sosyal
+                  </Link>
+                  <Link href="/chef-sor" className="text-white font-semibold">
+                    Chef&apos;e Sor
+                  </Link>
+                  <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
+                    İletişim
+                  </Link>
+                </nav>
+              )}
             </div>
-            
+
             <div className="flex items-center space-x-4">
-              <button className="text-gray-300 hover:text-white">
-                <Search className="h-5 w-5" />
-              </button>
-              <button className="text-gray-300 hover:text-white">
-                <Bell className="h-5 w-5" />
-              </button>
-              <UserDropdown />
+              {session?.user ? (
+                <UserDropdown />
+              ) : (
+                <>
+                  <Link
+                    href="/auth/signin"
+                    className="text-gray-300 hover:text-orange-500"
+                  >
+                    Giriş Yap
+                  </Link>
+                  <Link
+                    href="/auth/signup"
+                    className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors"
+                  >
+                    Kayıt Ol
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -311,279 +159,172 @@ export default function ChefSorClient({ enrolledCourses, session, selectedInstru
             <span className="text-lg font-bold text-white">Chef2.0</span>
           </Link>
           <div className="flex items-center space-x-3">
-            <button className="p-2 text-gray-300 hover:text-white transition-colors">
-              <Search className="h-5 w-5" />
-            </button>
-            <UserDropdown />
+            {session?.user ? (
+              <UserDropdown />
+            ) : (
+              <Link
+                href="/auth/signin"
+                className="text-gray-300 hover:text-orange-500 text-sm"
+              >
+                Giriş Yap
+              </Link>
+            )}
           </div>
         </div>
       </div>
 
-      <div className="pt-16 md:pt-24 pb-20 md:pb-8 min-h-screen overflow-y-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Sol Panel - Tab Navigation */}
-            <div className="bg-gray-800 rounded-lg p-6 flex flex-col h-[400px] md:h-[600px]">
-              {/* Tab Navigation */}
-              <div className="flex space-x-1 mb-6 bg-gray-700 p-1 rounded-lg">
-                <button
-                  onClick={() => setActiveTab('history')}
-                  className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                    activeTab === 'history'
-                      ? 'bg-orange-600 text-white'
-                      : 'text-gray-300 hover:text-white'
-                  }`}
-                >
-                  Sohbet Geçmişi
-                </button>
-                <button
-                  onClick={() => setActiveTab('new')}
-                  className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                    activeTab === 'new'
-                      ? 'bg-orange-600 text-white'
-                      : 'text-gray-300 hover:text-white'
-                  }`}
-                >
-                  Yeni Sohbet
-                </button>
+      {/* Main Content */}
+      <main className="pt-20 md:pt-24 pb-20 md:pb-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Page Header */}
+          <div className="mb-8">
+            <div className="flex items-center space-x-3 mb-3">
+              <div className="bg-orange-500/20 p-3 rounded-xl">
+                <GraduationCap className="h-8 w-8 text-orange-500" />
               </div>
-
-              {/* Tab Content */}
-              {activeTab === 'history' ? (
-                <>
-                  <h2 className="text-lg font-semibold text-white mb-4">Son Konuşmalar</h2>
-                  <div className="space-y-3 flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
-                    {conversationHistory.length === 0 ? (
-                      <p className="text-gray-400 text-center py-8">
-                        Henüz konuşma geçmişi yok
-                      </p>
-                    ) : (
-                      conversationHistory.map((conversation) => (
-                        <div
-                          key={conversation.instructor.id}
-                          onClick={() => handleInstructorSelect(conversation.instructor)}
-                          className={`p-4 rounded-lg cursor-pointer transition-colors ${
-                            selectedInstructor?.id === conversation.instructor.id
-                              ? 'bg-orange-600 text-white'
-                              : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
-                          }`}
-                        >
-                          <div className="flex items-center space-x-3">
-                            <div className="w-12 h-12 rounded-full bg-orange-600 flex items-center justify-center">
-                              {conversation.instructor.image ? (
-                                <Image
-                                  src={conversation.instructor.image}
-                                  alt={conversation.instructor.name || 'Eğitmen'}
-                                  width={48}
-                                  height={48}
-                                  className="rounded-full"
-                                />
-                              ) : (
-                                <span className="text-white font-semibold">
-                                  {conversation.instructor.name?.charAt(0).toUpperCase() || 'E'}
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium truncate">
-                                {conversation.instructor.name || 'Eğitmen'}
-                              </p>
-                              <p className="text-sm opacity-75 truncate">
-                                {conversation.lastMessage}
-                              </p>
-                              <p className="text-xs opacity-50 mt-1">
-                                {formatTime(conversation.lastMessageTime)}
-                              </p>
-                            </div>
-                            {conversation.unreadCount > 0 && (
-                              <div className="bg-orange-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                                {conversation.unreadCount}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </>
-              ) : (
-                <>
-                  <h2 className="text-lg font-semibold text-white mb-4">Yeni Sohbet Başlat</h2>
-                  <div className="relative mb-4">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <input
-                      type="text"
-                      placeholder="Eğitmen ara..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-orange-500"
-                    />
-                  </div>
-                  <div className="space-y-3 flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
-                    {filteredInstructors.length === 0 ? (
-                      <p className="text-gray-400 text-center py-8">
-                        {searchTerm ? "Eğitmen bulunamadı" : "Henüz hiç kurs satın almamışsınız"}
-                      </p>
-                    ) : (
-                      filteredInstructors.map((instructor) => (
-                        <div
-                          key={instructor.id}
-                          onClick={() => handleNewChat(instructor)}
-                          className="p-4 rounded-lg cursor-pointer transition-colors bg-gray-700 hover:bg-gray-600 text-gray-300"
-                        >
-                          <div className="flex items-center space-x-3">
-                            <div className="w-12 h-12 rounded-full bg-orange-600 flex items-center justify-center">
-                              {instructor.image ? (
-                                <Image
-                                  src={instructor.image}
-                                  alt={instructor.name || 'Eğitmen'}
-                                  width={48}
-                                  height={48}
-                                  className="rounded-full"
-                                />
-                              ) : (
-                                <span className="text-white font-semibold">
-                                  {instructor.name?.charAt(0).toUpperCase() || 'E'}
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium truncate">
-                                {instructor.name || 'Eğitmen'}
-                              </p>
-                              <p className="text-sm opacity-75 truncate">
-                                {enrolledCourses.filter(c => c.instructor.id === instructor.id).length} kurs
-                              </p>
-                            </div>
-                            <MessageCircle className="h-5 w-5 text-orange-500" />
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </>
-              )}
+              <div>
+                <h1 className="text-3xl font-bold text-white">Chef&apos;e Sor</h1>
+                <p className="text-gray-400">Kurs hocalarınıza doğrudan ulaşın</p>
+              </div>
             </div>
+          </div>
 
-            {/* Sağ Panel - Mesajlaşma */}
-            <div className="bg-gray-800 rounded-lg p-6 flex flex-col h-[400px] md:h-[600px]">
-              {/* Mesaj Header */}
-              <div className="mb-4 pb-4 border-b border-gray-700">
-                <h2 className="text-lg font-semibold text-white">Mesajlaşma</h2>
-                {selectedInstructor && (
-                  <div className="mt-2">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-6 h-6 rounded-full bg-orange-600 flex items-center justify-center">
-                        {selectedInstructor.image ? (
+          {/* Content */}
+          {!session?.user ? (
+            <div className="text-center py-16">
+              <div className="bg-gray-900 rounded-xl p-12 border border-gray-800">
+                <User className="h-16 w-16 text-gray-600 mx-auto mb-4" />
+                <h2 className="text-2xl font-bold text-white mb-2">Giriş Yapmalısınız</h2>
+                <p className="text-gray-400 mb-6">
+                  Hocalarınızı görmek için giriş yapmanız gerekiyor
+                </p>
+                <Link
+                  href="/auth/signin"
+                  className="inline-block bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 transition-colors font-semibold"
+                >
+                  Giriş Yap
+                </Link>
+              </div>
+            </div>
+          ) : loading ? (
+            <div className="flex items-center justify-center py-16">
+              <Loader2 className="h-12 w-12 text-orange-500 animate-spin" />
+            </div>
+          ) : error ? (
+            <div className="text-center py-16">
+              <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-8">
+                <p className="text-red-400">{error}</p>
+              </div>
+            </div>
+          ) : instructors.length === 0 ? (
+            <div className="text-center py-16">
+              <div className="bg-gray-900 rounded-xl p-12 border border-gray-800">
+                <BookOpen className="h-16 w-16 text-gray-600 mx-auto mb-4" />
+                <h2 className="text-2xl font-bold text-white mb-2">Henüz Kurs Kaydınız Yok</h2>
+                <p className="text-gray-400 mb-6">
+                  Hocalarınızı görebilmek için en az bir kursa kayıt olmalısınız
+                </p>
+                <Link
+                  href="/home"
+                  className="inline-block bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 transition-colors font-semibold"
+                >
+                  Kursları Keşfet
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {instructors.map((instructor) => (
+                <div
+                  key={instructor.id}
+                  className="bg-gradient-to-br from-gray-900 to-black rounded-xl overflow-hidden border border-gray-800 hover:border-orange-500/50 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-orange-500/20"
+                >
+                  {/* Instructor Header */}
+                  <div className="p-6 border-b border-gray-800">
+                    <div className="flex items-start space-x-4 mb-4">
+                      {/* Avatar - Fixed Size Container */}
+                      <div className="flex-shrink-0 w-20 h-20">
+                        {instructor.image ? (
                           <Image
-                            src={selectedInstructor.image}
-                            alt={selectedInstructor.name || 'Eğitmen'}
-                            width={24}
-                            height={24}
-                            className="rounded-full"
+                            src={instructor.image}
+                            alt={instructor.name || 'Instructor'}
+                            width={80}
+                            height={80}
+                            className="w-full h-full rounded-full border-2 border-orange-500 object-cover"
                           />
                         ) : (
-                          <span className="text-white text-xs font-semibold">
-                            {selectedInstructor.name?.charAt(0).toUpperCase() || 'E'}
-                          </span>
+                          <div className="w-full h-full rounded-full bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center border-2 border-orange-500">
+                            <User className="h-10 w-10 text-white" />
+                          </div>
                         )}
                       </div>
-                      <span className="text-sm text-gray-300">
-                        {selectedInstructor.name || 'Eğitmen'}
-                      </span>
-                    </div>
-                  </div>
-                )}
-              </div>
 
-              {!selectedInstructor ? (
-                <div className="flex-1 flex items-center justify-center">
-                  <p className="text-gray-400 text-center">
-                    Mesajlaşmak için bir eğitmen seçin
-                  </p>
-                </div>
-              ) : (
-                <>
-                  {/* Mesaj Listesi */}
-                  <div className="flex-1 overflow-y-auto space-y-4 mb-4 scrollbar-thin scrollbar-thumb-orange-500 scrollbar-track-gray-800 pr-2 pl-1">
-                    {messages.length === 0 ? (
-                      <p className="text-gray-400 text-center py-8">
-                        Henüz mesaj yok. İlk mesajı siz gönderin!
-                      </p>
-                    ) : (
-                      messages.map((message) => (
-                        <div key={message.id} className="space-y-3 mb-4">
-                          {/* Ana Mesaj */}
-                          <div
-                            className={`flex ${
-                              message.user.id === session.user.id ? 'justify-end' : 'justify-start'
-                            }`}
-                          >
-                            <div
-                              className={`max-w-xs lg:max-w-md px-4 py-3 rounded-lg ${
-                                message.user.id === session.user.id
-                                  ? 'bg-orange-600 text-white'
-                                  : 'bg-gray-700 text-gray-300'
-                              }`}
-                            >
-                              <p className="text-sm">{message.content}</p>
-                              <p className="text-xs opacity-75 mt-1">
-                                {formatTime(message.createdAt)}
-                              </p>
-                            </div>
-                          </div>
-
-                          {/* Yanıtlar */}
-                          {message.replies.map((reply) => (
-                            <div
-                              key={reply.id}
-                              className={`flex ${
-                                reply.user.id === session.user.id ? 'justify-end' : 'justify-start'
-                              } ml-6 mt-2`}
-                            >
-                              <div
-                                className={`max-w-xs lg:max-w-md px-4 py-3 rounded-lg ${
-                                  reply.user.id === session.user.id
-                                    ? 'bg-orange-600 text-white'
-                                    : 'bg-gray-700 text-gray-300'
-                                }`}
-                              >
-                                <p className="text-sm">{reply.content}</p>
-                                <p className="text-xs opacity-75 mt-1">
-                                  {formatTime(reply.createdAt)}
-                                </p>
-                              </div>
-                            </div>
-                          ))}
+                      {/* Instructor Info */}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-xl font-bold text-white mb-1 truncate">
+                          {instructor.name || 'İsimsiz Eğitmen'}
+                        </h3>
+                        <p className="text-sm text-gray-400 truncate">
+                          {instructor.email}
+                        </p>
+                        <div className="flex items-center mt-2 text-xs text-orange-500">
+                          <BookOpen className="h-3 w-3 mr-1" />
+                          <span>{instructor.courses.length} Kurs</span>
                         </div>
-                      ))
-                    )}
-                  </div>
+                      </div>
+                    </div>
 
-                  {/* Mesaj Gönderme */}
-                  <div className="flex space-x-2">
-                    <input
-                      type="text"
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-                      placeholder="Mesajınızı yazın..."
-                      className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-orange-500"
-                    />
+                    {/* Email Button */}
                     <button
-                      onClick={sendMessage}
-                      disabled={isLoading || !newMessage.trim()}
-                      className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                      onClick={() => handleEmailClick(instructor.email, instructor.name)}
+                      className="w-full bg-gradient-to-r from-orange-600 to-red-600 text-white py-3 px-4 rounded-lg hover:from-orange-700 hover:to-red-700 transition-all duration-300 flex items-center justify-center space-x-2 font-semibold shadow-lg hover:shadow-orange-500/50"
                     >
-                      <Send className="h-4 w-4" />
+                      <Mail className="h-5 w-5" />
+                      <span>Mail Gönder</span>
                     </button>
                   </div>
-                </>
-              )}
+
+                  {/* Courses List */}
+                  <div className="p-6">
+                    <h4 className="text-sm font-semibold text-gray-400 mb-3 uppercase tracking-wider">
+                      Verdiği Kurslar
+                    </h4>
+                    <div className="space-y-2">
+                      {instructor.courses.map((course) => (
+                        <Link
+                          key={course.id}
+                          href={`/learn/${course.id}`}
+                          className="block p-3 bg-gray-800/50 rounded-lg hover:bg-gray-800 transition-colors border border-gray-700 hover:border-orange-500/30"
+                        >
+                          <div className="flex items-center space-x-3">
+                            {/* Course Image - Fixed Size Container */}
+                            <div className="flex-shrink-0 w-10 h-10">
+                              {course.imageUrl ? (
+                                <Image
+                                  src={course.imageUrl}
+                                  alt={course.title}
+                                  width={40}
+                                  height={40}
+                                  className="w-full h-full rounded object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full bg-gradient-to-br from-orange-400 to-red-500 rounded flex items-center justify-center">
+                                  <BookOpen className="h-5 w-5 text-white" />
+                                </div>
+                              )}
+                            </div>
+                            <span className="text-sm text-white truncate flex-1">{course.title}</span>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-          </div>
+          )}
         </div>
-      </div>
+      </main>
 
       {/* Mobile Bottom Navigation */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-t border-gray-800">
