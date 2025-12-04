@@ -98,9 +98,6 @@ export default async function InstructorPage({ params }: InstructorPageProps) {
                 <Link href="/my-courses" className="text-gray-300 hover:text-white transition-colors">
                   Kurslarım
                 </Link>
-                <Link href="/favorites" className="text-gray-300 hover:text-white transition-colors">
-                  Favorilerim
-                </Link>
                 {session?.user?.role === 'ADMIN' && (
                   <>
                     <Link href="/admin" className="text-gray-300 hover:text-white transition-colors">
