@@ -65,17 +65,12 @@ export default async function InstructorPage({ params }: InstructorPageProps) {
     0
   )
 
-  const totalLessons = instructor.createdCourses.reduce(
-    (acc: number, course: typeof instructor.createdCourses[0]) => acc + course._count.lessons,
-    0
-  )
-
   const totalReviews = instructor.createdCourses.reduce(
     (acc: number, course: typeof instructor.createdCourses[0]) => acc + course._count.reviews,
     0
   )
 
-  const averageRating = totalReviews > 0
+  const averageRating = totalReviews > 0 && instructor.createdCourses.length > 0
     ? instructor.createdCourses.reduce((acc: number) => {
       // Burada gerçek rating hesaplaması yapılabilir
       return acc + 4.5 // Örnek değer
@@ -255,19 +250,13 @@ export default async function InstructorPage({ params }: InstructorPageProps) {
                       instructorId={instructor.id}
                       instructorName={instructor.name || 'Unknown'}
                     />
-                    <button
-                      onClick={() => {
-                        if (!instructor.email) return
-                        const subject = encodeURIComponent('Kurs Hakkında Soru')
-                        const body = encodeURIComponent(`Merhaba ${instructor.name},\n\n`)
-                        const gmailUrl = `https://mail.google.com/mail/?view=cm&to=${instructor.email}&su=${subject}&body=${body}`
-                        window.open(gmailUrl, '_blank')
-                      }}
+                    <Link
+                      href="/chef-sor"
                       className="w-full bg-gradient-to-r from-orange-600 to-red-600 text-white py-3 px-4 rounded-lg hover:from-orange-700 hover:to-red-700 transition-all duration-300 flex items-center justify-center space-x-2 font-semibold shadow-lg hover:shadow-orange-500/50"
                     >
                       <MessageCircle className="h-5 w-5" />
                       <span>Chef&apos;e Sor</span>
-                    </button>
+                    </Link>
                   </div>
                 </div>
               </div>
