@@ -38,7 +38,15 @@ function SignInForm() {
       if (result?.error) {
         setError("Giriş bilgileri hatalı veya email doğrulanmamış")
       } else {
-        router.push("/home")
+        // Kullanıcı rolünü kontrol et
+        const response = await fetch('/api/user/role')
+        const data = await response.json()
+
+        if (data.role === 'ADMIN') {
+          router.push("/admin")
+        } else {
+          router.push("/home")
+        }
       }
     } catch (error) {
       setError("Bir hata oluştu")
