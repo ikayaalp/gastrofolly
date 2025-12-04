@@ -3,7 +3,6 @@ import { authOptions } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
-import Image from "next/image"
 import { ChefHat, Award, Download, Calendar, BookOpen } from "lucide-react"
 import UserDropdown from "@/components/ui/UserDropdown"
 
@@ -117,7 +116,7 @@ export default async function CertificatesPage() {
                     </div>
                 ) : (
                     <div className="text-center py-16">
-                        <div className="bg-gray-900 rounded-xl p-12 border border-gray-800">
+                        <div className="bg-gray-800 rounded-xl p-12 border border-gray-700">
                             <Award className="h-16 w-16 text-gray-600 mx-auto mb-4" />
                             <h2 className="text-2xl font-bold text-white mb-2">Henüz Sertifikanız Yok</h2>
                             <p className="text-gray-400 mb-6">
