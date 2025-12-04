@@ -45,6 +45,26 @@ export default async function CertificatesPage() {
                             <ChefHat className="h-8 w-8 text-orange-500" />
                             <span className="text-2xl font-bold">Chef2.0</span>
                         </Link>
+
+                        {/* Navigation */}
+                        <nav className="hidden md:flex items-center space-x-8">
+                            <Link href="/home" className="text-gray-300 hover:text-white transition-colors">
+                                Ana Sayfa
+                            </Link>
+                            <Link href="/my-courses" className="text-gray-300 hover:text-white transition-colors">
+                                Kurslarım
+                            </Link>
+                            <Link href="/chef-sosyal" className="text-gray-300 hover:text-white transition-colors">
+                                Chef Sosyal
+                            </Link>
+                            <Link href="/chef-sor" className="text-gray-300 hover:text-white transition-colors">
+                                Chef&apos;e Sor
+                            </Link>
+                            <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
+                                İletişim
+                            </Link>
+                        </nav>
+
                         <UserDropdown />
                     </div>
                 </div>
