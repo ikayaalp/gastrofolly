@@ -122,7 +122,7 @@ export default function MyCoursesPage() {
                   Chef Sosyal
                 </Link>
                 <Link href="/chef-sor" className="text-gray-300 hover:text-white transition-colors">
-                  Mesajlar
+                  Chef&apos;e Sor
                 </Link>
                 <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
                   İletişim

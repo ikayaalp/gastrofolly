@@ -3,11 +3,11 @@ import { authOptions } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
-import { 
-  ChefHat, 
-  BookOpen, 
-  Clock, 
-  Award, 
+import {
+  ChefHat,
+  BookOpen,
+  Clock,
+  Award,
   Play,
   BarChart3,
   Settings,
@@ -66,7 +66,7 @@ export default async function DashboardPage() {
   // İstatistikleri hesapla
   const totalCourses = enrollments.length
   const completedLessons = progress.filter(p => p.isCompleted).length
-  const totalLessons = enrollments.reduce((acc, enrollment) => 
+  const totalLessons = enrollments.reduce((acc, enrollment) =>
     acc + enrollment.course._count.lessons, 0
   )
   const completionRate = totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0
@@ -109,7 +109,7 @@ export default async function DashboardPage() {
                   Chef Sosyal
                 </Link>
                 <Link href="/chef-sor" className="text-gray-300 hover:text-white transition-colors">
-                  Mesajlar
+                  Chef&apos;e Sor
                 </Link>
                 <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
                   İletişim
@@ -218,13 +218,13 @@ export default async function DashboardPage() {
               {enrollments.length > 0 ? (
                 <div className="space-y-4">
                   {enrollments.map((enrollment) => {
-                    const courseProgress = progress.filter(p => 
+                    const courseProgress = progress.filter(p =>
                       p.courseId === enrollment.course.id
                     )
                     const completedCount = courseProgress.filter(p => p.isCompleted).length
                     const totalLessonsCount = enrollment.course._count.lessons
-                    const progressPercentage = totalLessonsCount > 0 
-                      ? (completedCount / totalLessonsCount) * 100 
+                    const progressPercentage = totalLessonsCount > 0
+                      ? (completedCount / totalLessonsCount) * 100
                       : 0
 
                     return (
@@ -339,17 +339,17 @@ export default async function DashboardPage() {
                     .sort((a, b) => new Date(b.watchedAt).getTime() - new Date(a.watchedAt).getTime())
                     .slice(0, 5)
                     .map((item) => (
-                        <div key={item.id} className="flex items-center space-x-3">
-                          <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-white">
-                              {item.lesson.title}
-                            </p>
-                            <p className="text-xs text-gray-400">
-                              {item.course.title}
-                            </p>
-                          </div>
+                      <div key={item.id} className="flex items-center space-x-3">
+                        <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-white">
+                            {item.lesson.title}
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            {item.course.title}
+                          </p>
                         </div>
+                      </div>
                     ))}
                 </div>
               ) : (

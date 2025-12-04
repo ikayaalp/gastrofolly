@@ -2,8 +2,8 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { 
-  ChefHat, 
+import {
+  ChefHat,
   Search,
   Bell,
   Home,
@@ -117,16 +117,16 @@ export default function HomePageClient({
                   Chef Sosyal
                 </Link>
                 <Link href="/chef-sor" className="text-gray-300 hover:text-white transition-colors">
-                  Mesajlar
+                  Chef&apos;e Sor
                 </Link>
                 <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
                   İletişim
                 </Link>
               </nav>
             </div>
-            
+
             <div className="flex items-center space-x-4">
-              <button 
+              <button
                 onClick={() => setIsSearchOpen(true)}
                 className="text-gray-300 hover:text-white transition-colors"
                 title="Ara"
@@ -233,9 +233,9 @@ export default function HomePageClient({
       </div>
 
       {/* Search Modal */}
-      <SearchModal 
-        isOpen={isSearchOpen} 
-        onClose={() => setIsSearchOpen(false)} 
+      <SearchModal
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
       />
     </div>
   )
