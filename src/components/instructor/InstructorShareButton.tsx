@@ -55,7 +55,7 @@ export default function InstructorShareButton({ instructorId, instructorName }: 
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full bg-gray-800 text-white py-3 px-4 rounded-lg hover:bg-gray-700 transition-colors flex items-center justify-center space-x-2 font-semibold border border-gray-700"
+        className="w-full bg-black text-white py-3 px-4 rounded-lg hover:text-orange-500 transition-colors flex items-center justify-center space-x-2 font-semibold border border-gray-700"
       >
         <Share2 className="h-5 w-5" />
         <span>Profili Paylaş</span>
