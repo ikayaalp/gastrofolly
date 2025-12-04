@@ -257,6 +257,7 @@ export default async function InstructorPage({ params }: InstructorPageProps) {
                     />
                     <button
                       onClick={() => {
+                        if (!instructor.email) return
                         const subject = encodeURIComponent('Kurs Hakkında Soru')
                         const body = encodeURIComponent(`Merhaba ${instructor.name},\n\n`)
                         const gmailUrl = `https://mail.google.com/mail/?view=cm&to=${instructor.email}&su=${subject}&body=${body}`
