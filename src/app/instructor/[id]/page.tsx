@@ -9,7 +9,6 @@ import {
   Star,
   Users,
   Play,
-  Clock,
   BookOpen,
   Home,
   MessageCircle
@@ -78,7 +77,7 @@ export default async function InstructorPage({ params }: InstructorPageProps) {
   )
 
   const averageRating = totalReviews > 0
-    ? instructor.createdCourses.reduce((acc: number, course: typeof instructor.createdCourses[0]) => {
+    ? instructor.createdCourses.reduce((acc: number) => {
       // Burada gerçek rating hesaplaması yapılabilir
       return acc + 4.5 // Örnek değer
     }, 0) / instructor.createdCourses.length
@@ -122,7 +121,7 @@ export default async function InstructorPage({ params }: InstructorPageProps) {
                   Chef Sosyal
                 </Link>
                 <Link href="/chef-sor" className="text-gray-300 hover:text-white transition-colors">
-                  Chef'e Sor
+                  Chef&apos;e Sor
                 </Link>
                 <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
                   İletişim

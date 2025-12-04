@@ -17,10 +17,8 @@ import {
   Crown,
   Zap
 } from "lucide-react"
-import EnrollButton from "@/components/course/EnrollButton"
 import FavoriteButton from "@/components/course/FavoriteButton"
 import ShareButton from "@/components/course/ShareButton"
-import MessageButton from "@/components/instructor/MessageButton"
 import CommentsSection from "@/components/course/CommentsSection"
 import UserDropdown from "@/components/ui/UserDropdown"
 
@@ -156,7 +154,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
                     Chef Sosyal
                   </Link>
                   <Link href="/chef-sor" className="text-gray-300 hover:text-white transition-colors">
-                    Chef'e Sor
+                    Chef&apos;e Sor
                   </Link>
                   <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
                     İletişim
@@ -419,11 +417,6 @@ export default async function CoursePage({ params }: CoursePageProps) {
                     <CheckCircle className="h-5 w-5 mr-2" />
                     {hasProgress ? 'Kursa Devam Et' : 'Kursa Başla'}
                   </Link>
-                  <MessageButton
-                    instructorId={course.instructor.id}
-                    instructorName={course.instructor.name || 'Eğitmen'}
-                    courseId={course.id}
-                  />
                 </>
               ) : (
                 <>
