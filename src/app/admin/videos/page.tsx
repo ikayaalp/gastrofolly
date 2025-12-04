@@ -4,7 +4,7 @@ import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import VideoManagement from "./VideoManagement"
 import Link from "next/link"
-import { ChefHat, Home, BookOpen, Users, MessageCircle } from "lucide-react"
+import { ChefHat, Home, BookOpen, Users, Wallet } from "lucide-react"
 import UserDropdown from "@/components/ui/UserDropdown"
 
 async function getLessonsWithoutVideos() {
@@ -69,36 +69,27 @@ export default async function VideoManagementPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-8">
-              <Link href="/home" className="flex items-center space-x-2">
+              <Link href="/admin" className="flex items-center space-x-2">
                 <ChefHat className="h-8 w-8 text-orange-500" />
                 <span className="text-2xl font-bold text-white">Chef2.0</span>
                 <span className="bg-orange-600 text-white px-2 py-1 rounded text-sm font-medium">Admin</span>
               </Link>
               <nav className="hidden md:flex space-x-6">
-                <Link href="/home" className="text-gray-300 hover:text-white transition-colors">
-                  Ana Sayfa
-                </Link>
-                <Link href="/my-courses" className="text-gray-300 hover:text-white transition-colors">
-                  Kurslarım
-                </Link>
                 <Link href="/admin" className="text-gray-300 hover:text-white transition-colors">
                   Admin Paneli
                 </Link>
                 <Link href="/admin/courses" className="text-gray-300 hover:text-white transition-colors">
                   Kurs Yönetimi
                 </Link>
-                <Link href="/chef-sosyal" className="text-gray-300 hover:text-white transition-colors">
-                  Chef Sosyal
+                <Link href="/admin/users" className="text-gray-300 hover:text-white transition-colors">
+                  Kullanıcı Yönetimi
                 </Link>
-                <Link href="/chef-sor" className="text-gray-300 hover:text-white transition-colors">
-                  Chef&apos;e Sor
-                </Link>
-                <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
-                  İletişim
+                <Link href="/admin/pool" className="text-gray-300 hover:text-white transition-colors">
+                  Havuz Yönetimi
                 </Link>
               </nav>
             </div>
-            
+
             <div className="flex items-center space-x-4">
               <UserDropdown />
             </div>
@@ -116,7 +107,7 @@ export default async function VideoManagementPage() {
 
       {/* Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <VideoManagement 
+        <VideoManagement
           lessonsWithoutVideos={lessonsWithoutVideos}
           allLessons={allLessons}
         />
@@ -125,21 +116,21 @@ export default async function VideoManagementPage() {
       {/* Mobile Bottom Navigation */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-t border-gray-800">
         <div className="flex justify-around items-center py-2">
-          <Link href="/home" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+          <Link href="/admin" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
             <Home className="h-6 w-6" />
-            <span className="text-xs font-medium mt-1">Ana Sayfa</span>
+            <span className="text-xs font-medium mt-1">Panel</span>
           </Link>
-          <Link href="/my-courses" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+          <Link href="/admin/courses" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
             <BookOpen className="h-6 w-6" />
-            <span className="text-xs font-medium mt-1">Kurslarım</span>
+            <span className="text-xs font-medium mt-1">Kurslar</span>
           </Link>
-          <Link href="/chef-sosyal" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+          <Link href="/admin/users" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
             <Users className="h-6 w-6" />
-            <span className="text-xs font-medium mt-1">Sosyal</span>
+            <span className="text-xs font-medium mt-1">Kullanıcılar</span>
           </Link>
-          <Link href="/contact" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
-            <MessageCircle className="h-6 w-6" />
-            <span className="text-xs font-medium mt-1">Chef&apos;e Sor</span>
+          <Link href="/admin/pool" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+            <Wallet className="h-6 w-6" />
+            <span className="text-xs font-medium mt-1">Havuz</span>
           </Link>
         </div>
       </div>

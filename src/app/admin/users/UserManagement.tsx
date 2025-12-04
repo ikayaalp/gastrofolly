@@ -2,24 +2,22 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { 
-  Users, 
-  Search, 
-  Filter, 
-  MoreVertical, 
-  Edit, 
-  Shield, 
-  UserCheck, 
+import {
+  Users,
+  Search,
+  Filter,
+  MoreVertical,
+  Edit,
+  Shield,
+  UserCheck,
   UserX,
   Mail,
   Calendar,
   BookOpen,
   Star,
-  GraduationCap,
-  Home,
-  MessageCircle
+  GraduationCap
 } from "lucide-react"
-import Link from "next/link"
+
 
 interface User {
   id: string
@@ -49,14 +47,14 @@ export default function UserManagement({ users }: UserManagementProps) {
   // Filtreleme
   const filteredUsers = users.filter(user => {
     const matchesSearch = (user.name?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase())
+      user.email.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesRole = roleFilter === "ALL" || user.role === roleFilter
     return matchesSearch && matchesRole
   })
 
   const handleRoleChange = async (userId: string, newRole: string) => {
     setIsUpdating(true)
-    
+
     try {
       const response = await fetch(`/api/admin/users/${userId}/role`, {
         method: 'PATCH',
@@ -86,10 +84,10 @@ export default function UserManagement({ users }: UserManagementProps) {
       INSTRUCTOR: { color: 'bg-blue-600', text: 'Eğitmen', icon: UserCheck },
       STUDENT: { color: 'bg-green-600', text: 'Öğrenci', icon: GraduationCap }
     }
-    
+
     const config = roleConfig[role as keyof typeof roleConfig] || roleConfig.STUDENT
     const Icon = config.icon
-    
+
     return (
       <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium text-white ${config.color}`}>
         <Icon className="h-3 w-3 mr-1" />
@@ -104,7 +102,7 @@ export default function UserManagement({ users }: UserManagementProps) {
       { value: 'INSTRUCTOR', label: 'Eğitmen', icon: UserCheck },
       { value: 'ADMIN', label: 'Admin', icon: Shield }
     ]
-    
+
     return allRoles.filter(role => role.value !== currentRole)
   }
 
@@ -214,11 +212,11 @@ export default function UserManagement({ users }: UserManagementProps) {
                       </div>
                     </div>
                   </td>
-                  
+
                   <td className="px-6 py-4 whitespace-nowrap">
                     {getRoleBadge(user.role)}
                   </td>
-                  
+
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex space-x-4 text-sm text-gray-300">
                       <div className="flex items-center">
@@ -235,14 +233,14 @@ export default function UserManagement({ users }: UserManagementProps) {
                       </div>
                     </div>
                   </td>
-                  
+
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                     <div className="flex items-center">
                       <Calendar className="h-4 w-4 mr-1" />
                       {new Date(user.createdAt).toLocaleDateString('tr-TR')}
                     </div>
                   </td>
-                  
+
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="relative">
                       <button
@@ -251,7 +249,7 @@ export default function UserManagement({ users }: UserManagementProps) {
                       >
                         <MoreVertical className="h-5 w-5" />
                       </button>
-                      
+
                       {selectedUser?.id === user.id && (
                         <div className="absolute right-0 mt-2 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-10">
                           <div className="py-1">
@@ -290,7 +288,7 @@ export default function UserManagement({ users }: UserManagementProps) {
           <Users className="h-12 w-12 text-gray-600 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-white mb-2">Kullanıcı bulunamadı</h3>
           <p className="text-gray-400">
-            {searchTerm || roleFilter !== "ALL" 
+            {searchTerm || roleFilter !== "ALL"
               ? "Arama kriterlerinize uygun kullanıcı bulunamadı."
               : "Henüz kayıtlı kullanıcı bulunmuyor."
             }
@@ -298,31 +296,6 @@ export default function UserManagement({ users }: UserManagementProps) {
         </div>
       )}
 
-      {/* Mobile Bottom Navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-t border-gray-800">
-        <div className="flex justify-around items-center py-2">
-          <Link href="/home" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
-            <Home className="h-6 w-6" />
-            <span className="text-xs font-medium mt-1">Ana Sayfa</span>
-          </Link>
-          <Link href="/my-courses" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
-            <BookOpen className="h-6 w-6" />
-            <span className="text-xs font-medium mt-1">Kurslarım</span>
-          </Link>
-          <Link href="/chef-sosyal" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
-            <Users className="h-6 w-6" />
-            <span className="text-xs font-medium mt-1">Sosyal</span>
-          </Link>
-          <Link href="/chef-sor" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
-            <MessageCircle className="h-6 w-6" />
-            <span className="text-xs font-medium mt-1">Chef&apos;e Sor</span>
-          </Link>
-          <Link href="/contact" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
-            <MessageCircle className="h-6 w-6" />
-            <span className="text-xs font-medium mt-1">Chef&apos;e Sor</span>
-          </Link>
-        </div>
-      </div>
     </div>
   )
 }
