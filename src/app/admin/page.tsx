@@ -72,12 +72,6 @@ export default async function AdminPage() {
                 <span className="bg-orange-600 text-white px-2 py-1 rounded text-sm font-medium">Admin</span>
               </Link>
               <nav className="hidden md:flex space-x-6">
-                <Link href="/home" className="text-gray-300 hover:text-white transition-colors">
-                  Ana Sayfa
-                </Link>
-                <Link href="/my-courses" className="text-gray-300 hover:text-white transition-colors">
-                  Kurslarım
-                </Link>
                 <Link href="/admin" className="text-white font-semibold">
                   Admin Paneli
                 </Link>
@@ -89,15 +83,6 @@ export default async function AdminPage() {
                 </Link>
                 <Link href="/admin/pool" className="text-gray-300 hover:text-white transition-colors">
                   Havuz Yönetimi
-                </Link>
-                <Link href="/chef-sosyal" className="text-gray-300 hover:text-white transition-colors">
-                  Chef Sosyal
-                </Link>
-                <Link href="/chef-sor" className="text-gray-300 hover:text-white transition-colors">
-                  Chef&apos;e Sor
-                </Link>
-                <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
-                  İletişim
                 </Link>
               </nav>
             </div>
@@ -254,8 +239,8 @@ export default async function AdminPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${user.role === 'ADMIN' ? 'bg-red-900 text-red-300' :
-                          user.role === 'INSTRUCTOR' ? 'bg-blue-900 text-blue-300' :
-                            'bg-green-900 text-green-300'
+                        user.role === 'INSTRUCTOR' ? 'bg-blue-900 text-blue-300' :
+                          'bg-green-900 text-green-300'
                         }`}>
                         {user.role === 'ADMIN' ? 'Yönetici' :
                           user.role === 'INSTRUCTOR' ? 'Eğitmen' : 'Öğrenci'}
@@ -286,21 +271,21 @@ export default async function AdminPage() {
       {/* Mobile Bottom Navigation */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-t border-gray-800">
         <div className="flex justify-around items-center py-2">
-          <Link href="/home" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+          <Link href="/admin" className="flex flex-col items-center py-2 px-3 text-orange-500">
             <Home className="h-6 w-6" />
-            <span className="text-xs font-medium mt-1">Ana Sayfa</span>
+            <span className="text-xs font-medium mt-1">Panel</span>
           </Link>
-          <Link href="/my-courses" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+          <Link href="/admin/courses" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
             <BookOpen className="h-6 w-6" />
-            <span className="text-xs font-medium mt-1">Kurslarım</span>
+            <span className="text-xs font-medium mt-1">Kurslar</span>
           </Link>
-          <Link href="/chef-sosyal" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+          <Link href="/admin/users" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
             <Users className="h-6 w-6" />
-            <span className="text-xs font-medium mt-1">Sosyal</span>
+            <span className="text-xs font-medium mt-1">Kullanıcılar</span>
           </Link>
-          <Link href="/chef-sor" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
-            <MessageCircle className="h-6 w-6" />
-            <span className="text-xs font-medium mt-1">Chef&apos;e Sor</span>
+          <Link href="/admin/pool" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+            <Wallet className="h-6 w-6" />
+            <span className="text-xs font-medium mt-1">Havuz</span>
           </Link>
         </div>
       </div>
