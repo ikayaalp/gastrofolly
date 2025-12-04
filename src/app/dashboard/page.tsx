@@ -312,14 +312,14 @@ export default async function DashboardPage() {
                   <span className="text-gray-300">Ana Sayfa</span>
                 </Link>
                 <Link
-                  href="/dashboard/certificates"
+                  href="/certificates"
                   className="flex items-center p-3 rounded-lg hover:bg-gray-800 transition-colors"
                 >
                   <Award className="h-5 w-5 text-orange-500 mr-3" />
                   <span className="text-gray-300">Sertifikalarım</span>
                 </Link>
                 <Link
-                  href="/dashboard/settings"
+                  href="/settings"
                   className="flex items-center p-3 rounded-lg hover:bg-gray-800 transition-colors"
                 >
                   <Settings className="h-5 w-5 text-orange-500 mr-3" />

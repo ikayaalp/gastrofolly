@@ -78,6 +78,7 @@ model User {
   topicLikes    TopicLike[]
   postLikes     PostLike[]
   messages      Message[]
+  certificates  Certificate[]
 }
 
 enum UserRole {
@@ -126,6 +127,7 @@ model Course {
   progress    Progress[]
   payments    Payment[]
   messages    Message[]
+  certificates Certificate[]
 }
 
 enum CourseLevel {
@@ -332,3 +334,18 @@ model Message {
   parent   Message? @relation("MessageReplies", fields: [parentId], references: [id], onDelete: Cascade)
   replies  Message[] @relation("MessageReplies")
 }
+
+// Sertifika modeli
+model Certificate {
+  id          String   @id @default(cuid())
+  userId      String
+  courseId    String
+  courseName  String
+  issuedAt    DateTime @default(now())
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, courseId])
+}
+

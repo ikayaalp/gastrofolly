@@ -1,0 +1,14 @@
+
+// Certificate model
+model Certificate {
+  id          String   @id @default(cuid())
+  userId      String
+  courseId    String
+  courseName  String
+  issuedAt    DateTime @default(now())
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, courseId])
+}

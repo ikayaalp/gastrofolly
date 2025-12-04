@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import Link from 'next/link'
-import { User, Settings, BookOpen, LogOut, ChevronDown, Play, Heart, GraduationCap, MessageSquare, MessageCircle } from 'lucide-react'
+import { User, Settings, BookOpen, LogOut, ChevronDown, Play, Heart, GraduationCap, MessageSquare, MessageCircle, Award } from 'lucide-react'
 
 export default function UserDropdown() {
   const { data: session } = useSession()
@@ -107,6 +107,15 @@ export default function UserDropdown() {
             >
               <MessageCircle className="h-4 w-4 mr-3" />
               Chef&apos;e Sor
+            </Link>
+
+            <Link
+              href="/certificates"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center px-4 py-2 text-gray-300 hover:bg-[#1a1a1a] hover:text-white transition-colors"
+            >
+              <Award className="h-4 w-4 mr-3" />
+              Sertifikalarım
             </Link>
 
             {session.user.role === 'INSTRUCTOR' && (
