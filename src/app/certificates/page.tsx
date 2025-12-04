@@ -41,29 +41,31 @@ export default async function CertificatesPage() {
             <header className="bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center py-4">
-                        <Link href="/home" className="flex items-center space-x-2">
-                            <ChefHat className="h-8 w-8 text-orange-500" />
-                            <span className="text-2xl font-bold">Chef2.0</span>
-                        </Link>
+                        <div className="flex items-center space-x-8">
+                            <Link href="/home" className="flex items-center space-x-2">
+                                <ChefHat className="h-8 w-8 text-orange-500" />
+                                <span className="text-2xl font-bold">Chef2.0</span>
+                            </Link>
 
-                        {/* Navigation */}
-                        <nav className="hidden md:flex items-center space-x-8">
-                            <Link href="/home" className="text-gray-300 hover:text-white transition-colors">
-                                Ana Sayfa
-                            </Link>
-                            <Link href="/my-courses" className="text-gray-300 hover:text-white transition-colors">
-                                Kurslarım
-                            </Link>
-                            <Link href="/chef-sosyal" className="text-gray-300 hover:text-white transition-colors">
-                                Chef Sosyal
-                            </Link>
-                            <Link href="/chef-sor" className="text-gray-300 hover:text-white transition-colors">
-                                Chef&apos;e Sor
-                            </Link>
-                            <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
-                                İletişim
-                            </Link>
-                        </nav>
+                            {/* Navigation */}
+                            <nav className="hidden md:flex space-x-6">
+                                <Link href="/home" className="text-gray-300 hover:text-white transition-colors">
+                                    Ana Sayfa
+                                </Link>
+                                <Link href="/my-courses" className="text-gray-300 hover:text-white transition-colors">
+                                    Kurslarım
+                                </Link>
+                                <Link href="/chef-sosyal" className="text-gray-300 hover:text-white transition-colors">
+                                    Chef Sosyal
+                                </Link>
+                                <Link href="/chef-sor" className="text-gray-300 hover:text-white transition-colors">
+                                    Chef&apos;e Sor
+                                </Link>
+                                <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
+                                    İletişim
+                                </Link>
+                            </nav>
+                        </div>
 
                         <UserDropdown />
                     </div>
@@ -136,7 +138,7 @@ export default async function CertificatesPage() {
                     </div>
                 ) : (
                     <div className="text-center py-16">
-                        <div className="bg-gray-800 rounded-xl p-12 border border-gray-700">
+                        <div className="bg-[#1e293b] rounded-xl p-12 border border-gray-700">
                             <Award className="h-16 w-16 text-gray-600 mx-auto mb-4" />
                             <h2 className="text-2xl font-bold text-white mb-2">Henüz Sertifikanız Yok</h2>
                             <p className="text-gray-400 mb-6">
