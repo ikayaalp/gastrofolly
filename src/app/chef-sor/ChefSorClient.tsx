@@ -113,10 +113,10 @@ export default function ChefSorClient({ enrolledCourses, session, selectedInstru
     instructor.name?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  // Chef'e Sorı yükle (eğitmen bazında)
+  // Chef&apos;e Sorı yükle (eğitmen bazında)
   const loadMessages = async (instructorId: string) => {
     try {
-      // Bu eğitmenle olan tüm kurslardan Chef'e Sorı getir
+      // Bu eğitmenle olan tüm kurslardan Chef&apos;e Sorı getir
       const instructorCourses = enrolledCourses.filter(c => c.instructor.id === instructorId)
       if (instructorCourses.length === 0) return
       
@@ -234,7 +234,7 @@ export default function ChefSorClient({ enrolledCourses, session, selectedInstru
   const handleNewChat = (instructor: Instructor) => {
     setSelectedInstructor(instructor)
     setActiveTab('history')
-    setMessages([]) // Yeni sohbet için Chef'e Sorı temizle
+    setMessages([]) // Yeni sohbet için Chef&apos;e Sorı temizle
   }
 
   const formatTime = (date: Date) => {
@@ -282,7 +282,7 @@ export default function ChefSorClient({ enrolledCourses, session, selectedInstru
                   Chef Sosyal
                 </Link>
                 <Link href="/chef-sor" className="text-white font-semibold">
-                  Chef'e Sor
+                  Chef&apos;e Sor
                 </Link>
                 <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
                   İletişim
@@ -602,7 +602,7 @@ export default function ChefSorClient({ enrolledCourses, session, selectedInstru
           </Link>
           <Link href="/chef-sor" className="flex flex-col items-center py-2 px-3 text-orange-500">
             <MessageCircle className="h-6 w-6" />
-            <span className="text-xs font-medium mt-1">Chef'e Sor</span>
+            <span className="text-xs font-medium mt-1">Chef&apos;e Sor</span>
           </Link>
         </div>
       </div>

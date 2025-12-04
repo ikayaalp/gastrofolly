@@ -2,11 +2,11 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { 
-  BookOpen, 
-  Users, 
-  DollarSign, 
-  MessageSquare, 
+import {
+  BookOpen,
+  Users,
+  DollarSign,
+  MessageSquare,
   TrendingUp,
   Plus,
   Edit,
@@ -43,7 +43,7 @@ interface Course {
     name: string | null
     email: string
   }
-  reviews: Array<{ 
+  reviews: Array<{
     id: string
     rating: number
     comment: string | null
@@ -148,14 +148,14 @@ export default function InstructorDashboardClient({ instructorData, session }: P
                   Chef Sosyal
                 </Link>
                 <Link href="/chef-sor" className="text-gray-300 hover:text-white transition-colors">
-                  Chef'e Sor
+                  Chef&apos;e Sor
                 </Link>
                 <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
                   İletişim
                 </Link>
               </nav>
             </div>
-            
+
             <div className="flex items-center space-x-4">
               <Link
                 href="/instructor-dashboard/profile"
@@ -186,7 +186,7 @@ export default function InstructorDashboardClient({ instructorData, session }: P
           </Link>
           <Link href="/chef-sor" className="flex flex-col items-center py-3 text-gray-400 hover:text-white transition-colors">
             <MessageCircle className="h-5 w-5" />
-            <span className="text-xs mt-1">Chef'e Sor</span>
+            <span className="text-xs mt-1">Chef&apos;e Sor</span>
           </Link>
           <Link href="/contact" className="flex flex-col items-center py-3 text-gray-400 hover:text-white transition-colors">
             <Phone className="h-5 w-5" />
@@ -258,7 +258,7 @@ export default function InstructorDashboardClient({ instructorData, session }: P
               {[
                 { id: 'overview', label: 'Genel Bakış', icon: BarChart3 },
                 { id: 'courses', label: 'Kurslarım', icon: BookOpen },
-                { id: 'messages', label: 'Chef'e Sor', icon: MessageSquare },
+                { id: "messages", label: "Chef&apos;e Sor", icon: MessageSquare },
                 { id: 'analytics', label: 'Analitik', icon: TrendingUp }
               ].map((tab) => {
                 const Icon = tab.icon
@@ -266,11 +266,10 @@ export default function InstructorDashboardClient({ instructorData, session }: P
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center space-x-2 py-4 px-2 border-b-2 font-medium text-sm ${
-                      activeTab === tab.id
+                    className={`flex items-center space-x-2 py-4 px-2 border-b-2 font-medium text-sm ${activeTab === tab.id
                         ? 'border-orange-500 text-orange-500'
                         : 'border-transparent text-gray-400 hover:text-gray-300'
-                    }`}
+                      }`}
                   >
                     <Icon className="h-4 w-4" />
                     <span>{tab.label}</span>
@@ -298,9 +297,8 @@ export default function InstructorDashboardClient({ instructorData, session }: P
                               <div className="flex items-center space-x-4 mt-2 text-sm text-gray-400">
                                 <span>{course._count.enrollments} öğrenci</span>
                                 <span>{course._count.lessons} ders</span>
-                                <span className={`px-2 py-1 rounded text-xs ${
-                                  course.isPublished ? 'bg-green-600 text-white' : 'bg-yellow-600 text-white'
-                                }`}>
+                                <span className={`px-2 py-1 rounded text-xs ${course.isPublished ? 'bg-green-600 text-white' : 'bg-yellow-600 text-white'
+                                  }`}>
                                   {course.isPublished ? 'Yayında' : 'Taslak'}
                                 </span>
                               </div>
@@ -346,9 +344,8 @@ export default function InstructorDashboardClient({ instructorData, session }: P
                     <div key={course.id} className="bg-gray-700 rounded-lg p-6 border border-gray-600">
                       <div className="flex justify-between items-start mb-4">
                         <h4 className="text-white font-semibold">{course.title}</h4>
-                        <span className={`px-2 py-1 rounded text-xs ${
-                          course.isPublished ? 'bg-green-600 text-white' : 'bg-yellow-600 text-white'
-                        }`}>
+                        <span className={`px-2 py-1 rounded text-xs ${course.isPublished ? 'bg-green-600 text-white' : 'bg-yellow-600 text-white'
+                          }`}>
                           {course.isPublished ? 'Yayında' : 'Taslak'}
                         </span>
                       </div>
@@ -382,7 +379,7 @@ export default function InstructorDashboardClient({ instructorData, session }: P
             {activeTab === 'messages' && (
               <div>
                 <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-lg font-semibold text-white">Chef'e Sor</h3>
+                  <h3 className="text-lg font-semibold text-white">Chef&apos;e Sor</h3>
                   <Link
                     href="/chef-sor"
                     className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"

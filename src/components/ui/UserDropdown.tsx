@@ -106,7 +106,7 @@ export default function UserDropdown() {
               className="flex items-center px-4 py-2 text-gray-300 hover:bg-[#1a1a1a] hover:text-white transition-colors"
             >
               <MessageCircle className="h-4 w-4 mr-3" />
-              Chef'e Sor
+              Chef&apos;e Sor
             </Link>
 
             {session.user.role === 'INSTRUCTOR' && (

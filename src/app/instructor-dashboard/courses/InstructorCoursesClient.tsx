@@ -182,7 +182,7 @@ export default function InstructorCoursesClient({ courses, categories, session }
                   Chef Sosyal
                 </Link>
                 <Link href="/chef-sor" className="text-gray-300 hover:text-white transition-colors">
-                  Chef'e Sor
+                  Chef&apos;e Sor
                 </Link>
                 <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
                   İletişim
@@ -220,7 +220,7 @@ export default function InstructorCoursesClient({ courses, categories, session }
           </Link>
           <Link href="/chef-sor" className="flex flex-col items-center py-3 text-gray-400 hover:text-white transition-colors">
             <MessageCircle className="h-5 w-5" />
-            <span className="text-xs mt-1">Chef'e Sor</span>
+            <span className="text-xs mt-1">Chef&apos;e Sor</span>
           </Link>
           <Link href="/contact" className="flex flex-col items-center py-3 text-gray-400 hover:text-white transition-colors">
             <Phone className="h-5 w-5" />

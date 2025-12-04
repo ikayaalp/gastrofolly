@@ -116,7 +116,7 @@ export default function HomePageClient({
                 <Link href="/chef-sosyal" className="text-gray-300 hover:text-white transition-colors">
                   Chef Sosyal
                 </Link>
-                <Link href="/messages" className="text-gray-300 hover:text-white transition-colors">
+                <Link href="/chef-sor" className="text-gray-300 hover:text-white transition-colors">
                   Mesajlar
                 </Link>
                 <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
@@ -225,9 +225,9 @@ export default function HomePageClient({
             <Users className="h-6 w-6" />
             <span className="text-xs font-medium mt-1">Sosyal</span>
           </Link>
-          <Link href="/messages" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+          <Link href="/chef-sor" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
             <MessageCircle className="h-6 w-6" />
-            <span className="text-xs font-medium mt-1">Mesajlar</span>
+            <span className="text-xs font-medium mt-1">Chef&apos;e Sor</span>
           </Link>
         </div>
       </div>
