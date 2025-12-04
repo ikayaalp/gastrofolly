@@ -147,8 +147,8 @@ export default function InstructorDashboardClient({ instructorData, session }: P
                 <Link href="/chef-sosyal" className="text-gray-300 hover:text-white transition-colors">
                   Chef Sosyal
                 </Link>
-                <Link href="/messages" className="text-gray-300 hover:text-white transition-colors">
-                  Mesajlar
+                <Link href="/chef-sor" className="text-gray-300 hover:text-white transition-colors">
+                  Chef'e Sor
                 </Link>
                 <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
                   İletişim
@@ -184,9 +184,9 @@ export default function InstructorDashboardClient({ instructorData, session }: P
             <BookOpen className="h-5 w-5" />
             <span className="text-xs mt-1">Kurslar</span>
           </Link>
-          <Link href="/messages" className="flex flex-col items-center py-3 text-gray-400 hover:text-white transition-colors">
+          <Link href="/chef-sor" className="flex flex-col items-center py-3 text-gray-400 hover:text-white transition-colors">
             <MessageCircle className="h-5 w-5" />
-            <span className="text-xs mt-1">Mesajlar</span>
+            <span className="text-xs mt-1">Chef'e Sor</span>
           </Link>
           <Link href="/contact" className="flex flex-col items-center py-3 text-gray-400 hover:text-white transition-colors">
             <Phone className="h-5 w-5" />
@@ -258,7 +258,7 @@ export default function InstructorDashboardClient({ instructorData, session }: P
               {[
                 { id: 'overview', label: 'Genel Bakış', icon: BarChart3 },
                 { id: 'courses', label: 'Kurslarım', icon: BookOpen },
-                { id: 'messages', label: 'Mesajlar', icon: MessageSquare },
+                { id: 'messages', label: 'Chef'e Sor', icon: MessageSquare },
                 { id: 'analytics', label: 'Analitik', icon: TrendingUp }
               ].map((tab) => {
                 const Icon = tab.icon
@@ -382,9 +382,9 @@ export default function InstructorDashboardClient({ instructorData, session }: P
             {activeTab === 'messages' && (
               <div>
                 <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-lg font-semibold text-white">Mesajlar</h3>
+                  <h3 className="text-lg font-semibold text-white">Chef'e Sor</h3>
                   <Link
-                    href="/messages"
+                    href="/chef-sor"
                     className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                   >
                     Tümünü Gör

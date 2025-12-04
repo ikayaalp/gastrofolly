@@ -54,7 +54,7 @@ async function getInstructorData(userId: string) {
       enrollments.reduce((total, enrollment) => total + enrollment.course.price, 0)
     ),
 
-        // Son mesajlar
+        // Son Chef'e Sor
         prisma.message.findMany({
           where: {
             course: { instructorId: userId }
