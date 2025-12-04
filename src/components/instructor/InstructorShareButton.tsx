@@ -11,7 +11,7 @@ interface InstructorShareButtonProps {
 export default function InstructorShareButton({ instructorId, instructorName }: InstructorShareButtonProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [copied, setCopied] = useState(false)
-  
+
   const instructorUrl = `${window.location.origin}/instructor/${instructorId}`
   const shareText = `${instructorName} eğitmeninin profilini Chef2.0'da keşfet!`
 
@@ -28,9 +28,9 @@ export default function InstructorShareButton({ instructorId, instructorName }: 
   const handleSocialShare = (platform: string) => {
     const encodedUrl = encodeURIComponent(instructorUrl)
     const encodedText = encodeURIComponent(shareText)
-    
+
     let shareUrl = ''
-    
+
     switch (platform) {
       case 'facebook':
         shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`
@@ -45,7 +45,7 @@ export default function InstructorShareButton({ instructorId, instructorName }: 
         shareUrl = `mailto:?subject=${encodeURIComponent(instructorName + ' - Eğitmen Profili')}&body=${encodedText}%0A%0A${encodedUrl}`
         break
     }
-    
+
     if (shareUrl) {
       window.open(shareUrl, '_blank', 'width=600,height=400')
     }
@@ -55,25 +55,25 @@ export default function InstructorShareButton({ instructorId, instructorName }: 
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-center py-3 px-4 rounded-lg border-2 border-gray-600 bg-gray-800 text-gray-400 hover:border-orange-500 hover:text-orange-500 transition-all duration-300"
+        className="w-full bg-gray-700 text-white py-3 px-4 rounded-lg hover:bg-gray-600 transition-colors flex items-center justify-center space-x-2 font-semibold"
       >
-        <Share2 className="h-5 w-5 mr-2" />
-        Profili Paylaş
+        <Share2 className="h-5 w-5" />
+        <span>Profili Paylaş</span>
       </button>
 
       {isOpen && (
         <>
           {/* Backdrop */}
-          <div 
-            className="fixed inset-0 z-40" 
+          <div
+            className="fixed inset-0 z-40"
             onClick={() => setIsOpen(false)}
           />
-          
+
           {/* Share Modal */}
           <div className="absolute bottom-full left-0 mb-2 w-80 bg-gray-900 border border-gray-700 rounded-lg shadow-xl z-50">
             <div className="p-4">
               <h3 className="text-white font-semibold mb-4">Eğitmen Profilini Paylaş</h3>
-              
+
               {/* Copy Link */}
               <div className="mb-4">
                 <div className="flex items-center space-x-2">
@@ -85,11 +85,10 @@ export default function InstructorShareButton({ instructorId, instructorName }: 
                   />
                   <button
                     onClick={handleCopyLink}
-                    className={`px-3 py-2 rounded text-sm font-medium transition-colors ${
-                      copied 
-                        ? 'bg-green-600 text-white' 
+                    className={`px-3 py-2 rounded text-sm font-medium transition-colors ${copied
+                        ? 'bg-green-600 text-white'
                         : 'bg-orange-600 text-white hover:bg-orange-700'
-                    }`}
+                      }`}
                   >
                     {copied ? (
                       <>
@@ -115,7 +114,7 @@ export default function InstructorShareButton({ instructorId, instructorName }: 
                   <Facebook className="h-4 w-4 mr-2" />
                   Facebook
                 </button>
-                
+
                 <button
                   onClick={() => handleSocialShare('twitter')}
                   className="flex items-center justify-center p-3 bg-sky-500 hover:bg-sky-600 text-white rounded-lg transition-colors"
@@ -123,7 +122,7 @@ export default function InstructorShareButton({ instructorId, instructorName }: 
                   <Twitter className="h-4 w-4 mr-2" />
                   Twitter
                 </button>
-                
+
                 <button
                   onClick={() => handleSocialShare('linkedin')}
                   className="flex items-center justify-center p-3 bg-blue-700 hover:bg-blue-800 text-white rounded-lg transition-colors"
@@ -131,7 +130,7 @@ export default function InstructorShareButton({ instructorId, instructorName }: 
                   <Linkedin className="h-4 w-4 mr-2" />
                   LinkedIn
                 </button>
-                
+
                 <button
                   onClick={() => handleSocialShare('mail')}
                   className="flex items-center justify-center p-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"

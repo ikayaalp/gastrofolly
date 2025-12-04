@@ -277,7 +277,7 @@ export default async function InstructorPage({ params }: InstructorPageProps) {
                     {instructor.name} deneyimli bir eğitmen olarak gastronomi dünyasında önemli bir yer edinmiştir.
                     Profesyonel mutfak deneyimi ve öğretme tutkusu ile öğrencilerine en iyi eğitimi sunmaktadır.
                   </p>
-                  <p className="text-gray-400 leading-relaxed mt-4">
+                  <p className="text-gray-300 leading-relaxed mt-4">
                     Uzmanlık alanları arasında modern mutfak teknikleri, geleneksel yemek kültürü ve
                     yaratıcı sunum teknikleri bulunmaktadır. Öğrencilerinin başarısı için sürekli
                     kendini geliştiren ve güncel teknikleri takip eden bir eğitmendir.
