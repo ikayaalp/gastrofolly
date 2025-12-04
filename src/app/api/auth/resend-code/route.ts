@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
 import { generateVerificationCode, sendVerificationEmail, getCodeExpiry } from '@/lib/emailService'
-import { getPendingUser, updatePendingUserCode } from '@/lib/pendingUsers'
 
 /**
- * Yeni doğrulama kodu gönder (pending users için)
+ * Yeni doğrulama kodu gönder
  * POST /api/auth/resend-code
  */
 export async function POST(request: NextRequest) {
@@ -17,13 +17,23 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Geçici storage'dan kullanıcıyı al
-    const pendingUser = getPendingUser(email)
+    // Kullanıcıyı veritabanından al
+    const user = await prisma.user.findUnique({
+      where: { email: email.toLowerCase() }
+    })
 
-    if (!pendingUser) {
+    if (!user) {
       return NextResponse.json(
         { error: 'Kayıt bulunamadı. Lütfen tekrar kayıt olun.' },
         { status: 404 }
+      )
+    }
+
+    // Zaten doğrulanmış mı?
+    if (user.emailVerified) {
+      return NextResponse.json(
+        { error: 'Bu email zaten doğrulanmış. Giriş yapabilirsiniz.' },
+        { status: 400 }
       )
     }
 
@@ -31,11 +41,17 @@ export async function POST(request: NextRequest) {
     const verificationCode = generateVerificationCode()
     const codeExpiry = getCodeExpiry()
 
-    // Pending user'ın kodunu güncelle
-    updatePendingUserCode(email, verificationCode, codeExpiry)
+    // Kullanıcının kodunu güncelle
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        verificationCode,
+        verificationCodeExpiry: codeExpiry
+      }
+    })
 
     // Email gönder
-    const emailSent = await sendVerificationEmail(email, verificationCode, pendingUser.name)
+    const emailSent = await sendVerificationEmail(email, verificationCode, user.name || undefined)
 
     if (!emailSent) {
       return NextResponse.json(
@@ -56,4 +72,3 @@ export async function POST(request: NextRequest) {
     )
   }
 }
-

@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { isCodeExpired } from '@/lib/emailService'
-import { getPendingUser, deletePendingUser } from '@/lib/pendingUsers'
 
 /**
- * Email doğrulama kodu kontrol et ve kullanıcı oluştur
+ * Email doğrulama kodu kontrol et
  * POST /api/auth/verify-email
  */
 export async function POST(request: NextRequest) {
@@ -18,18 +17,36 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Geçici storage'dan kullanıcıyı al
-    const pendingUser = getPendingUser(email)
+    // Kullanıcıyı veritabanından al
+    const user = await prisma.user.findUnique({
+      where: { email: email.toLowerCase() }
+    })
 
-    if (!pendingUser) {
+    if (!user) {
       return NextResponse.json(
         { error: 'Kayıt bulunamadı. Lütfen tekrar kayıt olun.' },
         { status: 404 }
       )
     }
 
+    // Zaten doğrulanmış mı?
+    if (user.emailVerified) {
+      return NextResponse.json(
+        { error: 'Bu email zaten doğrulanmış. Giriş yapabilirsiniz.' },
+        { status: 400 }
+      )
+    }
+
+    // Doğrulama kodu var mı?
+    if (!user.verificationCode || !user.verificationCodeExpiry) {
+      return NextResponse.json(
+        { error: 'Doğrulama kodu bulunamadı. Lütfen yeni kod talep edin.' },
+        { status: 400 }
+      )
+    }
+
     // Kod eşleşiyor mu?
-    if (pendingUser.verificationCode !== code) {
+    if (user.verificationCode !== code) {
       return NextResponse.json(
         { error: 'Geçersiz doğrulama kodu' },
         { status: 400 }
@@ -37,29 +54,26 @@ export async function POST(request: NextRequest) {
     }
 
     // Kod süresi dolmuş mu?
-    if (isCodeExpired(pendingUser.codeExpiry)) {
+    if (isCodeExpired(user.verificationCodeExpiry)) {
       return NextResponse.json(
         { error: 'Doğrulama kodu süresi dolmuş. Lütfen yeni kod isteyin.' },
         { status: 400 }
       )
     }
 
-    // ✅ Kod doğru! Şimdi kullanıcıyı Prisma'da oluştur
-    const user = await prisma.user.create({
+    // ✅ Kod doğru! Email'i doğrulanmış olarak işaretle
+    await prisma.user.update({
+      where: { id: user.id },
       data: {
-        name: pendingUser.name,
-        email: pendingUser.email,
-        password: pendingUser.password, // Hashlenmiş şifre
-        emailVerified: new Date(), // Email doğrulandı
+        emailVerified: new Date(),
+        verificationCode: null, // Kodu temizle
+        verificationCodeExpiry: null
       }
     })
 
-    // Geçici storage'dan sil
-    deletePendingUser(email)
-
     return NextResponse.json(
-      { 
-        message: 'Email başarıyla doğrulandı! Hesabınız oluşturuldu.', 
+      {
+        message: 'Email başarıyla doğrulandı! Hesabınız aktif.',
         verified: true,
         userId: user.id
       },
@@ -73,4 +87,3 @@ export async function POST(request: NextRequest) {
     )
   }
 }
-
