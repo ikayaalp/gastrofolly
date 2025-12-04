@@ -3,7 +3,7 @@ import { redirect } from "next/navigation"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
-import { ChefHat, Users, BookOpen, CreditCard, Calendar, Home, MessageCircle } from "lucide-react"
+import { ChefHat, Users, BookOpen, CreditCard, Calendar, Home, MessageCircle, Wallet } from "lucide-react"
 import UserDropdown from "@/components/ui/UserDropdown"
 
 async function getAdminData() {
@@ -86,6 +86,9 @@ export default async function AdminPage() {
                 </Link>
                 <Link href="/admin/users" className="text-gray-300 hover:text-white transition-colors">
                   Kullanıcı Yönetimi
+                </Link>
+                <Link href="/admin/pool" className="text-gray-300 hover:text-white transition-colors">
+                  Havuz Yönetimi
                 </Link>
                 <Link href="/chef-sosyal" className="text-gray-300 hover:text-white transition-colors">
                   Chef Sosyal
@@ -179,13 +182,23 @@ export default async function AdminPage() {
               </div>
             </div>
           </Link>
-          
+
           <Link href="/admin/users" className="bg-gray-900 border border-gray-800 rounded-lg p-6 hover:bg-gray-800 transition-colors">
             <div className="flex items-center">
               <Users className="h-8 w-8 text-blue-500" />
               <div className="ml-4">
                 <h3 className="text-lg font-semibold text-white">Kullanıcı Yönetimi</h3>
                 <p className="text-gray-400">Kullanıcıları yönet ve rollerini değiştir</p>
+              </div>
+            </div>
+          </Link>
+
+          <Link href="/admin/pool" className="bg-gray-900 border border-gray-800 rounded-lg p-6 hover:bg-gray-800 transition-colors">
+            <div className="flex items-center">
+              <Wallet className="h-8 w-8 text-green-500" />
+              <div className="ml-4">
+                <h3 className="text-lg font-semibold text-white">Havuz Yönetimi</h3>
+                <p className="text-gray-400">Eğitmen gelir dağılımını görüntüle</p>
               </div>
             </div>
           </Link>
@@ -196,7 +209,7 @@ export default async function AdminPage() {
           <div className="px-6 py-4 border-b border-gray-800">
             <h2 className="text-xl font-bold text-white">Kayıtlı Kullanıcılar</h2>
           </div>
-          
+
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-800">
@@ -240,13 +253,12 @@ export default async function AdminPage() {
                       {user.email}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        user.role === 'ADMIN' ? 'bg-red-900 text-red-300' :
-                        user.role === 'INSTRUCTOR' ? 'bg-blue-900 text-blue-300' :
-                        'bg-green-900 text-green-300'
-                      }`}>
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${user.role === 'ADMIN' ? 'bg-red-900 text-red-300' :
+                          user.role === 'INSTRUCTOR' ? 'bg-blue-900 text-blue-300' :
+                            'bg-green-900 text-green-300'
+                        }`}>
                         {user.role === 'ADMIN' ? 'Yönetici' :
-                         user.role === 'INSTRUCTOR' ? 'Eğitmen' : 'Öğrenci'}
+                          user.role === 'INSTRUCTOR' ? 'Eğitmen' : 'Öğrenci'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
