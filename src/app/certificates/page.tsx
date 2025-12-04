@@ -138,7 +138,7 @@ export default async function CertificatesPage() {
                     </div>
                 ) : (
                     <div className="text-center py-16">
-                        <div className="bg-[#1e293b] rounded-xl p-12 border border-gray-700">
+                        <div className="bg-black rounded-xl p-12 border border-gray-700">
                             <Award className="h-16 w-16 text-gray-600 mx-auto mb-4" />
                             <h2 className="text-2xl font-bold text-white mb-2">Henüz Sertifikanız Yok</h2>
                             <p className="text-gray-400 mb-6">
