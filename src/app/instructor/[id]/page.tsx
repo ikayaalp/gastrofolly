@@ -56,7 +56,7 @@ export default async function InstructorPage({ params }: InstructorPageProps) {
   const { id } = await params
   const instructor = await getInstructor(id)
 
-  if (!instructor || instructor.createdCourses.length === 0) {
+  if (!instructor) {
     notFound()
   }
 
