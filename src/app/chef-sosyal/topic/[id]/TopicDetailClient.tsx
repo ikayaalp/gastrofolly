@@ -73,7 +73,8 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
       checkLikeStatus()
       loadLikedPosts()
     }
-  }, [session?.user?.id, checkLikeStatus, loadLikedPosts])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.user?.id])
 
   // Kullanıcının beğendiği yorumları yükle
   const loadLikedPosts = async () => {
