@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useState, useEffect } from "react"
-import { ChefHat, ArrowLeft, MessageCircle, ThumbsUp, Clock, User, Plus, Search, Bell, Home, BookOpen, Users } from "lucide-react"
+import { ChefHat, ArrowLeft, MessageCircle, ThumbsUp, Clock, User, Search, Bell, Home, BookOpen, Users } from "lucide-react"
 import UserDropdown from "@/components/ui/UserDropdown"
 
 interface Author {
@@ -73,7 +73,7 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
       checkLikeStatus()
       loadLikedPosts()
     }
-  }, [session?.user?.id])
+  }, [session?.user?.id, checkLikeStatus, loadLikedPosts])
 
   // Kullanıcının beğendiği yorumları yükle
   const loadLikedPosts = async () => {
@@ -324,7 +324,7 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
                     Chef Sosyal
                   </Link>
                   <Link href="/chef-sor" className="text-gray-300 hover:text-white transition-colors">
-                    Chef'e Sor
+                    Chef&apos;e Sor
                   </Link>
                   <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
                     İletişim
