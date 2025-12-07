@@ -21,9 +21,11 @@ import {
     User,
     Send,
     Reply,
+    Trash2,
 } from 'lucide-react-native';
 import forumService from '../api/forumService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { CommonActions } from '@react-navigation/native';
 
 export default function TopicDetailScreen({ route, navigation }) {
     const { topicId } = route.params;
@@ -37,10 +39,13 @@ export default function TopicDetailScreen({ route, navigation }) {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [likedComments, setLikedComments] = useState(new Set());
     const [replyingTo, setReplyingTo] = useState(null); // For reply-to-reply
+    const [currentUserId, setCurrentUserId] = useState(null);
 
     const checkLoginStatus = async () => {
         const token = await AsyncStorage.getItem('authToken');
+        const userId = await AsyncStorage.getItem('userId');
         setIsLoggedIn(!!token);
+        setCurrentUserId(userId);
     };
 
     const loadTopicDetail = async () => {
@@ -190,6 +195,34 @@ export default function TopicDetailScreen({ route, navigation }) {
         setSubmitting(false);
     };
 
+    const handleDeleteComment = async (postId) => {
+        Alert.alert(
+            'Yorumu Sil',
+            'Bu yorumu silmek istediğinizden emin misiniz?',
+            [
+                { text: 'İptal', style: 'cancel' },
+                {
+                    text: 'Sil',
+                    style: 'destructive',
+                    onPress: async () => {
+                        const result = await forumService.deletePost(postId);
+                        if (result.success) {
+                            // Remove from comments
+                            setComments(prevComments =>
+                                prevComments.filter(c => c.id !== postId).map(c => ({
+                                    ...c,
+                                    replies: c.replies?.filter(r => r.id !== postId) || []
+                                }))
+                            );
+                        } else {
+                            Alert.alert('Hata', result.error);
+                        }
+                    }
+                }
+            ]
+        );
+    };
+
     const formatTimeAgo = (dateString) => {
         const date = new Date(dateString);
         const now = new Date();
@@ -336,6 +369,15 @@ export default function TopicDetailScreen({ route, navigation }) {
                             <Reply size={14} color="#6b7280" />
                             <Text style={styles.replyToText}>Yanıtla</Text>
                         </TouchableOpacity>
+                        {/* Delete button - only for own comments */}
+                        {currentUserId && item.author?.id === currentUserId && (
+                            <TouchableOpacity
+                                style={styles.deleteButton}
+                                onPress={() => handleDeleteComment(item.id)}
+                            >
+                                <Trash2 size={14} color="#ef4444" />
+                            </TouchableOpacity>
+                        )}
                     </>
                 )}
             </View>
@@ -433,29 +475,38 @@ export default function TopicDetailScreen({ route, navigation }) {
             />
 
             {/* Main Reply Input (for new main comment) */}
-            {isLoggedIn && !replyingTo && (
-                <View style={styles.replyInputContainer}>
-                    <TextInput
-                        style={styles.replyInput}
-                        placeholder="Yorum yazın..."
-                        placeholderTextColor="#6b7280"
-                        value={replyText}
-                        onChangeText={setReplyText}
-                        multiline
-                    />
+            <View style={styles.replyInputContainer}>
+                {isLoggedIn ? (
+                    <>
+                        <TextInput
+                            style={styles.replyInput}
+                            placeholder="Yorum yazın..."
+                            placeholderTextColor="#6b7280"
+                            value={replyText}
+                            onChangeText={setReplyText}
+                            multiline
+                        />
+                        <TouchableOpacity
+                            style={[styles.sendIconButton, (!replyText.trim() || submitting) && styles.sendIconButtonDisabled]}
+                            disabled={!replyText.trim() || submitting}
+                            onPress={handleSubmitReply}
+                        >
+                            {submitting ? (
+                                <ActivityIndicator size="small" color="#fff" />
+                            ) : (
+                                <Send size={20} color="#fff" />
+                            )}
+                        </TouchableOpacity>
+                    </>
+                ) : (
                     <TouchableOpacity
-                        style={[styles.sendIconButton, (!replyText.trim() || submitting) && styles.sendIconButtonDisabled]}
-                        disabled={!replyText.trim() || submitting}
-                        onPress={handleSubmitReply}
+                        style={styles.loginPrompt}
+                        onPress={() => navigation.dispatch(CommonActions.navigate({ name: 'Login' }))}
                     >
-                        {submitting ? (
-                            <ActivityIndicator size="small" color="#fff" />
-                        ) : (
-                            <Send size={20} color="#fff" />
-                        )}
+                        <Text style={styles.loginPromptText}>Yorum yapmak için giriş yapın</Text>
                     </TouchableOpacity>
-                </View>
-            )}
+                )}
+            </View>
         </KeyboardAvoidingView>
     );
 }
@@ -656,6 +707,9 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: '#6b7280',
     },
+    deleteButton: {
+        padding: 4,
+    },
     inlineReplyForm: {
         marginTop: 12,
         padding: 12,
@@ -806,5 +860,17 @@ const styles = StyleSheet.create({
     },
     sendIconButtonDisabled: {
         opacity: 0.5,
+    },
+    loginPrompt: {
+        flex: 1,
+        backgroundColor: '#1a1a1a',
+        borderRadius: 24,
+        paddingHorizontal: 16,
+        paddingVertical: 14,
+        alignItems: 'center',
+    },
+    loginPromptText: {
+        color: '#9ca3af',
+        fontSize: 14,
     },
 });

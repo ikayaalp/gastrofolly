@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ActivityIndicator, View } from 'react-native';
 
 // Screens
 import HomeScreen from '../screens/HomeScreen';
@@ -14,6 +16,7 @@ import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
 import EmailVerificationScreen from '../screens/EmailVerificationScreen';
 import CourseDetailScreen from '../screens/CourseDetailScreen';
+import WelcomeScreen from '../screens/WelcomeScreen';
 
 import { Home, BookOpen, Users, MessageCircle } from 'lucide-react-native';
 
@@ -113,15 +116,44 @@ function TabNavigator() {
 }
 
 export default function AppNavigator() {
+    const [isLoading, setIsLoading] = useState(true);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+    useEffect(() => {
+        checkAuthStatus();
+    }, []);
+
+    const checkAuthStatus = async () => {
+        try {
+            const token = await AsyncStorage.getItem('authToken');
+            setIsAuthenticated(!!token);
+        } catch (error) {
+            console.error('Auth check error:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    if (isLoading) {
+        return (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000' }}>
+                <ActivityIndicator size="large" color="#ea580c" />
+            </View>
+        );
+    }
+
     return (
         <NavigationContainer>
-            <Stack.Navigator screenOptions={{ headerShown: false }}>
-                <Stack.Screen name="Main" component={TabNavigator} />
+            <Stack.Navigator
+                screenOptions={{ headerShown: false }}
+                initialRouteName={isAuthenticated ? "Main" : "Welcome"}
+            >
+                <Stack.Screen name="Welcome" component={WelcomeScreen} />
                 <Stack.Screen name="Login" component={LoginScreen} />
                 <Stack.Screen name="Register" component={RegisterScreen} />
                 <Stack.Screen name="EmailVerification" component={EmailVerificationScreen} />
+                <Stack.Screen name="Main" component={TabNavigator} />
             </Stack.Navigator>
         </NavigationContainer>
     );
 }
-

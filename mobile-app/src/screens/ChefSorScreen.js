@@ -11,7 +11,7 @@ import {
     Linking,
     Alert,
 } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, CommonActions } from '@react-navigation/native';
 import {
     GraduationCap,
     Mail,
@@ -152,7 +152,7 @@ export default function ChefSorScreen({ navigation }) {
                     <Text style={styles.emptyText}>Hocalarınızı görmek için giriş yapmanız gerekiyor</Text>
                     <TouchableOpacity
                         style={styles.loginButton}
-                        onPress={() => navigation.navigate('Login')}
+                        onPress={() => navigation.dispatch(CommonActions.navigate({ name: 'Login' }))}
                     >
                         <Text style={styles.loginButtonText}>Giriş Yap</Text>
                     </TouchableOpacity>

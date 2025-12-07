@@ -58,6 +58,10 @@ const authService = {
             // Save user data if provided
             if (response.data.user) {
                 await AsyncStorage.setItem('userData', JSON.stringify(response.data.user));
+                // Also save userId separately for easy access
+                if (response.data.user.id) {
+                    await AsyncStorage.setItem('userId', response.data.user.id);
+                }
             }
 
             return { success: true, data: response.data };
@@ -101,6 +105,7 @@ const authService = {
         try {
             await AsyncStorage.removeItem('authToken');
             await AsyncStorage.removeItem('userData');
+            await AsyncStorage.removeItem('userId');
             return { success: true };
         } catch (error) {
             return { success: false, error: 'Çıkış yapılamadı' };

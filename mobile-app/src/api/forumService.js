@@ -162,6 +162,20 @@ const forumService = {
             };
         }
     },
+
+    // Delete a post (comment) - only own comments
+    deletePost: async (postId) => {
+        try {
+            const response = await api.delete(`/api/forum/posts/${postId}`);
+            return { success: true, data: response.data };
+        } catch (error) {
+            console.error('Delete post error:', error);
+            return {
+                success: false,
+                error: error.response?.data?.message || 'Yorum silinemedi',
+            };
+        }
+    },
 };
 
 export default forumService;
