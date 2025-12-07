@@ -63,7 +63,7 @@ export default function CoursesScreen({ navigation }) {
         return (
             <TouchableOpacity
                 style={styles.courseCard}
-                onPress={() => navigation.navigate('CourseDetail', { courseId: courseData.id })}
+                onPress={() => navigation.navigate('Learn', { courseId: courseData.id })}
             >
                 <Image source={{ uri: imageUrl }} style={styles.courseImage} />
                 <View style={styles.courseContent}>

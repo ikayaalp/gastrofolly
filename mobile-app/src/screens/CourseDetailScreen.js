@@ -185,7 +185,10 @@ export default function CourseDetailScreen({ route, navigation }) {
                     )}
 
                     {isEnrolled && (
-                        <TouchableOpacity style={styles.enrolledButtonInline}>
+                        <TouchableOpacity
+                            style={styles.enrolledButtonInline}
+                            onPress={() => navigation.navigate('Learn', { courseId: course.id })}
+                        >
                             <CheckCircle size={20} color="white" />
                             <Text style={styles.enrolledButtonText}>Kursa Devam Et</Text>
                         </TouchableOpacity>

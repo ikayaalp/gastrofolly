@@ -16,6 +16,7 @@ import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
 import EmailVerificationScreen from '../screens/EmailVerificationScreen';
 import CourseDetailScreen from '../screens/CourseDetailScreen';
+import LearnScreen from '../screens/LearnScreen';
 import WelcomeScreen from '../screens/WelcomeScreen';
 
 import { Home, BookOpen, Users, MessageCircle } from 'lucide-react-native';
@@ -24,6 +25,7 @@ const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 const HomeStack = createNativeStackNavigator();
 const SocialStack = createNativeStackNavigator();
+const CoursesStack = createNativeStackNavigator();
 
 // Home Stack Navigator (includes CourseDetail)
 function HomeStackNavigator() {
@@ -31,7 +33,19 @@ function HomeStackNavigator() {
         <HomeStack.Navigator screenOptions={{ headerShown: false }}>
             <HomeStack.Screen name="HomeMain" component={HomeScreen} />
             <HomeStack.Screen name="CourseDetail" component={CourseDetailScreen} />
+            <HomeStack.Screen name="Learn" component={LearnScreen} />
         </HomeStack.Navigator>
+    );
+}
+
+// Courses Stack Navigator (includes CourseDetail and Learn)
+function CoursesStackNavigator() {
+    return (
+        <CoursesStack.Navigator screenOptions={{ headerShown: false }}>
+            <CoursesStack.Screen name="CoursesMain" component={CoursesScreen} />
+            <CoursesStack.Screen name="CourseDetail" component={CourseDetailScreen} />
+            <CoursesStack.Screen name="Learn" component={LearnScreen} />
+        </CoursesStack.Navigator>
     );
 }
 
@@ -83,7 +97,7 @@ function TabNavigator() {
             />
             <Tab.Screen
                 name="Courses"
-                component={CoursesScreen}
+                component={CoursesStackNavigator}
                 options={{
                     tabBarLabel: 'Kurslarım',
                     tabBarIcon: ({ color, size }) => (

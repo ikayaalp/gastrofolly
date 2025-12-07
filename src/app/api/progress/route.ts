@@ -2,12 +2,36 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import jwt from 'jsonwebtoken'
+
+// Helper to get userId from session or JWT token
+async function getUserId(request: NextRequest): Promise<string | null> {
+  // Try NextAuth session first
+  const session = await getServerSession(authOptions)
+  if (session?.user?.id) {
+    return session.user.id
+  }
+
+  // Try JWT token for mobile
+  const authHeader = request.headers.get('authorization')
+  if (authHeader?.startsWith('Bearer ')) {
+    const token = authHeader.substring(7)
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key') as { userId: string }
+      return decoded.userId
+    } catch (e) {
+      // Invalid token
+    }
+  }
+
+  return null
+}
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    
-    if (!session?.user?.id) {
+    const userId = await getUserId(request)
+
+    if (!userId) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
@@ -27,7 +51,7 @@ export async function POST(request: NextRequest) {
     const enrollment = await prisma.enrollment.findUnique({
       where: {
         userId_courseId: {
-          userId: session.user.id,
+          userId: userId,
           courseId: courseId,
         }
       }
@@ -44,7 +68,7 @@ export async function POST(request: NextRequest) {
     const progress = await prisma.progress.upsert({
       where: {
         userId_lessonId: {
-          userId: session.user.id,
+          userId: userId,
           lessonId: lessonId,
         }
       },
@@ -53,7 +77,7 @@ export async function POST(request: NextRequest) {
         watchedAt: new Date(),
       },
       create: {
-        userId: session.user.id,
+        userId: userId,
         lessonId: lessonId,
         courseId: courseId,
         isCompleted: isCompleted,
@@ -73,9 +97,9 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    
-    if (!session?.user?.id) {
+    const userId = await getUserId(request)
+
+    if (!userId) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
@@ -94,7 +118,7 @@ export async function GET(request: NextRequest) {
 
     const progress = await prisma.progress.findMany({
       where: {
-        userId: session.user.id,
+        userId: userId,
         courseId: courseId,
       },
       include: {
@@ -111,4 +135,3 @@ export async function GET(request: NextRequest) {
     )
   }
 }
-
