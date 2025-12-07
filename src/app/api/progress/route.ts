@@ -17,7 +17,7 @@ async function getUserId(request: NextRequest): Promise<string | null> {
   if (authHeader?.startsWith('Bearer ')) {
     const token = authHeader.substring(7)
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key') as { userId: string }
+      const decoded = jwt.verify(token, process.env.NEXTAUTH_SECRET || 'your-secret-key') as { userId: string }
       return decoded.userId
     } catch (e) {
       // Invalid token

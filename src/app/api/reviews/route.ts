@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
       if (authHeader?.startsWith('Bearer ')) {
         const token = authHeader.substring(7)
         try {
-          const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key') as { userId: string }
+          const decoded = jwt.verify(token, process.env.NEXTAUTH_SECRET || 'your-secret-key') as { userId: string }
           userId = decoded.userId
         } catch (e) {
           // Invalid token
