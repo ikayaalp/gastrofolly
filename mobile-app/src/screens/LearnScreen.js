@@ -559,21 +559,6 @@ export default function LearnScreen({ route, navigation }) {
             {/* Course Info Header */}
             <View style={styles.courseHeader}>
                 <Text style={styles.courseTitle} numberOfLines={2}>{course.title}</Text>
-                <TouchableOpacity
-                    onPress={() => navigation.navigate('InstructorProfile', {
-                        instructorId: course.instructor?.id || course.instructorId,
-                        instructorName: course.instructor?.name,
-                        instructorImage: course.instructor?.image,
-                    })}
-                    disabled={!course.instructor?.id && !course.instructorId}
-                >
-                    <Text style={[
-                        styles.instructorName,
-                        (course.instructor?.id || course.instructorId) && styles.instructorNameClickable
-                    ]}>
-                        {course.instructor?.name || 'Eğitmen'}
-                    </Text>
-                </TouchableOpacity>
             </View>
 
             {/* Tab Navigation */}
@@ -1091,10 +1076,12 @@ const styles = StyleSheet.create({
     instructorName: {
         color: '#9ca3af',
         fontSize: 14,
+        fontWeight: '500',
     },
     instructorNameClickable: {
-        color: '#ea580c',
-        textDecorationLine: 'underline',
+        color: '#d1d5db', // Lighter gray/white
+        fontWeight: '600', // Bold to indicate importance/interactivity
+        // Removed underline and orange color
     },
 
     // Tab Navigation

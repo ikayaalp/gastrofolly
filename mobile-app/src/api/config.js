@@ -7,5 +7,6 @@ export default {
         LOGIN: '/api/auth/mobile-login', // This needs to be created on backend
         REGISTER: '/api/auth/register',
         VERIFY_EMAIL: '/api/auth/verify-email',
+        CANCEL_SUBSCRIPTION: '/api/user/subscription/cancel',
     },
 };

@@ -25,6 +25,7 @@ import {
 import axios from 'axios';
 import config from '../api/config';
 import UserDropdown from '../components/UserDropdown';
+import authService from '../api/authService';
 
 const { width } = Dimensions.get('window');
 
@@ -33,10 +34,21 @@ export default function CourseDetailScreen({ route, navigation }) {
     const [course, setCourse] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [userData, setUserData] = useState(null);
 
     useEffect(() => {
         loadCourseDetails();
+        loadUserData();
     }, [courseId]);
+
+    const loadUserData = async () => {
+        try {
+            const user = await authService.getCurrentUser();
+            if (user) setUserData(user);
+        } catch (err) {
+            console.log('User data load error:', err);
+        }
+    };
 
     const loadCourseDetails = async () => {
         try {
@@ -121,10 +133,25 @@ export default function CourseDetailScreen({ route, navigation }) {
         );
     }
 
+    const checkAccess = () => {
+        if (course?.isEnrolled) return true;
+        if (!userData || !userData.isSubscriptionValid || !course) return false;
+
+        const plan = userData.subscriptionPlan; // 'Commis', 'Chef D party', 'Executive'
+        const level = course.level; // 'BEGINNER', 'INTERMEDIATE', 'ADVANCED'
+
+        if (level === 'BEGINNER' && (plan === 'Commis' || plan === 'Chef D party' || plan === 'Executive')) return true;
+        if (level === 'INTERMEDIATE' && (plan === 'Chef D party' || plan === 'Executive')) return true;
+        if (level === 'ADVANCED' && (plan === 'Executive')) return true;
+
+        return false;
+    };
+
     const levelInfo = getLevelInfo(course.level);
     const avgRating = calculateAverageRating(course.reviews || []);
     const totalDuration = getTotalDuration(course.lessons || []);
     const isEnrolled = course.isEnrolled || false;
+    const hasAccess = checkAccess();
 
     return (
         <View style={styles.container}>
@@ -173,7 +200,7 @@ export default function CourseDetailScreen({ route, navigation }) {
                     <Text style={styles.description}>{course.description}</Text>
 
                     {/* Subscribe Button - Opens website payment */}
-                    {!isEnrolled && (
+                    {!hasAccess && (
                         <TouchableOpacity
                             style={[styles.subscribeButtonInline, { backgroundColor: levelInfo.color }]}
                             onPress={() => handleSubscribe(levelInfo.name)}
@@ -184,25 +211,42 @@ export default function CourseDetailScreen({ route, navigation }) {
                         </TouchableOpacity>
                     )}
 
-                    {isEnrolled && (
+                    {hasAccess && (
                         <TouchableOpacity
                             style={styles.enrolledButtonInline}
                             onPress={() => navigation.navigate('Learn', { courseId: course.id })}
                         >
-                            <CheckCircle size={20} color="white" />
-                            <Text style={styles.enrolledButtonText}>Kursa Devam Et</Text>
+                            <Play size={20} color="white" fill="white" />
+                            <Text style={styles.enrolledButtonText}>
+                                Kursa Başla
+                            </Text>
                         </TouchableOpacity>
                     )}
 
                     {/* Instructor */}
+                    {/* Instructor */}
                     {course.instructor && (
-                        <View style={styles.instructorContainer}>
+                        <TouchableOpacity
+                            style={styles.instructorContainer}
+                            onPress={() => navigation.navigate('InstructorProfile', {
+                                instructorId: course.instructor.id,
+                                instructorName: course.instructor.name,
+                                instructorImage: course.instructor.image
+                            })}
+                        >
                             <View style={styles.instructorAvatar}>
-                                <ChefHat size={20} color="white" />
+                                {course.instructor.image ? (
+                                    <Image
+                                        source={{ uri: course.instructor.image }}
+                                        style={{ width: '100%', height: '100%', borderRadius: 20 }}
+                                    />
+                                ) : (
+                                    <ChefHat size={20} color="white" />
+                                )}
                             </View>
                             <View style={styles.instructorInfo}>
                                 <Text style={styles.instructorName}>{course.instructor.name}</Text>
-                                <Text style={styles.instructorLabel}>Eğitmen</Text>
+                                <Text style={styles.instructorLabel}>Eğitmen Profili • İncele</Text>
                             </View>
                             {avgRating > 0 && (
                                 <View style={styles.ratingContainer}>
@@ -211,7 +255,7 @@ export default function CourseDetailScreen({ route, navigation }) {
                                     <Text style={styles.ratingCount}>({course._count?.reviews || 0})</Text>
                                 </View>
                             )}
-                        </View>
+                        </TouchableOpacity>
                     )}
 
                     {/* Stats */}
@@ -613,7 +657,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     enrolledButtonInline: {
-        backgroundColor: '#10b981',
+        backgroundColor: '#ea580c', // Orange
         paddingVertical: 16,
         paddingHorizontal: 24,
         borderRadius: 12,
@@ -622,7 +666,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         gap: 8,
         marginVertical: 20,
-        shadowColor: '#10b981',
+        shadowColor: '#ea580c',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
         shadowRadius: 8,

@@ -28,6 +28,12 @@ const HomeStack = createNativeStackNavigator();
 const SocialStack = createNativeStackNavigator();
 const CoursesStack = createNativeStackNavigator();
 
+import SearchScreen from '../screens/SearchScreen';
+import SettingsScreen from '../screens/SettingsScreen';
+import AccountScreen from '../screens/AccountScreen';
+import SubscriptionScreen from '../screens/SubscriptionScreen';
+import { User } from 'lucide-react-native';
+
 // Home Stack Navigator (includes CourseDetail)
 function HomeStackNavigator() {
     return (
@@ -36,6 +42,9 @@ function HomeStackNavigator() {
             <HomeStack.Screen name="CourseDetail" component={CourseDetailScreen} />
             <HomeStack.Screen name="Learn" component={LearnScreen} />
             <HomeStack.Screen name="InstructorProfile" component={InstructorProfileScreen} />
+            <HomeStack.Screen name="Search" component={SearchScreen} />
+            <HomeStack.Screen name="Settings" component={SettingsScreen} />
+            <HomeStack.Screen name="ChefSor" component={ChefSorScreen} />
         </HomeStack.Navigator>
     );
 }
@@ -48,6 +57,7 @@ function CoursesStackNavigator() {
             <CoursesStack.Screen name="CourseDetail" component={CourseDetailScreen} />
             <CoursesStack.Screen name="Learn" component={LearnScreen} />
             <CoursesStack.Screen name="InstructorProfile" component={InstructorProfileScreen} />
+            <CoursesStack.Screen name="ChefSor" component={ChefSorScreen} />
         </CoursesStack.Navigator>
     );
 }
@@ -119,12 +129,12 @@ function TabNavigator() {
                 }}
             />
             <Tab.Screen
-                name="ChefSor"
-                component={ChefSorScreen}
+                name="Account"
+                component={AccountScreen}
                 options={{
-                    tabBarLabel: "Chef'e Sor",
+                    tabBarLabel: 'Hesabım',
                     tabBarIcon: ({ color, size }) => (
-                        <MessageCircle size={24} color={color} />
+                        <User size={24} color={color} />
                     ),
                 }}
             />
@@ -171,6 +181,10 @@ export default function AppNavigator() {
                 <Stack.Screen name="EmailVerification" component={EmailVerificationScreen} />
                 <Stack.Screen name="Main" component={TabNavigator} />
                 <Stack.Screen name="Profile" component={ProfileScreen} />
+                <Stack.Screen name="Settings" component={SettingsScreen} />
+                <Stack.Screen name="ChefSor" component={ChefSorScreen} />
+                <Stack.Screen name="Search" component={SearchScreen} />
+                <Stack.Screen name="Subscription" component={SubscriptionScreen} />
             </Stack.Navigator>
         </NavigationContainer>
     );

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Modal, ScrollView } from 'react-native';
-import { User, Settings, LogOut, BookOpen, Heart, MessageCircle, ChevronDown } from 'lucide-react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Modal, ScrollView, Alert } from 'react-native';
+import { User, Settings, LogOut, BookOpen, Heart, MessageCircle, ChevronDown, Award, Play, MessageSquare } from 'lucide-react-native';
 import authService from '../api/authService';
 
 export default function UserDropdown({ navigation }) {
@@ -106,7 +106,7 @@ export default function UserDropdown({ navigation }) {
                                 style={styles.menuItem}
                                 onPress={() => {
                                     setVisible(false);
-                                    // navigation.navigate('Favorites');
+                                    Alert.alert('Yakında', 'Favorilerim özelliği yakında gelecek!');
                                 }}
                             >
                                 <Heart size={18} color="#9ca3af" />
@@ -117,18 +117,69 @@ export default function UserDropdown({ navigation }) {
                                 style={styles.menuItem}
                                 onPress={() => {
                                     setVisible(false);
-                                    navigation.navigate('Messages');
+                                    navigation.navigate('ChefSor');
                                 }}
                             >
                                 <MessageCircle size={18} color="#9ca3af" />
-                                <Text style={styles.menuText}>Mesajlar</Text>
+                                <Text style={styles.menuText}>Chef'e Sor</Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity
                                 style={styles.menuItem}
                                 onPress={() => {
                                     setVisible(false);
-                                    // navigation.navigate('Settings');
+                                    Alert.alert('Yakında', 'Sertifikalarım özelliği yakında gelecek!');
+                                }}
+                            >
+                                <Award size={18} color="#9ca3af" />
+                                <Text style={styles.menuText}>Sertifikalarım</Text>
+                            </TouchableOpacity>
+
+                            {/* Instructor Only */}
+                            {userData?.role === 'INSTRUCTOR' && (
+                                <TouchableOpacity
+                                    style={styles.menuItem}
+                                    onPress={() => {
+                                        setVisible(false);
+                                        navigation.navigate('ChefSor');
+                                    }}
+                                >
+                                    <MessageSquare size={18} color="#9ca3af" />
+                                    <Text style={styles.menuText}>Öğrencilerden Sorular</Text>
+                                </TouchableOpacity>
+                            )}
+
+                            {/* Admin Only */}
+                            {userData?.role === 'ADMIN' && (
+                                <>
+                                    <TouchableOpacity
+                                        style={styles.menuItem}
+                                        onPress={() => {
+                                            setVisible(false);
+                                            Alert.alert('Bilgi', 'Admin paneli sadece web sürümünde mevcuttur.');
+                                        }}
+                                    >
+                                        <User size={18} color="#9ca3af" />
+                                        <Text style={styles.menuText}>Admin Paneli</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={styles.menuItem}
+                                        onPress={() => {
+                                            setVisible(false);
+                                            Alert.alert('Bilgi', 'Kurs yönetimi sadece web sürümünde mevcuttur.');
+                                        }}
+                                    >
+                                        <Play size={18} color="#9ca3af" />
+                                        <Text style={styles.menuText}>Kurs Yönetimi</Text>
+                                    </TouchableOpacity>
+                                </>
+                            )}
+
+                            <TouchableOpacity
+                                style={styles.menuItem}
+                                onPress={() => {
+                                    setVisible(false);
+                                    navigation.navigate('Settings');
                                 }}
                             >
                                 <Settings size={18} color="#9ca3af" />

@@ -58,11 +58,31 @@ export default function ChefSorScreen({ navigation }) {
         loadInstructors();
     };
 
-    const handleEmailClick = (email, name) => {
-        const subject = encodeURIComponent('Kurs Hakkında Soru');
-        const body = encodeURIComponent(`Merhaba ${name || 'Hocam'},\n\n`);
-        const gmailUrl = `https://mail.google.com/mail/?view=cm&to=${email}&su=${subject}&body=${body}`;
-        Linking.openURL(gmailUrl);
+    const handleEmailClick = async (email, name) => {
+        const subject = 'Kurs Hakkında Soru';
+        const body = `Merhaba ${name || 'Hocam'},\n\n`;
+
+        // Gmail specific scheme
+        const gmailUrl = `googlegmail:///co?to=${email}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+        // Standard mailto scheme
+        const mailtoUrl = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+        try {
+            // Check if Gmail app is supported
+            const canOpenGmail = await Linking.canOpenURL(gmailUrl);
+
+            if (canOpenGmail) {
+                await Linking.openURL(gmailUrl);
+            } else {
+                // Fallback to default mail client
+                await Linking.openURL(mailtoUrl);
+            }
+        } catch (error) {
+            console.log('Error opening mail:', error);
+            // Last resort fallback
+            Linking.openURL(mailtoUrl);
+        }
     };
 
     const renderInstructorItem = ({ item }) => (

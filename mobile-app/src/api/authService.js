@@ -136,6 +136,26 @@ const authService = {
             return null;
         }
     },
+
+    // Cancel subscription
+    cancelSubscription: async () => {
+        try {
+            const response = await api.post(config.API_ENDPOINTS.CANCEL_SUBSCRIPTION);
+            if (response.data.success) {
+                // Update local storage
+                if (response.data.user) {
+                    await AsyncStorage.setItem('userData', JSON.stringify(response.data.user));
+                }
+                return { success: true, message: response.data.message };
+            }
+            return { success: false, error: response.data.message };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.response?.data?.message || 'İptal işlemi başarısız oldu',
+            };
+        }
+    },
 };
 
 export default authService;

@@ -12,9 +12,10 @@ import {
     Share,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { ArrowLeft, Star, Users, BookOpen, Award, Share2, Play } from 'lucide-react-native';
+import { ArrowLeft, Star, Users, BookOpen, Award, Share2, Play, MessageCircle } from 'lucide-react-native';
 import axios from 'axios';
 import config from '../api/config';
+import courseService from '../api/courseService';
 
 const { width } = Dimensions.get('window');
 
@@ -23,9 +24,11 @@ export default function InstructorProfileScreen({ navigation, route }) {
     const [loading, setLoading] = useState(true);
     const [instructor, setInstructor] = useState(null);
     const [courses, setCourses] = useState([]);
+    const [isStudent, setIsStudent] = useState(false);
 
     useEffect(() => {
         loadInstructorData();
+        checkEnrollmentStatus();
     }, [instructorId]);
 
     const loadInstructorData = async () => {
@@ -52,6 +55,20 @@ export default function InstructorProfileScreen({ navigation, route }) {
             console.log('Load instructor error:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const checkEnrollmentStatus = async () => {
+        const result = await courseService.getUserCourses();
+        if (result.success && result.data?.courses) {
+            // Check if user is enrolled in any course by this instructor
+            // The enrollment object has a 'course' property which contains instructor info
+            const enrolledCourses = result.data.courses;
+            const hasEnrollment = enrolledCourses.some(enrollment =>
+                enrollment.course?.instructorId === instructorId ||
+                enrollment.course?.instructor?.id === instructorId
+            );
+            setIsStudent(hasEnrollment);
         }
     };
 
@@ -138,6 +155,17 @@ export default function InstructorProfileScreen({ navigation, route }) {
                             <Text style={styles.statLabel}>ÖĞRENCİ</Text>
                         </View>
                     </View>
+
+                    {/* Ask Chef Button - Only for Enrolled Students */}
+                    {isStudent && (
+                        <TouchableOpacity
+                            style={styles.askButton}
+                            onPress={() => navigation.navigate('ChefSor', { instructorId, instructorName: instructorName || instructor?.name })}
+                        >
+                            <MessageCircle size={20} color="white" />
+                            <Text style={styles.askButtonText}>Chef'e Sor</Text>
+                        </TouchableOpacity>
+                    )}
                 </View>
 
                 {/* About Section */}
@@ -174,10 +202,7 @@ export default function InstructorProfileScreen({ navigation, route }) {
                             <TouchableOpacity
                                 key={course.id}
                                 style={styles.courseCard}
-                                onPress={() => navigation.navigate('Learn', {
-                                    courseId: course.id,
-                                    courseTitle: course.title
-                                })}
+                                onPress={() => navigation.navigate('CourseDetail', { courseId: course.id })}
                             >
                                 {course.imageUrl ? (
                                     <Image
@@ -224,8 +249,8 @@ export default function InstructorProfileScreen({ navigation, route }) {
                 </View>
 
                 <View style={{ height: 40 }} />
-            </ScrollView>
-        </View>
+            </ScrollView >
+        </View >
     );
 }
 
@@ -290,50 +315,49 @@ const styles = StyleSheet.create({
         position: 'relative',
     },
     avatar: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
-        borderWidth: 2,
-        borderColor: 'rgba(234, 88, 12, 0.5)',
+        width: 120,
+        height: 120,
+        borderRadius: 60,
+        // Removed orange border as requested
     },
     avatarPlaceholder: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
+        width: 120,
+        height: 120,
+        borderRadius: 60,
         backgroundColor: '#1f2937',
         justifyContent: 'center',
         alignItems: 'center',
-        borderWidth: 2,
-        borderColor: 'rgba(234, 88, 12, 0.5)',
     },
     avatarText: {
         color: 'white',
-        fontSize: 32,
+        fontSize: 40,
         fontWeight: 'bold',
     },
     onlineIndicator: {
         position: 'absolute',
-        bottom: 4,
-        right: 4,
-        width: 16,
-        height: 16,
-        borderRadius: 8,
-        backgroundColor: '#22c55e', // Green
-        borderWidth: 2,
+        bottom: 8,
+        right: 8,
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+        backgroundColor: '#22c55e',
+        borderWidth: 3,
         borderColor: '#0a0a0a',
     },
     instructorNameLarge: {
         color: 'white',
-        fontSize: 24,
+        fontSize: 28,
         fontWeight: 'bold',
         textAlign: 'center',
-        marginBottom: 4,
+        marginBottom: 8,
+        letterSpacing: 0.5,
     },
     instructorTitle: {
-        color: '#ea580c',
-        fontSize: 14,
-        fontWeight: '600',
-        marginBottom: 20,
+        color: '#9ca3af', // Changed from orange to gray for a cleaner look
+        fontSize: 16,
+        fontWeight: '500',
+        marginBottom: 24,
+        letterSpacing: 0.5,
     },
     statsRow: {
         flexDirection: 'row',
@@ -361,20 +385,22 @@ const styles = StyleSheet.create({
         fontSize: 11,
         fontWeight: 'bold',
     },
-    messageButton: {
+    askButton: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: '#ea580c',
-        width: '100%',
-        paddingVertical: 14,
+        paddingVertical: 12,
+        paddingHorizontal: 24,
         borderRadius: 12,
         gap: 8,
+        width: '100%',
+        marginTop: 4,
     },
-    messageButtonText: {
+    askButtonText: {
         color: 'white',
-        fontWeight: '600',
-        fontSize: 15,
+        fontSize: 16,
+        fontWeight: 'bold',
     },
 
     // About Card

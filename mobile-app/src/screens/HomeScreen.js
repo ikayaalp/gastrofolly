@@ -5,7 +5,6 @@ import { ChefHat, BookOpen, Star, Play, Plus, Info } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import courseService from '../api/courseService';
 import authService from '../api/authService';
-import UserDropdown from '../components/UserDropdown';
 
 const { width } = Dimensions.get('window');
 
@@ -147,10 +146,12 @@ export default function HomeScreen({ navigation }) {
                         <Text style={styles.logoText}>Chef2.0</Text>
                     </View>
                     <View style={styles.headerActions}>
-                        <TouchableOpacity style={styles.searchButton}>
+                        <TouchableOpacity
+                            style={styles.searchButton}
+                            onPress={() => navigation.navigate('Search')}
+                        >
                             <Ionicons name="search" size={24} color="white" />
                         </TouchableOpacity>
-                        <UserDropdown navigation={navigation} />
                     </View>
                 </View>
             </View>

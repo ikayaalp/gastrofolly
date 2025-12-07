@@ -53,6 +53,38 @@ const courseService = {
         }
     },
 
+    // Search courses
+    searchCourses: async (query) => {
+        try {
+            const response = await api.get(`/api/courses`, {
+                params: { search: query }
+            });
+            // If the API returns a filtered list directly or all courses
+            // We'll let the component handle client-side filtering if needed, 
+            // but ideally the API handles it. 
+            // If API returns all courses, we can filter here too just in case:
+            const courses = response.data;
+            if (query && Array.isArray(courses)) {
+                const lowerQuery = query.toLowerCase();
+                return {
+                    success: true,
+                    data: courses.filter(c =>
+                        c.title?.toLowerCase().includes(lowerQuery) ||
+                        c.description?.toLowerCase().includes(lowerQuery) ||
+                        c.instructor?.name?.toLowerCase().includes(lowerQuery)
+                    )
+                };
+            }
+            return { success: true, data: courses };
+        } catch (error) {
+            console.error('Search courses error:', error);
+            return {
+                success: false,
+                error: error.response?.data?.message || 'Arama yapılamadı',
+            };
+        }
+    },
+
     // Get course details
     getCourseDetails: async (courseId) => {
         try {
