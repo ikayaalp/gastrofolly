@@ -19,7 +19,7 @@ export async function DELETE(
         const { id } = await params
 
         // Find the post
-        const post = await prisma.forumPost.findUnique({
+        const post = await prisma.post.findUnique({
             where: { id },
             select: { authorId: true }
         })
@@ -40,7 +40,7 @@ export async function DELETE(
         }
 
         // Delete the post and its replies
-        await prisma.forumPost.deleteMany({
+        await prisma.post.deleteMany({
             where: {
                 OR: [
                     { id },
