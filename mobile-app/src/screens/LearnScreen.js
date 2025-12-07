@@ -448,12 +448,6 @@ export default function LearnScreen({ route, navigation }) {
                                             Ders {currentIndex + 1}/{lessons.length}
                                         </Text>
                                     </View>
-                                    <TouchableOpacity
-                                        style={styles.headerButton}
-                                        onPress={() => setShowLessonList(true)}
-                                    >
-                                        <List size={24} color="white" />
-                                    </TouchableOpacity>
                                 </LinearGradient>
 
                                 {/* Center Controls */}
@@ -623,20 +617,25 @@ export default function LearnScreen({ route, navigation }) {
                     <View>
                         {/* Progress Overview */}
                         <View style={styles.progressOverview}>
-                            <View style={styles.progressInfo}>
-                                <Text style={styles.progressLabel}>İlerleme</Text>
+                            <View style={styles.progressHeader}>
+                                <Text style={styles.progressLabel}>Kurs İlerlemesi</Text>
                                 <Text style={styles.progressValue}>
-                                    {getCompletedCount()}/{lessons.length} ders
+                                    %{Math.round((getCompletedCount() / (lessons.length || 1)) * 100)} Tamamlandı
                                 </Text>
                             </View>
-                            <View style={styles.progressBarSmall}>
+                            <View style={styles.progressBarModern}>
                                 <View
                                     style={[
-                                        styles.progressFillSmall,
+                                        styles.progressFillModern,
                                         { width: `${(getCompletedCount() / lessons.length) * 100}%` }
                                     ]}
                                 />
                             </View>
+                        </View>
+
+                        {/* Divisor */}
+                        <View style={styles.lessonListHeader}>
+                            <Text style={styles.lessonListTitle}>Ders İçeriği</Text>
                         </View>
 
                         {/* Lesson List */}
@@ -858,17 +857,6 @@ export default function LearnScreen({ route, navigation }) {
 
                         {/* Buttons */}
                         <View style={styles.reviewModalButtons}>
-                            <TouchableOpacity
-                                style={styles.reviewModalCancel}
-                                onPress={() => {
-                                    setShowReviewModal(false);
-                                    setRating(0);
-                                    setReviewText('');
-                                }}
-                            >
-                                <Text style={styles.reviewModalCancelText}>İptal</Text>
-                            </TouchableOpacity>
-
                             <TouchableOpacity
                                 style={[
                                     styles.submitButtonMinimal,
@@ -1144,40 +1132,54 @@ const styles = StyleSheet.create({
     },
 
     // Progress Overview
+    // Progress Overview
     progressOverview: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-        backgroundColor: '#111',
-        borderBottomWidth: 1,
-        borderBottomColor: '#1f2937',
+        paddingHorizontal: 20,
+        paddingTop: 24,
+        paddingBottom: 24,
+        backgroundColor: '#0a0a0a',
     },
-    progressInfo: {
+    progressHeader: {
         flexDirection: 'row',
+        justifyContent: 'space-between',
         alignItems: 'center',
-        gap: 8,
+        marginBottom: 12,
     },
     progressLabel: {
         color: '#9ca3af',
         fontSize: 14,
+        fontWeight: '500',
     },
     progressValue: {
         color: '#ea580c',
         fontSize: 14,
-        fontWeight: '600',
+        fontWeight: '700',
     },
-    progressBarSmall: {
-        width: 100,
-        height: 4,
+    progressBarModern: {
+        width: '100%',
+        height: 8,
         backgroundColor: '#1f2937',
-        borderRadius: 2,
+        borderRadius: 4,
+        overflow: 'hidden',
     },
-    progressFillSmall: {
+    progressFillModern: {
         height: '100%',
         backgroundColor: '#ea580c',
-        borderRadius: 2,
+        borderRadius: 4,
+    },
+
+    // Lesson List Header
+    lessonListHeader: {
+        paddingHorizontal: 20,
+        paddingBottom: 12,
+        paddingTop: 8,
+    },
+    lessonListTitle: {
+        color: '#9ca3af',
+        fontSize: 13,
+        fontWeight: '600',
+        textTransform: 'uppercase',
+        letterSpacing: 1,
     },
 
     // Lesson Row
@@ -1323,11 +1325,11 @@ const styles = StyleSheet.create({
         marginBottom: 16,
     },
     submitButtonMinimal: {
+        flex: 1,
         backgroundColor: '#ea580c',
         paddingVertical: 14,
         paddingHorizontal: 32,
         borderRadius: 10,
-        width: '100%',
         alignItems: 'center',
     },
     submitButtonDisabledMinimal: {
@@ -1432,19 +1434,20 @@ const styles = StyleSheet.create({
     },
     reviewFab: {
         position: 'absolute',
-        bottom: 20,
-        right: 20,
-        width: 56,
-        height: 56,
-        borderRadius: 28,
+        bottom: 110,
+        right: 24,
+        width: 60,
+        height: 60,
+        borderRadius: 30,
         backgroundColor: '#ea580c',
         justifyContent: 'center',
         alignItems: 'center',
-        elevation: 8,
-        shadowColor: '#ea580c',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.4,
-        shadowRadius: 8,
+        elevation: 10,
+        zIndex: 999,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.3,
+        shadowRadius: 10,
     },
     reviewModalOverlay: {
         flex: 1,
@@ -1477,8 +1480,7 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingVertical: 14,
         borderRadius: 10,
-        borderWidth: 1,
-        borderColor: '#374151',
+        backgroundColor: '#1f2937',
         alignItems: 'center',
     },
     reviewModalCancelText: {

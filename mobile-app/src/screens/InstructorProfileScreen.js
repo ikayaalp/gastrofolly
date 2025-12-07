@@ -77,108 +77,140 @@ export default function InstructorProfileScreen({ navigation, route }) {
         <View style={styles.container}>
             <StatusBar barStyle="light-content" />
 
-            {/* Header with Gradient */}
-            <LinearGradient
-                colors={['#ea580c', '#dc2626']}
-                style={styles.headerGradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-            >
-                {/* Back Button */}
+            {/* Header */}
+            <View style={styles.header}>
                 <TouchableOpacity
                     style={styles.backButton}
                     onPress={() => navigation.goBack()}
                 >
                     <ArrowLeft size={24} color="white" />
                 </TouchableOpacity>
+            </View>
 
-                {/* Instructor Info */}
-                <View style={styles.instructorInfo}>
-                    {instructorImage ? (
-                        <Image source={{ uri: instructorImage }} style={styles.avatar} />
-                    ) : (
-                        <View style={styles.avatarPlaceholder}>
-                            <Text style={styles.avatarText}>
-                                {(instructorName || instructor?.name || 'E').charAt(0).toUpperCase()}
-                            </Text>
-                        </View>
-                    )}
+            <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+                {/* Profile Section */}
+                <View style={styles.profileCard}>
+                    <View style={styles.avatarContainer}>
+                        {instructorImage ? (
+                            <Image source={{ uri: instructorImage }} style={styles.avatar} />
+                        ) : (
+                            <View style={styles.avatarPlaceholder}>
+                                <Text style={styles.avatarText}>
+                                    {(instructorName || instructor?.name || 'E').charAt(0).toUpperCase()}
+                                </Text>
+                            </View>
+                        )}
+                        <View style={styles.onlineIndicator} />
+                    </View>
+
                     <Text style={styles.instructorNameLarge}>
                         {instructorName || instructor?.name || 'Eğitmen'}
                     </Text>
-                    <Text style={styles.instructorBio}>
-                        Profesyonel Eğitmen
+                    <Text style={styles.instructorTitle}>Profesyonel Eğitmen</Text>
+
+                    {/* Stats */}
+                    <View style={styles.statsRow}>
+                        <View style={styles.statBox}>
+                            <Text style={styles.statValue}>{courses.length}</Text>
+                            <Text style={styles.statLabel}>KURS</Text>
+                        </View>
+                        <View style={styles.statBox}>
+                            <Text style={styles.statValue}>{getTotalStudents()}</Text>
+                            <Text style={styles.statLabel}>ÖĞRENCİ</Text>
+                        </View>
+                    </View>
+
+                    {/* Action Buttons */}
+                    <TouchableOpacity style={styles.messageButton}>
+                        <Users size={20} color="white" />
+                        <Text style={styles.messageButtonText}>Chef'e Sor</Text>
+                    </TouchableOpacity>
+                </View>
+
+                {/* About Section */}
+                <View style={styles.aboutCard}>
+                    <View style={styles.cardHeader}>
+                        <View style={styles.iconContainer}>
+                            <Users size={20} color="#ea580c" />
+                        </View>
+                        <Text style={styles.cardTitle}>Hakkında</Text>
+                    </View>
+                    <Text style={styles.bioText}>
+                        {instructor?.name || 'Eğitmen'} deneyimli bir eğitmen olarak gastronomi dünyasında önemli bir yer edinmiştir.
+                        Profesyonel mutfak deneyimi ve öğretme tutkusu ile öğrencilerine en iyi eğitimi sunmaktadır.
                     </Text>
                 </View>
 
-                {/* Stats */}
-                <View style={styles.statsContainer}>
-                    <View style={styles.statItem}>
-                        <BookOpen size={20} color="white" />
-                        <Text style={styles.statValue}>{courses.length}</Text>
-                        <Text style={styles.statLabel}>Kurs</Text>
+                {/* Courses Section */}
+                <View style={styles.coursesSection}>
+                    <View style={styles.cardHeader}>
+                        <View style={styles.iconContainer}>
+                            <BookOpen size={20} color="#ea580c" />
+                        </View>
+                        <Text style={styles.cardTitle}>Yayınlanan Kurslar</Text>
+                        <Text style={styles.courseCountBadge}>{courses.length} kurs</Text>
                     </View>
-                    <View style={styles.statDivider} />
-                    <View style={styles.statItem}>
-                        <Users size={20} color="white" />
-                        <Text style={styles.statValue}>{getTotalStudents()}</Text>
-                        <Text style={styles.statLabel}>Öğrenci</Text>
-                    </View>
-                    <View style={styles.statDivider} />
-                    <View style={styles.statItem}>
-                        <Star size={20} color="white" fill="white" />
-                        <Text style={styles.statValue}>{getAverageRating()}</Text>
-                        <Text style={styles.statLabel}>Puan</Text>
-                    </View>
-                </View>
-            </LinearGradient>
 
-            {/* Courses Section */}
-            <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-                <Text style={styles.sectionTitle}>Eğitmenin Kursları</Text>
-
-                {courses.length === 0 ? (
-                    <View style={styles.emptyContainer}>
-                        <BookOpen size={48} color="#4b5563" />
-                        <Text style={styles.emptyText}>Henüz kurs bulunmuyor</Text>
-                    </View>
-                ) : (
-                    courses.map((course) => (
-                        <TouchableOpacity
-                            key={course.id}
-                            style={styles.courseCard}
-                            onPress={() => navigation.navigate('Learn', {
-                                courseId: course.id,
-                                courseTitle: course.title
-                            })}
-                        >
-                            {course.imageUrl && (
-                                <Image
-                                    source={{ uri: course.imageUrl }}
-                                    style={styles.courseThumbnail}
-                                />
-                            )}
-                            <View style={styles.courseInfo}>
-                                <Text style={styles.courseTitle} numberOfLines={2}>
-                                    {course.title}
-                                </Text>
-                                <View style={styles.courseMeta}>
-                                    <View style={styles.ratingContainer}>
-                                        <Star size={14} color="#fbbf24" fill="#fbbf24" />
-                                        <Text style={styles.ratingText}>
-                                            {course.averageRating?.toFixed(1) || '0.0'}
-                                        </Text>
+                    {courses.length === 0 ? (
+                        <View style={styles.emptyContainer}>
+                            <BookOpen size={48} color="#374151" />
+                            <Text style={styles.emptyText}>Henüz kurs bulunmuyor</Text>
+                        </View>
+                    ) : (
+                        courses.map((course) => (
+                            <TouchableOpacity
+                                key={course.id}
+                                style={styles.courseCard}
+                                onPress={() => navigation.navigate('Learn', {
+                                    courseId: course.id,
+                                    courseTitle: course.title
+                                })}
+                            >
+                                {course.imageUrl ? (
+                                    <Image
+                                        source={{ uri: course.imageUrl }}
+                                        style={styles.courseThumbnail}
+                                    />
+                                ) : (
+                                    <View style={styles.courseThumbnailPlaceholder}>
+                                        <BookOpen size={32} color="#ea580c" />
                                     </View>
-                                    <Text style={styles.studentsText}>
-                                        {course._count?.enrollments || 0} öğrenci
-                                    </Text>
-                                </View>
-                            </View>
-                        </TouchableOpacity>
-                    ))
-                )}
+                                )}
 
-                <View style={{ height: 100 }} />
+                                <View style={styles.courseOverlay}>
+                                    <View style={styles.categoryBadge}>
+                                        <Text style={styles.categoryText}>{course.category?.name || 'Genel'}</Text>
+                                    </View>
+                                </View>
+
+                                <View style={styles.courseInfo}>
+                                    <Text style={styles.courseTitle} numberOfLines={2}>
+                                        {course.title}
+                                    </Text>
+
+                                    <View style={styles.courseMeta}>
+                                        <View style={styles.metaItem}>
+                                            <Play size={14} color="#ea580c" />
+                                            <Text style={styles.metaText}>{course._count?.lessons || 0} Ders</Text>
+                                        </View>
+                                        <View style={styles.metaItem}>
+                                            <Users size={14} color="#ea580c" />
+                                            <Text style={styles.metaText}>{course._count?.enrollments || 0}</Text>
+                                        </View>
+                                    </View>
+
+                                    <View style={styles.courseFooter}>
+                                        <View style={styles.playButtonCircle}>
+                                            <Play size={16} color="white" fill="white" />
+                                        </View>
+                                    </View>
+                                </View>
+                            </TouchableOpacity>
+                        ))
+                    )}
+                </View>
+
+                <View style={{ height: 40 }} />
             </ScrollView>
         </View>
     );
@@ -189,6 +221,23 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#000',
     },
+    header: {
+        paddingTop: 50,
+        paddingHorizontal: 20,
+        paddingBottom: 10,
+    },
+    backButton: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: '#1f2937',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    content: {
+        flex: 1,
+        paddingHorizontal: 20,
+    },
     loadingContainer: {
         flex: 1,
         backgroundColor: '#000',
@@ -198,51 +247,56 @@ const styles = StyleSheet.create({
     loadingText: {
         color: 'white',
         marginTop: 16,
-        fontSize: 16,
     },
-    headerGradient: {
-        paddingTop: 50,
-        paddingBottom: 24,
-        paddingHorizontal: 20,
-        borderBottomLeftRadius: 24,
-        borderBottomRightRadius: 24,
-    },
-    backButton: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: 'rgba(0,0,0,0.2)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 20,
-    },
-    instructorInfo: {
+
+    // Profile Card
+    profileCard: {
+        backgroundColor: '#0a0a0a',
+        borderWidth: 1,
+        borderColor: '#1f2937',
+        borderRadius: 16,
+        padding: 24,
         alignItems: 'center',
         marginBottom: 24,
+    },
+    avatarContainer: {
+        width: 100,
+        height: 100,
+        marginBottom: 16,
+        position: 'relative',
     },
     avatar: {
         width: 100,
         height: 100,
         borderRadius: 50,
-        borderWidth: 3,
-        borderColor: 'white',
-        marginBottom: 16,
+        borderWidth: 2,
+        borderColor: 'rgba(234, 88, 12, 0.5)',
     },
     avatarPlaceholder: {
         width: 100,
         height: 100,
         borderRadius: 50,
-        backgroundColor: 'rgba(0,0,0,0.3)',
+        backgroundColor: '#1f2937',
         justifyContent: 'center',
         alignItems: 'center',
-        borderWidth: 3,
-        borderColor: 'white',
-        marginBottom: 16,
+        borderWidth: 2,
+        borderColor: 'rgba(234, 88, 12, 0.5)',
     },
     avatarText: {
         color: 'white',
-        fontSize: 40,
+        fontSize: 32,
         fontWeight: 'bold',
+    },
+    onlineIndicator: {
+        position: 'absolute',
+        bottom: 4,
+        right: 4,
+        width: 16,
+        height: 16,
+        borderRadius: 8,
+        backgroundColor: '#22c55e', // Green
+        borderWidth: 2,
+        borderColor: '#0a0a0a',
     },
     instructorNameLarge: {
         color: 'white',
@@ -251,99 +305,182 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginBottom: 4,
     },
-    instructorBio: {
-        color: 'rgba(255,255,255,0.8)',
+    instructorTitle: {
+        color: '#ea580c',
         fontSize: 14,
+        fontWeight: '600',
+        marginBottom: 20,
     },
-    statsContainer: {
+    statsRow: {
         flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0,0,0,0.2)',
-        borderRadius: 16,
-        paddingVertical: 16,
-        paddingHorizontal: 8,
+        gap: 16,
+        marginBottom: 20,
+        width: '100%',
     },
-    statItem: {
+    statBox: {
         flex: 1,
+        backgroundColor: 'rgba(31, 41, 55, 0.5)',
+        borderRadius: 12,
+        padding: 12,
         alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#1f2937',
     },
     statValue: {
         color: 'white',
         fontSize: 20,
         fontWeight: 'bold',
-        marginTop: 8,
+        marginBottom: 2,
     },
     statLabel: {
-        color: 'rgba(255,255,255,0.8)',
-        fontSize: 12,
-        marginTop: 2,
+        color: '#6b7280',
+        fontSize: 11,
+        fontWeight: 'bold',
     },
-    statDivider: {
-        width: 1,
-        height: 40,
-        backgroundColor: 'rgba(255,255,255,0.3)',
+    messageButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#ea580c',
+        width: '100%',
+        paddingVertical: 14,
+        borderRadius: 12,
+        gap: 8,
     },
-    content: {
-        flex: 1,
+    messageButtonText: {
+        color: 'white',
+        fontWeight: '600',
+        fontSize: 15,
+    },
+
+    // About Card
+    aboutCard: {
+        backgroundColor: '#0a0a0a',
+        borderWidth: 1,
+        borderColor: '#1f2937',
+        borderRadius: 16,
         padding: 20,
+        marginBottom: 24,
     },
-    sectionTitle: {
+    cardHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 16,
+    },
+    iconContainer: {
+        backgroundColor: 'rgba(234, 88, 12, 0.1)',
+        padding: 8,
+        borderRadius: 8,
+        marginRight: 12,
+    },
+    cardTitle: {
         color: 'white',
         fontSize: 18,
         fontWeight: 'bold',
-        marginBottom: 16,
+        flex: 1,
+    },
+    bioText: {
+        color: '#9ca3af',
+        fontSize: 14,
+        lineHeight: 22,
+    },
+
+    // Courses Section
+    coursesSection: {
+        marginBottom: 20,
+    },
+    courseCountBadge: {
+        color: '#6b7280',
+        fontSize: 13,
     },
     emptyContainer: {
+        backgroundColor: '#0a0a0a',
+        borderWidth: 1,
+        borderColor: '#1f2937',
+        borderRadius: 16,
+        padding: 40,
         alignItems: 'center',
-        paddingVertical: 40,
     },
     emptyText: {
-        color: '#6b7280',
-        marginTop: 16,
-        fontSize: 16,
+        color: '#4b5563',
+        marginTop: 12,
+        fontSize: 15,
     },
     courseCard: {
-        flexDirection: 'row',
-        backgroundColor: '#111',
-        borderRadius: 12,
-        marginBottom: 12,
+        backgroundColor: '#0a0a0a',
+        borderRadius: 16,
+        marginBottom: 16,
         overflow: 'hidden',
         borderWidth: 1,
         borderColor: '#1f2937',
     },
     courseThumbnail: {
-        width: 100,
-        height: 80,
+        width: '100%',
+        height: 180,
+    },
+    courseThumbnailPlaceholder: {
+        width: '100%',
+        height: 180,
+        backgroundColor: '#111',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    courseOverlay: {
+        position: 'absolute',
+        top: 12,
+        left: 12,
+    },
+    categoryBadge: {
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        backdropFilter: 'blur(10px)',
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.1)',
+    },
+    categoryText: {
+        color: 'white',
+        fontSize: 12,
+        fontWeight: '500',
     },
     courseInfo: {
-        flex: 1,
-        padding: 12,
-        justifyContent: 'center',
+        padding: 16,
     },
     courseTitle: {
         color: 'white',
-        fontSize: 15,
-        fontWeight: '600',
-        marginBottom: 8,
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginBottom: 12,
+        lineHeight: 22,
     },
     courseMeta: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 12,
+        gap: 16,
+        marginBottom: 16,
     },
-    ratingContainer: {
+    metaItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 4,
+        gap: 6,
     },
-    ratingText: {
-        color: '#fbbf24',
-        fontSize: 13,
-        fontWeight: '600',
-    },
-    studentsText: {
+    metaText: {
         color: '#9ca3af',
         fontSize: 13,
+    },
+    courseFooter: {
+        borderTopWidth: 1,
+        borderTopColor: '#1f2937',
+        paddingTop: 12,
+        alignItems: 'flex-end',
+    },
+    playButtonCircle: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        backgroundColor: '#374151',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 });
