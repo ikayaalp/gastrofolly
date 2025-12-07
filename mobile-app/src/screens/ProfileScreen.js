@@ -107,9 +107,12 @@ export default function ProfileScreen({ navigation }) {
                                 </Text>
                             </View>
                         )}
-                        <View style={styles.editIconContainer}>
+                        <TouchableOpacity
+                            style={styles.editIconContainer}
+                            onPress={() => navigation.navigate('EditProfile')}
+                        >
                             <User size={16} color="white" />
-                        </View>
+                        </TouchableOpacity>
                     </View>
                     <Text style={styles.userName}>{userData.name}</Text>
                     <Text style={styles.userEmail}>{userData.email}</Text>

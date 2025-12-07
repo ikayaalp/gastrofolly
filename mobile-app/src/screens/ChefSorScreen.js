@@ -20,6 +20,8 @@ import {
 } from 'lucide-react-native';
 import chefService from '../api/chefService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Clipboard from 'expo-clipboard';
+import { Copy } from 'lucide-react-native';
 
 export default function ChefSorScreen({ navigation }) {
     const [instructors, setInstructors] = useState([]);
@@ -85,6 +87,11 @@ export default function ChefSorScreen({ navigation }) {
         }
     };
 
+    const handleCopyEmail = async (email) => {
+        await Clipboard.setStringAsync(email);
+        Alert.alert('Başarılı', 'E-posta adresi kopyalandı.');
+    };
+
     const renderInstructorItem = ({ item }) => (
         <View style={styles.instructorCard}>
             {/* Header */}
@@ -101,7 +108,12 @@ export default function ChefSorScreen({ navigation }) {
 
                 <View style={styles.instructorInfo}>
                     <Text style={styles.instructorName}>{item.name || 'İsimsiz Eğitmen'}</Text>
-                    <Text style={styles.instructorEmail} numberOfLines={1}>{item.email}</Text>
+                    <View style={styles.emailContainer}>
+                        <Text style={styles.instructorEmail} numberOfLines={1}>{item.email}</Text>
+                        <TouchableOpacity onPress={() => handleCopyEmail(item.email)} style={styles.copyButton}>
+                            <Copy size={14} color="#ea580c" />
+                        </TouchableOpacity>
+                    </View>
                     <View style={styles.courseCountBadge}>
                         <BookOpen size={12} color="#ea580c" />
                         <Text style={styles.courseCountText}>{item.courses?.length || 0} Kurs</Text>
@@ -417,5 +429,14 @@ const styles = StyleSheet.create({
         flex: 1,
         fontSize: 14,
         color: '#fff',
+    },
+    emailContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        marginBottom: 8,
+    },
+    copyButton: {
+        padding: 4,
     },
 });

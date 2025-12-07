@@ -60,17 +60,22 @@ export default function HomeScreen({ navigation }) {
             // Featured courses - first 6
             setFeaturedCourses(courses.slice(0, 6));
 
-            // Popular courses - sort by enrollment count (simulated, take next 6)
-            setPopularCourses(courses.slice(6, 12));
+            // Popular courses - reuse courses but reverse for variety if needed
+            // This ensures we have items even if total count is small
+            setPopularCourses([...courses].reverse().slice(0, 6));
 
             // Recent courses - already sorted by createdAt desc
             setRecentCourses(courses.slice(0, 6));
         }
 
-        // Get user's enrolled courses
-        const userCoursesResult = await courseService.getUserCourses();
-        if (userCoursesResult.success) {
-            setUserCourses(userCoursesResult.data.courses || []);
+        // Get user's enrolled courses - Only for paid subscribers
+        if (user && user.subscriptionPlan && user.subscriptionPlan !== 'FREE') {
+            const userCoursesResult = await courseService.getUserCourses();
+            if (userCoursesResult.success) {
+                setUserCourses(userCoursesResult.data.courses || []);
+            }
+        } else {
+            setUserCourses([]);
         }
 
         setLoading(false);

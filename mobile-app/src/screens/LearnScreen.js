@@ -14,6 +14,7 @@ import {
     Platform,
     Keyboard,
     Modal,
+    Image,
 } from 'react-native';
 import { Video, ResizeMode } from 'expo-av';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -39,8 +40,16 @@ import {
     Send,
     MessageSquarePlus,
     Trash2,
+    Copy,
+    GraduationCap,
+    X,
+    Mail,
+    User,
+    BookOpen
 } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Clipboard from 'expo-clipboard';
+import { Linking } from 'react-native';
 import axios from 'axios';
 import config from '../api/config';
 import { TextInput } from 'react-native';
@@ -361,6 +370,26 @@ export default function LearnScreen({ route, navigation }) {
         }
     };
 
+    const handleCopyEmail = async (email) => {
+        if (!email) return;
+        await Clipboard.setStringAsync(email);
+        Alert.alert('Başarılı', 'E-posta adresi kopyalandı.');
+    };
+
+    const handleSendEmail = async (email, name) => {
+        if (!email) return;
+        const subject = `Soru: ${course?.title || 'Kurs Hakkında'}`;
+        const body = `Merhaba ${name || 'Hocam'},\n\n`;
+        const mailtoUrl = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+        try {
+            await Linking.openURL(mailtoUrl);
+        } catch (error) {
+            console.log('Error opening mail:', error);
+            handleCopyEmail(email); // Fallback copy
+        }
+    };
+
     if (loading) {
         return (
             <View style={styles.loadingContainer}>
@@ -410,15 +439,7 @@ export default function LearnScreen({ route, navigation }) {
                             onLoadStart={() => setIsBuffering(true)}
                         />
                     ) : (
-                        <View style={styles.noVideoContainer}>
-                            <LinearGradient
-                                colors={['#1a1a2e', '#16213e']}
-                                style={styles.noVideoGradient}
-                            >
-                                <Play size={64} color="#ea580c" />
-                                <Text style={styles.noVideoText}>Video henüz yüklenmemiş</Text>
-                            </LinearGradient>
-                        </View>
+                        <View style={[styles.noVideoContainer, { backgroundColor: '#000' }]} />
                     )}
 
                     {/* Video Overlay Controls */}
@@ -580,11 +601,11 @@ export default function LearnScreen({ route, navigation }) {
                     </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                    style={[styles.tab, activeTab === 'more' && styles.tabActive]}
-                    onPress={() => setActiveTab('more')}
+                    style={[styles.tab, activeTab === 'chef' && styles.tabActive]}
+                    onPress={() => setActiveTab('chef')}
                 >
-                    <Text style={[styles.tabText, activeTab === 'more' && styles.tabTextActive]}>
-                        Daha Fazla
+                    <Text style={[styles.tabText, activeTab === 'chef' && styles.tabTextActive]}>
+                        Chef'e Sor
                     </Text>
                 </TouchableOpacity>
             </View>
@@ -735,37 +756,47 @@ export default function LearnScreen({ route, navigation }) {
                     </View>
                 )}
 
-                {/* DAHA FAZLA TAB */}
-                {activeTab === 'more' && (
-                    <View style={styles.moreSection}>
-                        <View style={styles.moreItem}>
-                            <View style={styles.moreItemIcon}>
-                                <Clock size={22} color="#ea580c" />
+                {/* CHEF'E SOR TAB */}
+                {activeTab === 'chef' && (
+                    <View style={styles.tabContentContainer}>
+                        <View style={styles.instructorCard}>
+                            <View style={styles.instructorHeader}>
+                                <View style={styles.avatarContainer}>
+                                    {course.instructor?.image ? (
+                                        <Image source={{ uri: course.instructor.image }} style={styles.avatar} />
+                                    ) : (
+                                        <View style={styles.avatarPlaceholder}>
+                                            <User size={32} color="#fff" />
+                                        </View>
+                                    )}
+                                </View>
+
+                                <View style={styles.instructorInfo}>
+                                    <Text style={styles.instructorName}>{course.instructor?.name || 'İsimsiz Eğitmen'}</Text>
+                                    <Text style={{ color: '#9ca3af', fontSize: 13, marginTop: 4 }}>
+                                        {course.instructor?.email}
+                                    </Text>
+                                </View>
                             </View>
-                            <View style={styles.moreItemContent}>
-                                <Text style={styles.moreItemTitle}>Toplam Süre</Text>
-                                <Text style={styles.moreItemValue}>
-                                    {lessons.reduce((acc, l) => acc + (l.duration || 0), 0)} dakika
-                                </Text>
+
+                            <View style={styles.emailContainer}>
+                                <TouchableOpacity
+                                    style={styles.copyButton}
+                                    onPress={() => handleCopyEmail(course.instructor?.email)}
+                                >
+                                    <Copy size={20} color="#ea580c" />
+                                    <Text style={styles.copyButtonText}>Kopyala</Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity
+                                    style={styles.gmailButton}
+                                    onPress={() => handleSendEmail(course.instructor?.email, course.instructor?.name)}
+                                >
+                                    <Mail size={20} color="white" />
+                                    <Text style={styles.gmailButtonText}>Mail Gönder</Text>
+                                </TouchableOpacity>
                             </View>
                         </View>
-
-                        <View style={styles.moreItem}>
-                            <View style={styles.moreItemIcon}>
-                                <List size={22} color="#ea580c" />
-                            </View>
-                            <View style={styles.moreItemContent}>
-                                <Text style={styles.moreItemTitle}>Ders Sayısı</Text>
-                                <Text style={styles.moreItemValue}>{lessons.length} ders</Text>
-                            </View>
-                        </View>
-
-                        {course.description && (
-                            <View style={styles.descriptionSection}>
-                                <Text style={styles.descriptionTitle}>Kurs Hakkında</Text>
-                                <Text style={styles.descriptionText}>{course.description}</Text>
-                            </View>
-                        )}
                     </View>
                 )}
             </ScrollView>
@@ -1740,14 +1771,95 @@ const styles = StyleSheet.create({
         fontSize: 17,
         fontWeight: '700',
     },
-    trustBadge: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 6,
-    },
     trustText: {
         color: '#9ca3af',
         fontSize: 12,
+    },
+
+    // Instructor Card Styles
+    instructorCard: {
+        backgroundColor: '#111',
+        borderRadius: 16,
+        padding: 16,
+        marginTop: 16,
+        borderWidth: 1,
+        borderColor: '#1f2937',
+    },
+    instructorHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 16,
+        gap: 16,
+    },
+    avatarContainer: {
+        width: 64,
+        height: 64,
+        borderRadius: 32,
+        backgroundColor: '#1f2937',
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'hidden',
+        borderWidth: 2,
+        borderColor: '#ea580c',
+    },
+    avatar: {
+        width: '100%',
+        height: '100%',
+    },
+    avatarPlaceholder: {
+        width: '100%',
+        height: '100%',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#374151',
+    },
+    instructorInfo: {
+        flex: 1,
+    },
+    instructorName: {
+        color: 'white',
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 4,
+    },
+    instructorEmail: {
+        color: '#9ca3af',
+        fontSize: 14,
+    },
+    emailContainer: {
+        flexDirection: 'row',
+        gap: 12,
+    },
+    copyButton: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+        backgroundColor: 'rgba(234, 88, 12, 0.1)',
+        paddingVertical: 12,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: 'rgba(234, 88, 12, 0.3)',
+    },
+    copyButtonText: {
+        color: '#ea580c',
+        fontWeight: '600',
+        fontSize: 14,
+    },
+    gmailButton: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+        backgroundColor: '#ea580c',
+        paddingVertical: 12,
+        borderRadius: 12,
+    },
+    gmailButtonText: {
+        color: 'white',
+        fontWeight: '600',
+        fontSize: 14,
     },
 });

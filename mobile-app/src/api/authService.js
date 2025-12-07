@@ -156,6 +156,28 @@ const authService = {
             };
         }
     },
+
+    // Update user profile
+    updateProfile: async (userData) => {
+        try {
+            // Check for mock implementation or add real endpoint
+            // For now assuming backend has /api/auth/update endpoint or similar
+            // If strictly following config, we might need to add it there too.
+            // Let's assume standard REST: PUT /api/auth/me or POST /api/auth/update
+            const response = await api.put('/api/auth/me', userData);
+
+            if (response.data.user) {
+                await AsyncStorage.setItem('userData', JSON.stringify(response.data.user));
+                return { success: true, data: response.data.user };
+            }
+            return { success: true, data: response.data };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.response?.data?.message || 'Profil güncellenemedi',
+            };
+        }
+    },
 };
 
 export default authService;

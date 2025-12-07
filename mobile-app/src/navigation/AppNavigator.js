@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ActivityIndicator, View, Platform } from 'react-native';
+import { Platform } from 'react-native';
 
 // Screens
 import HomeScreen from '../screens/HomeScreen';
@@ -19,20 +18,21 @@ import CourseDetailScreen from '../screens/CourseDetailScreen';
 import LearnScreen from '../screens/LearnScreen';
 import WelcomeScreen from '../screens/WelcomeScreen';
 import InstructorProfileScreen from '../screens/InstructorProfileScreen';
+import EditProfileScreen from '../screens/EditProfileScreen';
+import IntroScreen from '../screens/IntroScreen';
 
-import { Home, BookOpen, Users, MessageCircle } from 'lucide-react-native';
+import { Home, BookOpen, Users, MessageCircle, User } from 'lucide-react-native';
+
+import SearchScreen from '../screens/SearchScreen';
+import SettingsScreen from '../screens/SettingsScreen';
+import AccountScreen from '../screens/AccountScreen';
+import SubscriptionScreen from '../screens/SubscriptionScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 const HomeStack = createNativeStackNavigator();
 const SocialStack = createNativeStackNavigator();
 const CoursesStack = createNativeStackNavigator();
-
-import SearchScreen from '../screens/SearchScreen';
-import SettingsScreen from '../screens/SettingsScreen';
-import AccountScreen from '../screens/AccountScreen';
-import SubscriptionScreen from '../screens/SubscriptionScreen';
-import { User } from 'lucide-react-native';
 
 // Home Stack Navigator (includes CourseDetail)
 function HomeStackNavigator() {
@@ -143,44 +143,20 @@ function TabNavigator() {
 }
 
 export default function AppNavigator() {
-    const [isLoading, setIsLoading] = useState(true);
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-    useEffect(() => {
-        checkAuthStatus();
-    }, []);
-
-    const checkAuthStatus = async () => {
-        try {
-            const token = await AsyncStorage.getItem('authToken');
-            setIsAuthenticated(!!token);
-        } catch (error) {
-            console.error('Auth check error:', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    if (isLoading) {
-        return (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000' }}>
-                <ActivityIndicator size="large" color="#ea580c" />
-            </View>
-        );
-    }
-
     return (
         <NavigationContainer>
             <Stack.Navigator
                 screenOptions={{ headerShown: false }}
-                initialRouteName={isAuthenticated ? "Main" : "Welcome"}
+                initialRouteName="Intro"
             >
+                <Stack.Screen name="Intro" component={IntroScreen} />
                 <Stack.Screen name="Welcome" component={WelcomeScreen} />
                 <Stack.Screen name="Login" component={LoginScreen} />
                 <Stack.Screen name="Register" component={RegisterScreen} />
                 <Stack.Screen name="EmailVerification" component={EmailVerificationScreen} />
                 <Stack.Screen name="Main" component={TabNavigator} />
                 <Stack.Screen name="Profile" component={ProfileScreen} />
+                <Stack.Screen name="EditProfile" component={EditProfileScreen} />
                 <Stack.Screen name="Settings" component={SettingsScreen} />
                 <Stack.Screen name="ChefSor" component={ChefSorScreen} />
                 <Stack.Screen name="Search" component={SearchScreen} />
@@ -189,3 +165,4 @@ export default function AppNavigator() {
         </NavigationContainer>
     );
 }
+

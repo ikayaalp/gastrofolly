@@ -110,7 +110,7 @@ export default function SettingsScreen({ navigation }) {
                             icon={User}
                             title="Profil Düzenle"
                             subtitle="Ad, soyad ve avatar düzenle"
-                            onPress={() => navigation.navigate('Profile')}
+                            onPress={() => navigation.navigate('EditProfile')}
                         />
                         <SettingItem
                             icon={Lock}

@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, FlatList, Image, TouchableOpacity, ActivityIndi
 import { useFocusEffect, CommonActions } from '@react-navigation/native';
 import { ChefHat, Star, BookOpen, User } from 'lucide-react-native';
 import courseService from '../api/courseService';
+import authService from '../api/authService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function CoursesScreen({ navigation }) {
@@ -22,6 +23,15 @@ export default function CoursesScreen({ navigation }) {
             const loggedIn = await checkLoginStatus();
             if (!loggedIn) {
                 setLoading(false);
+                return;
+            }
+
+            // Check subscription status
+            const user = await authService.getCurrentUser();
+            if (!user || !user.subscriptionPlan || user.subscriptionPlan === 'FREE') {
+                setCourses([]); // Clear courses if no active subscription
+                setLoading(false);
+                setRefreshing(false);
                 return;
             }
 

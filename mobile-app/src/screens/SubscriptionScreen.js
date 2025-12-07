@@ -56,6 +56,31 @@ export default function SubscriptionScreen({ navigation }) {
         </View>
     );
 
+    const handleCancelSubscription = () => {
+        Alert.alert(
+            'Abonelik İptali',
+            'Aboneliğinizi iptal etmek istediğinize emin misiniz? Bu işlem geri alınamaz ve premium özelliklere erişiminizi kaybedersiniz.',
+            [
+                { text: 'Vazgeç', style: 'cancel' },
+                {
+                    text: 'İptal Et',
+                    style: 'destructive',
+                    onPress: async () => {
+                        setLoading(true);
+                        const result = await authService.cancelSubscription();
+                        if (result.success) {
+                            Alert.alert('Başarılı', 'Aboneliğiniz iptal edildi.');
+                            loadUserData(); // Reload to show free plan
+                        } else {
+                            Alert.alert('Hata', result.error);
+                            setLoading(false);
+                        }
+                    }
+                }
+            ]
+        );
+    };
+
     if (loading) {
         return (
             <View style={styles.loadingContainer}>
@@ -75,7 +100,7 @@ export default function SubscriptionScreen({ navigation }) {
                 >
                     <ArrowLeft size={24} color="white" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Abonelik Bilyileri</Text>
+                <Text style={styles.headerTitle}>Abonelik Bilgileri</Text>
                 <View style={{ width: 40 }} />
             </View>
 
@@ -134,13 +159,15 @@ export default function SubscriptionScreen({ navigation }) {
                     </View>
                 </View>
 
-                <TouchableOpacity
-                    style={styles.manageButton}
-                    onPress={() => Linking.openURL('https://gastrofolly.com/pricing')}
-                >
-                    <CreditCard size={20} color="#d1d5db" />
-                    <Text style={styles.manageButtonText}>Ödeme Yöntemini Yönet</Text>
-                </TouchableOpacity>
+                {userData?.subscriptionPlan && userData?.subscriptionPlan !== 'FREE' && (
+                    <TouchableOpacity
+                        style={[styles.manageButton, styles.cancelButton]}
+                        onPress={handleCancelSubscription}
+                    >
+                        <LogOut size={20} color="#ef4444" />
+                        <Text style={[styles.manageButtonText, styles.cancelButtonText]}>Aboneliği İptal Et</Text>
+                    </TouchableOpacity>
+                )}
 
                 <Text style={styles.footerText}>
                     Aboneliğinizi web sitemiz üzerinden (gastrofolly.com) yönetebilir veya iptal edebilirsiniz.
@@ -302,7 +329,7 @@ const styles = StyleSheet.create({
         fontWeight: '600',
     },
     cancelButton: {
-        marginTop: -12, // Space it close to the manage button or adjust as needed
+        marginTop: 24,
         backgroundColor: 'rgba(239, 68, 68, 0.1)',
         borderWidth: 1,
         borderColor: 'rgba(239, 68, 68, 0.3)',
