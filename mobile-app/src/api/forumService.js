@@ -101,7 +101,7 @@ const forumService = {
     },
 
     // Create new topic
-    createTopic: async (title, content, categoryId) => {
+    createTopic: async (title, content, categoryId = 'default-category') => {
         try {
             const response = await api.post('/api/forum/topics', {
                 title,
@@ -114,6 +114,23 @@ const forumService = {
             return {
                 success: false,
                 error: error.response?.data?.message || 'Tartışma oluşturulamadı',
+            };
+        }
+    },
+
+    // Create reply to a topic
+    createReply: async (topicId, content, parentId = null) => {
+        try {
+            const response = await api.post(`/api/forum/topics/${topicId}/posts`, {
+                content,
+                parentId,
+            });
+            return { success: true, data: response.data };
+        } catch (error) {
+            console.error('Create reply error:', error);
+            return {
+                success: false,
+                error: error.response?.data?.message || 'Yanıt gönderilemedi',
             };
         }
     },

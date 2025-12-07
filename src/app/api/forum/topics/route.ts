@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/lib/auth'
+import { getAuthUser } from '@/lib/mobileAuth'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(request: NextRequest) {
@@ -96,9 +95,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    
-    if (!session?.user?.id) {
+    const user = await getAuthUser(request)
+
+    if (!user) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
@@ -108,7 +107,7 @@ export async function POST(request: NextRequest) {
     const { title, content, categoryId } = await request.json()
 
     console.log('POST /api/forum/topics - Received data:', { title, content, categoryId })
-    console.log('POST /api/forum/topics - Session user:', session.user)
+    console.log('POST /api/forum/topics - User:', user)
 
     if (!title || !content || !categoryId) {
       console.log('POST /api/forum/topics - Missing required fields')
@@ -124,7 +123,7 @@ export async function POST(request: NextRequest) {
       let defaultCategory = await prisma.forumCategory.findUnique({
         where: { id: 'default-category' }
       })
-      
+
       if (!defaultCategory) {
         console.log('POST /api/forum/topics - Creating default category')
         defaultCategory = await prisma.forumCategory.create({
@@ -160,7 +159,7 @@ export async function POST(request: NextRequest) {
       title,
       content,
       slug: uniqueSlug,
-      authorId: session.user.id,
+      authorId: user.id,
       categoryId: finalCategoryId
     })
 
@@ -169,7 +168,7 @@ export async function POST(request: NextRequest) {
         title,
         content,
         slug: uniqueSlug,
-        authorId: session.user.id,
+        authorId: user.id,
         categoryId: finalCategoryId
       },
       include: {

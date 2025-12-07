@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/lib/auth'
+import { getAuthUser } from '@/lib/mobileAuth'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(
@@ -81,9 +80,9 @@ export async function POST(
 ) {
   try {
     const resolvedParams = await params
-    const session = await getServerSession(authOptions)
-    
-    if (!session?.user?.id) {
+    const user = await getAuthUser(request)
+
+    if (!user) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
@@ -121,7 +120,7 @@ export async function POST(
     const post = await prisma.post.create({
       data: {
         content,
-        authorId: session.user.id,
+        authorId: user.id,
         topicId: resolvedParams.id,
         parentId: parentId || null
       },

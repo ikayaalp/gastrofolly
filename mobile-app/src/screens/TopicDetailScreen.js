@@ -85,6 +85,22 @@ export default function TopicDetailScreen({ route, navigation }) {
         }
     };
 
+    const handleSubmitReply = async () => {
+        if (!replyText.trim()) return;
+
+        setSubmitting(true);
+        const result = await forumService.createReply(topicId, replyText.trim());
+
+        if (result.success) {
+            // Add new reply to the list
+            setPosts(prev => [...prev, result.data]);
+            setReplyText('');
+        } else {
+            Alert.alert('Hata', result.error || 'Yanıt gönderilemedi');
+        }
+        setSubmitting(false);
+    };
+
     const formatTimeAgo = (dateString) => {
         const date = new Date(dateString);
         const now = new Date();
@@ -244,6 +260,7 @@ export default function TopicDetailScreen({ route, navigation }) {
                     <TouchableOpacity
                         style={[styles.replyButton, (!replyText.trim() || submitting) && styles.replyButtonDisabled]}
                         disabled={!replyText.trim() || submitting}
+                        onPress={handleSubmitReply}
                     >
                         {submitting ? (
                             <ActivityIndicator size="small" color="#fff" />
