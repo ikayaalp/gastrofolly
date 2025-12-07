@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
-import { authOptions } from "@/lib/auth"
+import { getAuthUser } from "@/lib/mobileAuth"
 import { prisma } from "@/lib/prisma"
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    
-    if (!session?.user?.id) {
+    const user = await getAuthUser(request)
+
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -21,7 +20,7 @@ export async function POST(request: NextRequest) {
     const existingLike = await prisma.topicLike.findUnique({
       where: {
         userId_topicId: {
-          userId: session.user.id,
+          userId: user.id,
           topicId: topicId
         }
       }
@@ -32,7 +31,7 @@ export async function POST(request: NextRequest) {
       await prisma.topicLike.delete({
         where: {
           userId_topicId: {
-            userId: session.user.id,
+            userId: user.id,
             topicId: topicId
           }
         }
@@ -48,16 +47,16 @@ export async function POST(request: NextRequest) {
         }
       })
 
-      return NextResponse.json({ 
-        success: true, 
+      return NextResponse.json({
+        success: true,
         liked: false,
-        message: "Beğeni kaldırıldı" 
+        message: "Beğeni kaldırıldı"
       })
     } else {
       // Like - add the like
       await prisma.topicLike.create({
         data: {
-          userId: session.user.id,
+          userId: user.id,
           topicId: topicId
         }
       })
@@ -72,10 +71,10 @@ export async function POST(request: NextRequest) {
         }
       })
 
-      return NextResponse.json({ 
-        success: true, 
+      return NextResponse.json({
+        success: true,
         liked: true,
-        message: "Beğenildi" 
+        message: "Beğenildi"
       })
     }
 
@@ -90,9 +89,9 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    
-    if (!session?.user?.id) {
+    const user = await getAuthUser(request)
+
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -107,15 +106,15 @@ export async function GET(request: NextRequest) {
     const existingLike = await prisma.topicLike.findUnique({
       where: {
         userId_topicId: {
-          userId: session.user.id,
+          userId: user.id,
           topicId: topicId
         }
       }
     })
 
-    return NextResponse.json({ 
-      success: true, 
-      liked: !!existingLike 
+    return NextResponse.json({
+      success: true,
+      liked: !!existingLike
     })
 
   } catch (error) {
@@ -126,3 +125,4 @@ export async function GET(request: NextRequest) {
     )
   }
 }
+

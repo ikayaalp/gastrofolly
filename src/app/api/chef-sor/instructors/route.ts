@@ -1,20 +1,19 @@
-import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { NextRequest, NextResponse } from 'next/server'
+import { getAuthUser } from '@/lib/mobileAuth'
 import { prisma } from '@/lib/prisma'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
     try {
-        const session = await getServerSession(authOptions)
+        const user = await getAuthUser(request)
 
-        if (!session?.user?.id) {
+        if (!user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
         // Kullanıcının kayıtlı olduğu kursları ve hocalarını getir
         const enrollments = await prisma.enrollment.findMany({
             where: {
-                userId: session.user.id
+                userId: user.id
             },
             include: {
                 course: {
@@ -67,3 +66,4 @@ export async function GET() {
         )
     }
 }
+

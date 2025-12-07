@@ -8,7 +8,8 @@ import HomeScreen from '../screens/HomeScreen';
 import CoursesScreen from '../screens/CoursesScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import SocialScreen from '../screens/SocialScreen';
-import MessagesScreen from '../screens/MessagesScreen';
+import ChefSorScreen from '../screens/ChefSorScreen';
+import TopicDetailScreen from '../screens/TopicDetailScreen';
 import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
 import EmailVerificationScreen from '../screens/EmailVerificationScreen';
@@ -19,6 +20,7 @@ import { Home, BookOpen, Users, MessageCircle } from 'lucide-react-native';
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 const HomeStack = createNativeStackNavigator();
+const SocialStack = createNativeStackNavigator();
 
 // Home Stack Navigator (includes CourseDetail)
 function HomeStackNavigator() {
@@ -30,13 +32,23 @@ function HomeStackNavigator() {
     );
 }
 
+// Social Stack Navigator (includes TopicDetail)
+function SocialStackNavigator() {
+    return (
+        <SocialStack.Navigator screenOptions={{ headerShown: false }}>
+            <SocialStack.Screen name="SocialMain" component={SocialScreen} />
+            <SocialStack.Screen name="TopicDetail" component={TopicDetailScreen} />
+        </SocialStack.Navigator>
+    );
+}
+
 function TabNavigator() {
     return (
         <Tab.Navigator
             screenOptions={{
                 headerShown: false,
-                tabBarActiveTintColor: '#ffffff',
-                tabBarInactiveTintColor: '#b3b3b3',
+                tabBarActiveTintColor: '#ea580c',
+                tabBarInactiveTintColor: '#9ca3af',
                 tabBarStyle: {
                     backgroundColor: '#000000',
                     borderTopColor: '#1a1a1a',
@@ -78,7 +90,7 @@ function TabNavigator() {
             />
             <Tab.Screen
                 name="Social"
-                component={SocialScreen}
+                component={SocialStackNavigator}
                 options={{
                     tabBarLabel: 'Sosyal',
                     tabBarIcon: ({ color, size }) => (
@@ -87,10 +99,10 @@ function TabNavigator() {
                 }}
             />
             <Tab.Screen
-                name="Messages"
-                component={MessagesScreen}
+                name="ChefSor"
+                component={ChefSorScreen}
                 options={{
-                    tabBarLabel: 'Mesajlar',
+                    tabBarLabel: "Chef'e Sor",
                     tabBarIcon: ({ color, size }) => (
                         <MessageCircle size={24} color={color} />
                     ),
@@ -112,3 +124,4 @@ export default function AppNavigator() {
         </NavigationContainer>
     );
 }
+
