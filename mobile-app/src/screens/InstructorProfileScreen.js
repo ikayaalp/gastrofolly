@@ -9,9 +9,10 @@ import {
     Dimensions,
     StatusBar,
     Image,
+    Share,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { ArrowLeft, Star, Users, BookOpen, Award } from 'lucide-react-native';
+import { ArrowLeft, Star, Users, BookOpen, Award, Share2, Play } from 'lucide-react-native';
 import axios from 'axios';
 import config from '../api/config';
 
@@ -64,6 +65,17 @@ export default function InstructorProfileScreen({ navigation, route }) {
         return (ratings.reduce((sum, c) => sum + c.averageRating, 0) / ratings.length).toFixed(1);
     };
 
+    const handleShare = async () => {
+        try {
+            await Share.share({
+                message: `${instructorName || instructor?.name || 'Eğitmen'} profilini incele!`,
+                // url: `https://gastrofolly.com/instructor/${instructorId}` // Web URL if available
+            });
+        } catch (error) {
+            console.log(error.message);
+        }
+    };
+
     if (loading) {
         return (
             <View style={styles.loadingContainer}>
@@ -84,6 +96,13 @@ export default function InstructorProfileScreen({ navigation, route }) {
                     onPress={() => navigation.goBack()}
                 >
                     <ArrowLeft size={24} color="white" />
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={styles.shareButton}
+                    onPress={handleShare}
+                >
+                    <Share2 size={24} color="white" />
                 </TouchableOpacity>
             </View>
 
@@ -119,12 +138,6 @@ export default function InstructorProfileScreen({ navigation, route }) {
                             <Text style={styles.statLabel}>ÖĞRENCİ</Text>
                         </View>
                     </View>
-
-                    {/* Action Buttons */}
-                    <TouchableOpacity style={styles.messageButton}>
-                        <Users size={20} color="white" />
-                        <Text style={styles.messageButtonText}>Chef'e Sor</Text>
-                    </TouchableOpacity>
                 </View>
 
                 {/* About Section */}
@@ -225,8 +238,19 @@ const styles = StyleSheet.create({
         paddingTop: 50,
         paddingHorizontal: 20,
         paddingBottom: 10,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
     },
     backButton: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: '#1f2937',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    shareButton: {
         width: 40,
         height: 40,
         borderRadius: 20,

@@ -170,6 +170,7 @@ export default function AppNavigator() {
                 <Stack.Screen name="Register" component={RegisterScreen} />
                 <Stack.Screen name="EmailVerification" component={EmailVerificationScreen} />
                 <Stack.Screen name="Main" component={TabNavigator} />
+                <Stack.Screen name="Profile" component={ProfileScreen} />
             </Stack.Navigator>
         </NavigationContainer>
     );

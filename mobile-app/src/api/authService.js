@@ -121,6 +121,21 @@ const authService = {
             return null;
         }
     },
+
+    // Refresh user data from server
+    refreshUserData: async () => {
+        try {
+            const response = await api.get('/api/auth/me');
+            if (response.data.user) {
+                await AsyncStorage.setItem('userData', JSON.stringify(response.data.user));
+                return response.data.user;
+            }
+            return null;
+        } catch (error) {
+            console.error('Refresh user data error:', error);
+            return null;
+        }
+    },
 };
 
 export default authService;
