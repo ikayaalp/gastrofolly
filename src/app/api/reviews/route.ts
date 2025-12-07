@@ -116,3 +116,62 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
+
+// DELETE a review
+export async function DELETE(request: NextRequest) {
+  try {
+    // Try NextAuth session first
+    let userId = null
+    const session = await getServerSession(authOptions)
+
+    if (session?.user?.id) {
+      userId = session.user.id
+    } else {
+      // Try JWT token for mobile
+      const authHeader = request.headers.get('authorization')
+      if (authHeader?.startsWith('Bearer ')) {
+        const token = authHeader.substring(7)
+        try {
+          const decoded = jwt.verify(token, process.env.NEXTAUTH_SECRET || 'your-secret-key') as { userId: string }
+          userId = decoded.userId
+        } catch (e) {
+          // Invalid token
+        }
+      }
+    }
+
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { searchParams } = new URL(request.url)
+    const reviewId = searchParams.get('reviewId')
+
+    if (!reviewId) {
+      return NextResponse.json({ error: 'reviewId is required' }, { status: 400 })
+    }
+
+    // Check if the review exists and belongs to the user
+    const review = await prisma.review.findUnique({
+      where: { id: reviewId }
+    })
+
+    if (!review) {
+      return NextResponse.json({ error: 'Review not found' }, { status: 404 })
+    }
+
+    if (review.userId !== userId) {
+      return NextResponse.json({ error: 'You can only delete your own reviews' }, { status: 403 })
+    }
+
+    // Delete the review
+    await prisma.review.delete({
+      where: { id: reviewId }
+    })
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Review deletion error:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}

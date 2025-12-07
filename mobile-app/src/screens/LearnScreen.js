@@ -13,6 +13,7 @@ import {
     KeyboardAvoidingView,
     Platform,
     Keyboard,
+    Modal,
 } from 'react-native';
 import { Video, ResizeMode } from 'expo-av';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -36,6 +37,8 @@ import {
     List,
     Star,
     Send,
+    MessageSquarePlus,
+    Trash2,
 } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
@@ -67,6 +70,8 @@ export default function LearnScreen({ route, navigation }) {
     const [reviews, setReviews] = useState([]);
     const [averageRating, setAverageRating] = useState(0);
     const [loadingReviews, setLoadingReviews] = useState(false);
+    const [showReviewModal, setShowReviewModal] = useState(false);
+    const [currentUserId, setCurrentUserId] = useState(null);
     const controlsOpacity = useRef(new Animated.Value(1)).current;
     const controlsTimeout = useRef(null);
     const scrollViewRef = useRef(null);
@@ -97,6 +102,11 @@ export default function LearnScreen({ route, navigation }) {
         try {
             setLoading(true);
             const token = await AsyncStorage.getItem('authToken');
+            const userDataStr = await AsyncStorage.getItem('userData');
+            if (userDataStr) {
+                const userData = JSON.parse(userDataStr);
+                setCurrentUserId(userData.id || userData.userId);
+            }
 
             // Fetch course details
             const courseResponse = await axios.get(
@@ -160,6 +170,36 @@ export default function LearnScreen({ route, navigation }) {
             loadReviews();
         }
     }, [activeTab]);
+
+    // Delete a review
+    const deleteReview = async (reviewId) => {
+        Alert.alert(
+            'Yorumu Sil',
+            'Bu yorumu silmek istediğinize emin misiniz?',
+            [
+                { text: 'İptal', style: 'cancel' },
+                {
+                    text: 'Sil',
+                    style: 'destructive',
+                    onPress: async () => {
+                        try {
+                            const token = await AsyncStorage.getItem('authToken');
+                            await axios.delete(
+                                `${config.API_BASE_URL}/api/reviews?reviewId=${reviewId}`,
+                                { headers: { Authorization: `Bearer ${token}` } }
+                            );
+                            // Remove from local state
+                            setReviews(prev => prev.filter(r => r.id !== reviewId));
+                            Alert.alert('Başarılı', 'Yorum silindi');
+                        } catch (error) {
+                            console.log('Delete review error:', error);
+                            Alert.alert('Hata', 'Yorum silinemedi');
+                        }
+                    }
+                }
+            ]
+        );
+    };
 
     // Hide controls after delay
     const hideControlsWithDelay = useCallback(() => {
@@ -525,7 +565,21 @@ export default function LearnScreen({ route, navigation }) {
             {/* Course Info Header */}
             <View style={styles.courseHeader}>
                 <Text style={styles.courseTitle} numberOfLines={2}>{course.title}</Text>
-                <Text style={styles.instructorName}>{course.instructor?.name || 'Eğitmen'}</Text>
+                <TouchableOpacity
+                    onPress={() => navigation.navigate('InstructorProfile', {
+                        instructorId: course.instructor?.id || course.instructorId,
+                        instructorName: course.instructor?.name,
+                        instructorImage: course.instructor?.image,
+                    })}
+                    disabled={!course.instructor?.id && !course.instructorId}
+                >
+                    <Text style={[
+                        styles.instructorName,
+                        (course.instructor?.id || course.instructorId) && styles.instructorNameClickable
+                    ]}>
+                        {course.instructor?.name || 'Eğitmen'}
+                    </Text>
+                </TouchableOpacity>
             </View>
 
             {/* Tab Navigation */}
@@ -623,68 +677,9 @@ export default function LearnScreen({ route, navigation }) {
                     </View>
                 )}
 
-                {/* YORUMLAR TAB - Minimalist Design */}
+                {/* YORUMLAR TAB - Reviews List + FAB */}
                 {activeTab === 'reviews' && (
                     <View style={styles.reviewSectionMinimal}>
-                        {/* Star Rating */}
-                        <Text style={styles.reviewTitleMinimal}>Bu kursu nasıl buldunuz?</Text>
-
-                        <View style={styles.starsContainerMinimal}>
-                            {[1, 2, 3, 4, 5].map((star) => (
-                                <TouchableOpacity
-                                    key={star}
-                                    onPress={() => setRating(star)}
-                                    style={styles.starButtonMinimal}
-                                >
-                                    <Star
-                                        size={36}
-                                        color={star <= rating ? '#ea580c' : '#374151'}
-                                        fill={star <= rating ? '#ea580c' : 'transparent'}
-                                    />
-                                </TouchableOpacity>
-                            ))}
-                        </View>
-
-                        <Text style={styles.ratingHintMinimal}>
-                            {rating === 0 ? 'Puanınızı seçin' :
-                                rating === 1 ? 'Çok Kötü' :
-                                    rating === 2 ? 'Kötü' :
-                                        rating === 3 ? 'Orta' :
-                                            rating === 4 ? 'İyi' : 'Mükemmel!'}
-                        </Text>
-
-                        {/* Review Input */}
-                        <TextInput
-                            style={styles.reviewInputMinimal}
-                            placeholder="Yorumunuz (isteğe bağlı)"
-                            placeholderTextColor="#6b7280"
-                            value={reviewText}
-                            onChangeText={setReviewText}
-                            multiline
-                            numberOfLines={3}
-                            onFocus={() => {
-                                setTimeout(() => {
-                                    scrollViewRef.current?.scrollToEnd({ animated: true });
-                                }, 300);
-                            }}
-                        />
-
-                        {/* Submit Button */}
-                        <TouchableOpacity
-                            style={[
-                                styles.submitButtonMinimal,
-                                (rating === 0 || submittingReview) && styles.submitButtonDisabledMinimal
-                            ]}
-                            onPress={submitReview}
-                            disabled={rating === 0 || submittingReview}
-                        >
-                            {submittingReview ? (
-                                <ActivityIndicator size="small" color="white" />
-                            ) : (
-                                <Text style={styles.submitButtonTextMinimal}>Gönder</Text>
-                            )}
-                        </TouchableOpacity>
-
                         {/* Reviews Summary */}
                         {reviews.length > 0 && (
                             <View style={styles.reviewsSummary}>
@@ -711,7 +706,7 @@ export default function LearnScreen({ route, navigation }) {
                                                 {review.user?.name?.charAt(0).toUpperCase() || '?'}
                                             </Text>
                                         </View>
-                                        <View>
+                                        <View style={{ flex: 1 }}>
                                             <Text style={styles.reviewUserName}>
                                                 {review.user?.name || 'Anonim'}
                                             </Text>
@@ -726,6 +721,15 @@ export default function LearnScreen({ route, navigation }) {
                                                 ))}
                                             </View>
                                         </View>
+                                        {/* Delete button - only for own reviews */}
+                                        {review.user?.id === currentUserId && (
+                                            <TouchableOpacity
+                                                style={styles.deleteReviewButton}
+                                                onPress={() => deleteReview(review.id)}
+                                            >
+                                                <Trash2 size={18} color="#ef4444" />
+                                            </TouchableOpacity>
+                                        )}
                                     </View>
                                 </View>
                                 {review.comment && (
@@ -735,8 +739,15 @@ export default function LearnScreen({ route, navigation }) {
                         ))}
 
                         {!loadingReviews && reviews.length === 0 && (
-                            <Text style={styles.noReviewsText}>Henüz değerlendirme yok. İlk siz değerlendirin!</Text>
+                            <View style={styles.emptyReviews}>
+                                <MessageSquarePlus size={48} color="#4b5563" />
+                                <Text style={styles.noReviewsText}>Henüz değerlendirme yok</Text>
+                                <Text style={styles.noReviewsSubtext}>İlk yorumu siz yapın!</Text>
+                            </View>
                         )}
+
+                        {/* Bottom padding for FAB */}
+                        <View style={{ height: 80 }} />
                     </View>
                 )}
 
@@ -774,6 +785,111 @@ export default function LearnScreen({ route, navigation }) {
                     </View>
                 )}
             </ScrollView>
+
+            {/* FAB Button - Fixed position outside ScrollView */}
+            {activeTab === 'reviews' && (
+                <TouchableOpacity
+                    style={styles.reviewFab}
+                    onPress={() => setShowReviewModal(true)}
+                >
+                    <MessageSquarePlus size={24} color="white" />
+                </TouchableOpacity>
+            )}
+
+            {/* Review Modal */}
+            <Modal
+                visible={showReviewModal}
+                transparent={true}
+                animationType="slide"
+                onRequestClose={() => setShowReviewModal(false)}
+            >
+                <KeyboardAvoidingView
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                    style={styles.reviewModalOverlay}
+                >
+                    <TouchableOpacity
+                        style={styles.modalBackdrop}
+                        activeOpacity={1}
+                        onPress={() => {
+                            Keyboard.dismiss();
+                            setShowReviewModal(false);
+                            setRating(0);
+                            setReviewText('');
+                        }}
+                    />
+                    <View style={styles.reviewModalContent}>
+                        <Text style={styles.reviewModalTitle}>Değerlendirme Yap</Text>
+
+                        {/* Star Rating */}
+                        <View style={styles.starsContainerMinimal}>
+                            {[1, 2, 3, 4, 5].map((star) => (
+                                <TouchableOpacity
+                                    key={star}
+                                    onPress={() => setRating(star)}
+                                    style={styles.starButtonMinimal}
+                                >
+                                    <Star
+                                        size={36}
+                                        color={star <= rating ? '#ea580c' : '#374151'}
+                                        fill={star <= rating ? '#ea580c' : 'transparent'}
+                                    />
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+
+                        <Text style={styles.ratingHintMinimal}>
+                            {rating === 0 ? 'Puanınızı seçin' :
+                                rating === 1 ? 'Çok Kötü' :
+                                    rating === 2 ? 'Kötü' :
+                                        rating === 3 ? 'Orta' :
+                                            rating === 4 ? 'İyi' : 'Mükemmel!'}
+                        </Text>
+
+                        {/* Review Input */}
+                        <TextInput
+                            style={styles.reviewInputMinimal}
+                            placeholder="Yorumunuz (isteğe bağlı)"
+                            placeholderTextColor="#6b7280"
+                            value={reviewText}
+                            onChangeText={setReviewText}
+                            multiline
+                            numberOfLines={4}
+                        />
+
+                        {/* Buttons */}
+                        <View style={styles.reviewModalButtons}>
+                            <TouchableOpacity
+                                style={styles.reviewModalCancel}
+                                onPress={() => {
+                                    setShowReviewModal(false);
+                                    setRating(0);
+                                    setReviewText('');
+                                }}
+                            >
+                                <Text style={styles.reviewModalCancelText}>İptal</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                style={[
+                                    styles.submitButtonMinimal,
+                                    (rating === 0 || submittingReview) && styles.submitButtonDisabledMinimal
+                                ]}
+                                onPress={async () => {
+                                    await submitReview();
+                                    setShowReviewModal(false);
+                                }}
+                                disabled={rating === 0 || submittingReview}
+                            >
+                                {submittingReview ? (
+                                    <ActivityIndicator size="small" color="white" />
+                                ) : (
+                                    <Text style={styles.submitButtonTextMinimal}>Gönder</Text>
+                                )}
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </KeyboardAvoidingView>
+            </Modal>
         </KeyboardAvoidingView>
     );
 }
@@ -987,6 +1103,10 @@ const styles = StyleSheet.create({
     instructorName: {
         color: '#9ca3af',
         fontSize: 14,
+    },
+    instructorNameClickable: {
+        color: '#ea580c',
+        textDecorationLine: 'underline',
     },
 
     // Tab Navigation
@@ -1222,10 +1342,7 @@ const styles = StyleSheet.create({
     // Reviews Summary
     reviewsSummary: {
         width: '100%',
-        marginTop: 24,
-        paddingTop: 24,
-        borderTopWidth: 1,
-        borderTopColor: '#1f2937',
+        marginBottom: 16,
     },
     summaryHeader: {
         flexDirection: 'row',
@@ -1292,11 +1409,82 @@ const styles = StyleSheet.create({
         marginTop: 12,
         lineHeight: 20,
     },
+    deleteReviewButton: {
+        padding: 8,
+        marginLeft: 8,
+    },
     noReviewsText: {
         color: '#6b7280',
+        fontSize: 16,
+        textAlign: 'center',
+        marginTop: 12,
+    },
+    noReviewsSubtext: {
+        color: '#4b5563',
         fontSize: 14,
         textAlign: 'center',
-        marginTop: 24,
+        marginTop: 4,
+    },
+    emptyReviews: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 60,
+    },
+    reviewFab: {
+        position: 'absolute',
+        bottom: 20,
+        right: 20,
+        width: 56,
+        height: 56,
+        borderRadius: 28,
+        backgroundColor: '#ea580c',
+        justifyContent: 'center',
+        alignItems: 'center',
+        elevation: 8,
+        shadowColor: '#ea580c',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.4,
+        shadowRadius: 8,
+    },
+    reviewModalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.8)',
+        justifyContent: 'flex-end',
+    },
+    modalBackdrop: {
+        flex: 1,
+    },
+    reviewModalContent: {
+        backgroundColor: '#111',
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
+        padding: 24,
+        paddingBottom: 40,
+    },
+    reviewModalTitle: {
+        color: 'white',
+        fontSize: 20,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        marginBottom: 20,
+    },
+    reviewModalButtons: {
+        flexDirection: 'row',
+        gap: 12,
+        marginTop: 8,
+    },
+    reviewModalCancel: {
+        flex: 1,
+        paddingVertical: 14,
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: '#374151',
+        alignItems: 'center',
+    },
+    reviewModalCancelText: {
+        color: '#9ca3af',
+        fontSize: 16,
+        fontWeight: '600',
     },
 
     // Legacy content section (keep for compatibility)

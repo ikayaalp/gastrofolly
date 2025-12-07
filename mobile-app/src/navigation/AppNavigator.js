@@ -18,6 +18,7 @@ import EmailVerificationScreen from '../screens/EmailVerificationScreen';
 import CourseDetailScreen from '../screens/CourseDetailScreen';
 import LearnScreen from '../screens/LearnScreen';
 import WelcomeScreen from '../screens/WelcomeScreen';
+import InstructorProfileScreen from '../screens/InstructorProfileScreen';
 
 import { Home, BookOpen, Users, MessageCircle } from 'lucide-react-native';
 
@@ -34,6 +35,7 @@ function HomeStackNavigator() {
             <HomeStack.Screen name="HomeMain" component={HomeScreen} />
             <HomeStack.Screen name="CourseDetail" component={CourseDetailScreen} />
             <HomeStack.Screen name="Learn" component={LearnScreen} />
+            <HomeStack.Screen name="InstructorProfile" component={InstructorProfileScreen} />
         </HomeStack.Navigator>
     );
 }
@@ -45,6 +47,7 @@ function CoursesStackNavigator() {
             <CoursesStack.Screen name="CoursesMain" component={CoursesScreen} />
             <CoursesStack.Screen name="CourseDetail" component={CourseDetailScreen} />
             <CoursesStack.Screen name="Learn" component={LearnScreen} />
+            <CoursesStack.Screen name="InstructorProfile" component={InstructorProfileScreen} />
         </CoursesStack.Navigator>
     );
 }
