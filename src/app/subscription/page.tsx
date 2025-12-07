@@ -18,7 +18,11 @@ function SubscriptionContent() {
 
     const handleSubscription = (planName: string) => {
         if (!session) {
-            router.push(`/auth/signin?callbackUrl=/subscription${courseId ? `?courseId=${courseId}` : ''}`)
+            // Include plan and courseId in callback URL so user returns here after login
+            const callbackParams = new URLSearchParams()
+            callbackParams.set('plan', planName)
+            if (courseId) callbackParams.set('courseId', courseId)
+            router.push(`/auth/signin?callbackUrl=/subscription?${callbackParams.toString()}`)
             return
         }
 

@@ -88,30 +88,42 @@ export default function HomeScreen({ navigation }) {
         const courseData = course.course || course;
         const imageUrl = courseData.imageUrl || 'https://images.unsplash.com/photo-1556910103-1c02745a30bf?q=80&w=400';
         const avgRating = calculateAverageRating(courseData.reviews);
+        const instructorFirstName = courseData.instructor?.name?.split(' ')[0] || 'Eğitmen';
 
         return (
             <TouchableOpacity
                 key={courseData.id || index}
                 style={styles.courseCard}
                 onPress={() => navigation.navigate('CourseDetail', { courseId: courseData.id })}
+                activeOpacity={0.9}
             >
+                {/* Course Image with Overlay */}
                 <Image
                     source={{ uri: imageUrl }}
                     style={styles.courseImage}
                 />
-                <View style={styles.courseContent}>
+
+                {/* Gradient Overlay with Text */}
+                <LinearGradient
+                    colors={['transparent', 'rgba(0,0,0,0.7)', 'rgba(0,0,0,0.95)']}
+                    style={styles.courseOverlay}
+                >
                     <Text style={styles.courseTitle} numberOfLines={2}>{courseData.title}</Text>
                     <View style={styles.courseFooter}>
+                        {/* Instructor with Orange $ Icon */}
                         <View style={styles.instructorBadge}>
-                            <ChefHat size={12} color="#9ca3af" />
+                            <View style={styles.dollarIcon}>
+                                <Text style={styles.dollarText}>$</Text>
+                            </View>
                             <Text style={styles.instructorText}>{courseData.instructor?.name || 'Eğitmen'}</Text>
                         </View>
+                        {/* Star Rating */}
                         <View style={styles.ratingBadge}>
                             <Star size={12} color="#fbbf24" fill="#fbbf24" />
                             <Text style={styles.ratingText}>{avgRating}</Text>
                         </View>
                     </View>
-                </View>
+                </LinearGradient>
             </TouchableOpacity>
         );
     };
@@ -319,28 +331,33 @@ const styles = StyleSheet.create({
         paddingLeft: 16,
     },
     courseCard: {
-        width: 240,
-        height: 220,
+        width: 220,
+        height: 170,
         marginRight: 12,
         borderRadius: 12,
         overflow: 'hidden',
-        backgroundColor: '#1a1a1a',
+        position: 'relative',
     },
     courseImage: {
         width: '100%',
-        height: 140,
+        height: '100%',
         resizeMode: 'cover',
     },
-    courseContent: {
-        padding: 12,
-        flex: 1,
-        justifyContent: 'space-between',
+    courseOverlay: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        paddingHorizontal: 10,
+        paddingBottom: 10,
+        paddingTop: 40,
     },
     courseTitle: {
         color: 'white',
         fontSize: 14,
         fontWeight: 'bold',
-        marginBottom: 4,
+        marginBottom: 6,
+        lineHeight: 18,
     },
     courseFooter: {
         flexDirection: 'row',
@@ -350,7 +367,21 @@ const styles = StyleSheet.create({
     instructorBadge: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 4,
+        gap: 6,
+        flex: 1,
+    },
+    dollarIcon: {
+        width: 16,
+        height: 16,
+        borderRadius: 8,
+        backgroundColor: '#ea580c',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    dollarText: {
+        color: '#000',
+        fontSize: 10,
+        fontWeight: 'bold',
     },
     instructorText: {
         color: '#9ca3af',

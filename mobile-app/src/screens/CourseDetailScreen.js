@@ -9,6 +9,7 @@ import {
     ActivityIndicator,
     Dimensions,
     Alert,
+    Linking,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
@@ -77,13 +78,23 @@ export default function CourseDetailScreen({ route, navigation }) {
     const getLevelInfo = (level) => {
         switch (level) {
             case 'BEGINNER':
-                return { name: 'Commis', color: '#6b7280', price: '199 ₺' };
+                return { name: 'Commis', color: '#6b7280', price: '199 ₺', slug: 'commis' };
             case 'INTERMEDIATE':
-                return { name: 'Chef D party', color: '#ea580c', price: '399 ₺' };
+                return { name: 'Chef D party', color: '#ea580c', price: '399 ₺', slug: 'chef-de-partie' };
             case 'ADVANCED':
-                return { name: 'Executive', color: '#9333ea', price: '599 ₺' };
+                return { name: 'Executive', color: '#9333ea', price: '599 ₺', slug: 'executive' };
             default:
-                return { name: 'Commis', color: '#6b7280', price: '199 ₺' };
+                return { name: 'Commis', color: '#6b7280', price: '199 ₺', slug: 'commis' };
+        }
+    };
+
+    // Open website payment page - uses plan name for redirect
+    const handleSubscribe = async (planName) => {
+        const paymentUrl = `https://gastrofolly.vercel.app/subscription?plan=${encodeURIComponent(planName)}&courseId=${courseId}`;
+        try {
+            await Linking.openURL(paymentUrl);
+        } catch (error) {
+            Alert.alert('Hata', 'Ödeme sayfası açılamadı. Lütfen tarayıcıdan deneyin.');
         }
     };
 
@@ -161,10 +172,11 @@ export default function CourseDetailScreen({ route, navigation }) {
                     {/* Description */}
                     <Text style={styles.description}>{course.description}</Text>
 
-                    {/* Subscribe Button - Moved here */}
+                    {/* Subscribe Button - Opens website payment */}
                     {!isEnrolled && (
                         <TouchableOpacity
                             style={[styles.subscribeButtonInline, { backgroundColor: levelInfo.color }]}
+                            onPress={() => handleSubscribe(levelInfo.name)}
                         >
                             <Text style={styles.subscribeButtonText}>
                                 {levelInfo.name} Paketine Abone Ol - {levelInfo.price}/ay
