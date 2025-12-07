@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     StyleSheet,
     Text,
@@ -10,6 +10,8 @@ import {
     Image,
     TextInput,
     Alert,
+    KeyboardAvoidingView,
+    Platform,
 } from 'react-native';
 import {
     ArrowLeft,
@@ -18,6 +20,7 @@ import {
     Clock,
     User,
     Send,
+    Reply,
 } from 'lucide-react-native';
 import forumService from '../api/forumService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -25,13 +28,15 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export default function TopicDetailScreen({ route, navigation }) {
     const { topicId } = route.params;
     const [topic, setTopic] = useState(null);
-    const [posts, setPosts] = useState([]);
+    const [comments, setComments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [replyText, setReplyText] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [isLiked, setIsLiked] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [likedComments, setLikedComments] = useState(new Set());
+    const [replyingTo, setReplyingTo] = useState(null); // For reply-to-reply
 
     const checkLoginStatus = async () => {
         const token = await AsyncStorage.getItem('authToken');
@@ -43,12 +48,30 @@ export default function TopicDetailScreen({ route, navigation }) {
             const result = await forumService.getTopicDetail(topicId);
             if (result.success) {
                 setTopic(result.data.topic);
-                setPosts(result.data.posts || []);
+
+                // Organize comments with replies
+                const allPosts = result.data.posts || [];
+                const mainComments = allPosts.filter(p => !p.parentId);
+                const replies = allPosts.filter(p => p.parentId);
+
+                // Attach replies to parent comments
+                const commentsWithReplies = mainComments.map(comment => ({
+                    ...comment,
+                    replies: replies.filter(r => r.parentId === comment.id)
+                }));
+
+                setComments(commentsWithReplies);
 
                 // Check if user has liked this topic
                 const likedResult = await forumService.getLikedTopics();
                 if (likedResult.success && likedResult.data.likedTopicIds) {
                     setIsLiked(likedResult.data.likedTopicIds.includes(topicId));
+                }
+
+                // Load liked posts
+                const likedPostsResult = await forumService.getLikedPosts(topicId);
+                if (likedPostsResult.success && likedPostsResult.data.likedPostIds) {
+                    setLikedComments(new Set(likedPostsResult.data.likedPostIds));
                 }
             }
         } catch (error) {
@@ -69,7 +92,7 @@ export default function TopicDetailScreen({ route, navigation }) {
         loadTopicDetail();
     };
 
-    const handleLike = async () => {
+    const handleTopicLike = async () => {
         if (!isLoggedIn) {
             Alert.alert('Giriş Yapın', 'Beğenmek için giriş yapmalısınız.');
             return;
@@ -85,16 +108,82 @@ export default function TopicDetailScreen({ route, navigation }) {
         }
     };
 
+    const handleCommentLike = async (postId) => {
+        if (!isLoggedIn) {
+            Alert.alert('Giriş Yapın', 'Beğenmek için giriş yapmalısınız.');
+            return;
+        }
+
+        const result = await forumService.likePost(postId);
+        if (result.success) {
+            // Update liked comments set
+            setLikedComments(prev => {
+                const newSet = new Set(prev);
+                if (result.data.liked) {
+                    newSet.add(postId);
+                } else {
+                    newSet.delete(postId);
+                }
+                return newSet;
+            });
+
+            // Update like count in comments
+            setComments(prevComments =>
+                prevComments.map(comment => {
+                    if (comment.id === postId) {
+                        return {
+                            ...comment,
+                            likeCount: result.data.liked ? (comment.likeCount || 0) + 1 : (comment.likeCount || 0) - 1
+                        };
+                    }
+                    // Check in replies too
+                    if (comment.replies) {
+                        return {
+                            ...comment,
+                            replies: comment.replies.map(reply => {
+                                if (reply.id === postId) {
+                                    return {
+                                        ...reply,
+                                        likeCount: result.data.liked ? (reply.likeCount || 0) + 1 : (reply.likeCount || 0) - 1
+                                    };
+                                }
+                                return reply;
+                            })
+                        };
+                    }
+                    return comment;
+                })
+            );
+        }
+    };
+
     const handleSubmitReply = async () => {
         if (!replyText.trim()) return;
 
         setSubmitting(true);
-        const result = await forumService.createReply(topicId, replyText.trim());
+        const parentId = replyingTo || null; // If replying to a comment, use parentId
+        const result = await forumService.createReply(topicId, replyText.trim(), parentId);
 
         if (result.success) {
-            // Add new reply to the list
-            setPosts(prev => [...prev, result.data]);
+            if (parentId) {
+                // Add reply to parent comment
+                setComments(prevComments =>
+                    prevComments.map(comment => {
+                        if (comment.id === parentId) {
+                            return {
+                                ...comment,
+                                replies: [...(comment.replies || []), result.data]
+                            };
+                        }
+                        return comment;
+                    })
+                );
+            } else {
+                // Add as new main comment
+                setComments(prev => [...prev, { ...result.data, replies: [] }]);
+            }
             setReplyText('');
+            setReplyingTo(null);
         } else {
             Alert.alert('Hata', result.error || 'Yanıt gönderilemedi');
         }
@@ -156,7 +245,7 @@ export default function TopicDetailScreen({ route, navigation }) {
 
             {/* Actions */}
             <View style={styles.actionsContainer}>
-                <TouchableOpacity style={styles.actionButton} onPress={handleLike}>
+                <TouchableOpacity style={styles.actionButton} onPress={handleTopicLike}>
                     <ThumbsUp
                         size={20}
                         color={isLiked ? '#ea580c' : '#9ca3af'}
@@ -168,33 +257,125 @@ export default function TopicDetailScreen({ route, navigation }) {
                 </TouchableOpacity>
                 <View style={styles.actionButton}>
                     <MessageCircle size={20} color="#9ca3af" />
-                    <Text style={styles.actionText}>{posts.length} Yanıt</Text>
+                    <Text style={styles.actionText}>{comments.length} Yanıt</Text>
                 </View>
             </View>
 
             {/* Replies Header */}
             <View style={styles.repliesHeader}>
-                <Text style={styles.repliesTitle}>Yanıtlar</Text>
+                <Text style={styles.repliesTitle}>Yorumlar ({comments.length})</Text>
             </View>
         </View>
     );
 
-    const renderPostItem = ({ item }) => (
-        <View style={styles.postCard}>
-            <View style={styles.postHeader}>
-                {item.author?.image ? (
-                    <Image source={{ uri: item.author.image }} style={styles.postAvatar} />
+    const renderReply = (reply) => (
+        <View key={reply.id} style={styles.replyCard}>
+            <View style={styles.replyHeader}>
+                {reply.author?.image ? (
+                    <Image source={{ uri: reply.author.image }} style={styles.replyAvatar} />
                 ) : (
-                    <View style={styles.postAvatarPlaceholder}>
+                    <View style={styles.replyAvatarPlaceholder}>
+                        <User size={12} color="#fff" />
+                    </View>
+                )}
+                <View style={styles.replyMeta}>
+                    <Text style={styles.replyAuthor}>{reply.author?.name || 'Anonim'}</Text>
+                    <Text style={styles.replyTime}>{formatTimeAgo(reply.createdAt)}</Text>
+                </View>
+            </View>
+            <Text style={styles.replyContent}>{reply.content}</Text>
+            {/* Reply like button */}
+            {isLoggedIn && (
+                <TouchableOpacity
+                    style={[styles.replyLikeButton, likedComments.has(reply.id) && styles.replyLikeButtonActive]}
+                    onPress={() => handleCommentLike(reply.id)}
+                >
+                    <ThumbsUp size={12} color={likedComments.has(reply.id) ? '#fff' : '#6b7280'} />
+                    <Text style={[styles.replyLikeText, likedComments.has(reply.id) && styles.replyLikeTextActive]}>
+                        {reply.likeCount || 0}
+                    </Text>
+                </TouchableOpacity>
+            )}
+        </View>
+    );
+
+    const renderCommentItem = ({ item }) => (
+        <View style={styles.commentCard}>
+            <View style={styles.commentHeader}>
+                {item.author?.image ? (
+                    <Image source={{ uri: item.author.image }} style={styles.commentAvatar} />
+                ) : (
+                    <View style={styles.commentAvatarPlaceholder}>
                         <User size={16} color="#fff" />
                     </View>
                 )}
-                <View style={styles.postMeta}>
-                    <Text style={styles.postAuthor}>{item.author?.name || 'Anonim'}</Text>
-                    <Text style={styles.postTime}>{formatTimeAgo(item.createdAt)}</Text>
+                <View style={styles.commentMeta}>
+                    <Text style={styles.commentAuthor}>{item.author?.name || 'Anonim'}</Text>
+                    <Text style={styles.commentTime}>{formatTimeAgo(item.createdAt)}</Text>
                 </View>
             </View>
-            <Text style={styles.postContent}>{item.content}</Text>
+            <Text style={styles.commentContent}>{item.content}</Text>
+
+            {/* Comment Actions */}
+            <View style={styles.commentActions}>
+                {isLoggedIn && (
+                    <>
+                        <TouchableOpacity
+                            style={[styles.likeButton, likedComments.has(item.id) && styles.likeButtonActive]}
+                            onPress={() => handleCommentLike(item.id)}
+                        >
+                            <ThumbsUp size={14} color={likedComments.has(item.id) ? '#fff' : '#6b7280'} />
+                            <Text style={[styles.likeButtonText, likedComments.has(item.id) && styles.likeButtonTextActive]}>
+                                {item.likeCount || 0}
+                            </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.replyToButton}
+                            onPress={() => setReplyingTo(replyingTo === item.id ? null : item.id)}
+                        >
+                            <Reply size={14} color="#6b7280" />
+                            <Text style={styles.replyToText}>Yanıtla</Text>
+                        </TouchableOpacity>
+                    </>
+                )}
+            </View>
+
+            {/* Reply Form for this comment */}
+            {replyingTo === item.id && (
+                <View style={styles.inlineReplyForm}>
+                    <TextInput
+                        style={styles.inlineReplyInput}
+                        placeholder="Yanıtınızı yazın..."
+                        placeholderTextColor="#6b7280"
+                        value={replyText}
+                        onChangeText={setReplyText}
+                        multiline
+                    />
+                    <View style={styles.inlineReplyActions}>
+                        <TouchableOpacity onPress={() => { setReplyingTo(null); setReplyText(''); }}>
+                            <Text style={styles.cancelText}>İptal</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[styles.sendButton, (!replyText.trim() || submitting) && styles.sendButtonDisabled]}
+                            onPress={handleSubmitReply}
+                            disabled={!replyText.trim() || submitting}
+                        >
+                            {submitting ? (
+                                <ActivityIndicator size="small" color="#fff" />
+                            ) : (
+                                <Text style={styles.sendButtonText}>Yanıtla</Text>
+                            )}
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            )}
+
+            {/* Nested Replies */}
+            {item.replies && item.replies.length > 0 && (
+                <View style={styles.repliesContainer}>
+                    {item.replies.map(renderReply)}
+                </View>
+            )}
         </View>
     );
 
@@ -220,7 +401,11 @@ export default function TopicDetailScreen({ route, navigation }) {
     }
 
     return (
-        <View style={styles.container}>
+        <KeyboardAvoidingView
+            style={styles.container}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            keyboardVerticalOffset={0}
+        >
             {/* Header */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -231,8 +416,8 @@ export default function TopicDetailScreen({ route, navigation }) {
 
             {/* Content */}
             <FlatList
-                data={posts}
-                renderItem={renderPostItem}
+                data={comments}
+                renderItem={renderCommentItem}
                 keyExtractor={(item) => item.id}
                 ListHeaderComponent={renderHeader}
                 contentContainerStyle={styles.listContent}
@@ -240,25 +425,26 @@ export default function TopicDetailScreen({ route, navigation }) {
                     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ea580c" />
                 }
                 ListEmptyComponent={
-                    <View style={styles.emptyPosts}>
-                        <Text style={styles.emptyPostsText}>Henüz yanıt yok. İlk yanıtı sen yaz!</Text>
+                    <View style={styles.emptyComments}>
+                        <MessageCircle size={48} color="#374151" />
+                        <Text style={styles.emptyCommentsText}>Henüz yorum yok. İlk yorumu siz yapın!</Text>
                     </View>
                 }
             />
 
-            {/* Reply Input */}
-            {isLoggedIn && (
-                <View style={styles.replyContainer}>
+            {/* Main Reply Input (for new main comment) */}
+            {isLoggedIn && !replyingTo && (
+                <View style={styles.replyInputContainer}>
                     <TextInput
                         style={styles.replyInput}
-                        placeholder="Yanıtınızı yazın..."
+                        placeholder="Yorum yazın..."
                         placeholderTextColor="#6b7280"
                         value={replyText}
                         onChangeText={setReplyText}
                         multiline
                     />
                     <TouchableOpacity
-                        style={[styles.replyButton, (!replyText.trim() || submitting) && styles.replyButtonDisabled]}
+                        style={[styles.sendIconButton, (!replyText.trim() || submitting) && styles.sendIconButtonDisabled]}
                         disabled={!replyText.trim() || submitting}
                         onPress={handleSubmitReply}
                     >
@@ -270,7 +456,7 @@ export default function TopicDetailScreen({ route, navigation }) {
                     </TouchableOpacity>
                 </View>
             )}
-        </View>
+        </KeyboardAvoidingView>
     );
 }
 
@@ -303,7 +489,7 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     listContent: {
-        paddingBottom: 100,
+        paddingBottom: 120,
     },
     topicContainer: {
         padding: 16,
@@ -396,60 +582,202 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#fff',
     },
-    postCard: {
+    commentCard: {
         padding: 16,
         borderBottomWidth: 1,
         borderBottomColor: '#1a1a1a',
     },
-    postHeader: {
+    commentHeader: {
         flexDirection: 'row',
         alignItems: 'center',
         marginBottom: 8,
     },
-    postAvatar: {
-        width: 32,
-        height: 32,
-        borderRadius: 16,
+    commentAvatar: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
     },
-    postAvatarPlaceholder: {
-        width: 32,
-        height: 32,
-        borderRadius: 16,
+    commentAvatarPlaceholder: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
         backgroundColor: '#ea580c',
         justifyContent: 'center',
         alignItems: 'center',
     },
-    postMeta: {
+    commentMeta: {
         marginLeft: 10,
     },
-    postAuthor: {
+    commentAuthor: {
         fontSize: 14,
         fontWeight: '600',
         color: '#fff',
     },
-    postTime: {
+    commentTime: {
         fontSize: 12,
         color: '#6b7280',
     },
-    postContent: {
+    commentContent: {
         fontSize: 14,
         color: '#d1d5db',
         lineHeight: 20,
+        marginBottom: 12,
     },
-    emptyPosts: {
-        padding: 40,
+    commentActions: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+    },
+    likeButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+        borderRadius: 8,
+        backgroundColor: '#1a1a1a',
+        gap: 4,
+    },
+    likeButtonActive: {
+        backgroundColor: '#ea580c',
+    },
+    likeButtonText: {
+        fontSize: 12,
+        color: '#6b7280',
+    },
+    likeButtonTextActive: {
+        color: '#fff',
+    },
+    replyToButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+    },
+    replyToText: {
+        fontSize: 12,
+        color: '#6b7280',
+    },
+    inlineReplyForm: {
+        marginTop: 12,
+        padding: 12,
+        backgroundColor: '#1a1a1a',
+        borderRadius: 8,
+        borderLeftWidth: 2,
+        borderLeftColor: '#ea580c',
+    },
+    inlineReplyInput: {
+        color: '#fff',
+        fontSize: 14,
+        minHeight: 60,
+        textAlignVertical: 'top',
+    },
+    inlineReplyActions: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        gap: 16,
+        marginTop: 8,
+    },
+    cancelText: {
+        color: '#9ca3af',
+        fontSize: 14,
+    },
+    sendButton: {
+        backgroundColor: '#ea580c',
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 6,
+    },
+    sendButtonDisabled: {
+        opacity: 0.5,
+    },
+    sendButtonText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: '600',
+    },
+    repliesContainer: {
+        marginTop: 12,
+        marginLeft: 16,
+        borderLeftWidth: 2,
+        borderLeftColor: '#374151',
+        paddingLeft: 12,
+    },
+    replyCard: {
+        backgroundColor: '#1a1a1a',
+        padding: 10,
+        borderRadius: 8,
+        marginBottom: 8,
+    },
+    replyHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 6,
+    },
+    replyAvatar: {
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+    },
+    replyAvatarPlaceholder: {
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        backgroundColor: '#ea580c',
+        justifyContent: 'center',
         alignItems: 'center',
     },
-    emptyPostsText: {
+    replyMeta: {
+        marginLeft: 8,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    replyAuthor: {
+        fontSize: 12,
+        fontWeight: '600',
+        color: '#fff',
+    },
+    replyTime: {
+        fontSize: 10,
+        color: '#6b7280',
+    },
+    replyContent: {
+        fontSize: 13,
+        color: '#d1d5db',
+        lineHeight: 18,
+        marginBottom: 6,
+    },
+    replyLikeButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        alignSelf: 'flex-start',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 4,
+        backgroundColor: '#0a0a0a',
+        gap: 4,
+    },
+    replyLikeButtonActive: {
+        backgroundColor: '#ea580c',
+    },
+    replyLikeText: {
+        fontSize: 11,
+        color: '#6b7280',
+    },
+    replyLikeTextActive: {
+        color: '#fff',
+    },
+    emptyComments: {
+        padding: 40,
+        alignItems: 'center',
+        gap: 12,
+    },
+    emptyCommentsText: {
         fontSize: 14,
         color: '#6b7280',
         textAlign: 'center',
     },
-    replyContainer: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
+    replyInputContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         padding: 16,
@@ -468,7 +796,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         maxHeight: 100,
     },
-    replyButton: {
+    sendIconButton: {
         width: 44,
         height: 44,
         borderRadius: 22,
@@ -476,7 +804,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
-    replyButtonDisabled: {
+    sendIconButtonDisabled: {
         opacity: 0.5,
     },
 });

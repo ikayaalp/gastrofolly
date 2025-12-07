@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
-import { authOptions } from "@/lib/auth"
+import { getAuthUser } from "@/lib/mobileAuth"
 import { prisma } from "@/lib/prisma"
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    
-    if (!session?.user?.id) {
+    const user = await getAuthUser(request)
+
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -21,7 +20,7 @@ export async function GET(request: NextRequest) {
     // Get all posts in this topic that the user has liked
     const likedPosts = await prisma.postLike.findMany({
       where: {
-        userId: session.user.id,
+        userId: user.id,
         post: {
           topicId: topicId
         }
@@ -34,9 +33,9 @@ export async function GET(request: NextRequest) {
     // Return array of post IDs
     const postIds = likedPosts.map(like => like.postId)
 
-    return NextResponse.json({ 
-      success: true, 
-      likedPostIds: postIds 
+    return NextResponse.json({
+      success: true,
+      likedPostIds: postIds
     })
 
   } catch (error) {
@@ -47,3 +46,4 @@ export async function GET(request: NextRequest) {
     )
   }
 }
+

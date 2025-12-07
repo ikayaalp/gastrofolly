@@ -12,6 +12,8 @@ import {
     TextInput,
     Image,
     Alert,
+    KeyboardAvoidingView,
+    Platform,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import {
@@ -335,7 +337,10 @@ export default function SocialScreen({ navigation }) {
                 transparent={true}
                 onRequestClose={() => setShowNewTopicModal(false)}
             >
-                <View style={styles.modalOverlay}>
+                <KeyboardAvoidingView
+                    style={styles.modalOverlay}
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                >
                     <View style={styles.modalContent}>
                         <View style={styles.modalHeader}>
                             <Text style={styles.modalTitle}>Yeni Tartışma</Text>
@@ -383,7 +388,7 @@ export default function SocialScreen({ navigation }) {
                             </TouchableOpacity>
                         </View>
                     </View>
-                </View>
+                </KeyboardAvoidingView>
             </Modal>
         </View>
     );

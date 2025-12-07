@@ -134,6 +134,35 @@ const forumService = {
             };
         }
     },
+
+    // Like/unlike a post (comment)
+    likePost: async (postId) => {
+        try {
+            const response = await api.post('/api/forum/post-like', { postId });
+            return { success: true, data: response.data };
+        } catch (error) {
+            console.error('Post like error:', error);
+            return {
+                success: false,
+                error: error.response?.data?.message || 'Beğeni işlemi başarısız',
+            };
+        }
+    },
+
+    // Get user's liked posts in a topic
+    getLikedPosts: async (topicId) => {
+        try {
+            const response = await api.get(`/api/forum/liked-posts?topicId=${topicId}`);
+            return { success: true, data: response.data };
+        } catch (error) {
+            console.error('Liked posts error:', error);
+            return {
+                success: false,
+                error: error.response?.data?.message || 'Beğenilen yorumlar yüklenemedi',
+            };
+        }
+    },
 };
 
 export default forumService;
+
