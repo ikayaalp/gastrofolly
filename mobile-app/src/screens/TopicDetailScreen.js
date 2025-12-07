@@ -225,6 +225,30 @@ export default function TopicDetailScreen({ route, navigation }) {
         );
     };
 
+    const handleDeleteTopic = async () => {
+        Alert.alert(
+            'Tartışmayı Sil',
+            'Bu tartışmayı silmek istediğinizden emin misiniz? Tüm yorumlar da silinecek.',
+            [
+                { text: 'İptal', style: 'cancel' },
+                {
+                    text: 'Sil',
+                    style: 'destructive',
+                    onPress: async () => {
+                        const result = await forumService.deleteTopic(topicId);
+                        if (result.success) {
+                            Alert.alert('Başarılı', 'Tartışma silindi', [
+                                { text: 'Tamam', onPress: () => navigation.goBack() }
+                            ]);
+                        } else {
+                            Alert.alert('Hata', result.error);
+                        }
+                    }
+                }
+            ]
+        );
+    };
+
     const formatTimeAgo = (dateString) => {
         const date = new Date(dateString);
         const now = new Date();
@@ -456,6 +480,12 @@ export default function TopicDetailScreen({ route, navigation }) {
                     <ArrowLeft size={24} color="#fff" />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle} numberOfLines={1}>Tartışma</Text>
+                {/* Delete button for topic owner */}
+                {currentUserId && topic?.author?.id === currentUserId && (
+                    <TouchableOpacity onPress={handleDeleteTopic} style={styles.headerDeleteButton}>
+                        <Trash2 size={20} color="#ef4444" />
+                    </TouchableOpacity>
+                )}
             </View>
 
             {/* Content */}
@@ -540,6 +570,9 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#fff',
         flex: 1,
+    },
+    headerDeleteButton: {
+        padding: 8,
     },
     listContent: {
         paddingBottom: 120,

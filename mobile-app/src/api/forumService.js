@@ -176,6 +176,20 @@ const forumService = {
             };
         }
     },
+
+    // Delete a topic (discussion) - only own topics
+    deleteTopic: async (topicId) => {
+        try {
+            const response = await api.delete(`/api/forum/topics/${topicId}/delete`);
+            return { success: true, data: response.data };
+        } catch (error) {
+            console.error('Delete topic error:', error);
+            return {
+                success: false,
+                error: error.response?.data?.message || 'Tartışma silinemedi',
+            };
+        }
+    },
 };
 
 export default forumService;
