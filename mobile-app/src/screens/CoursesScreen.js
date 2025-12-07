@@ -1,16 +1,30 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, Text, View, FlatList, Image, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
-import { ChefHat, Star, BookOpen } from 'lucide-react-native';
+import { useFocusEffect, CommonActions } from '@react-navigation/native';
+import { ChefHat, Star, BookOpen, User } from 'lucide-react-native';
 import courseService from '../api/courseService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function CoursesScreen({ navigation }) {
     const [courses, setCourses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+    const checkLoginStatus = async () => {
+        const token = await AsyncStorage.getItem('authToken');
+        setIsLoggedIn(!!token);
+        return !!token;
+    };
 
     const loadCourses = async () => {
         try {
+            const loggedIn = await checkLoginStatus();
+            if (!loggedIn) {
+                setLoading(false);
+                return;
+            }
+
             const result = await courseService.getUserCourses();
             if (result.success) {
                 setCourses(result.data.courses || []);
@@ -44,7 +58,7 @@ export default function CoursesScreen({ navigation }) {
         const courseData = item.course || item;
         const imageUrl = courseData.imageUrl || 'https://images.unsplash.com/photo-1556910103-1c02745a30bf?q=80&w=400';
         const avgRating = calculateAverageRating(courseData.reviews);
-        const progress = item.progress || 0; // Assuming progress is part of enrollment data
+        const progress = item.progress || 0;
 
         return (
             <TouchableOpacity
@@ -79,6 +93,28 @@ export default function CoursesScreen({ navigation }) {
         return (
             <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color="#ea580c" />
+            </View>
+        );
+    }
+
+    // Show login required screen if not logged in
+    if (!isLoggedIn) {
+        return (
+            <View style={styles.container}>
+                <View style={styles.header}>
+                    <Text style={styles.headerTitle}>Kurslarım</Text>
+                </View>
+                <View style={styles.emptyContainer}>
+                    <User size={64} color="#374151" />
+                    <Text style={styles.emptyTitle}>Giriş Yapmalısınız</Text>
+                    <Text style={styles.emptyText}>Kurslarınızı görmek için giriş yapmanız gerekiyor</Text>
+                    <TouchableOpacity
+                        style={styles.browseButton}
+                        onPress={() => navigation.dispatch(CommonActions.navigate({ name: 'Login' }))}
+                    >
+                        <Text style={styles.browseButtonText}>Giriş Yap</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
         );
     }
@@ -129,31 +165,32 @@ const styles = StyleSheet.create({
     header: {
         paddingTop: 60,
         paddingBottom: 20,
-        paddingHorizontal: 20,
+        paddingHorizontal: 16,
         backgroundColor: '#000',
         borderBottomWidth: 1,
         borderBottomColor: '#1a1a1a',
     },
     headerTitle: {
-        fontSize: 28,
+        fontSize: 24,
         fontWeight: 'bold',
-        color: 'white',
+        color: '#ffffff',
     },
     listContent: {
-        padding: 20,
-        paddingBottom: 100, // Bottom nav space
+        padding: 16,
+        paddingBottom: 100,
     },
     courseCard: {
         flexDirection: 'row',
-        backgroundColor: '#1a1a1a',
+        backgroundColor: '#0a0a0a',
         borderRadius: 12,
         marginBottom: 16,
+        borderWidth: 1,
+        borderColor: '#1a1a1a',
         overflow: 'hidden',
-        height: 120,
     },
     courseImage: {
-        width: 120,
-        height: '100%',
+        width: 100,
+        height: 100,
         resizeMode: 'cover',
     },
     courseContent: {
@@ -162,26 +199,25 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
     },
     courseTitle: {
-        color: 'white',
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: 'bold',
+        color: '#ffffff',
         marginBottom: 4,
     },
     instructorContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 6,
-        marginBottom: 8,
+        gap: 4,
     },
     instructorText: {
-        color: '#9ca3af',
         fontSize: 12,
+        color: '#9ca3af',
     },
     progressContainer: {
         height: 4,
-        backgroundColor: '#374151',
+        backgroundColor: '#1a1a1a',
         borderRadius: 2,
-        marginBottom: 4,
+        marginVertical: 8,
     },
     progressBar: {
         height: '100%',
@@ -189,9 +225,8 @@ const styles = StyleSheet.create({
         borderRadius: 2,
     },
     progressText: {
-        color: '#9ca3af',
         fontSize: 10,
-        marginBottom: 4,
+        color: '#9ca3af',
     },
     ratingContainer: {
         flexDirection: 'row',
@@ -199,31 +234,37 @@ const styles = StyleSheet.create({
         gap: 4,
     },
     ratingText: {
-        color: '#d1d5db',
         fontSize: 12,
-        fontWeight: 'bold',
+        color: '#fbbf24',
+        fontWeight: '600',
     },
     emptyContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        padding: 20,
+        paddingHorizontal: 40,
+    },
+    emptyTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#ffffff',
+        marginTop: 16,
+        marginBottom: 8,
     },
     emptyText: {
+        fontSize: 14,
         color: '#9ca3af',
-        fontSize: 16,
-        marginTop: 16,
-        marginBottom: 24,
         textAlign: 'center',
+        marginBottom: 24,
     },
     browseButton: {
         backgroundColor: '#ea580c',
-        paddingVertical: 12,
-        paddingHorizontal: 24,
+        paddingVertical: 14,
+        paddingHorizontal: 32,
         borderRadius: 8,
     },
     browseButtonText: {
-        color: 'white',
+        color: '#ffffff',
         fontSize: 16,
         fontWeight: 'bold',
     },

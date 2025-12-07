@@ -12,6 +12,7 @@ import {
     Alert,
     KeyboardAvoidingView,
     Platform,
+    Keyboard,
 } from 'react-native';
 import {
     ArrowLeft,
@@ -189,6 +190,7 @@ export default function TopicDetailScreen({ route, navigation }) {
             }
             setReplyText('');
             setReplyingTo(null);
+            Keyboard.dismiss();
         } else {
             Alert.alert('Hata', result.error || 'Yanıt gönderilemedi');
         }
@@ -835,6 +837,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         padding: 16,
+        paddingBottom: 100, // Extra padding for tab bar
         backgroundColor: '#0a0a0a',
         borderTopWidth: 1,
         borderTopColor: '#1a1a1a',

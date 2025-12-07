@@ -48,10 +48,11 @@ export default function SocialScreen({ navigation }) {
 
     const loadData = async () => {
         try {
-            const [categoriesResult, topicsResult, likedResult] = await Promise.all([
+            const token = await AsyncStorage.getItem('authToken');
+
+            const [categoriesResult, topicsResult] = await Promise.all([
                 forumService.getCategories(),
                 forumService.getTopics(selectedCategory, sortBy),
-                forumService.getLikedTopics(),
             ]);
 
             if (categoriesResult.success) {
@@ -62,8 +63,12 @@ export default function SocialScreen({ navigation }) {
                 setTopics(topicsResult.data.topics || []);
             }
 
-            if (likedResult.success && likedResult.data.likedTopicIds) {
-                setLikedTopics(new Set(likedResult.data.likedTopicIds));
+            // Only fetch liked topics if logged in
+            if (token) {
+                const likedResult = await forumService.getLikedTopics();
+                if (likedResult.success && likedResult.data.likedTopicIds) {
+                    setLikedTopics(new Set(likedResult.data.likedTopicIds));
+                }
             }
         } catch (error) {
             console.error('Error loading data:', error);
