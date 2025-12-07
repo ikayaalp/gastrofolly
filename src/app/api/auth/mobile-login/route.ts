@@ -61,6 +61,9 @@ export async function POST(request: NextRequest) {
             { expiresIn: '30d' } // 30 days for mobile
         );
 
+        // Check subscription validity
+        const isSubscriptionValid = user.subscriptionEndDate && new Date(user.subscriptionEndDate) > new Date();
+
         // Return token and user data
         return NextResponse.json({
             token,
@@ -70,6 +73,9 @@ export async function POST(request: NextRequest) {
                 email: user.email,
                 role: user.role,
                 image: user.image,
+                subscriptionPlan: user.subscriptionPlan,
+                subscriptionEndDate: user.subscriptionEndDate,
+                isSubscriptionValid: isSubscriptionValid,
             },
         });
     } catch (error) {

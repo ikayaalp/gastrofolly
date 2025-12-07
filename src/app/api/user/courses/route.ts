@@ -105,7 +105,8 @@ export async function GET(request: NextRequest) {
       }))
 
     return NextResponse.json({
-      enrollments: enrollments
+      courses: enrollments,
+      enrollments: enrollments // backward compatibility
     })
   } catch (error) {
     console.error('Error fetching user courses:', error)

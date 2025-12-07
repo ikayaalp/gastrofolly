@@ -2,8 +2,9 @@
 
 import Link from "next/link"
 import { useState, useEffect } from "react"
-import { ChefHat, ArrowLeft, MessageCircle, ThumbsUp, Clock, User, Search, Bell, Home, BookOpen, Users } from "lucide-react"
+import { ChefHat, ArrowLeft, MessageCircle, ThumbsUp, Clock, User, Search, Bell, Home, BookOpen, Users, Trash2 } from "lucide-react"
 import UserDropdown from "@/components/ui/UserDropdown"
+import { useRouter } from "next/navigation"
 
 interface Author {
   id: string
@@ -66,6 +67,8 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
   const [likeCount, setLikeCount] = useState(topic.likeCount)
   const [likedComments, setLikedComments] = useState<Set<string>>(new Set())
   const [showCommentForm, setShowCommentForm] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const router = useRouter()
 
   // Sayfa yüklendiğinde kullanıcının bu başlığı beğenip beğenmediğini kontrol et
   useEffect(() => {
@@ -215,6 +218,31 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
         <User className="h-5 w-5 text-white" />
       </div>
     )
+  }
+
+  // Tartışmayı sil
+  const handleDeleteTopic = async () => {
+    if (!confirm('Bu tartışmayı silmek istediğinizden emin misiniz? Tüm yorumlar da silinecek.')) return
+
+    setDeleting(true)
+    try {
+      const response = await fetch(`/api/forum/topics/${topic.id}/delete`, {
+        method: 'DELETE'
+      })
+
+      if (response.ok) {
+        alert('Tartışma silindi')
+        router.push('/chef-sosyal')
+      } else {
+        const error = await response.json()
+        alert('Hata: ' + error.error)
+      }
+    } catch (error) {
+      console.error('Error deleting topic:', error)
+      alert('Tartışma silinirken hata oluştu')
+    } finally {
+      setDeleting(false)
+    }
   }
 
   // Yorum ekle
@@ -462,6 +490,17 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
                       <MessageCircle className="h-3.5 w-3.5 mr-1" />
                       <span>{comments.length}</span>
                     </button>
+                    {/* Delete button for topic owner */}
+                    {session?.user && (
+                      <button
+                        onClick={handleDeleteTopic}
+                        disabled={deleting}
+                        className="flex items-center text-red-400 hover:text-red-300 transition-colors"
+                      >
+                        <Trash2 className="h-3.5 w-3.5 mr-1" />
+                        <span>{deleting ? 'Siliniyor...' : 'Sil'}</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

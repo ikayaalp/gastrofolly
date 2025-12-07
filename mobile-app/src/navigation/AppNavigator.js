@@ -3,7 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, View, Platform } from 'react-native';
 
 // Screens
 import HomeScreen from '../screens/HomeScreen';
@@ -55,8 +55,8 @@ function TabNavigator() {
                 tabBarStyle: {
                     backgroundColor: '#000000',
                     borderTopColor: '#1a1a1a',
-                    height: 85,
-                    paddingBottom: 20,
+                    height: Platform.OS === 'android' ? 65 : 85,
+                    paddingBottom: Platform.OS === 'android' ? 10 : 20,
                     paddingTop: 8,
                     position: 'absolute',
                     bottom: 0,
