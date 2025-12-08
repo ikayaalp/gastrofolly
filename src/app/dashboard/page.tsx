@@ -74,7 +74,7 @@ export default async function DashboardPage() {
   return (
     <div className="min-h-screen bg-black">
       {/* Desktop Header */}
-      <header className="hidden md:block bg-gray-900/30 border-b border-gray-800">
+      <header className="hidden md:block fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-8">
@@ -88,9 +88,6 @@ export default async function DashboardPage() {
               <nav className="hidden md:flex space-x-6">
                 <Link href="/home" className="text-gray-300 hover:text-white transition-colors">
                   Ana Sayfa
-                </Link>
-                <Link href="/dashboard" className="text-white font-semibold">
-                  Dashboard
                 </Link>
                 <Link href="/my-courses" className="text-gray-300 hover:text-white transition-colors">
                   Kurslarım
@@ -107,9 +104,6 @@ export default async function DashboardPage() {
                 )}
                 <Link href="/chef-sosyal" className="text-gray-300 hover:text-white transition-colors">
                   Chef Sosyal
-                </Link>
-                <Link href="/chef-sor" className="text-gray-300 hover:text-white transition-colors">
-                  Chef&apos;e Sor
                 </Link>
                 <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
                   İletişim
@@ -137,7 +131,7 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-20 md:pt-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-20 md:pt-24">
         {/* Welcome Section */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">
@@ -150,7 +144,7 @@ export default async function DashboardPage() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-lg p-6">
+          <div className="bg-black border border-gray-800 rounded-xl shadow-lg p-6">
             <div className="flex items-center">
               <div className="bg-orange-500/20 p-3 rounded-full mr-4">
                 <BookOpen className="h-6 w-6 text-orange-500" />
@@ -162,7 +156,7 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-lg p-6">
+          <div className="bg-black border border-gray-800 rounded-xl shadow-lg p-6">
             <div className="flex items-center">
               <div className="bg-green-500/20 p-3 rounded-full mr-4">
                 <Play className="h-6 w-6 text-green-500" />
@@ -174,7 +168,7 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-lg p-6">
+          <div className="bg-black border border-gray-800 rounded-xl shadow-lg p-6">
             <div className="flex items-center">
               <div className="bg-blue-500/20 p-3 rounded-full mr-4">
                 <BarChart3 className="h-6 w-6 text-blue-500" />
@@ -188,7 +182,7 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-lg p-6">
+          <div className="bg-black border border-gray-800 rounded-xl shadow-lg p-6">
             <div className="flex items-center">
               <div className="bg-orange-500/20 p-3 rounded-full mr-4">
                 <Award className="h-6 w-6 text-orange-500" />
@@ -204,7 +198,7 @@ export default async function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* My Courses */}
           <div className="lg:col-span-2">
-            <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-lg p-6">
+            <div className="bg-black border border-gray-800 rounded-xl shadow-lg p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-white">Kurslarım</h2>
                 <Link
@@ -299,7 +293,7 @@ export default async function DashboardPage() {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Quick Actions */}
-            <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-lg p-6">
+            <div className="bg-black border border-gray-800 rounded-xl shadow-lg p-6">
               <h3 className="text-lg font-semibold text-white mb-4">
                 Hızlı Erişim
               </h3>
@@ -329,7 +323,7 @@ export default async function DashboardPage() {
             </div>
 
             {/* Recent Activity */}
-            <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-lg p-6">
+            <div className="bg-black border border-gray-800 rounded-xl shadow-lg p-6">
               <h3 className="text-lg font-semibold text-white mb-4">
                 Son Aktiviteler
               </h3>

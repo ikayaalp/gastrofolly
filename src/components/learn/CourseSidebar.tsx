@@ -10,8 +10,7 @@ import {
   Clock,
   X,
   Menu,
-  ArrowLeft,
-  Circle
+  ArrowLeft
 } from "lucide-react"
 
 interface CourseSidebarProps {
@@ -21,6 +20,7 @@ interface CourseSidebarProps {
     instructor: {
       name: string | null
       image: string | null
+      email?: string | null
     }
     lessons: Array<{
       id: string
@@ -124,7 +124,7 @@ export default function CourseSidebar({ course, progress, currentLessonId }: Cou
         </div>
 
         {/* Lessons List */}
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex-1 overflow-y-auto p-4 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-bold text-white text-sm">Ders İçeriği</h2>
             <span className="text-xs text-gray-500 bg-gray-800 px-2 py-1 rounded">
@@ -211,21 +211,6 @@ export default function CourseSidebar({ course, progress, currentLessonId }: Cou
                 </button>
               )
             })}
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="p-4 border-t border-gray-800 bg-gradient-to-t from-gray-900/50 to-transparent">
-          <div className="bg-black border border-gray-800 rounded-xl p-4 text-center">
-            <p className="text-xs text-gray-400 mb-3">
-              Kursla ilgili soru ve önerileriniz için
-            </p>
-            <Link
-              href="/contact"
-              className="inline-flex items-center justify-center w-full bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
-            >
-              İletişime Geçin
-            </Link>
           </div>
         </div>
       </div>

@@ -14,6 +14,7 @@ import {
     Alert,
     KeyboardAvoidingView,
     Platform,
+    StatusBar,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import {
@@ -411,7 +412,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     header: {
-        paddingTop: 60,
+        paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 16 : 60,
         paddingBottom: 16,
         paddingHorizontal: 20,
         backgroundColor: '#000',

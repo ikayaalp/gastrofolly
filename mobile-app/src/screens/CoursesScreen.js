@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { StyleSheet, Text, View, FlatList, Image, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
+import { StyleSheet, Text, View, FlatList, Image, TouchableOpacity, ActivityIndicator, RefreshControl, StatusBar, Platform } from 'react-native';
 import { useFocusEffect, CommonActions } from '@react-navigation/native';
 import { ChefHat, Star, BookOpen, User } from 'lucide-react-native';
 import courseService from '../api/courseService';
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     header: {
-        paddingTop: 60,
+        paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 16 : 60,
         paddingBottom: 20,
         paddingHorizontal: 16,
         backgroundColor: '#000',

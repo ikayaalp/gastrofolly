@@ -111,9 +111,6 @@ export default async function InstructorPage({ params }: InstructorPageProps) {
                 <Link href="/chef-sosyal" className="text-gray-300 hover:text-white transition-colors">
                   Chef Sosyal
                 </Link>
-                <Link href="/chef-sor" className="text-gray-300 hover:text-white transition-colors">
-                  Chef&apos;e Sor
-                </Link>
                 <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
                   İletişim
                 </Link>
@@ -247,13 +244,6 @@ export default async function InstructorPage({ params }: InstructorPageProps) {
                       instructorId={instructor.id}
                       instructorName={instructor.name || 'Unknown'}
                     />
-                    <Link
-                      href="/chef-sor"
-                      className="w-full bg-gradient-to-r from-orange-600 to-red-600 text-white py-3 px-4 rounded-lg hover:from-orange-700 hover:to-red-700 transition-all duration-300 flex items-center justify-center space-x-2 font-semibold shadow-lg hover:shadow-orange-500/50"
-                    >
-                      <MessageCircle className="h-5 w-5" />
-                      <span>Chef&apos;e Sor</span>
-                    </Link>
                   </div>
                 </div>
               </div>

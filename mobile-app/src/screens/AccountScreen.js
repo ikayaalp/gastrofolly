@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Alert, SafeAreaView, StatusBar, Image } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Alert, SafeAreaView, StatusBar, Image, Platform } from 'react-native';
 import { User, Settings, LogOut, BookOpen, Heart, MessageCircle, ChevronRight, Award, Play, MessageSquare, Shield } from 'lucide-react-native';
 import authService from '../api/authService';
 
@@ -204,6 +204,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#000',
+        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     },
     header: {
         paddingVertical: 16,

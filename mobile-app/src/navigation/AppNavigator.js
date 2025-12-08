@@ -3,6 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer } from '@react-navigation/native';
 import { Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Screens
 import HomeScreen from '../screens/HomeScreen';
@@ -73,6 +74,9 @@ function SocialStackNavigator() {
 }
 
 function TabNavigator() {
+    const insets = useSafeAreaInsets();
+    const bottomPadding = Platform.OS === 'android' ? Math.max(insets.bottom, 20) : insets.bottom;
+
     return (
         <Tab.Navigator
             screenOptions={{
@@ -82,8 +86,8 @@ function TabNavigator() {
                 tabBarStyle: {
                     backgroundColor: '#000000',
                     borderTopColor: '#1a1a1a',
-                    height: Platform.OS === 'android' ? 65 : 85,
-                    paddingBottom: Platform.OS === 'android' ? 10 : 20,
+                    height: Platform.OS === 'android' ? 65 + bottomPadding : 85,
+                    paddingBottom: bottomPadding,
                     paddingTop: 8,
                     position: 'absolute',
                     bottom: 0,

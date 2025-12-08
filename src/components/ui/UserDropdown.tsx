@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import Link from 'next/link'
-import { User, Settings, BookOpen, LogOut, ChevronDown, Play, Heart, GraduationCap, MessageSquare, MessageCircle, Award } from 'lucide-react'
+import { User, Settings, BookOpen, LogOut, ChevronDown, Play, Heart, Award } from 'lucide-react'
 
 export default function UserDropdown() {
   const { data: session } = useSession()
@@ -101,15 +101,6 @@ export default function UserDropdown() {
             </Link>
 
             <Link
-              href="/chef-sor"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center px-4 py-2 text-gray-300 hover:bg-[#1a1a1a] hover:text-white transition-colors"
-            >
-              <MessageCircle className="h-4 w-4 mr-3" />
-              Chef&apos;e Sor
-            </Link>
-
-            <Link
               href="/certificates"
               onClick={() => setIsOpen(false)}
               className="flex items-center px-4 py-2 text-gray-300 hover:bg-[#1a1a1a] hover:text-white transition-colors"
@@ -117,17 +108,6 @@ export default function UserDropdown() {
               <Award className="h-4 w-4 mr-3" />
               Sertifikalarım
             </Link>
-
-            {session.user.role === 'INSTRUCTOR' && (
-              <Link
-                href="/chef-sor"
-                onClick={() => setIsOpen(false)}
-                className="flex items-center px-4 py-2 text-gray-300 hover:bg-[#1a1a1a] hover:text-white transition-colors"
-              >
-                <MessageSquare className="h-4 w-4 mr-3" />
-                Öğrencilerden Sorular
-              </Link>
-            )}
 
             {session.user.role === 'ADMIN' && (
               <>

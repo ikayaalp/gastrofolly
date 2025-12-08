@@ -46,15 +46,12 @@ export default function FavoritesPage() {
                   <Link href="/chef-sosyal" className="text-gray-300 hover:text-white transition-colors">
                     Chef Sosyal
                   </Link>
-                  <Link href="/chef-sor" className="text-gray-300 hover:text-white transition-colors">
-                    Chef&apos;e Sor
-                  </Link>
                   <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
                     İletişim
                   </Link>
                 </nav>
               </div>
-              
+
               <div className="flex items-center space-x-4">
                 {session?.user ? (
                   <UserDropdown />
@@ -136,7 +133,7 @@ export default function FavoritesPage() {
                 </Link>
               </nav>
             </div>
-            
+
             <div className="flex items-center space-x-4">
               {session?.user ? (
                 <UserDropdown />
@@ -210,7 +207,7 @@ export default function FavoritesPage() {
                     <ChefHat className="h-16 w-16 text-white" />
                   </div>
                 )}
-                
+
                 {/* Remove from favorites button */}
                 <button
                   onClick={() => removeFavorite(course.id)}

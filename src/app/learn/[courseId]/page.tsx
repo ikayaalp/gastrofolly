@@ -130,7 +130,14 @@ async function getCourseWithProgress(courseId: string, userId: string) {
   const course = await prisma.course.findUnique({
     where: { id: courseId },
     include: {
-      instructor: true,
+      instructor: {
+        select: {
+          id: true,
+          name: true,
+          image: true,
+          email: true
+        }
+      },
       category: true,
       lessons: {
         orderBy: { order: 'asc' }
@@ -332,6 +339,7 @@ export default async function LearnPage({ params, searchParams }: LearnPageProps
               courseId={course.id}
               canComment={true}
               userId={session.user.id}
+              instructor={course.instructor}
             />
 
             {/* Recommended Courses */}

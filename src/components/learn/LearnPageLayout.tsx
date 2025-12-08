@@ -48,6 +48,7 @@ interface LearnPageLayoutProps {
         instructor: {
             name: string | null;
             image: string | null;
+            email?: string | null;
         };
         lessons: Array<{
             id: string;
@@ -168,9 +169,7 @@ export default function LearnPageLayout({
                                 <Link href="/chef-sosyal" className="text-gray-300 hover:text-white transition-colors">
                                     Chef Sosyal
                                 </Link>
-                                <Link href="/chef-sor" className="text-gray-300 hover:text-white transition-colors">
-                                    Chef&apos;e Sor
-                                </Link>
+
                                 <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
                                     İletişim
                                 </Link>
@@ -524,6 +523,7 @@ export default function LearnPageLayout({
                                     courseId={course.id}
                                     canComment={true}
                                     userId={session.user.id}
+                                    instructor={course.instructor}
                                 />
                             )}
 
@@ -576,10 +576,7 @@ export default function LearnPageLayout({
                         <Users className="h-6 w-6" />
                         <span className="text-xs font-medium mt-1">Sosyal</span>
                     </Link>
-                    <Link href="/chef-sor" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
-                        <MessageCircle className="h-6 w-6" />
-                        <span className="text-xs font-medium mt-1">Chef&apos;e Sor</span>
-                    </Link>
+
                 </div>
             </div>
         </div>

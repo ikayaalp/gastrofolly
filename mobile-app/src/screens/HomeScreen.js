@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, Text, View, Image, Dimensions, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, Image, Dimensions, TouchableOpacity, ScrollView, ActivityIndicator, StatusBar, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ChefHat, BookOpen, Star, Play, Plus, Info } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -12,6 +12,7 @@ export default function HomeScreen({ navigation }) {
     const [featuredCourses, setFeaturedCourses] = useState([]);
     const [popularCourses, setPopularCourses] = useState([]);
     const [recentCourses, setRecentCourses] = useState([]);
+    const [categories, setCategories] = useState([]);
     const [userCourses, setUserCourses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [userName, setUserName] = useState('');
@@ -56,6 +57,7 @@ export default function HomeScreen({ navigation }) {
 
         if (featuredResult.success) {
             const courses = featuredResult.data.courses || [];
+            const categoriesData = featuredResult.data.categories || [];
 
             // Featured courses - first 6
             setFeaturedCourses(courses.slice(0, 6));
@@ -66,6 +68,9 @@ export default function HomeScreen({ navigation }) {
 
             // Recent courses - already sorted by createdAt desc
             setRecentCourses(courses.slice(0, 6));
+
+            // Categories with their courses
+            setCategories(categoriesData);
         }
 
         // Get user's enrolled courses - Only for paid subscribers
@@ -265,6 +270,18 @@ export default function HomeScreen({ navigation }) {
                         </ScrollView>
                     </View>
                 )}
+
+                {/* Categories Sections */}
+                {categories.map((category) => (
+                    category.courses && category.courses.length > 0 && (
+                        <View key={category.id} style={styles.section}>
+                            <Text style={styles.sectionTitle}>{category.name}</Text>
+                            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
+                                {category.courses.map((course, index) => renderCourseCard(course, index))}
+                            </ScrollView>
+                        </View>
+                    )
+                ))}
             </ScrollView>
         </View >
     );
@@ -287,7 +304,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
     header: {
-        paddingTop: 50,
+        paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 10 : 50,
         paddingBottom: 12,
         backgroundColor: '#000',
         borderBottomWidth: 1,
