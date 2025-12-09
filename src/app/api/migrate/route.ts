@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
-
+//deneme
 export async function POST(request: NextRequest) {
   // Block in production - this is a development-only endpoint
   if (process.env.NODE_ENV === 'production') {
