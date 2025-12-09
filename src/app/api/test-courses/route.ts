@@ -2,6 +2,11 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
 export async function GET() {
+  // Block in production - this is a development-only endpoint
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json({ error: 'This endpoint is disabled in production' }, { status: 403 })
+  }
+
   try {
     const courses = await prisma.course.findMany({
       where: { isPublished: true },
@@ -19,7 +24,7 @@ export async function GET() {
       console.log(`- ${course.title} (Published: ${course.isPublished})`)
     })
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
       total: courses.length,
       courses: courses
