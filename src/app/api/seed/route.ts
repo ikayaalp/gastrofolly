@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
 export async function POST(request: NextRequest) {
+  // Block in production - this is a development-only endpoint
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json({ error: 'This endpoint is disabled in production' }, { status: 403 })
+  }
+
   try {
     console.log('Starting comprehensive seed data creation...')
 

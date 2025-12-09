@@ -106,11 +106,7 @@ export async function POST(request: NextRequest) {
 
     const { title, content, categoryId } = await request.json()
 
-    console.log('POST /api/forum/topics - Received data:', { title, content, categoryId })
-    console.log('POST /api/forum/topics - User:', user)
-
     if (!title || !content || !categoryId) {
-      console.log('POST /api/forum/topics - Missing required fields')
       return NextResponse.json(
         { error: 'Title, content, and category are required' },
         { status: 400 }
@@ -155,14 +151,6 @@ export async function POST(request: NextRequest) {
       counter++
     }
 
-    console.log('POST /api/forum/topics - Creating topic with data:', {
-      title,
-      content,
-      slug: uniqueSlug,
-      authorId: user.id,
-      categoryId: finalCategoryId
-    })
-
     const topic = await prisma.topic.create({
       data: {
         title,
@@ -190,7 +178,6 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    console.log('POST /api/forum/topics - Topic created successfully:', topic)
     return NextResponse.json(topic, { status: 201 })
   } catch (error) {
     console.error('Error creating topic:', error)

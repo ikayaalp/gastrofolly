@@ -4,27 +4,32 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 export async function POST(request: NextRequest) {
+  // Block in production - this is a development-only endpoint
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json({ error: 'This endpoint is disabled in production' }, { status: 403 })
+  }
+
   try {
     console.log('Starting database schema creation...')
-    
+
     // Test connection
     await prisma.$connect()
     console.log('Database connected successfully!')
-    
+
     // Create tables by running a simple query
     try {
       // This will create the User table if it doesn't exist
       const userCount = await prisma.user.count()
       console.log(`User table exists. Count: ${userCount}`)
-      
-      return NextResponse.json({ 
-        success: true, 
+
+      return NextResponse.json({
+        success: true,
         message: 'Database schema created successfully!',
-        userCount 
+        userCount
       })
     } catch (error) {
       console.log('Creating database schema...')
-      
+
       // Try to create a user to trigger schema creation
       const testUser = await prisma.user.create({
         data: {
@@ -32,24 +37,24 @@ export async function POST(request: NextRequest) {
           name: 'Test User'
         }
       })
-      
+
       // Delete the test user
       await prisma.user.delete({
         where: { id: testUser.id }
       })
-      
-      return NextResponse.json({ 
-        success: true, 
-        message: 'Database schema created successfully!' 
+
+      return NextResponse.json({
+        success: true,
+        message: 'Database schema created successfully!'
       })
     }
-    
+
   } catch (error) {
     console.error('Migration error:', error)
     return NextResponse.json(
-      { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
       },
       { status: 500 }
     )

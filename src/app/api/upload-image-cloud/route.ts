@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from "next/server"
 import { v2 as cloudinary } from 'cloudinary'
+import { getAuthUser } from '@/lib/mobileAuth'
 
 export async function POST(request: NextRequest) {
   try {
+    // Authentication check - require logged in user
+    const user = await getAuthUser(request)
+    if (!user) {
+      return NextResponse.json({ error: 'Yetkilendirme gerekli' }, { status: 401 })
+    }
+
     const formData = await request.formData()
     const file = formData.get("file") as File
     const type = formData.get("type") as string || "image"
@@ -45,37 +52,37 @@ export async function POST(request: NextRequest) {
 
       // Cloudinary Upload API endpoint
       const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`
-      
+
       // FormData oluştur - Cloudinary dokümantasyonuna göre
       const uploadFormData = new FormData()
       uploadFormData.append('file', file)
-      
+
       // Upload preset kullan (unsigned upload için)
       if (uploadPreset) {
         uploadFormData.append('upload_preset', uploadPreset)
       }
-      
+
       // Klasör ve public_id ayarla
       uploadFormData.append('folder', folder)
       uploadFormData.append('public_id', `${type}_${Date.now()}`)
-      
+
       // Unsigned upload'da transformation ve eager kullanılamaz
       // Sadece temel parametreler kullanılabilir
-      
+
       console.log('Uploading to Cloudinary with params:', {
         upload_preset: uploadPreset,
         folder: folder,
         public_id: `${type}_${Date.now()}`
       })
-      
+
       const response = await fetch(cloudinaryUrl, {
         method: 'POST',
         body: uploadFormData
       })
-      
+
       console.log('Cloudinary image upload response status:', response.status)
       console.log('Cloudinary image upload response headers:', Object.fromEntries(response.headers.entries()))
-      
+
       if (!response.ok) {
         let errorMessage = 'Unknown error'
         try {
@@ -88,7 +95,7 @@ export async function POST(request: NextRequest) {
         }
         throw new Error(`Cloudinary upload failed: ${errorMessage}`)
       }
-      
+
       const data = await response.json()
       console.log('Cloudinary upload success:', {
         public_id: data.public_id,
@@ -97,7 +104,7 @@ export async function POST(request: NextRequest) {
         height: data.height,
         bytes: data.bytes
       })
-      
+
       return {
         url: data.secure_url,
         publicId: data.public_id,

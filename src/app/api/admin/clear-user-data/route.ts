@@ -1,8 +1,15 @@
 import { NextResponse } from "next/server"
+import { getServerSession } from "next-auth/next"
+import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
 export async function POST() {
     try {
+        // Admin authentication check
+        const session = await getServerSession(authOptions)
+        if (!session || session.user.role !== 'ADMIN') {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        }
         // 1. Tüm Progress kayıtlarını sil
         const deletedProgress = await prisma.progress.deleteMany({})
 
