@@ -7,8 +7,8 @@ import {
     ScrollView,
     Switch,
     StatusBar,
-    Alert,
-    SafeAreaView
+    SafeAreaView,
+    Platform
 } from 'react-native';
 import {
     ArrowLeft,
@@ -24,13 +24,26 @@ import {
     Shield
 } from 'lucide-react-native';
 import authService from '../api/authService';
+import CustomAlert from '../components/CustomAlert';
 
 export default function SettingsScreen({ navigation }) {
     const [notificationsEnabled, setNotificationsEnabled] = useState(true);
     const [darkModeEnabled, setDarkModeEnabled] = useState(true);
+    const [alertVisible, setAlertVisible] = useState(false);
+    const [alertConfig, setAlertConfig] = useState({
+        title: '',
+        message: '',
+        buttons: [],
+        type: 'info'
+    });
 
-    const handleLogout = async () => {
-        Alert.alert(
+    const showAlert = (title, message, buttons = [{ text: 'Tamam' }], type = 'info') => {
+        setAlertConfig({ title, message, buttons, type });
+        setAlertVisible(true);
+    };
+
+    const handleLogout = () => {
+        showAlert(
             'Çıkış Yap',
             'Hesabınızdan çıkış yapmak istediğinize emin misiniz?',
             [
@@ -46,7 +59,8 @@ export default function SettingsScreen({ navigation }) {
                         });
                     }
                 }
-            ]
+            ],
+            'confirm'
         );
     };
 
@@ -115,7 +129,7 @@ export default function SettingsScreen({ navigation }) {
                         <SettingItem
                             icon={Lock}
                             title="Şifre Değiştir"
-                            onPress={() => Alert.alert('Bilgi', 'Şifre değiştirme web sitesi üzerinden yapılmaktadır.')}
+                            onPress={() => showAlert('Bilgi', 'Şifre değiştirme web sitesi üzerinden yapılmaktadır.', [{ text: 'Tamam' }], 'info')}
                         />
                         <SettingItem
                             icon={Shield}
@@ -175,6 +189,16 @@ export default function SettingsScreen({ navigation }) {
 
                 </ScrollView>
             </View>
+
+            {/* Custom Alert */}
+            <CustomAlert
+                visible={alertVisible}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                buttons={alertConfig.buttons}
+                type={alertConfig.type}
+                onClose={() => setAlertVisible(false)}
+            />
         </SafeAreaView>
     );
 }
@@ -193,7 +217,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 20,
-        paddingVertical: 16,
+        paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 10 : 10,
+        paddingBottom: 16,
         borderBottomWidth: 1,
         borderBottomColor: '#1a1a1a',
     },

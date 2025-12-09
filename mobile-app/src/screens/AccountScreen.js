@@ -1,10 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Alert, SafeAreaView, StatusBar, Image, Platform } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, SafeAreaView, StatusBar, Image, Platform } from 'react-native';
 import { User, Settings, LogOut, BookOpen, Heart, MessageCircle, ChevronRight, Award, Play, MessageSquare, Shield } from 'lucide-react-native';
 import authService from '../api/authService';
+import CustomAlert from '../components/CustomAlert';
 
 export default function AccountScreen({ navigation }) {
     const [userData, setUserData] = useState(null);
+    const [alertVisible, setAlertVisible] = useState(false);
+    const [alertConfig, setAlertConfig] = useState({
+        title: '',
+        message: '',
+        buttons: [],
+        type: 'info'
+    });
+
+    const showAlert = (title, message, buttons = [{ text: 'Tamam' }], type = 'info') => {
+        setAlertConfig({ title, message, buttons, type });
+        setAlertVisible(true);
+    };
 
     useEffect(() => {
         const unsubscribe = navigation.addListener('focus', () => {
@@ -18,8 +31,8 @@ export default function AccountScreen({ navigation }) {
         setUserData(user);
     };
 
-    const handleLogout = async () => {
-        Alert.alert(
+    const handleLogout = () => {
+        showAlert(
             'Çıkış Yap',
             'Hesabınızdan çıkış yapmak istediğinize emin misiniz?',
             [
@@ -35,7 +48,8 @@ export default function AccountScreen({ navigation }) {
                         });
                     }
                 }
-            ]
+            ],
+            'confirm'
         );
     };
 
@@ -126,13 +140,13 @@ export default function AccountScreen({ navigation }) {
                             icon={Heart}
                             title="Favorilerim"
                             subtitle="Beğendiğiniz içerikler"
-                            onPress={() => Alert.alert('Yakında', 'Favorilerim özelliği yakında gelecek!')}
+                            onPress={() => showAlert('Yakında', 'Favorilerim özelliği yakında gelecek!', [{ text: 'Tamam' }], 'info')}
                         />
                         <MenuItem
                             icon={Award}
                             title="Sertifikalarım"
                             subtitle="Tamamlanan eğitimler"
-                            onPress={() => Alert.alert('Yakında', 'Sertifikalarım özelliği yakında gelecek!')}
+                            onPress={() => showAlert('Yakında', 'Sertifikalarım özelliği yakında gelecek!', [{ text: 'Tamam' }], 'info')}
                         />
                     </View>
                 </View>
@@ -164,12 +178,12 @@ export default function AccountScreen({ navigation }) {
                             <MenuItem
                                 icon={User}
                                 title="Admin Paneli"
-                                onPress={() => Alert.alert('Bilgi', 'Admin paneli sadece web sürümünde mevcuttur.')}
+                                onPress={() => showAlert('Bilgi', 'Admin paneli sadece web sürümünde mevcuttur.', [{ text: 'Tamam' }], 'info')}
                             />
                             <MenuItem
                                 icon={Play}
                                 title="Kurs Yönetimi"
-                                onPress={() => Alert.alert('Bilgi', 'Kurs yönetimi sadece web sürümünde mevcuttur.')}
+                                onPress={() => showAlert('Bilgi', 'Kurs yönetimi sadece web sürümünde mevcuttur.', [{ text: 'Tamam' }], 'info')}
                             />
                         </View>
                     </View>
@@ -196,6 +210,16 @@ export default function AccountScreen({ navigation }) {
 
                 <Text style={styles.versionText}>GastroFolly Mobile v1.0.2</Text>
             </ScrollView>
+
+            {/* Custom Alert */}
+            <CustomAlert
+                visible={alertVisible}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                buttons={alertConfig.buttons}
+                type={alertConfig.type}
+                onClose={() => setAlertVisible(false)}
+            />
         </SafeAreaView>
     );
 }
@@ -230,7 +254,7 @@ const styles = StyleSheet.create({
         padding: 24,
         borderBottomWidth: 1,
         borderBottomColor: '#1a1a1a',
-        backgroundColor: '#0a0a0a',
+        backgroundColor: '#000',
     },
     avatarContainer: {
         width: 80,

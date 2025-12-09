@@ -9,7 +9,6 @@ import {
     Dimensions,
     StatusBar,
     Animated,
-    Alert,
     KeyboardAvoidingView,
     Platform,
     Keyboard,
@@ -53,6 +52,7 @@ import { Linking } from 'react-native';
 import axios from 'axios';
 import config from '../api/config';
 import { TextInput } from 'react-native';
+import CustomAlert from '../components/CustomAlert';
 
 const { width, height } = Dimensions.get('window');
 
@@ -81,9 +81,21 @@ export default function LearnScreen({ route, navigation }) {
     const [loadingReviews, setLoadingReviews] = useState(false);
     const [showReviewModal, setShowReviewModal] = useState(false);
     const [currentUserId, setCurrentUserId] = useState(null);
+    const [alertVisible, setAlertVisible] = useState(false);
+    const [alertConfig, setAlertConfig] = useState({
+        title: '',
+        message: '',
+        buttons: [],
+        type: 'info'
+    });
     const controlsOpacity = useRef(new Animated.Value(1)).current;
     const controlsTimeout = useRef(null);
     const scrollViewRef = useRef(null);
+
+    const showAlert = (title, message, buttons = [{ text: 'Tamam' }], type = 'info') => {
+        setAlertConfig({ title, message, buttons, type });
+        setAlertVisible(true);
+    };
 
     // Keyboard listeners
     useEffect(() => {
@@ -150,8 +162,7 @@ export default function LearnScreen({ route, navigation }) {
             }
         } catch (error) {
             console.error('Load course error:', error);
-            Alert.alert('Hata', 'Kurs yüklenemedi');
-            navigation.goBack();
+            showAlert('Hata', 'Kurs yüklenemedi', [{ text: 'Tamam', onPress: () => navigation.goBack() }], 'error');
         } finally {
             setLoading(false);
         }
@@ -182,7 +193,7 @@ export default function LearnScreen({ route, navigation }) {
 
     // Delete a review
     const deleteReview = async (reviewId) => {
-        Alert.alert(
+        showAlert(
             'Yorumu Sil',
             'Bu yorumu silmek istediğinize emin misiniz?',
             [
@@ -199,14 +210,14 @@ export default function LearnScreen({ route, navigation }) {
                             );
                             // Remove from local state
                             setReviews(prev => prev.filter(r => r.id !== reviewId));
-                            Alert.alert('Başarılı', 'Yorum silindi');
                         } catch (error) {
                             console.log('Delete review error:', error);
-                            Alert.alert('Hata', 'Yorum silinemedi');
+                            showAlert('Hata', 'Yorum silinemedi', [{ text: 'Tamam' }], 'error');
                         }
                     }
                 }
-            ]
+            ],
+            'confirm'
         );
     };
 
@@ -330,7 +341,7 @@ export default function LearnScreen({ route, navigation }) {
 
     const submitReview = async () => {
         if (rating === 0) {
-            Alert.alert('Hata', 'Lütfen bir puan seçin');
+            showAlert('Hata', 'Lütfen bir puan seçin', [{ text: 'Tamam' }], 'error');
             return;
         }
 
@@ -338,7 +349,7 @@ export default function LearnScreen({ route, navigation }) {
             setSubmittingReview(true);
             const token = await AsyncStorage.getItem('authToken');
             if (!token) {
-                Alert.alert('Hata', 'Yorum yapmak için giriş yapmalısınız');
+                showAlert('Hata', 'Yorum yapmak için giriş yapmalısınız', [{ text: 'Tamam' }], 'error');
                 return;
             }
 
@@ -355,15 +366,15 @@ export default function LearnScreen({ route, navigation }) {
             // Add new review to the list
             setReviews([response.data, ...reviews]);
 
-            Alert.alert('Başarılı', 'Değerlendirmeniz gönderildi!');
+            showAlert('Başarılı', 'Değerlendirmeniz gönderildi!', [{ text: 'Tamam' }], 'success');
             setRating(0);
             setReviewText('');
         } catch (error) {
             console.error('Submit review error:', error);
             if (error.response?.status === 403) {
-                Alert.alert('Hata', 'Yorum yapmak için kursa kayıtlı olmalısınız');
+                showAlert('Hata', 'Yorum yapmak için kursa kayıtlı olmalısınız', [{ text: 'Tamam' }], 'error');
             } else {
-                Alert.alert('Hata', 'Değerlendirme gönderilemedi');
+                showAlert('Hata', 'Değerlendirme gönderilemedi', [{ text: 'Tamam' }], 'error');
             }
         } finally {
             setSubmittingReview(false);
@@ -373,7 +384,7 @@ export default function LearnScreen({ route, navigation }) {
     const handleCopyEmail = async (email) => {
         if (!email) return;
         await Clipboard.setStringAsync(email);
-        Alert.alert('Başarılı', 'E-posta adresi kopyalandı.');
+        showAlert('Başarılı', 'E-posta adresi kopyalandı.', [{ text: 'Tamam' }], 'success');
     };
 
     const handleSendEmail = async (email, name) => {
@@ -894,6 +905,16 @@ export default function LearnScreen({ route, navigation }) {
                     </View>
                 </KeyboardAvoidingView>
             </Modal>
+
+            {/* Custom Alert */}
+            <CustomAlert
+                visible={alertVisible}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                buttons={alertConfig.buttons}
+                type={alertConfig.type}
+                onClose={() => setAlertVisible(false)}
+            />
         </KeyboardAvoidingView>
     );
 }

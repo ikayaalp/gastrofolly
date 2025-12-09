@@ -1,17 +1,30 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, Alert } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ChefHat, Mail } from 'lucide-react-native';
 import authService from '../api/authService';
+import CustomAlert from '../components/CustomAlert';
 
 export default function EmailVerificationScreen({ route, navigation }) {
     const { email } = route.params;
     const [code, setCode] = useState('');
     const [loading, setLoading] = useState(false);
+    const [alertVisible, setAlertVisible] = useState(false);
+    const [alertConfig, setAlertConfig] = useState({
+        title: '',
+        message: '',
+        buttons: [],
+        type: 'info'
+    });
+
+    const showAlert = (title, message, buttons = [{ text: 'Tamam' }], type = 'info') => {
+        setAlertConfig({ title, message, buttons, type });
+        setAlertVisible(true);
+    };
 
     const handleVerify = async () => {
         if (!code || code.length !== 6) {
-            Alert.alert('Hata', 'Lütfen 6 haneli doğrulama kodunu girin');
+            showAlert('Hata', 'Lütfen 6 haneli doğrulama kodunu girin', [{ text: 'Tamam' }], 'error');
             return;
         }
 
@@ -20,7 +33,7 @@ export default function EmailVerificationScreen({ route, navigation }) {
         setLoading(false);
 
         if (result.success) {
-            Alert.alert(
+            showAlert(
                 'Başarılı',
                 'E-posta adresiniz doğrulandı! Şimdi giriş yapabilirsiniz.',
                 [
@@ -28,10 +41,11 @@ export default function EmailVerificationScreen({ route, navigation }) {
                         text: 'Giriş Yap',
                         onPress: () => navigation.navigate('Login')
                     }
-                ]
+                ],
+                'success'
             );
         } else {
-            Alert.alert('Hata', result.error);
+            showAlert('Hata', result.error, [{ text: 'Tamam' }], 'error');
         }
     };
 
@@ -92,6 +106,16 @@ export default function EmailVerificationScreen({ route, navigation }) {
                     </View>
                 </ScrollView>
             </LinearGradient>
+
+            {/* Custom Alert */}
+            <CustomAlert
+                visible={alertVisible}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                buttons={alertConfig.buttons}
+                type={alertConfig.type}
+                onClose={() => setAlertVisible(false)}
+            />
         </KeyboardAvoidingView>
     );
 }
@@ -127,21 +151,21 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
     },
     formContainer: {
-        backgroundColor: 'rgba(255,255,255,0.05)',
+        backgroundColor: 'rgba(0,0,0,0.85)',
         borderRadius: 16,
         padding: 24,
         borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.1)',
+        borderColor: 'rgba(255,255,255,0.15)',
     },
     inputContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: 'rgba(255,255,255,0.1)',
+        backgroundColor: '#000',
         borderRadius: 12,
         marginBottom: 24,
         paddingHorizontal: 16,
         borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.2)',
+        borderColor: 'rgba(255,255,255,0.15)',
     },
     inputIcon: {
         marginRight: 12,

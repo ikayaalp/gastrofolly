@@ -9,7 +9,6 @@ import {
     RefreshControl,
     Image,
     TextInput,
-    Alert,
     KeyboardAvoidingView,
     Platform,
     Keyboard,
@@ -27,6 +26,7 @@ import {
 import forumService from '../api/forumService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CommonActions } from '@react-navigation/native';
+import CustomAlert from '../components/CustomAlert';
 
 export default function TopicDetailScreen({ route, navigation }) {
     const { topicId } = route.params;
@@ -41,6 +41,18 @@ export default function TopicDetailScreen({ route, navigation }) {
     const [likedComments, setLikedComments] = useState(new Set());
     const [replyingTo, setReplyingTo] = useState(null); // For reply-to-reply
     const [currentUserId, setCurrentUserId] = useState(null);
+    const [alertVisible, setAlertVisible] = useState(false);
+    const [alertConfig, setAlertConfig] = useState({
+        title: '',
+        message: '',
+        buttons: [],
+        type: 'info'
+    });
+
+    const showAlert = (title, message, buttons = [{ text: 'Tamam' }], type = 'info') => {
+        setAlertConfig({ title, message, buttons, type });
+        setAlertVisible(true);
+    };
 
     const checkLoginStatus = async () => {
         const token = await AsyncStorage.getItem('authToken');
@@ -100,7 +112,7 @@ export default function TopicDetailScreen({ route, navigation }) {
 
     const handleTopicLike = async () => {
         if (!isLoggedIn) {
-            Alert.alert('Giriş Yapın', 'Beğenmek için giriş yapmalısınız.');
+            showAlert('Giriş Yapın', 'Beğenmek için giriş yapmalısınız.', [{ text: 'Tamam' }], 'warning');
             return;
         }
 
@@ -116,7 +128,7 @@ export default function TopicDetailScreen({ route, navigation }) {
 
     const handleCommentLike = async (postId) => {
         if (!isLoggedIn) {
-            Alert.alert('Giriş Yapın', 'Beğenmek için giriş yapmalısınız.');
+            showAlert('Giriş Yapın', 'Beğenmek için giriş yapmalısınız.', [{ text: 'Tamam' }], 'warning');
             return;
         }
 
@@ -192,13 +204,13 @@ export default function TopicDetailScreen({ route, navigation }) {
             setReplyingTo(null);
             Keyboard.dismiss();
         } else {
-            Alert.alert('Hata', result.error || 'Yanıt gönderilemedi');
+            showAlert('Hata', result.error || 'Yanıt gönderilemedi', [{ text: 'Tamam' }], 'error');
         }
         setSubmitting(false);
     };
 
     const handleDeleteComment = async (postId) => {
-        Alert.alert(
+        showAlert(
             'Yorumu Sil',
             'Bu yorumu silmek istediğinizden emin misiniz?',
             [
@@ -217,16 +229,17 @@ export default function TopicDetailScreen({ route, navigation }) {
                                 }))
                             );
                         } else {
-                            Alert.alert('Hata', result.error);
+                            showAlert('Hata', result.error, [{ text: 'Tamam' }], 'error');
                         }
                     }
                 }
-            ]
+            ],
+            'confirm'
         );
     };
 
-    const handleDeleteTopic = async () => {
-        Alert.alert(
+    const handleDeleteTopic = () => {
+        showAlert(
             'Tartışmayı Sil',
             'Bu tartışmayı silmek istediğinizden emin misiniz? Tüm yorumlar da silinecek.',
             [
@@ -237,15 +250,16 @@ export default function TopicDetailScreen({ route, navigation }) {
                     onPress: async () => {
                         const result = await forumService.deleteTopic(topicId);
                         if (result.success) {
-                            Alert.alert('Başarılı', 'Tartışma silindi', [
+                            showAlert('Başarılı', 'Tartışma silindi', [
                                 { text: 'Tamam', onPress: () => navigation.goBack() }
-                            ]);
+                            ], 'success');
                         } else {
-                            Alert.alert('Hata', result.error);
+                            showAlert('Hata', result.error, [{ text: 'Tamam' }], 'error');
                         }
                     }
                 }
-            ]
+            ],
+            'confirm'
         );
     };
 
@@ -539,6 +553,16 @@ export default function TopicDetailScreen({ route, navigation }) {
                     </TouchableOpacity>
                 )}
             </View>
+
+            {/* Custom Alert */}
+            <CustomAlert
+                visible={alertVisible}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                buttons={alertConfig.buttons}
+                type={alertConfig.type}
+                onClose={() => setAlertVisible(false)}
+            />
         </KeyboardAvoidingView>
     );
 }
@@ -870,7 +894,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         padding: 16,
-        paddingBottom: 100, // Extra padding for tab bar
+        paddingBottom: 120, // Extra padding for tab bar
         backgroundColor: '#0a0a0a',
         borderTopWidth: 1,
         borderTopColor: '#1a1a1a',

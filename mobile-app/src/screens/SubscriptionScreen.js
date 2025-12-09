@@ -1,12 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, StatusBar, ActivityIndicator, Linking, Alert } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, StatusBar, ActivityIndicator, Linking } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ArrowLeft, Award, Calendar, CheckCircle, CreditCard, Shield, LogOut } from 'lucide-react-native';
 import authService from '../api/authService';
+import CustomAlert from '../components/CustomAlert';
 
 export default function SubscriptionScreen({ navigation }) {
     const [userData, setUserData] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [alertVisible, setAlertVisible] = useState(false);
+    const [alertConfig, setAlertConfig] = useState({
+        title: '',
+        message: '',
+        buttons: [],
+        type: 'info'
+    });
+
+    const showAlert = (title, message, buttons = [{ text: 'Tamam' }], type = 'info') => {
+        setAlertConfig({ title, message, buttons, type });
+        setAlertVisible(true);
+    };
 
     useEffect(() => {
         loadUserData();
@@ -57,7 +70,7 @@ export default function SubscriptionScreen({ navigation }) {
     );
 
     const handleCancelSubscription = () => {
-        Alert.alert(
+        showAlert(
             'Abonelik İptali',
             'Aboneliğinizi iptal etmek istediğinize emin misiniz? Bu işlem geri alınamaz ve premium özelliklere erişiminizi kaybedersiniz.',
             [
@@ -69,15 +82,16 @@ export default function SubscriptionScreen({ navigation }) {
                         setLoading(true);
                         const result = await authService.cancelSubscription();
                         if (result.success) {
-                            Alert.alert('Başarılı', 'Aboneliğiniz iptal edildi.');
+                            showAlert('Başarılı', 'Aboneliğiniz iptal edildi.', [{ text: 'Tamam' }], 'success');
                             loadUserData(); // Reload to show free plan
                         } else {
-                            Alert.alert('Hata', result.error);
+                            showAlert('Hata', result.error, [{ text: 'Tamam' }], 'error');
                             setLoading(false);
                         }
                     }
                 }
-            ]
+            ],
+            'confirm'
         );
     };
 
@@ -174,6 +188,16 @@ export default function SubscriptionScreen({ navigation }) {
                 </Text>
 
             </ScrollView>
+
+            {/* Custom Alert */}
+            <CustomAlert
+                visible={alertVisible}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                buttons={alertConfig.buttons}
+                type={alertConfig.type}
+                onClose={() => setAlertVisible(false)}
+            />
         </View>
     );
 }

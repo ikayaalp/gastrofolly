@@ -8,7 +8,6 @@ import {
     TouchableOpacity,
     ActivityIndicator,
     Dimensions,
-    Alert,
     Linking,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -24,8 +23,8 @@ import {
 } from 'lucide-react-native';
 import axios from 'axios';
 import config from '../api/config';
-import UserDropdown from '../components/UserDropdown';
 import authService from '../api/authService';
+import CustomAlert from '../components/CustomAlert';
 
 const { width } = Dimensions.get('window');
 
@@ -35,6 +34,18 @@ export default function CourseDetailScreen({ route, navigation }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [userData, setUserData] = useState(null);
+    const [alertVisible, setAlertVisible] = useState(false);
+    const [alertConfig, setAlertConfig] = useState({
+        title: '',
+        message: '',
+        buttons: [],
+        type: 'info'
+    });
+
+    const showAlert = (title, message, buttons = [{ text: 'Tamam' }], type = 'info') => {
+        setAlertConfig({ title, message, buttons, type });
+        setAlertVisible(true);
+    };
 
     useEffect(() => {
         loadCourseDetails();
@@ -66,10 +77,11 @@ export default function CourseDetailScreen({ route, navigation }) {
         } catch (err) {
             console.error('Course detail error:', err);
             setError(err.message || 'Kurs detayları yüklenirken bir hata oluştu');
-            Alert.alert(
+            showAlert(
                 'Hata',
                 'Kurs detayları yüklenemedi. Ana sayfaya dönülüyor.',
-                [{ text: 'Tamam', onPress: () => navigation.goBack() }]
+                [{ text: 'Tamam', onPress: () => navigation.goBack() }],
+                'error'
             );
         } finally {
             setLoading(false);
@@ -106,7 +118,7 @@ export default function CourseDetailScreen({ route, navigation }) {
         try {
             await Linking.openURL(paymentUrl);
         } catch (error) {
-            Alert.alert('Hata', 'Ödeme sayfası açılamadı. Lütfen tarayıcıdan deneyin.');
+            showAlert('Hata', 'Ödeme sayfası açılamadı. Lütfen tarayıcıdan deneyin.', [{ text: 'Tamam' }], 'error');
         }
     };
 
@@ -164,7 +176,7 @@ export default function CourseDetailScreen({ route, navigation }) {
                     <ChefHat size={28} color="#ea580c" />
                     <Text style={styles.logoText}>Chef2.0</Text>
                 </View>
-                <UserDropdown navigation={navigation} />
+                <View style={{ width: 32 }} />
             </View>
 
             <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
@@ -342,6 +354,16 @@ export default function CourseDetailScreen({ route, navigation }) {
                     </View>
                 </View>
             </ScrollView>
+
+            {/* Custom Alert */}
+            <CustomAlert
+                visible={alertVisible}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                buttons={alertConfig.buttons}
+                type={alertConfig.type}
+                onClose={() => setAlertVisible(false)}
+            />
         </View>
     );
 }

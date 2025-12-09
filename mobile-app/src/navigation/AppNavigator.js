@@ -21,6 +21,7 @@ import WelcomeScreen from '../screens/WelcomeScreen';
 import InstructorProfileScreen from '../screens/InstructorProfileScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
 import IntroScreen from '../screens/IntroScreen';
+import OnboardingScreen from '../screens/OnboardingScreen';
 
 import { Home, BookOpen, Users, MessageCircle, User } from 'lucide-react-native';
 
@@ -154,6 +155,7 @@ export default function AppNavigator() {
                 initialRouteName="Intro"
             >
                 <Stack.Screen name="Intro" component={IntroScreen} />
+                <Stack.Screen name="Onboarding" component={OnboardingScreen} />
                 <Stack.Screen name="Welcome" component={WelcomeScreen} />
                 <Stack.Screen name="Login" component={LoginScreen} />
                 <Stack.Screen name="Register" component={RegisterScreen} />

@@ -11,7 +11,6 @@ import {
     Modal,
     TextInput,
     Image,
-    Alert,
     KeyboardAvoidingView,
     Platform,
     StatusBar,
@@ -28,6 +27,7 @@ import {
 } from 'lucide-react-native';
 import forumService from '../api/forumService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import CustomAlert from '../components/CustomAlert';
 
 export default function SocialScreen({ navigation }) {
     const [categories, setCategories] = useState([]);
@@ -41,6 +41,18 @@ export default function SocialScreen({ navigation }) {
     const [newTopicForm, setNewTopicForm] = useState({ title: '', content: '' });
     const [submitting, setSubmitting] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [alertVisible, setAlertVisible] = useState(false);
+    const [alertConfig, setAlertConfig] = useState({
+        title: '',
+        message: '',
+        buttons: [],
+        type: 'info'
+    });
+
+    const showAlert = (title, message, buttons = [{ text: 'Tamam' }], type = 'info') => {
+        setAlertConfig({ title, message, buttons, type });
+        setAlertVisible(true);
+    };
 
     const checkLoginStatus = async () => {
         const token = await AsyncStorage.getItem('authToken');
@@ -97,7 +109,7 @@ export default function SocialScreen({ navigation }) {
 
     const handleLike = async (topicId) => {
         if (!isLoggedIn) {
-            Alert.alert('Giriş Yapın', 'Beğenmek için giriş yapmalısınız.');
+            showAlert('Giriş Yapın', 'Beğenmek için giriş yapmalısınız.', [{ text: 'Tamam' }], 'warning');
             return;
         }
 
@@ -125,7 +137,7 @@ export default function SocialScreen({ navigation }) {
 
     const handleCreateTopic = async () => {
         if (!newTopicForm.title.trim() || !newTopicForm.content.trim()) {
-            Alert.alert('Hata', 'Başlık ve içerik alanları zorunludur.');
+            showAlert('Hata', 'Başlık ve içerik alanları zorunludur.', [{ text: 'Tamam' }], 'error');
             return;
         }
 
@@ -141,7 +153,7 @@ export default function SocialScreen({ navigation }) {
             setNewTopicForm({ title: '', content: '' });
             loadData();
         } else {
-            Alert.alert('Hata', result.error);
+            showAlert('Hata', result.error, [{ text: 'Tamam' }], 'error');
         }
         setSubmitting(false);
     };
@@ -396,6 +408,16 @@ export default function SocialScreen({ navigation }) {
                     </View>
                 </KeyboardAvoidingView>
             </Modal>
+
+            {/* Custom Alert */}
+            <CustomAlert
+                visible={alertVisible}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                buttons={alertConfig.buttons}
+                type={alertConfig.type}
+                onClose={() => setAlertVisible(false)}
+            />
         </View>
     );
 }
@@ -602,7 +624,7 @@ const styles = StyleSheet.create({
     },
     fab: {
         position: 'absolute',
-        bottom: 100,
+        bottom: 120,
         right: 20,
         width: 56,
         height: 56,

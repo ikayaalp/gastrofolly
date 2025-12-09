@@ -146,14 +146,6 @@ export default function WelcomeScreen({ navigation }) {
                     </TouchableOpacity>
                 </View>
 
-                {/* Guest Option */}
-                <TouchableOpacity
-                    style={styles.guestButton}
-                    onPress={() => navigation.replace('Main')}
-                >
-                    <Text style={styles.guestButtonText}>Misafir olarak göz at</Text>
-                </TouchableOpacity>
-
             </ScrollView>
         </View>
     );
@@ -410,14 +402,5 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: 'bold',
     },
-    guestButton: {
-        alignItems: 'center',
-        paddingVertical: 16,
-        marginTop: 16,
-    },
-    guestButtonText: {
-        color: '#6b7280',
-        fontSize: 14,
-        textDecorationLine: 'underline',
-    },
+
 });

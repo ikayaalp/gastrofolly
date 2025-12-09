@@ -1,17 +1,30 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, Alert } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { ChefHat, Mail, Lock } from 'lucide-react-native';
 import authService from '../api/authService';
+import CustomAlert from '../components/CustomAlert';
+import AuthBackground from '../components/AuthBackground';
 
 export default function LoginScreen({ navigation }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
+    const [alertVisible, setAlertVisible] = useState(false);
+    const [alertConfig, setAlertConfig] = useState({
+        title: '',
+        message: '',
+        buttons: [],
+        type: 'info'
+    });
+
+    const showAlert = (title, message, buttons = [{ text: 'Tamam' }], type = 'info') => {
+        setAlertConfig({ title, message, buttons, type });
+        setAlertVisible(true);
+    };
 
     const handleLogin = async () => {
         if (!email || !password) {
-            Alert.alert('Hata', 'Lütfen tüm alanları doldurun');
+            showAlert('Hata', 'Lütfen tüm alanları doldurun', [{ text: 'Tamam' }], 'error');
             return;
         }
 
@@ -23,7 +36,7 @@ export default function LoginScreen({ navigation }) {
             // Don't show alert, just navigate
             navigation.replace('Main');
         } else {
-            Alert.alert('Hata', result.error);
+            showAlert('Hata', result.error, [{ text: 'Tamam' }], 'error');
         }
     };
 
@@ -32,80 +45,88 @@ export default function LoginScreen({ navigation }) {
             style={styles.container}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
-            <LinearGradient
-                colors={['#1a1a1a', '#000']}
-                style={styles.gradient}
-            >
-                <ScrollView contentContainerStyle={styles.scrollContent}>
-                    {/* Header */}
-                    <View style={styles.header}>
-                        <ChefHat color="#f97316" size={48} />
-                        <Text style={styles.title}>Chef2.0</Text>
-                        <Text style={styles.subtitle}>Gastronomi dünyasına hoş geldiniz</Text>
+            {/* Background with food images */}
+            <AuthBackground />
+
+            <ScrollView contentContainerStyle={styles.scrollContent}>
+                {/* Header */}
+                <View style={styles.header}>
+                    <ChefHat color="#f97316" size={48} />
+                    <Text style={styles.title}>Chef2.0</Text>
+                    <Text style={styles.subtitle}>Gastronomi dünyasına hoş geldiniz</Text>
+                </View>
+
+                {/* Login Form */}
+                <View style={styles.formContainer}>
+                    <Text style={styles.formTitle}>Giriş Yap</Text>
+
+                    <View style={styles.inputContainer}>
+                        <Mail color="#9ca3af" size={20} style={styles.inputIcon} />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="E-posta"
+                            placeholderTextColor="#6b7280"
+                            value={email}
+                            onChangeText={setEmail}
+                            keyboardType="email-address"
+                            autoCapitalize="none"
+                        />
                     </View>
 
-                    {/* Login Form */}
-                    <View style={styles.formContainer}>
-                        <Text style={styles.formTitle}>Giriş Yap</Text>
-
-                        <View style={styles.inputContainer}>
-                            <Mail color="#9ca3af" size={20} style={styles.inputIcon} />
-                            <TextInput
-                                style={styles.input}
-                                placeholder="E-posta"
-                                placeholderTextColor="#6b7280"
-                                value={email}
-                                onChangeText={setEmail}
-                                keyboardType="email-address"
-                                autoCapitalize="none"
-                            />
-                        </View>
-
-                        <View style={styles.inputContainer}>
-                            <Lock color="#9ca3af" size={20} style={styles.inputIcon} />
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Şifre"
-                                placeholderTextColor="#6b7280"
-                                value={password}
-                                onChangeText={setPassword}
-                                secureTextEntry
-                            />
-                        </View>
-
-                        <TouchableOpacity style={styles.forgotPassword}>
-                            <Text style={styles.forgotPasswordText}>Şifremi Unuttum</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            style={[styles.loginButton, loading && styles.loginButtonDisabled]}
-                            onPress={handleLogin}
-                            disabled={loading}
-                        >
-                            {loading ? (
-                                <ActivityIndicator color="white" />
-                            ) : (
-                                <Text style={styles.loginButtonText}>Giriş Yap</Text>
-                            )}
-                        </TouchableOpacity>
-
-                        <View style={styles.divider}>
-                            <View style={styles.dividerLine} />
-                            <Text style={styles.dividerText}>veya</Text>
-                            <View style={styles.dividerLine} />
-                        </View>
-
-                        <TouchableOpacity
-                            style={styles.registerLink}
-                            onPress={() => navigation.navigate('Register')}
-                        >
-                            <Text style={styles.registerLinkText}>
-                                Hesabınız yok mu? <Text style={styles.registerLinkBold}>Kayıt Ol</Text>
-                            </Text>
-                        </TouchableOpacity>
+                    <View style={styles.inputContainer}>
+                        <Lock color="#9ca3af" size={20} style={styles.inputIcon} />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Şifre"
+                            placeholderTextColor="#6b7280"
+                            value={password}
+                            onChangeText={setPassword}
+                            secureTextEntry
+                        />
                     </View>
-                </ScrollView>
-            </LinearGradient>
+
+                    <TouchableOpacity style={styles.forgotPassword}>
+                        <Text style={styles.forgotPasswordText}>Şifremi Unuttum</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={[styles.loginButton, loading && styles.loginButtonDisabled]}
+                        onPress={handleLogin}
+                        disabled={loading}
+                    >
+                        {loading ? (
+                            <ActivityIndicator color="white" />
+                        ) : (
+                            <Text style={styles.loginButtonText}>Giriş Yap</Text>
+                        )}
+                    </TouchableOpacity>
+
+                    <View style={styles.divider}>
+                        <View style={styles.dividerLine} />
+                        <Text style={styles.dividerText}>veya</Text>
+                        <View style={styles.dividerLine} />
+                    </View>
+
+                    <TouchableOpacity
+                        style={styles.registerLink}
+                        onPress={() => navigation.navigate('Register')}
+                    >
+                        <Text style={styles.registerLinkText}>
+                            Hesabınız yok mu? <Text style={styles.registerLinkBold}>Kayıt Ol</Text>
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            </ScrollView>
+
+            {/* Custom Alert */}
+            <CustomAlert
+                visible={alertVisible}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                buttons={alertConfig.buttons}
+                type={alertConfig.type}
+                onClose={() => setAlertVisible(false)}
+            />
         </KeyboardAvoidingView>
     );
 }
@@ -125,13 +146,13 @@ const styles = StyleSheet.create({
     },
     header: {
         alignItems: 'center',
-        marginBottom: 40,
+        marginBottom: 24,
     },
     title: {
-        fontSize: 32,
+        fontSize: 28,
         fontWeight: 'bold',
         color: 'white',
-        marginTop: 16,
+        marginTop: 12,
     },
     subtitle: {
         fontSize: 16,
@@ -139,28 +160,28 @@ const styles = StyleSheet.create({
         marginTop: 8,
     },
     formContainer: {
-        backgroundColor: 'rgba(255,255,255,0.05)',
-        borderRadius: 16,
-        padding: 24,
+        backgroundColor: 'rgba(0,0,0,0.85)',
+        borderRadius: 12,
+        padding: 16,
         borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.1)',
+        borderColor: 'rgba(255,255,255,0.15)',
     },
     formTitle: {
-        fontSize: 24,
+        fontSize: 20,
         fontWeight: 'bold',
         color: 'white',
-        marginBottom: 24,
+        marginBottom: 16,
         textAlign: 'center',
     },
     inputContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: 'rgba(255,255,255,0.1)',
+        backgroundColor: '#000',
         borderRadius: 12,
         marginBottom: 16,
         paddingHorizontal: 16,
         borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.2)',
+        borderColor: 'rgba(255,255,255,0.15)',
     },
     inputIcon: {
         marginRight: 12,
@@ -172,7 +193,7 @@ const styles = StyleSheet.create({
         paddingVertical: 16,
     },
     forgotPassword: {
-        alignSelf: 'flex-end',
+        alignSelf: 'center',
         marginBottom: 24,
     },
     forgotPasswordText: {

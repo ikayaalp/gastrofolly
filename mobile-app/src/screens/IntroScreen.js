@@ -44,6 +44,19 @@ export default function IntroScreen({ navigation }) {
 
         setTimeout(async () => {
             try {
+                // Check if onboarding is completed
+                const onboardingCompleted = await AsyncStorage.getItem('onboardingCompleted');
+
+                if (!onboardingCompleted) {
+                    // First time user - show onboarding
+                    navigation.reset({
+                        index: 0,
+                        routes: [{ name: 'Onboarding' }],
+                    });
+                    return;
+                }
+
+                // Check if user is logged in
                 const token = await AsyncStorage.getItem('authToken');
                 if (token) {
                     navigation.reset({
@@ -53,14 +66,14 @@ export default function IntroScreen({ navigation }) {
                 } else {
                     navigation.reset({
                         index: 0,
-                        routes: [{ name: 'Welcome' }],
+                        routes: [{ name: 'Login' }],
                     });
                 }
             } catch (error) {
                 console.error('Auth check error:', error);
                 navigation.reset({
                     index: 0,
-                    routes: [{ name: 'Welcome' }],
+                    routes: [{ name: 'Login' }],
                 });
             }
         }, 300);

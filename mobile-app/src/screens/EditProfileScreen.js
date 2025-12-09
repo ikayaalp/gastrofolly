@@ -7,7 +7,6 @@ import {
     TouchableOpacity,
     SafeAreaView,
     StatusBar,
-    Alert,
     ActivityIndicator,
     Image,
     KeyboardAvoidingView,
@@ -16,6 +15,7 @@ import {
 } from 'react-native';
 import { ArrowLeft, Save, User, Mail, Link as LinkIcon } from 'lucide-react-native';
 import authService from '../api/authService';
+import CustomAlert from '../components/CustomAlert';
 
 export default function EditProfileScreen({ navigation }) {
     const [name, setName] = useState('');
@@ -23,6 +23,18 @@ export default function EditProfileScreen({ navigation }) {
     const [image, setImage] = useState('');
     const [loading, setLoading] = useState(false);
     const [initialLoading, setInitialLoading] = useState(true);
+    const [alertVisible, setAlertVisible] = useState(false);
+    const [alertConfig, setAlertConfig] = useState({
+        title: '',
+        message: '',
+        buttons: [],
+        type: 'info'
+    });
+
+    const showAlert = (title, message, buttons = [{ text: 'Tamam' }], type = 'info') => {
+        setAlertConfig({ title, message, buttons, type });
+        setAlertVisible(true);
+    };
 
     useEffect(() => {
         loadUserData();
@@ -38,7 +50,7 @@ export default function EditProfileScreen({ navigation }) {
             }
         } catch (error) {
             console.error('Error loading user data:', error);
-            Alert.alert('Hata', 'Kullanıcı bilgileri yüklenemedi.');
+            showAlert('Hata', 'Kullanıcı bilgileri yüklenemedi.', [{ text: 'Tamam' }], 'error');
         } finally {
             setInitialLoading(false);
         }
@@ -46,7 +58,7 @@ export default function EditProfileScreen({ navigation }) {
 
     const handleSave = async () => {
         if (!name.trim()) {
-            Alert.alert('Uyarı', 'Lütfen adınızı giriniz.');
+            showAlert('Uyarı', 'Lütfen adınızı giriniz.', [{ text: 'Tamam' }], 'warning');
             return;
         }
 
@@ -58,16 +70,17 @@ export default function EditProfileScreen({ navigation }) {
             });
 
             if (result.success) {
-                Alert.alert(
+                showAlert(
                     'Başarılı',
                     'Profiliniz güncellendi.',
-                    [{ text: 'Tamam', onPress: () => navigation.goBack() }]
+                    [{ text: 'Tamam', onPress: () => navigation.goBack() }],
+                    'success'
                 );
             } else {
-                Alert.alert('Hata', result.error || 'Profil güncellenemedi.');
+                showAlert('Hata', result.error || 'Profil güncellenemedi.', [{ text: 'Tamam' }], 'error');
             }
         } catch (error) {
-            Alert.alert('Hata', 'Bir sorun oluştu.');
+            showAlert('Hata', 'Bir sorun oluştu.', [{ text: 'Tamam' }], 'error');
         } finally {
             setLoading(false);
         }
@@ -183,6 +196,16 @@ export default function EditProfileScreen({ navigation }) {
 
                 </ScrollView>
             </KeyboardAvoidingView>
+
+            {/* Custom Alert */}
+            <CustomAlert
+                visible={alertVisible}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                buttons={alertConfig.buttons}
+                type={alertConfig.type}
+                onClose={() => setAlertVisible(false)}
+            />
         </SafeAreaView>
     );
 }
