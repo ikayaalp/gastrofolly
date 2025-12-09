@@ -95,7 +95,7 @@ export default function OnboardingScreen({ navigation }) {
                             colors={item.gradient}
                             style={styles.iconContainer}
                         >
-                            <Icon size={48} color="white" />
+                            <Icon size={Platform.OS === 'android' ? 36 : 48} color="white" />
                         </LinearGradient>
                     </View>
 
@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
     },
     slide: {
         width,
-        height: height * 0.75,
+        height: Platform.OS === 'android' ? height * 0.65 : height * 0.75,
     },
     slideGradient: {
         flex: 1,
@@ -244,12 +244,12 @@ const styles = StyleSheet.create({
         paddingHorizontal: 40,
     },
     iconWrapper: {
-        marginBottom: 32,
+        marginBottom: Platform.OS === 'android' ? 20 : 32,
     },
     iconContainer: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
+        width: Platform.OS === 'android' ? 80 : 100,
+        height: Platform.OS === 'android' ? 80 : 100,
+        borderRadius: Platform.OS === 'android' ? 40 : 50,
         justifyContent: 'center',
         alignItems: 'center',
         shadowColor: '#ea580c',
@@ -285,17 +285,17 @@ const styles = StyleSheet.create({
     },
     bottomSection: {
         position: 'absolute',
-        bottom: 0,
+        bottom: Platform.OS === 'android' ? 60 : 0,
         left: 0,
         right: 0,
-        paddingBottom: Platform.OS === 'android' ? 30 : 50,
+        paddingBottom: Platform.OS === 'android' ? 10 : 50,
         paddingHorizontal: 20,
         alignItems: 'center',
     },
     dotsContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 32,
+        marginBottom: Platform.OS === 'android' ? 16 : 32,
     },
     dot: {
         height: 10,
