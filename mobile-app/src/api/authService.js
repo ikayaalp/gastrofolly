@@ -112,6 +112,38 @@ const authService = {
         }
     },
 
+    // Google login
+    googleLogin: async (idToken, email, name, picture) => {
+        try {
+            const response = await api.post(config.API_ENDPOINTS.GOOGLE_LOGIN, {
+                idToken,
+                email,
+                name,
+                picture,
+            });
+
+            // Save token if provided
+            if (response.data.token) {
+                await AsyncStorage.setItem('authToken', response.data.token);
+            }
+
+            // Save user data if provided
+            if (response.data.user) {
+                await AsyncStorage.setItem('userData', JSON.stringify(response.data.user));
+                if (response.data.user.id) {
+                    await AsyncStorage.setItem('userId', response.data.user.id);
+                }
+            }
+
+            return { success: true, data: response.data };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.response?.data?.message || 'Google ile giriş başarısız oldu',
+            };
+        }
+    },
+
     // Get current user data
     getCurrentUser: async () => {
         try {

@@ -108,6 +108,23 @@ export default function LoginScreen({ navigation }) {
                     </View>
 
                     <TouchableOpacity
+                        style={styles.googleButton}
+                        onPress={() => {
+                            showAlert(
+                                'Google ile Giriş',
+                                'Google ile giriş yapmak için expo-auth-session paketini kurun:\n\nnpx expo install expo-auth-session expo-crypto expo-web-browser',
+                                [{ text: 'Tamam' }],
+                                'info'
+                            );
+                        }}
+                    >
+                        <View style={styles.googleIconContainer}>
+                            <Text style={styles.googleIcon}>G</Text>
+                        </View>
+                        <Text style={styles.googleButtonText}>Google ile Giriş Yap</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
                         style={styles.registerLink}
                         onPress={() => navigation.navigate('Register')}
                     >
@@ -233,6 +250,34 @@ const styles = StyleSheet.create({
         color: '#9ca3af',
         paddingHorizontal: 16,
         fontSize: 14,
+    },
+    googleButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        paddingVertical: 14,
+        marginBottom: 16,
+    },
+    googleIconContainer: {
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        backgroundColor: '#4285F4',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 12,
+    },
+    googleIcon: {
+        color: '#fff',
+        fontWeight: 'bold',
+        fontSize: 14,
+    },
+    googleButtonText: {
+        color: '#333',
+        fontSize: 16,
+        fontWeight: '600',
     },
     registerLink: {
         alignItems: 'center',
