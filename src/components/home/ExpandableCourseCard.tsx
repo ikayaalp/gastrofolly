@@ -228,14 +228,6 @@ export default function ExpandableCourseCard({ course, showProgress }: Expandabl
                                     {course.instructor.name || "Bilinmeyen Eğitmen"}
                                 </span>
                             </div>
-
-                            {/* Rating */}
-                            <div className="flex items-center flex-shrink-0 ml-2">
-                                <Star className="h-4 w-4 text-yellow-400 fill-current mr-1" />
-                                <span className="text-sm text-white/90 font-semibold whitespace-nowrap" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}>
-                                    {averageRating.toFixed(1)}
-                                </span>
-                            </div>
                         </div>
                     </div>
                 </Link>
