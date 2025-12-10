@@ -622,15 +622,36 @@ export default function SettingsClient({ user }: SettingsClientProps) {
 
               <button
                 type="button"
-                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-                onClick={() => {
-                  if (confirm('Hesabınızı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.')) {
-                    // Hesap silme API'si çağrılabilir
-                    alert('Hesap silme özelliği yakında eklenecek')
+                disabled={loading}
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
+                onClick={async () => {
+                  if (confirm('Hesabınızı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz ve tüm verileriniz silinecektir.')) {
+                    if (confirm('Son kez soruyoruz: Hesabınızı kalıcı olarak silmek istiyor musunuz?')) {
+                      setLoading(true)
+                      try {
+                        const response = await fetch('/api/user/delete-account', {
+                          method: 'DELETE'
+                        })
+
+                        if (response.ok) {
+                          // Hesap silindi, çıkış yap ve ana sayfaya yönlendir
+                          const { signOut } = await import('next-auth/react')
+                          await signOut({ callbackUrl: '/' })
+                        } else {
+                          const data = await response.json()
+                          setMessage(data.error || 'Hesap silinemedi')
+                        }
+                      } catch (error) {
+                        console.error('Delete account error:', error)
+                        setMessage('Bir hata oluştu')
+                      } finally {
+                        setLoading(false)
+                      }
+                    }
                   }
                 }}
               >
-                Hesabı Sil
+                {loading ? 'Siliniyor...' : 'Hesabı Sil'}
               </button>
             </div>
           </div>
