@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Star, MessageCircle, User, Trash2, Send, X, Edit, Mail, ChefHat, Copy, Check } from "lucide-react"
+import { Star, MessageCircle, User, Trash2, Send, X, Edit } from "lucide-react"
 import Image from "next/image"
 
 interface Review {
@@ -33,24 +33,13 @@ export default function CommentsSection({
   courseId,
   canComment = false,
   userId,
-  instructor
 }: CommentsSectionProps) {
-  const [activeTab, setActiveTab] = useState<'comments' | 'askchef'>('comments')
   const [newComment, setNewComment] = useState("")
   const [newRating, setNewRating] = useState(5)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [deletingReviewId, setDeletingReviewId] = useState<string | null>(null)
   const [hoveredStar, setHoveredStar] = useState(0)
   const [showCommentModal, setShowCommentModal] = useState(false)
-  const [copied, setCopied] = useState(false)
-
-  const handleCopyEmail = async () => {
-    if (instructor?.email) {
-      await navigator.clipboard.writeText(instructor.email)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    }
-  }
 
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -140,206 +129,109 @@ export default function CommentsSection({
 
   return (
     <div className="space-y-6">
-      {/* Tabs */}
-      <div className="flex space-x-1 bg-gray-900/50 p-1 rounded-xl">
-        <button
-          onClick={() => setActiveTab('comments')}
-          className={`flex-1 flex items-center justify-center space-x-2 px-4 py-3 rounded-lg font-medium transition-all ${activeTab === 'comments'
-            ? 'bg-orange-600 text-white'
-            : 'text-gray-400 hover:text-white hover:bg-gray-800'
-            }`}
-        >
-          <MessageCircle className="h-5 w-5" />
-          <span>Yorumlar {reviews.length > 0 && `(${reviews.length})`}</span>
-        </button>
-        <button
-          onClick={() => setActiveTab('askchef')}
-          className={`flex-1 flex items-center justify-center space-x-2 px-4 py-3 rounded-lg font-medium transition-all ${activeTab === 'askchef'
-            ? 'bg-orange-600 text-white'
-            : 'text-gray-400 hover:text-white hover:bg-gray-800'
-            }`}
-        >
-          <ChefHat className="h-5 w-5" />
-          <span>Chef&apos;e Sor</span>
-        </button>
+      {/* Yorumlar Başlık */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <div className="bg-orange-500/10 p-2 rounded-lg">
+            <MessageCircle className="h-6 w-6 text-orange-500" />
+          </div>
+          <h2 className="text-2xl font-bold text-white">
+            Yorumlar {reviews.length > 0 && `(${reviews.length})`}
+          </h2>
+        </div>
+
+        {/* Yorum Yap Butonu */}
+        {canComment && userId && (
+          <button
+            onClick={() => setShowCommentModal(true)}
+            className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2.5 rounded-lg font-medium transition-all flex items-center space-x-2 shadow-lg hover:shadow-orange-500/50"
+          >
+            <Edit className="h-4 w-4" />
+            <span>Yorum Yap</span>
+          </button>
+        )}
       </div>
 
-      {/* Yorumlar Tab */}
-      {activeTab === 'comments' && (
-        <>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="bg-orange-500/10 p-2 rounded-lg">
-                <MessageCircle className="h-6 w-6 text-orange-500" />
-              </div>
-              <h2 className="text-2xl font-bold text-white">
-                Yorumlar {reviews.length > 0 && `(${reviews.length})`}
-              </h2>
+      {/* Yorumlar Listesi */}
+      <div className="space-y-4">
+        {reviews.length === 0 ? (
+          <div className="bg-[#0a0a0a] border border-gray-800 rounded-xl p-12 text-center">
+            <div className="bg-gray-900/50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <MessageCircle className="h-10 w-10 text-gray-600" />
             </div>
-
-            {/* Yorum Yap Butonu */}
-            {canComment && userId && (
-              <button
-                onClick={() => setShowCommentModal(true)}
-                className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2.5 rounded-lg font-medium transition-all flex items-center space-x-2 shadow-lg hover:shadow-orange-500/50"
-              >
-                <Edit className="h-4 w-4" />
-                <span>Yorum Yap</span>
-              </button>
+            <h3 className="text-lg font-semibold text-white mb-2">Henüz yorum yapılmamış</h3>
+            {canComment && (
+              <>
+                <p className="text-gray-400 text-sm mb-4">İlk yorumu sen yap!</p>
+                <button
+                  onClick={() => setShowCommentModal(true)}
+                  className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-lg font-medium transition-all inline-flex items-center space-x-2"
+                >
+                  <Edit className="h-5 w-5" />
+                  <span>Yorum Yap</span>
+                </button>
+              </>
             )}
           </div>
-
-          {/* Yorumlar Listesi */}
-          <div className="space-y-4">
-            {reviews.length === 0 ? (
-              <div className="bg-[#0a0a0a] border border-gray-800 rounded-xl p-12 text-center">
-                <div className="bg-gray-900/50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <MessageCircle className="h-10 w-10 text-gray-600" />
-                </div>
-                <h3 className="text-lg font-semibold text-white mb-2">Henüz yorum yapılmamış</h3>
-                {canComment && (
-                  <>
-                    <p className="text-gray-400 text-sm mb-4">İlk yorumu sen yap!</p>
-                    <button
-                      onClick={() => setShowCommentModal(true)}
-                      className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-lg font-medium transition-all inline-flex items-center space-x-2"
-                    >
-                      <Edit className="h-5 w-5" />
-                      <span>Yorum Yap</span>
-                    </button>
-                  </>
-                )}
-              </div>
-            ) : (
-              reviews.map((review) => (
-                <div key={review.id} className="bg-[#0a0a0a] border border-gray-800 rounded-xl p-6 hover:border-gray-700 transition-all">
-                  <div className="flex items-start space-x-4">
-                    {/* Avatar */}
-                    <div className="flex-shrink-0">
-                      {review.user.image ? (
-                        <Image
-                          src={review.user.image}
-                          alt={review.user.name || 'Kullanıcı'}
-                          width={48}
-                          height={48}
-                          className="rounded-full"
-                        />
-                      ) : (
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-600 to-orange-400 flex items-center justify-center">
-                          <User className="h-6 w-6 text-white" />
-                        </div>
-                      )}
+        ) : (
+          reviews.map((review) => (
+            <div key={review.id} className="bg-[#0a0a0a] border border-gray-800 rounded-xl p-6 hover:border-gray-700 transition-all">
+              <div className="flex items-start space-x-4">
+                {/* Avatar */}
+                <div className="flex-shrink-0">
+                  {review.user.image ? (
+                    <Image
+                      src={review.user.image}
+                      alt={review.user.name || 'Kullanıcı'}
+                      width={48}
+                      height={48}
+                      className="rounded-full"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-600 to-orange-400 flex items-center justify-center">
+                      <User className="h-6 w-6 text-white" />
                     </div>
+                  )}
+                </div>
 
-                    {/* Yorum İçeriği */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <h4 className="font-semibold text-white text-lg">
-                            {review.user.name || 'Anonim Kullanıcı'}
-                          </h4>
-                          <p className="text-sm text-gray-500 mt-1">
-                            {formatDate(review.createdAt)}
-                          </p>
-                        </div>
-                        <div className="flex items-center space-x-3">
-                          {renderStars(review.rating)}
-                          {/* Silme Butonu */}
-                          {userId && review.userId === userId && (
-                            <button
-                              onClick={() => handleDeleteComment(review.id)}
-                              disabled={deletingReviewId === review.id}
-                              className="text-gray-500 hover:text-red-500 hover:bg-red-500/10 transition-all p-2 rounded-lg"
-                              title="Yorumu sil"
-                            >
-                              <Trash2 className={`h-4 w-4 ${deletingReviewId === review.id ? 'animate-spin' : ''}`} />
-                            </button>
-                          )}
-                        </div>
-                      </div>
-
-                      {review.comment && (
-                        <p className="text-gray-300 leading-relaxed">
-                          {review.comment}
-                        </p>
+                {/* Yorum İçeriği */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <h4 className="font-semibold text-white text-lg">
+                        {review.user.name || 'Anonim Kullanıcı'}
+                      </h4>
+                      <p className="text-sm text-gray-500 mt-1">
+                        {formatDate(review.createdAt)}
+                      </p>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      {renderStars(review.rating)}
+                      {/* Silme Butonu */}
+                      {userId && review.userId === userId && (
+                        <button
+                          onClick={() => handleDeleteComment(review.id)}
+                          disabled={deletingReviewId === review.id}
+                          className="text-gray-500 hover:text-red-500 hover:bg-red-500/10 transition-all p-2 rounded-lg"
+                          title="Yorumu sil"
+                        >
+                          <Trash2 className={`h-4 w-4 ${deletingReviewId === review.id ? 'animate-spin' : ''}`} />
+                        </button>
                       )}
                     </div>
                   </div>
-                </div>
-              ))
-            )}
-          </div>
-        </>
-      )}
 
-      {/* Chef'e Sor Tab */}
-      {activeTab === 'askchef' && (
-        <div className="bg-[#0a0a0a] border border-gray-800 rounded-xl p-8">
-          <div className="text-center">
-            {/* Chef Icon */}
-            <div className="bg-gradient-to-br from-orange-600 to-orange-400 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-orange-500/30">
-              {instructor?.image ? (
-                <Image
-                  src={instructor.image}
-                  alt={instructor.name || 'Eğitmen'}
-                  width={96}
-                  height={96}
-                  className="rounded-full"
-                />
-              ) : (
-                <ChefHat className="h-12 w-12 text-white" />
-              )}
-            </div>
-
-            {/* Eğitmen Bilgileri */}
-            <h3 className="text-2xl font-bold text-white mb-2">
-              {instructor?.name || 'Kurs Eğitmeni'}
-            </h3>
-
-            {instructor?.email && (
-              <div className="flex items-center justify-center space-x-2 mb-6">
-                <p className="text-gray-400">
-                  {instructor.email}
-                </p>
-                <button
-                  onClick={handleCopyEmail}
-                  className="text-gray-400 hover:text-orange-500 transition-colors p-1 rounded"
-                  title="E-postayı kopyala"
-                >
-                  {copied ? (
-                    <Check className="h-4 w-4 text-green-500" />
-                  ) : (
-                    <Copy className="h-4 w-4" />
+                  {review.comment && (
+                    <p className="text-gray-300 leading-relaxed">
+                      {review.comment}
+                    </p>
                   )}
-                </button>
-                {copied && (
-                  <span className="text-xs text-green-500">Kopyalandı!</span>
-                )}
+                </div>
               </div>
-            )}
-
-            <p className="text-gray-400 mb-8 max-w-md mx-auto">
-              Kursla ilgili sorularınızı doğrudan eğitmene iletebilirsiniz.
-              Size en kısa sürede dönüş yapılacaktır.
-            </p>
-
-            {/* Mail Butonu */}
-            {instructor?.email ? (
-              <a
-                href={`mailto:${instructor.email}?subject=Kurs Hakkında Soru`}
-                className="inline-flex items-center justify-center space-x-3 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white px-8 py-4 rounded-xl font-medium transition-all shadow-lg hover:shadow-orange-500/50"
-              >
-                <Mail className="h-6 w-6" />
-                <span>Eğitmene E-posta Gönder</span>
-              </a>
-            ) : (
-              <p className="text-gray-500 text-sm">
-                Eğitmenin e-posta adresi henüz eklenmemiş.
-              </p>
-            )}
-          </div>
-        </div>
-      )}
+            </div>
+          ))
+        )}
+      </div>
 
       {/* Yorum Yapma Modal */}
       {showCommentModal && canComment && userId && (
