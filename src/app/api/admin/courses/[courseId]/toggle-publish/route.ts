@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { sendPushToAllUsers } from "@/lib/pushNotifications"
 
 // Kurs yayın durumunu değiştir
 export async function PATCH(
@@ -25,6 +26,7 @@ export async function PATCH(
 
     // Eğer kurs yayınlandıysa, tüm kullanıcılara bildirim gönder
     if (isPublished) {
+      // In-app bildirimler oluştur
       const allUsers = await prisma.user.findMany({
         select: { id: true }
       })
@@ -38,6 +40,13 @@ export async function PATCH(
           courseId: course.id
         }))
       })
+
+      // Push notification gönder (mobil cihazlara)
+      await sendPushToAllUsers(
+        '🎉 Yeni Kurs Eklendi!',
+        `"${course.title}" kursu artık yayında! Hemen keşfet.`,
+        { courseId: course.id, type: 'NEW_COURSE' }
+      )
     }
 
     return NextResponse.json({

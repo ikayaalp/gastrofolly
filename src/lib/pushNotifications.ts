@@ -1,0 +1,150 @@
+import { prisma } from './prisma'
+
+interface PushMessage {
+    to: string
+    sound: 'default' | null
+    title: string
+    body: string
+    data?: Record<string, unknown>
+    badge?: number
+}
+
+interface ExpoPushTicket {
+    status: 'ok' | 'error'
+    id?: string
+    message?: string
+    details?: {
+        error?: string
+    }
+}
+
+/**
+ * Tek bir kullanıcıya push notification gönder
+ */
+export async function sendPushNotification(
+    pushToken: string,
+    title: string,
+    body: string,
+    data?: Record<string, unknown>
+): Promise<ExpoPushTicket | null> {
+    const message: PushMessage = {
+        to: pushToken,
+        sound: 'default',
+        title,
+        body,
+        data: data || {},
+    }
+
+    try {
+        const response = await fetch('https://exp.host/--/api/v2/push/send', {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Accept-encoding': 'gzip, deflate',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(message),
+        })
+
+        const ticket = await response.json() as ExpoPushTicket
+
+        if (ticket.status === 'error') {
+            console.error('Push notification error:', ticket.message, ticket.details)
+        }
+
+        return ticket
+    } catch (error) {
+        console.error('Error sending push notification:', error)
+        return null
+    }
+}
+
+/**
+ * Birden fazla kullanıcıya push notification gönder
+ */
+export async function sendPushNotifications(
+    pushTokens: string[],
+    title: string,
+    body: string,
+    data?: Record<string, unknown>
+): Promise<ExpoPushTicket[]> {
+    // Expo push API'si en fazla 100 mesaj kabul eder, parçalara böl
+    const chunkSize = 100
+    const chunks: string[][] = []
+
+    for (let i = 0; i < pushTokens.length; i += chunkSize) {
+        chunks.push(pushTokens.slice(i, i + chunkSize))
+    }
+
+    const allTickets: ExpoPushTicket[] = []
+
+    for (const chunk of chunks) {
+        const messages: PushMessage[] = chunk.map(token => ({
+            to: token,
+            sound: 'default',
+            title,
+            body,
+            data: data || {},
+        }))
+
+        try {
+            const response = await fetch('https://exp.host/--/api/v2/push/send', {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Accept-encoding': 'gzip, deflate',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(messages),
+            })
+
+            const tickets = await response.json() as ExpoPushTicket[]
+            allTickets.push(...tickets)
+        } catch (error) {
+            console.error('Error sending batch push notifications:', error)
+        }
+    }
+
+    return allTickets
+}
+
+/**
+ * Tüm kullanıcılara push notification gönder (yeni kurs bildirimi için)
+ */
+export async function sendPushToAllUsers(
+    title: string,
+    body: string,
+    data?: Record<string, unknown>
+): Promise<{ success: number; failed: number }> {
+    // Push token'ı olan tüm kullanıcıları getir
+    const usersWithTokens = await prisma.user.findMany({
+        where: {
+            pushToken: {
+                not: null
+            }
+        },
+        select: {
+            pushToken: true
+        }
+    })
+
+    const pushTokens = usersWithTokens
+        .map(u => u.pushToken)
+        .filter((token): token is string => token !== null)
+
+    if (pushTokens.length === 0) {
+        console.log('No users with push tokens found')
+        return { success: 0, failed: 0 }
+    }
+
+    console.log(`Sending push notifications to ${pushTokens.length} users`)
+
+    const tickets = await sendPushNotifications(pushTokens, title, body, data)
+
+    const success = tickets.filter(t => t.status === 'ok').length
+    const failed = tickets.filter(t => t.status === 'error').length
+
+    console.log(`Push notification results: ${success} success, ${failed} failed`)
+
+    return { success, failed }
+}

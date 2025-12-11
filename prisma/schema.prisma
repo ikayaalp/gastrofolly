@@ -65,6 +65,7 @@ model User {
   subscriptionPlan      String?   // "Commis", "Chef D party", "Executive"
   subscriptionStartDate DateTime? // Abonelik başlangıç tarihi
   subscriptionEndDate   DateTime? // Abonelik bitiş tarihi
+  pushToken             String?   // Expo Push Notification token
 
   accounts      Account[]
   sessions      Session[]
