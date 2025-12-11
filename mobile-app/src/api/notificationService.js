@@ -85,7 +85,7 @@ class NotificationService {
     // Backend'e token gönder
     async sendTokenToBackend(token) {
         try {
-            const authToken = await AsyncStorage.getItem('token');
+            const authToken = await AsyncStorage.getItem('authToken');
             if (!authToken) {
                 console.log('No auth token, skipping push token registration');
                 return;
