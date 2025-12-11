@@ -79,6 +79,7 @@ model User {
   postLikes     PostLike[]
   messages      Message[]
   certificates  Certificate[]
+  notifications Notification[]
 }
 
 enum UserRole {
@@ -347,5 +348,28 @@ model Certificate {
   course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   
   @@unique([userId, courseId])
+}
+
+// Bildirim modeli
+model Notification {
+  id        String           @id @default(cuid())
+  type      NotificationType
+  title     String
+  message   String
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId  String?
+  
+  @@index([userId, isRead])
+  @@index([createdAt])
+}
+
+enum NotificationType {
+  NEW_COURSE
+  COURSE_UPDATE
+  SYSTEM
 }
 

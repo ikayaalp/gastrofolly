@@ -10,23 +10,40 @@ export async function PATCH(
 ) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user?.id || session.user.role !== 'ADMIN') {
       return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 403 })
     }
 
     const { courseId } = await params
     const { isPublished } = await request.json()
-    
+
     const course = await prisma.course.update({
       where: { id: courseId },
       data: { isPublished }
     })
 
-    return NextResponse.json({ 
-      success: true, 
+    // Eğer kurs yayınlandıysa, tüm kullanıcılara bildirim gönder
+    if (isPublished) {
+      const allUsers = await prisma.user.findMany({
+        select: { id: true }
+      })
+
+      await prisma.notification.createMany({
+        data: allUsers.map(u => ({
+          type: 'NEW_COURSE' as const,
+          title: '🎉 Yeni Kurs Eklendi!',
+          message: `"${course.title}" kursu artık yayında! Hemen keşfet.`,
+          userId: u.id,
+          courseId: course.id
+        }))
+      })
+    }
+
+    return NextResponse.json({
+      success: true,
       course,
-      message: `Kurs ${isPublished ? 'yayınlandı' : 'taslağa alındı'}` 
+      message: `Kurs ${isPublished ? 'yayınlandı' : 'taslağa alındı'}`
     })
 
   } catch (error) {

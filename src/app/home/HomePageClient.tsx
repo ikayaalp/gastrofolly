@@ -5,7 +5,6 @@ import Link from "next/link"
 import {
   ChefHat,
   Search,
-  Bell,
   Home,
   BookOpen,
   Users,
@@ -15,6 +14,7 @@ import {
 import CourseRow from "@/components/home/CourseRow"
 import HeroSection from "@/components/home/HeroSection"
 import UserDropdown from "@/components/ui/UserDropdown"
+import NotificationDropdown from "@/components/ui/NotificationDropdown"
 import SearchModal from "@/components/ui/SearchModal"
 
 interface Course {
@@ -140,9 +140,7 @@ export default function HomePageClient({
               >
                 <Search className="h-5 w-5" />
               </button>
-              <button className="text-gray-300 hover:text-white">
-                <Bell className="h-5 w-5" />
-              </button>
+              <NotificationDropdown />
               <UserDropdown />
             </div>
           </div>
