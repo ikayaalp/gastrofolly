@@ -1,5 +1,3 @@
-"use client" // This page is client-side because of Client Components (though we could fetch data server side and pass it down, let's stick to server component pattern if possible or client if needed. The original code was mixing them weirdly.)
-// Actually let's make it a Server Component like the others, as it accesses prisma directly.
 
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
@@ -159,8 +157,8 @@ export default async function AdminPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-[10px] font-semibold rounded-full ${user.role === 'ADMIN' ? 'bg-red-900/50 text-red-300 border border-red-800' :
-                          user.role === 'INSTRUCTOR' ? 'bg-blue-900/50 text-blue-300 border border-blue-800' :
-                            'bg-green-900/50 text-green-300 border border-green-800'
+                        user.role === 'INSTRUCTOR' ? 'bg-blue-900/50 text-blue-300 border border-blue-800' :
+                          'bg-green-900/50 text-green-300 border border-green-800'
                         }`}>
                         {user.role}
                       </span>

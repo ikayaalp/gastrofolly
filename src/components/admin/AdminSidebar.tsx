@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { signOut } from "next-auth/react"
 import { cn } from "@/lib/utils"
 import {
     LayoutDashboard,
@@ -16,7 +17,7 @@ import {
 
 const sidebarItems = [
     {
-        title: "Dashboard",
+        title: "Panel",
         href: "/admin",
         icon: LayoutDashboard,
         exact: true
@@ -94,7 +95,10 @@ export default function AdminSidebar({ className, onClose }: AdminSidebarProps) 
             </nav>
 
             <div className="p-4 border-t border-gray-800">
-                <button className="flex items-center space-x-3 text-gray-400 hover:text-red-400 hover:bg-red-500/10 w-full px-4 py-3 rounded-xl transition-colors">
+                <button
+                    onClick={() => signOut({ callbackUrl: '/' })}
+                    className="flex items-center space-x-3 text-gray-400 hover:text-red-400 hover:bg-red-500/10 w-full px-4 py-3 rounded-xl transition-colors"
+                >
                     <LogOut className="h-5 w-5" />
                     <span className="font-medium">Çıkış Yap</span>
                 </button>

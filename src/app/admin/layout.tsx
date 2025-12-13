@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Menu, X, Bell } from "lucide-react"
 import AdminSidebar from "@/components/admin/AdminSidebar"
+import UserDropdown from "@/components/ui/UserDropdown"
 
 export default function AdminLayout({
     children,
@@ -54,9 +55,7 @@ export default function AdminLayout({
                             <Bell className="h-5 w-5" />
                             <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
                         </button>
-                        <div className="h-8 w-8 rounded-full bg-orange-600 flex items-center justify-center text-sm font-bold border-2 border-orange-400/20">
-                            AD
-                        </div>
+                        <UserDropdown />
                     </div>
                 </header>
 
