@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Star, MessageCircle, User, Trash2, Send, X, Edit } from "lucide-react"
+import { Star, MessageCircle, User, Trash2, Send, X, Edit, Mail, Copy, Check, ChefHat } from "lucide-react"
 import Image from "next/image"
 
 interface Review {
@@ -33,6 +33,7 @@ export default function CommentsSection({
   courseId,
   canComment = false,
   userId,
+  instructor,
 }: CommentsSectionProps) {
   const [newComment, setNewComment] = useState("")
   const [newRating, setNewRating] = useState(5)
@@ -40,6 +41,20 @@ export default function CommentsSection({
   const [deletingReviewId, setDeletingReviewId] = useState<string | null>(null)
   const [hoveredStar, setHoveredStar] = useState(0)
   const [showCommentModal, setShowCommentModal] = useState(false)
+  const [showChefModal, setShowChefModal] = useState(false)
+  const [emailCopied, setEmailCopied] = useState(false)
+
+  const handleCopyEmail = async () => {
+    if (instructor?.email) {
+      try {
+        await navigator.clipboard.writeText(instructor.email)
+        setEmailCopied(true)
+        setTimeout(() => setEmailCopied(false), 2000)
+      } catch (error) {
+        console.error('Email kopyalama hatası:', error)
+      }
+    }
+  }
 
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -140,16 +155,29 @@ export default function CommentsSection({
           </h2>
         </div>
 
-        {/* Yorum Yap Butonu */}
-        {canComment && userId && (
-          <button
-            onClick={() => setShowCommentModal(true)}
-            className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2.5 rounded-lg font-medium transition-all flex items-center space-x-2 shadow-lg hover:shadow-orange-500/50"
-          >
-            <Edit className="h-4 w-4" />
-            <span>Yorum Yap</span>
-          </button>
-        )}
+        <div className="flex items-center space-x-3">
+          {/* Chef'e Sor Butonu */}
+          {canComment && instructor && (
+            <button
+              onClick={() => setShowChefModal(true)}
+              className="bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white px-4 py-2.5 rounded-lg font-medium transition-all flex items-center space-x-2 shadow-lg hover:shadow-purple-500/50"
+            >
+              <ChefHat className="h-4 w-4" />
+              <span>Chef&apos;e Sor</span>
+            </button>
+          )}
+
+          {/* Yorum Yap Butonu */}
+          {canComment && userId && (
+            <button
+              onClick={() => setShowCommentModal(true)}
+              className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2.5 rounded-lg font-medium transition-all flex items-center space-x-2 shadow-lg hover:shadow-orange-500/50"
+            >
+              <Edit className="h-4 w-4" />
+              <span>Yorum Yap</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Yorumlar Listesi */}
@@ -232,6 +260,97 @@ export default function CommentsSection({
           ))
         )}
       </div>
+
+      {/* Chef'e Sor Modal */}
+      {showChefModal && instructor && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <div className="bg-[#0a0a0a] border border-gray-800 rounded-xl w-full max-w-md shadow-2xl shadow-purple-500/10">
+            {/* Modal Header */}
+            <div className="p-6 border-b border-gray-800 flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="bg-purple-500/10 p-2 rounded-lg">
+                  <ChefHat className="h-6 w-6 text-purple-500" />
+                </div>
+                <h3 className="text-xl font-bold text-white">Chef&apos;e Sor</h3>
+              </div>
+              <button
+                onClick={() => setShowChefModal(false)}
+                className="text-gray-400 hover:text-white hover:bg-gray-800 p-2 rounded-lg transition-all"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 space-y-6">
+              {/* Chef Bilgileri */}
+              <div className="flex items-center space-x-4">
+                {instructor.image ? (
+                  <Image
+                    src={instructor.image}
+                    alt={instructor.name || 'Chef'}
+                    width={64}
+                    height={64}
+                    className="rounded-full border-2 border-purple-500"
+                  />
+                ) : (
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-600 to-purple-400 flex items-center justify-center border-2 border-purple-500">
+                    <ChefHat className="h-8 w-8 text-white" />
+                  </div>
+                )}
+                <div>
+                  <h4 className="text-xl font-bold text-white">{instructor.name || 'Chef'}</h4>
+                  <p className="text-purple-400 text-sm">Eğitmen</p>
+                </div>
+              </div>
+
+              {/* Açıklama */}
+              <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-4">
+                <p className="text-gray-300 text-sm">
+                  Chef&apos;inize mail yolundan ulaşabilirsiniz. Sorularınızı doğrudan aşağıdaki e-posta adresine gönderebilirsiniz.
+                </p>
+              </div>
+
+              {/* Email Alanı */}
+              {instructor.email && (
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-400">E-posta Adresi</label>
+                  <div className="flex items-center space-x-2">
+                    <div className="flex-1 bg-black border border-gray-800 rounded-lg px-4 py-3 flex items-center space-x-3">
+                      <Mail className="h-5 w-5 text-purple-500" />
+                      <span className="text-white font-mono text-sm">{instructor.email}</span>
+                    </div>
+                    <button
+                      onClick={handleCopyEmail}
+                      className={`p-3 rounded-lg transition-all ${emailCopied
+                          ? 'bg-green-500/20 text-green-500 border border-green-500/30'
+                          : 'bg-purple-500/20 text-purple-400 border border-purple-500/30 hover:bg-purple-500/30'
+                        }`}
+                      title="E-postayı kopyala"
+                    >
+                      {emailCopied ? <Check className="h-5 w-5" /> : <Copy className="h-5 w-5" />}
+                    </button>
+                  </div>
+                  {emailCopied && (
+                    <p className="text-green-500 text-sm">✓ E-posta kopyalandı!</p>
+                  )}
+                </div>
+              )}
+
+              {/* Mail Gönder Butonu */}
+              {instructor.email && (
+                <a
+                  href={`mailto:${instructor.email}`}
+                  className="w-full bg-gradient-to-r from-purple-600 to-purple-500 text-white py-3 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-purple-600 transition-all flex items-center justify-center space-x-2 shadow-lg hover:shadow-purple-500/50"
+                >
+                  <Mail className="h-5 w-5" />
+                  <span>Mail Gönder</span>
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Yorum Yapma Modal */}
       {showCommentModal && canComment && userId && (
