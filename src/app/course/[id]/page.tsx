@@ -21,6 +21,7 @@ import FavoriteButton from "@/components/course/FavoriteButton"
 import ShareButton from "@/components/course/ShareButton"
 import CommentsSection from "@/components/course/CommentsSection"
 import UserDropdown from "@/components/ui/UserDropdown"
+import FreeLessonModal from "@/components/course/FreeLessonModal"
 
 interface CoursePageProps {
   params: Promise<{
@@ -396,12 +397,29 @@ export default async function CoursePage({ params }: CoursePageProps) {
                     </div>
                   )
 
-                  // İlk ders veya erişimi varsa tıklanabilir link
-                  if (canAccess) {
+                  // Kayıtlı kullanıcılar için normal link
+                  if (isEnrolled) {
                     return (
                       <Link key={lesson.id} href={`/learn/${course.id}?lesson=${lesson.id}`}>
                         {lessonContent}
                       </Link>
+                    )
+                  }
+
+                  // İlk ders için popup modal (kayıtlı değilse)
+                  if (isFirstLesson) {
+                    return (
+                      <FreeLessonModal
+                        key={lesson.id}
+                        lesson={{
+                          id: lesson.id,
+                          title: lesson.title,
+                          description: lesson.description || null,
+                          videoUrl: (course.lessons[0] as { videoUrl?: string | null }).videoUrl || null,
+                          duration: lesson.duration || null
+                        }}
+                        courseTitle={course.title}
+                      />
                     )
                   }
 
