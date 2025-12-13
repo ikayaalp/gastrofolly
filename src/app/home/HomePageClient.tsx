@@ -112,14 +112,9 @@ export default function HomePageClient({
                       Kurslarım
                     </Link>
                     {session?.user?.role === 'INSTRUCTOR' && (
-                      <>
-                        <Link href="/instructor-dashboard" className="text-gray-300 hover:text-white transition-colors">
-                          Eğitmen Paneli
-                        </Link>
-                        <Link href="/instructor-dashboard/courses" className="text-gray-300 hover:text-white transition-colors">
-                          Kurslarımı Yönet
-                        </Link>
-                      </>
+                      <Link href="/instructor-dashboard" className="text-gray-300 hover:text-white transition-colors">
+                        Havuz Paneli
+                      </Link>
                     )}
                     <Link href="/chef-sosyal" className="text-gray-300 hover:text-white transition-colors">
                       Chef Sosyal
