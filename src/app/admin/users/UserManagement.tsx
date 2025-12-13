@@ -127,7 +127,7 @@ export default function UserManagement({ users }: UserManagementProps) {
       </div>
 
       {/* Filters */}
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 mb-6">
+      <div className="bg-black border border-gray-800 rounded-lg p-6 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Search */}
           <div className="relative">
@@ -159,7 +159,7 @@ export default function UserManagement({ users }: UserManagementProps) {
       </div>
 
       {/* Users List */}
-      <div className="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden">
+      <div className="bg-black border border-gray-800 rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-800">

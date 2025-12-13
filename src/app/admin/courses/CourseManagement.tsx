@@ -163,7 +163,7 @@ export default function CourseManagement({ initialCourses, categories, instructo
     <div className="space-y-8">
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+        <div className="bg-black border border-gray-800 rounded-xl p-6">
           <div className="flex items-center space-x-3">
             <div className="bg-blue-500/20 p-3 rounded-lg">
               <Play className="h-6 w-6 text-blue-400" />
@@ -175,7 +175,7 @@ export default function CourseManagement({ initialCourses, categories, instructo
           </div>
         </div>
 
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+        <div className="bg-black border border-gray-800 rounded-xl p-6">
           <div className="flex items-center space-x-3">
             <div className="bg-green-500/20 p-3 rounded-lg">
               <Eye className="h-6 w-6 text-green-400" />
@@ -187,7 +187,7 @@ export default function CourseManagement({ initialCourses, categories, instructo
           </div>
         </div>
 
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+        <div className="bg-black border border-gray-800 rounded-xl p-6">
           <div className="flex items-center space-x-3">
             <div className="bg-red-500/20 p-3 rounded-lg">
               <EyeOff className="h-6 w-6 text-red-400" />
@@ -199,7 +199,7 @@ export default function CourseManagement({ initialCourses, categories, instructo
           </div>
         </div>
 
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+        <div className="bg-black border border-gray-800 rounded-xl p-6">
           <div className="flex items-center space-x-3">
             <div className="bg-orange-500/20 p-3 rounded-lg">
               <Users className="h-6 w-6 text-orange-400" />
@@ -222,7 +222,7 @@ export default function CourseManagement({ initialCourses, categories, instructo
             <input
               type="text"
               placeholder="Kurs ara..."
-              className="w-full bg-gray-900 border border-gray-800 text-white pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full bg-black border border-gray-800 text-white pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -230,7 +230,7 @@ export default function CourseManagement({ initialCourses, categories, instructo
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value as any)}
-            className="bg-gray-900 border border-gray-800 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="bg-black border border-gray-800 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
           >
             <option value="ALL">Tüm Durumlar</option>
             <option value="PUBLISHED">Yayında</option>
@@ -247,7 +247,7 @@ export default function CourseManagement({ initialCourses, categories, instructo
       </div>
 
       {/* Course List */}
-      <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+      <div className="bg-black border border-gray-800 rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-800">

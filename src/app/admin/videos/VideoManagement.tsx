@@ -32,7 +32,7 @@ export default function VideoManagement({ lessonsWithoutVideos, allLessons }: Vi
     setShowUpload(false)
     setSelectedLesson(null)
     setRefreshKey(prev => prev + 1)
-    
+
     // Sayfayı yenile
     if (typeof window !== 'undefined') {
       window.location.reload()
@@ -51,7 +51,7 @@ export default function VideoManagement({ lessonsWithoutVideos, allLessons }: Vi
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen px-4">
             <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowUpload(false)} />
-            
+
             <div className="relative bg-gray-900 border border-gray-700 rounded-xl shadow-2xl max-w-2xl w-full">
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
@@ -66,8 +66,8 @@ export default function VideoManagement({ lessonsWithoutVideos, allLessons }: Vi
                     ✕
                   </button>
                 </div>
-                
-                <VideoUpload 
+
+                <VideoUpload
                   onVideoUploaded={handleVideoUploaded}
                   lessonId={selectedLesson.id}
                 />
@@ -79,7 +79,7 @@ export default function VideoManagement({ lessonsWithoutVideos, allLessons }: Vi
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+        <div className="bg-black border border-gray-800 rounded-xl p-6">
           <div className="flex items-center space-x-3">
             <div className="bg-red-500/20 p-3 rounded-lg">
               <AlertCircle className="h-6 w-6 text-red-400" />
@@ -91,7 +91,7 @@ export default function VideoManagement({ lessonsWithoutVideos, allLessons }: Vi
           </div>
         </div>
 
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+        <div className="bg-black border border-gray-800 rounded-xl p-6">
           <div className="flex items-center space-x-3">
             <div className="bg-green-500/20 p-3 rounded-lg">
               <CheckCircle className="h-6 w-6 text-green-400" />
@@ -103,7 +103,7 @@ export default function VideoManagement({ lessonsWithoutVideos, allLessons }: Vi
           </div>
         </div>
 
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+        <div className="bg-black border border-gray-800 rounded-xl p-6">
           <div className="flex items-center space-x-3">
             <div className="bg-blue-500/20 p-3 rounded-lg">
               <Play className="h-6 w-6 text-blue-400" />
@@ -118,12 +118,12 @@ export default function VideoManagement({ lessonsWithoutVideos, allLessons }: Vi
 
       {/* Lessons Without Videos */}
       {lessonsWithoutVideos.length > 0 && (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+        <div className="bg-black border border-gray-800 rounded-xl p-6">
           <h2 className="text-xl font-bold text-white mb-6 flex items-center space-x-2">
             <AlertCircle className="h-5 w-5 text-red-400" />
             <span>Video Bekleyen Dersler ({lessonsWithoutVideos.length})</span>
           </h2>
-          
+
           <div className="grid grid-cols-1 gap-4">
             {lessonsWithoutVideos.map((lesson) => (
               <div key={lesson.id} className="bg-gray-800 border border-gray-700 rounded-lg p-4 flex items-center justify-between">
@@ -134,7 +134,7 @@ export default function VideoManagement({ lessonsWithoutVideos, allLessons }: Vi
                     <p className="text-gray-500 text-sm mt-1 line-clamp-2">{lesson.description}</p>
                   )}
                 </div>
-                
+
                 <button
                   onClick={() => handleUploadClick(lesson)}
                   className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2"
@@ -149,9 +149,9 @@ export default function VideoManagement({ lessonsWithoutVideos, allLessons }: Vi
       )}
 
       {/* All Lessons */}
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+      <div className="bg-black border border-gray-800 rounded-xl p-6">
         <h2 className="text-xl font-bold text-white mb-6">Tüm Dersler</h2>
-        
+
         <div className="space-y-4">
           {allLessons.map((lesson) => (
             <div key={lesson.id} className="bg-gray-800 border border-gray-700 rounded-lg p-4 flex items-center justify-between">
@@ -173,7 +173,7 @@ export default function VideoManagement({ lessonsWithoutVideos, allLessons }: Vi
                   <p className="text-gray-500 text-xs mt-1 font-mono">{lesson.videoUrl}</p>
                 )}
               </div>
-              
+
               <button
                 onClick={() => handleUploadClick(lesson)}
                 className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2"
