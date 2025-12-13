@@ -212,12 +212,8 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                           </div>
                         </div>
 
-                        {/* Price */}
-                        <div className="text-right flex-shrink-0">
-                          <span className="text-xl font-bold text-orange-500">
-                            ₺{course.price}
-                          </span>
-                        </div>
+
+
                       </div>
                     </Link>
                   )

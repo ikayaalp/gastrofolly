@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, Image } from 'react-native';
 import { ChefHat, Mail, Lock } from 'lucide-react-native';
+import * as WebBrowser from 'expo-web-browser';
+import * as Google from 'expo-auth-session/providers/google';
 import authService from '../api/authService';
 import CustomAlert from '../components/CustomAlert';
 import AuthBackground from '../components/AuthBackground';
+
+WebBrowser.maybeCompleteAuthSession();
 
 export default function LoginScreen({ navigation }) {
     const [email, setEmail] = useState('');
@@ -16,6 +20,52 @@ export default function LoginScreen({ navigation }) {
         buttons: [],
         type: 'info'
     });
+
+    const [request, response, promptAsync] = Google.useAuthRequest({
+        // EXPO GO DEBUGGING:
+        // When using Expo Go, we must use the Web Client ID for Android because the package name (host.exp.exponent) 
+        // doesn't match our specific Android Client ID (com.chef2.app).
+        // So for now, we use the Web Client ID for 'androidClientId' as well.
+        iosClientId: '334630749775-terb1dfppb1atgem3t1pc0o41chaj3r1.apps.googleusercontent.com',
+        androidClientId: '334630749775-meelg2lgcapd5d64rmbm9gmm8h06im0e.apps.googleusercontent.com', // Using WEB ID for Expo Go
+        webClientId: '334630749775-meelg2lgcapd5d64rmbm9gmm8h06im0e.apps.googleusercontent.com',
+    });
+
+    React.useEffect(() => {
+        if (request) {
+            console.log('Redirect URI:', request.redirectUri);
+        }
+    }, [request]);
+
+    React.useEffect(() => {
+        if (response?.type === 'success') {
+            const { authentication } = response;
+            handleGoogleLogin(authentication.idToken);
+        }
+    }, [response]);
+
+    const handleGoogleLogin = async (idToken) => {
+        setLoading(true);
+        // We need to fetch user info to get email/name/picture to send to backend
+        try {
+            const userInfoResponse = await fetch('https://www.googleapis.com/userinfo/v2/me', {
+                headers: { Authorization: `Bearer ${idToken}` },
+            });
+            const user = await userInfoResponse.json();
+
+            const result = await authService.googleLogin(idToken, user.email, user.name, user.picture);
+
+            if (result.success) {
+                navigation.replace('Main');
+            } else {
+                showAlert('Hata', result.error, [{ text: 'Tamam' }], 'error');
+            }
+        } catch (error) {
+            showAlert('Hata', 'Google kullanıcı bilgileri alınamadı', [{ text: 'Tamam' }], 'error');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const showAlert = (title, message, buttons = [{ text: 'Tamam' }], type = 'info') => {
         setAlertConfig({ title, message, buttons, type });
@@ -85,7 +135,10 @@ export default function LoginScreen({ navigation }) {
                         />
                     </View>
 
-                    <TouchableOpacity style={styles.forgotPassword}>
+                    <TouchableOpacity
+                        style={styles.forgotPassword}
+                        onPress={() => navigation.navigate('ForgotPassword')}
+                    >
                         <Text style={styles.forgotPasswordText}>Şifremi Unuttum</Text>
                     </TouchableOpacity>
 
@@ -109,18 +162,13 @@ export default function LoginScreen({ navigation }) {
 
                     <TouchableOpacity
                         style={styles.googleButton}
-                        onPress={() => {
-                            showAlert(
-                                'Google ile Giriş',
-                                'Google ile giriş yapmak için expo-auth-session paketini kurun:\n\nnpx expo install expo-auth-session expo-crypto expo-web-browser',
-                                [{ text: 'Tamam' }],
-                                'info'
-                            );
-                        }}
+                        onPress={() => promptAsync()}
+                        disabled={!request}
                     >
-                        <View style={styles.googleIconContainer}>
-                            <Text style={styles.googleIcon}>G</Text>
-                        </View>
+                        <Image
+                            source={{ uri: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/768px-Google_%22G%22_logo.svg.png' }}
+                            style={styles.googleLogo}
+                        />
                         <Text style={styles.googleButtonText}>Google ile Giriş Yap</Text>
                     </TouchableOpacity>
 
@@ -260,19 +308,10 @@ const styles = StyleSheet.create({
         paddingVertical: 14,
         marginBottom: 16,
     },
-    googleIconContainer: {
+    googleLogo: {
         width: 24,
         height: 24,
-        borderRadius: 12,
-        backgroundColor: '#4285F4',
-        alignItems: 'center',
-        justifyContent: 'center',
         marginRight: 12,
-    },
-    googleIcon: {
-        color: '#fff',
-        fontWeight: 'bold',
-        fontSize: 14,
     },
     googleButtonText: {
         color: '#333',

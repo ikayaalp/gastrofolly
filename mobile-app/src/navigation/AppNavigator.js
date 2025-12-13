@@ -4,20 +4,9 @@ import { NavigationContainer, createNavigationContainerRef } from '@react-naviga
 
 export const navigationRef = createNavigationContainerRef();
 
-// ... existing code ...
+import { Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-export default function AppNavigator() {
-    return (
-        <NavigationContainer ref={navigationRef}>
-            <Stack.Navigator
-                screenOptions={{ headerShown: false }}
-                initialRouteName="Intro"
-            >
-                {/* ... screens ... */}
-            </Stack.Navigator>
-        </NavigationContainer>
-    );
-}
 
 // Screens
 import HomeScreen from '../screens/HomeScreen';
@@ -161,6 +150,8 @@ function TabNavigator() {
     );
 }
 
+import ForgotPasswordScreen from '../screens/ForgotPasswordScreen';
+
 export default function AppNavigator() {
     return (
         <NavigationContainer ref={navigationRef}>
@@ -173,6 +164,7 @@ export default function AppNavigator() {
                 <Stack.Screen name="Welcome" component={WelcomeScreen} />
                 <Stack.Screen name="Login" component={LoginScreen} />
                 <Stack.Screen name="Register" component={RegisterScreen} />
+                <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
                 <Stack.Screen name="EmailVerification" component={EmailVerificationScreen} />
                 <Stack.Screen name="Main" component={TabNavigator} />
                 <Stack.Screen name="Profile" component={ProfileScreen} />

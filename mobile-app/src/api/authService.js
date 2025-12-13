@@ -42,6 +42,24 @@ const authService = {
         }
     },
 
+    // Forgot Password
+    forgotPassword: async (email) => {
+        try {
+            // Note: Ensure this endpoint matches your backend configuration in config.js
+            // If it's not in config.js yet, we might need to use the direct path or update config.
+            // Using direct path as per route.ts analysis: /api/auth/forgot-password
+            const response = await api.post('/api/auth/forgot-password', {
+                email,
+            });
+            return { success: true, data: response.data };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.response?.data?.message || 'Şifre sıfırlama e-postası gönderilemedi',
+            };
+        }
+    },
+
     // Login user
     login: async (email, password) => {
         try {

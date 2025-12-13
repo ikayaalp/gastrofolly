@@ -5,98 +5,70 @@ import { prisma } from "@/lib/prisma"
 import InstructorDashboardClient from "./InstructorDashboardClient"
 
 async function getInstructorData(userId: string) {
-  const [
-    courses,
-    totalStudents,
-    totalRevenue,
-    recentMessages,
-    courseStats
-  ] = await Promise.all([
-    // Eğitmenin kursları
-    prisma.course.findMany({
-      where: { instructorId: userId },
-      include: {
-        category: true,
-        instructor: true,
-        reviews: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                image: true
-              }
-            }
-          }
-        },
-        _count: { select: { enrollments: true, lessons: true } }
-      },
-      orderBy: { createdAt: 'desc' }
-    }),
-    // Toplam öğrenci sayısı
-    prisma.enrollment.count({
-      where: {
-        course: { instructorId: userId }
+  // 1. Toplam Havuz Parası (Tüm enrollment gelirleri)
+  // Not: Payment tablosu yerine şimdilik Enrollment tablosu üzerinden gidiyoruz
+  // çünkü Enrollment tablosunda Course -> Price ilişkisi var.
+  const allEnrollments = await prisma.enrollment.findMany({
+    include: {
+      course: {
+        select: { price: true }
       }
-    }),
-    // Toplam gelir (basit hesaplama)
-    prisma.enrollment.findMany({
-      where: {
-        course: { instructorId: userId }
-      },
-      include: {
-        course: {
-          select: { price: true }
-        }
-      }
-    }).then(enrollments => 
-      enrollments.reduce((total, enrollment) => total + enrollment.course.price, 0)
-    ),
+    }
+  })
 
-        // Son Chef&apos;e Sor
-        prisma.message.findMany({
-          where: {
-            course: { instructorId: userId }
-          },
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                image: true
-              }
-            },
-            course: {
-              select: {
-                id: true,
-                title: true,
-                imageUrl: true
-              }
-            }
-          },
-          orderBy: { createdAt: 'desc' },
-          take: 5
-        }),
-    // Kurs istatistikleri
-    prisma.course.findMany({
-      where: { instructorId: userId },
-      include: {
-        _count: { select: { enrollments: true, lessons: true } },
-        reviews: {
-          select: { rating: true }
+  const totalPool = allEnrollments.reduce((acc, curr) => acc + curr.course.price, 0)
+
+  // 2. Eğitmenin Toplam İzlenme Süresi (Dakika)
+  const instructorProgress = await prisma.progress.findMany({
+    where: {
+      lesson: {
+        course: {
+          instructorId: userId
         }
+      },
+      isCompleted: true
+    },
+    include: {
+      lesson: {
+        select: { duration: true }
       }
-    })
-  ])
+    }
+  })
+
+  const instructorWatchMinutes = instructorProgress.reduce((acc, curr) => acc + (curr.lesson.duration || 0), 0)
+
+  // 3. Sistemin Toplam İzlenme Süresi (Dakika)
+  const systemProgress = await prisma.progress.findMany({
+    where: {
+      isCompleted: true
+    },
+    include: {
+      lesson: {
+        select: { duration: true }
+      }
+    }
+  })
+
+  const systemWatchMinutes = systemProgress.reduce((acc, curr) => acc + (curr.lesson.duration || 0), 0)
+
+  // 4. Pay Hesaplama
+  // Pay Oranı = (Eğitmen İzlenmesi / Sistem Toplam İzlenmesi)
+  // Pay Getirisi = Pay Oranı * Toplam Havuz
+
+  let shareAmount = 0
+  let sharePercentage = 0
+
+  if (systemWatchMinutes > 0) {
+    sharePercentage = (instructorWatchMinutes / systemWatchMinutes) * 100
+    shareAmount = (totalPool * sharePercentage) / 100
+  }
 
   return {
-    courses,
-    totalStudents,
-    totalRevenue,
-    recentMessages,
-    courseStats
+    totalPool,
+    instructorWatchMinutes,
+    systemWatchMinutes,
+    shareAmount,
+    sharePercentage
   }
 }
 
