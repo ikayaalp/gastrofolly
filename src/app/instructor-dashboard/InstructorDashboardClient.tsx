@@ -29,17 +29,74 @@ interface Props {
 export default function InstructorDashboardClient({ instructorData, session }: Props) {
   return (
     <div className="min-h-screen bg-gray-900">
+      {/* Desktop Header */}
+      <header className="hidden md:block fixed top-0 left-0 right-0 z-50 bg-gray-900 backdrop-blur-sm border-b border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <div className="flex items-center space-x-8">
+              <Link href="/home" className="flex items-center space-x-2">
+                <span className="text-2xl font-bold text-white">Chef2.0</span>
+                <span className="bg-blue-600 text-white px-2 py-1 rounded text-sm font-medium">Eğitmen</span>
+              </Link>
+              <nav className="flex space-x-6">
+                <Link href="/home" className="text-gray-300 hover:text-white transition-colors">
+                  Ana Sayfa
+                </Link>
+                <Link href="/instructor-dashboard" className="text-orange-500 font-semibold">
+                  Havuz Paneli
+                </Link>
+                <Link href="/chef-sor" className="text-gray-300 hover:text-white transition-colors">
+                  Chef&apos;e Sor
+                </Link>
+                <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
+                  İletişim
+                </Link>
+              </nav>
+            </div>
+
+            <div className="flex items-center space-x-4">
+              <Link
+                href="/instructor-dashboard/profile"
+                className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors flex items-center space-x-2"
+              >
+                <Users className="h-4 w-4" />
+                <span>Profil</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Mobile Bottom Navigation */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-gray-900 border-t border-gray-800">
+        <div className="grid grid-cols-4 gap-1">
+          <Link href="/home" className="flex flex-col items-center py-3 text-gray-400 hover:text-white transition-colors">
+            <Eye className="h-5 w-5" />
+            <span className="text-xs mt-1">Ana Sayfa</span>
+          </Link>
+          <Link href="/instructor-dashboard" className="flex flex-col items-center py-3 text-orange-500">
+            <DollarSign className="h-5 w-5" />
+            <span className="text-xs mt-1">Havuz</span>
+          </Link>
+          <Link href="/chef-sor" className="flex flex-col items-center py-3 text-gray-400 hover:text-white transition-colors">
+            <Users className="h-5 w-5" />
+            <span className="text-xs mt-1">Chef&apos;e Sor</span>
+          </Link>
+          <Link href="/contact" className="flex flex-col items-center py-3 text-gray-400 hover:text-white transition-colors">
+            <Users className="h-5 w-5" />
+            <span className="text-xs mt-1">İletişim</span>
+          </Link>
+        </div>
+      </div>
+
       {/* Page Header */}
-      <div className="bg-gray-800 border-b border-gray-700 pt-24 pb-8">
+      <div className="bg-gray-800 border-b border-gray-700 pt-24 pb-8 md:mt-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold text-white mb-2">Eğitmen Havuz Paneli</h1>
               <p className="text-gray-400">Hoş geldin, {session.user.name}</p>
             </div>
-            <Link href="/home" className="text-gray-400 hover:text-white transition-colors">
-              Ana Sayfaya Dön
-            </Link>
           </div>
         </div>
       </div>
