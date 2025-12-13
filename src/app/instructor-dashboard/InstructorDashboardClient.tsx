@@ -9,6 +9,10 @@ interface InstructorData {
   systemWatchMinutes: number
   shareAmount: number
   sharePercentage: number
+  courseStats?: {
+    title: string
+    minutes: number
+  }[]
 }
 
 interface Session {
@@ -194,7 +198,63 @@ export default function InstructorDashboardClient({ instructorData, session }: P
 
           </div>
 
-          <div className="mt-12 text-center">
+
+          {/* Detailed Course Breakdown Table */}
+          <div className="mt-12 bg-gray-900 rounded-2xl border border-gray-800 shadow-lg p-8">
+            <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+              <Eye className="h-5 w-5 text-blue-500" />
+              Kurs Bazlı İzlenme Detayları
+            </h3>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-gray-400">
+                <thead className="text-xs text-gray-500 uppercase bg-gray-900/50 border-b border-gray-800">
+                  <tr>
+                    <th className="py-3 px-4">Kurs Adı</th>
+                    <th className="py-3 px-4 text-right">İzlenme (dk)</th>
+                    <th className="py-3 px-4 text-right">Kendi İçindeki Payı</th>
+                    <th className="py-3 px-4 text-right">Sistem Payı</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-800">
+                  {instructorData.courseStats && instructorData.courseStats.length > 0 ? (
+                    instructorData.courseStats.map((stat, index) => {
+                      const ownShare = instructorData.instructorWatchMinutes > 0
+                        ? (stat.minutes / instructorData.instructorWatchMinutes) * 100
+                        : 0;
+                      const systemShare = instructorData.systemWatchMinutes > 0
+                        ? (stat.minutes / instructorData.systemWatchMinutes) * 100
+                        : 0;
+
+                      return (
+                        <tr key={index} className="hover:bg-gray-800/50 transition-colors">
+                          <td className="py-4 px-4 font-medium text-white">{stat.title}</td>
+                          <td className="py-4 px-4 text-right font-mono text-blue-400">{stat.minutes} dk</td>
+                          <td className="py-4 px-4 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <span className="text-xs">{ownShare.toFixed(1)}%</span>
+                              <div className="w-16 h-1.5 bg-gray-700 rounded-full">
+                                <div className="h-1.5 bg-blue-500 rounded-full" style={{ width: `${Math.min(ownShare, 100)}%` }}></div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-4 px-4 text-right text-orange-500 font-bold">%{systemShare.toFixed(4)}</td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td colSpan={4} className="py-8 text-center text-gray-500 italic">
+                        Henüz izlenme verisi bulunmuyor.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="mt-8 text-center">
             <p className="text-gray-500 text-sm">
               * Bu veriler canlıdır. Havuz büyüdükçe veya izlenme oranınız değiştikçe kazancınız anlık olarak güncellenir.
             </p>
