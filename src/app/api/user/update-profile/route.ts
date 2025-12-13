@@ -11,24 +11,13 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "Giriş yapmanız gerekiyor" }, { status: 401 })
     }
 
-    const { name, email, image, phoneNumber } = await request.json()
+    const { name, image, phoneNumber } = await request.json()
 
-    // E-posta değişikliği kontrolü
-    if (email !== session.user.email) {
-      const existingUser = await prisma.user.findUnique({
-        where: { email }
-      })
-
-      if (existingUser && existingUser.id !== session.user.id) {
-        return NextResponse.json({ error: "Bu e-posta adresi zaten kullanılıyor" }, { status: 400 })
-      }
-    }
-
+    // Email artık değiştirilemez, sadece name, phoneNumber ve image güncellenir
     const updatedUser = await prisma.user.update({
       where: { id: session.user.id },
       data: {
         name: name || null,
-        email,
         phoneNumber: phoneNumber || null,
         image: image || null
       }
