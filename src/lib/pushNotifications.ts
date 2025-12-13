@@ -98,8 +98,13 @@ export async function sendPushNotifications(
                 body: JSON.stringify(messages),
             })
 
-            const tickets = await response.json() as ExpoPushTicket[]
-            allTickets.push(...tickets)
+            const result = await response.json()
+
+            // Expo API can return a single object or an array
+            const tickets = Array.isArray(result) ? result : [result]
+
+            // Also explicitly interpret the return type as ExpoPushTicket[] for TS
+            allTickets.push(...(tickets as ExpoPushTicket[]))
         } catch (error) {
             console.error('Error sending batch push notifications:', error)
         }
