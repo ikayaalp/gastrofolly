@@ -206,7 +206,7 @@ export default async function AdminPage() {
               </div>
               <div className="flex justify-between items-center text-sm">
                 <span className="text-gray-400">Son Güncelleme</span>
-                <span className="text-gray-400 font-medium">Şimdi</span>
+                <span className="text-gray-400 font-medium">{new Date().toLocaleTimeString('tr-TR')}</span>
               </div>
             </div>
           </div>
