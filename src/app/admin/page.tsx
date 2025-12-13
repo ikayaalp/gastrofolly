@@ -190,6 +190,11 @@ export default async function AdminPage() {
           </Link>
         </div>
 
+        {/* Push Notification Sender */}
+        <div className="mb-8">
+          <PushNotificationSender />
+        </div>
+
         {/* Kullanıcı Listesi */}
         <div className="bg-gray-900 border border-gray-800 rounded-lg">
           <div className="px-6 py-4 border-b border-gray-800">
@@ -240,8 +245,8 @@ export default async function AdminPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${user.role === 'ADMIN' ? 'bg-red-900 text-red-300' :
-                          user.role === 'INSTRUCTOR' ? 'bg-blue-900 text-blue-300' :
-                            'bg-green-900 text-green-300'
+                        user.role === 'INSTRUCTOR' ? 'bg-blue-900 text-blue-300' :
+                          'bg-green-900 text-green-300'
                         }`}>
                         {user.role === 'ADMIN' ? 'Yönetici' :
                           user.role === 'INSTRUCTOR' ? 'Eğitmen' : 'Öğrenci'}
