@@ -59,6 +59,7 @@ model User {
   verificationCodeExpiry DateTime? // Kodun geçerlilik süresi
   resetToken            String?   // Şifre sıfırlama token
   resetTokenExpiry      DateTime? // Token geçerlilik süresi
+  phoneNumber           String?   // Telefon numarası
   role                  UserRole  @default(STUDENT)
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt

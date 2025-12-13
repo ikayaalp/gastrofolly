@@ -11,6 +11,7 @@ interface UserData {
   id: string
   name: string | null
   email: string
+  phoneNumber: string | null
   image: string | null
   role: string
   createdAt: Date
@@ -35,6 +36,7 @@ export default function SettingsClient({ user }: SettingsClientProps) {
   const [profileData, setProfileData] = useState({
     name: user.name || "",
     email: user.email,
+    phoneNumber: user.phoneNumber || "",
     image: user.image || ""
   })
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -104,7 +106,8 @@ export default function SettingsClient({ user }: SettingsClientProps) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          ...profileData,
+          name: profileData.name,
+          phoneNumber: profileData.phoneNumber,
           image: imageUrl
         })
       })
@@ -333,9 +336,23 @@ export default function SettingsClient({ user }: SettingsClientProps) {
                 <input
                   type="email"
                   value={profileData.email}
-                  onChange={(e) => setProfileData(prev => ({ ...prev, email: e.target.value }))}
-                  className="w-full px-4 py-3 bg-[#1a1a1a] border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+                  disabled
+                  readOnly
+                  className="w-full px-4 py-3 bg-[#111] border border-gray-800 rounded-lg text-gray-500 cursor-not-allowed placeholder-gray-600"
                   placeholder="ornek@email.com"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Telefon Numarası
+                </label>
+                <input
+                  type="tel"
+                  value={profileData.phoneNumber}
+                  onChange={(e) => setProfileData(prev => ({ ...prev, phoneNumber: e.target.value }))}
+                  className="w-full px-4 py-3 bg-[#1a1a1a] border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+                  placeholder="05XX XXX XX XX"
                 />
               </div>
             </div>

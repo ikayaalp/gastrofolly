@@ -342,51 +342,72 @@ export default async function CoursePage({ params }: CoursePageProps) {
             <div className="bg-black border border-black rounded-xl shadow-lg p-6 mb-8">
               <h2 className="text-2xl font-bold text-white mb-6">Kurs İçeriği</h2>
               <div className="space-y-4">
-                {course.lessons.map((lesson: { id: string; isFree?: boolean | null; duration?: number | null; title: string; description?: string | null }, index: number) => (
-                  <div
-                    key={lesson.id}
-                    className="flex items-center justify-between p-4 border border-black rounded-lg hover:border-orange-500/50 transition-colors"
-                  >
-                    <div className="flex items-center">
-                      <div className="bg-orange-500/20 text-orange-500 w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold mr-4">
-                        {index + 1}
-                      </div>
+                {course.lessons.map((lesson: { id: string; isFree?: boolean | null; duration?: number | null; title: string; description?: string | null }, index: number) => {
+                  // İlk ders her zaman erişilebilir
+                  const isFirstLesson = index === 0
+                  const canAccess = isEnrolled || isFirstLesson
+
+                  const lessonContent = (
+                    <div
+                      className={`flex items-center justify-between p-4 border border-black rounded-lg transition-colors ${canAccess ? 'hover:border-orange-500/50 cursor-pointer' : ''}`}
+                    >
                       <div className="flex items-center">
-                        {lesson.isFree ? (
-                          <Play className="h-4 w-4 text-green-500 mr-2" />
-                        ) : (
-                          <Lock className="h-4 w-4 text-orange-500 mr-2" />
-                        )}
-                        <div>
-                          <h3 className="font-semibold text-white">
-                            {lesson.title}
-                          </h3>
-                          {lesson.description && (
-                            <p className="text-sm text-gray-400">
-                              {lesson.description}
-                            </p>
+                        <div className="bg-orange-500/20 text-orange-500 w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold mr-4">
+                          {index + 1}
+                        </div>
+                        <div className="flex items-center">
+                          {isFirstLesson || lesson.isFree ? (
+                            <Play className="h-4 w-4 text-green-500 mr-2" />
+                          ) : (
+                            <Lock className="h-4 w-4 text-orange-500 mr-2" />
                           )}
+                          <div>
+                            <h3 className="font-semibold text-white">
+                              {lesson.title}
+                            </h3>
+                            {lesson.description && (
+                              <p className="text-sm text-gray-400">
+                                {lesson.description}
+                              </p>
+                            )}
+                          </div>
                         </div>
                       </div>
+                      <div className="flex items-center space-x-4">
+                        {lesson.duration && (
+                          <span className="text-sm text-gray-400">
+                            {lesson.duration} dk
+                          </span>
+                        )}
+                        {isFirstLesson ? (
+                          <span className="bg-green-500/20 text-green-500 px-2 py-1 rounded text-xs font-semibold">
+                            Ücretsiz Önizleme
+                          </span>
+                        ) : lesson.isFree ? (
+                          <span className="bg-green-500/20 text-green-500 px-2 py-1 rounded text-xs font-semibold">
+                            Ücretsiz
+                          </span>
+                        ) : (
+                          <span className="bg-black text-gray-300 px-2 py-1 rounded text-xs border border-orange-500/30">
+                            Premium
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-4">
-                      {lesson.duration && (
-                        <span className="text-sm text-gray-400">
-                          {lesson.duration} dk
-                        </span>
-                      )}
-                      {lesson.isFree ? (
-                        <span className="bg-green-500/20 text-green-500 px-2 py-1 rounded text-xs font-semibold">
-                          Ücretsiz
-                        </span>
-                      ) : (
-                        <span className="bg-black text-gray-300 px-2 py-1 rounded text-xs border border-orange-500/30">
-                          Premium
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                  )
+
+                  // İlk ders veya erişimi varsa tıklanabilir link
+                  if (canAccess) {
+                    return (
+                      <Link key={lesson.id} href={`/learn/${course.id}?lesson=${lesson.id}`}>
+                        {lessonContent}
+                      </Link>
+                    )
+                  }
+
+                  // Erişimi yoksa sadece göster
+                  return <div key={lesson.id}>{lessonContent}</div>
+                })}
               </div>
             </div>
 

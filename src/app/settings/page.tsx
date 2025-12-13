@@ -15,6 +15,7 @@ async function getUserData(userId: string) {
       name: true,
       email: true,
       image: true,
+      phoneNumber: true,
       role: true,
       createdAt: true,
       subscriptionPlan: true,
@@ -87,12 +88,6 @@ export default async function SettingsPage() {
             </div>
 
             <div className="flex items-center space-x-4">
-              <button className="text-gray-300 hover:text-white transition-colors">
-                <Search className="h-5 w-5" />
-              </button>
-              <button className="text-gray-300 hover:text-white">
-                <Bell className="h-5 w-5" />
-              </button>
               <UserDropdown />
             </div>
           </div>
@@ -110,12 +105,6 @@ export default async function SettingsPage() {
             )}
           </Link>
           <div className="flex items-center space-x-3">
-            <button className="p-2 text-gray-300 hover:text-white transition-colors">
-              <Search className="h-5 w-5" />
-            </button>
-            <button className="p-2 text-gray-300 hover:text-white transition-colors">
-              <Bell className="h-5 w-5" />
-            </button>
             <UserDropdown />
           </div>
         </div>

@@ -320,12 +320,6 @@ export default function ChefSosyalClient({
             <div className="flex items-center space-x-4">
               {session?.user ? (
                 <>
-                  <button className="text-gray-300 hover:text-white transition-colors">
-                    <Search className="h-5 w-5" />
-                  </button>
-                  <button className="text-gray-300 hover:text-white">
-                    <Bell className="h-5 w-5" />
-                  </button>
                   <UserDropdown />
                 </>
               ) : (
@@ -357,9 +351,6 @@ export default function ChefSosyalClient({
             <span className="text-lg font-bold text-white">Chef2.0</span>
           </Link>
           <div className="flex items-center space-x-3">
-            <button className="p-2 text-gray-300 hover:text-white transition-colors">
-              <Search className="h-5 w-5" />
-            </button>
             <UserDropdown />
           </div>
         </div>
@@ -392,56 +383,9 @@ export default function ChefSosyalClient({
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-
-          {/* Sidebar - Kategoriler */}
-          <div className="hidden lg:block lg:col-span-1">
-            <div className="bg-[#0a0a0a] border border-gray-800 rounded-xl p-5 sticky top-24">
-              <h2 className="text-lg font-bold text-white mb-4">Kategoriler</h2>
-              <div className="space-y-1">
-                <button
-                  onClick={() => handleCategoryChange('all')}
-                  className={`w-full text-left px-3 py-2.5 rounded-lg transition-all flex justify-between items-center ${selectedCategory === 'all'
-                    ? 'bg-orange-600 text-white'
-                    : 'text-gray-300 hover:bg-[#1a1a1a] hover:text-white'
-                    }`}
-                >
-                  <span className="text-sm font-medium">Tümü</span>
-                  <span className="text-xs bg-black/30 px-2 py-0.5 rounded-full">
-                    {categories.reduce((sum, cat) => sum + cat._count.topics, 0)}
-                  </span>
-                </button>
-                {categories.map((category) => (
-                  <button
-                    key={category.slug}
-                    onClick={() => handleCategoryChange(category.slug)}
-                    className={`w-full text-left px-3 py-2.5 rounded-lg transition-all flex justify-between items-center ${selectedCategory === category.slug
-                      ? 'bg-orange-600 text-white'
-                      : 'text-gray-300 hover:bg-[#1a1a1a] hover:text-white'
-                      }`}
-                  >
-                    <span className="text-sm font-medium">{category.name}</span>
-                    <span className="text-xs bg-black/30 px-2 py-0.5 rounded-full">{category._count.topics}</span>
-                  </button>
-                ))}
-              </div>
-
-              {/* Popüler Etiketler */}
-              <div className="mt-6 pt-6 border-t border-gray-800">
-                <h3 className="text-sm font-semibold text-white mb-3">Popüler Etiketler</h3>
-                <div className="flex flex-wrap gap-2">
-                  {['#makarna', '#et-yemekleri', '#tatlı', '#vegan'].map((tag) => (
-                    <span key={tag} className="bg-[#1a1a1a] text-gray-400 px-2.5 py-1 rounded-full text-xs hover:bg-gray-800 hover:text-orange-400 cursor-pointer transition-colors">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
+        <div className="max-w-5xl mx-auto">
           {/* Ana İçerik - Tartışmalar */}
-          <div className="lg:col-span-3">
+          <div>
             <div className="flex justify-between items-center mb-6">
               <div>
                 <h2 className="text-2xl font-bold text-white">Son Tartışmalar</h2>

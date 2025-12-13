@@ -43,8 +43,26 @@ interface LearnPageProps {
   }>
 }
 
-async function getCourseWithProgress(courseId: string, userId: string) {
-  console.log('Learn Page - getCourseWithProgress:', { courseId, userId })
+async function getCourseWithProgress(courseId: string, userId: string, requestedLessonId?: string) {
+  console.log('Learn Page - getCourseWithProgress:', { courseId, userId, requestedLessonId })
+
+  // Önce kursu al ve ilk dersi kontrol et
+  const courseForFirstLessonCheck = await prisma.course.findUnique({
+    where: { id: courseId },
+    include: {
+      lessons: {
+        orderBy: { order: 'asc' },
+        take: 1
+      }
+    }
+  })
+
+  if (!courseForFirstLessonCheck) {
+    return null
+  }
+
+  const firstLessonId = courseForFirstLessonCheck.lessons[0]?.id
+  const isRequestingFirstLesson = !requestedLessonId || requestedLessonId === firstLessonId
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -80,50 +98,51 @@ async function getCourseWithProgress(courseId: string, userId: string) {
 
   console.log('Learn Page - enrollment found:', enrollment)
   console.log('Learn Page - isSubscriptionValid:', isSubscriptionValid)
+  console.log('Learn Page - isRequestingFirstLesson:', isRequestingFirstLesson)
 
-  // Erişim Kontrolü
-  if (enrollment) {
-    // 1. Kurs ücretsiz mi?
-    if (enrollment.course.isFree) {
-      // Erişim izni var
-    }
-    // 2. Satın alınmış mı?
-    else if (user?.payments && user.payments.length > 0) {
-      // Erişim izni var
-    }
-    // 3. Abonelik ile mi gelmiş?
-    else {
-      // Abonelik süresi bitmişse erişimi kes
-      if (!isSubscriptionValid) {
-        console.log('Learn Page - Subscription expired for subscription-based enrollment')
+  // İlk ders her zaman erişilebilir (enrollment olmasa bile)
+  if (isRequestingFirstLesson) {
+    console.log('Learn Page - First lesson requested, allowing access')
+    // İlk derse erişim izni var, devam et
+  } else {
+    // Diğer dersler için normal erişim kontrolü
+    if (enrollment) {
+      // 1. Kurs ücretsiz mi?
+      if (enrollment.course.isFree) {
+        // Erişim izni var
+      }
+      // 2. Satın alınmış mı?
+      else if (user?.payments && user.payments.length > 0) {
+        // Erişim izni var
+      }
+      // 3. Abonelik ile mi gelmiş?
+      else {
+        // Abonelik süresi bitmişse erişimi kes
+        if (!isSubscriptionValid) {
+          console.log('Learn Page - Subscription expired for subscription-based enrollment')
+          return null
+        }
+      }
+    } else {
+      // Kayıt yoksa ama abonelik varsa, otomatik kayıt oluştur
+      if (isSubscriptionValid) {
+        console.log('Learn Page - Valid subscription found, auto-enrolling user:', userId)
+        await prisma.enrollment.create({
+          data: {
+            userId,
+            courseId
+          },
+          include: {
+            course: {
+              select: { isFree: true }
+            }
+          }
+        })
+      } else {
+        // Kayıt yok ve abonelik yok -> erişim yok (ilk ders değilse)
+        console.log('Learn Page - No enrollment found for user:', userId)
         return null
       }
-    }
-  } else {
-    // Kayıt yoksa ama abonelik varsa, otomatik kayıt oluştur
-    if (isSubscriptionValid) {
-      console.log('Learn Page - Valid subscription found, auto-enrolling user:', userId)
-      await prisma.enrollment.create({
-        data: {
-          userId,
-          courseId
-        },
-        include: {
-          course: {
-            select: { isFree: true }
-          }
-        }
-      })
-      // Enrollment oluşturuldu, devam et
-      // newEnrollment değişkenini enrollment olarak kullanabilirdik ama
-      // aşağıdaki kod akışı enrollment değişkenine bağlı değil, sadece null dönmemesi yeterli.
-      // Ancak enrollment değişkeni const olduğu için yeniden atayamayız.
-      // Bu yüzden sadece loglayıp devam ediyoruz, çünkü aşağıda enrollment değişkeni kullanılmıyor.
-      // Sadece return { course, progress } yapılıyor.
-    } else {
-      // Kayıt yok ve abonelik yok -> erişim yok
-      console.log('Learn Page - No enrollment found for user:', userId)
-      return null
     }
   }
 
@@ -168,7 +187,8 @@ async function getCourseWithProgress(courseId: string, userId: string) {
     }
   })
 
-  return { course, progress }
+  // İlk ders için erişim kontrolü bilgisini de döndür
+  return { course, progress, isRequestingFirstLesson, hasFullAccess: !!enrollment || isSubscriptionValid }
 }
 
 async function getRecommendedCourses(categoryId: string, currentCourseId: string) {
@@ -224,7 +244,7 @@ export default async function LearnPage({ params, searchParams }: LearnPageProps
 
   const { courseId } = await params
   const resolvedSearchParams = await searchParams
-  const data = await getCourseWithProgress(courseId, session.user.id)
+  const data = await getCourseWithProgress(courseId, session.user.id, resolvedSearchParams?.lesson)
 
   // Success parametresi varsa enrollment kontrolünü bypass et (ödeme başarılı ama enrollment henüz oluşturulmamış olabilir)
   if (!data || !data.course) {
@@ -257,7 +277,7 @@ export default async function LearnPage({ params, searchParams }: LearnPageProps
     redirect(`/course/${courseId}`)
   }
 
-  const { course, progress } = data
+  const { course, progress, hasFullAccess } = data
 
   // Önerilen kursları al
   const recommendedCourses = await getRecommendedCourses(course.categoryId, course.id)
@@ -355,6 +375,7 @@ export default async function LearnPage({ params, searchParams }: LearnPageProps
           course={course}
           progress={progress}
           currentLessonId={currentLesson.id}
+          hasFullAccess={hasFullAccess ?? false}
         />
       </div>
 

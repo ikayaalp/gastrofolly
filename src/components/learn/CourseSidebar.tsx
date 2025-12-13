@@ -10,7 +10,8 @@ import {
   Clock,
   X,
   Menu,
-  ArrowLeft
+  ArrowLeft,
+  Lock
 } from "lucide-react"
 
 interface CourseSidebarProps {
@@ -36,9 +37,10 @@ interface CourseSidebarProps {
     isCompleted: boolean
   }>
   currentLessonId: string
+  hasFullAccess?: boolean // Kullanıcının tam erişimi var mı?
 }
 
-export default function CourseSidebar({ course, progress, currentLessonId }: CourseSidebarProps) {
+export default function CourseSidebar({ course, progress, currentLessonId, hasFullAccess = true }: CourseSidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(true)
   const router = useRouter()
 
@@ -137,19 +139,27 @@ export default function CourseSidebar({ course, progress, currentLessonId }: Cou
               const lessonProgress = getLessonProgress(lesson.id)
               const isLessonCompleted = lessonProgress?.isCompleted || false
               const isCurrent = lesson.id === currentLessonId
+              const isFirstLesson = index === 0
+              // İlk ders her zaman erişilebilir, diğerleri hasFullAccess'e bağlı
+              const canAccessLesson = isFirstLesson || hasFullAccess
 
               return (
                 <button
                   key={lesson.id}
                   onClick={() => {
-                    router.push(`/learn/${course.id}?lesson=${lesson.id}`)
-                    setIsCollapsed(true)
+                    if (canAccessLesson) {
+                      router.push(`/learn/${course.id}?lesson=${lesson.id}`)
+                      setIsCollapsed(true)
+                    }
                   }}
+                  disabled={!canAccessLesson}
                   className={`
                     w-full text-left p-3 rounded-lg transition-all group
                     ${isCurrent
                       ? 'bg-orange-500/10 border border-orange-500/50 shadow-lg shadow-orange-500/10'
-                      : 'hover:bg-gray-900 border border-transparent hover:border-gray-800'
+                      : canAccessLesson
+                        ? 'hover:bg-gray-900 border border-transparent hover:border-gray-800'
+                        : 'opacity-50 cursor-not-allowed border border-transparent'
                     }
                   `}
                 >
@@ -161,13 +171,17 @@ export default function CourseSidebar({ course, progress, currentLessonId }: Cou
                         ? 'bg-green-500/10 border border-green-500/30'
                         : isCurrent
                           ? 'bg-orange-500/10 border border-orange-500/30'
-                          : 'bg-gray-800 border border-gray-700'
+                          : canAccessLesson
+                            ? 'bg-gray-800 border border-gray-700'
+                            : 'bg-gray-900 border border-gray-800'
                       }
                     `}>
                       {isLessonCompleted ? (
                         <CheckCircle className="h-5 w-5 text-green-500" />
                       ) : isCurrent ? (
                         <Play className="h-5 w-5 text-orange-500" />
+                      ) : !canAccessLesson ? (
+                        <Lock className="h-4 w-4 text-gray-500" />
                       ) : (
                         <span className="text-sm font-bold text-gray-400">{index + 1}</span>
                       )}
@@ -177,7 +191,7 @@ export default function CourseSidebar({ course, progress, currentLessonId }: Cou
                     <div className="flex-1 min-w-0">
                       <h3 className={`
                         font-semibold text-sm leading-tight mb-1 line-clamp-2
-                        ${isCurrent ? 'text-orange-500' : 'text-white group-hover:text-orange-400'}
+                        ${isCurrent ? 'text-orange-500' : canAccessLesson ? 'text-white group-hover:text-orange-400' : 'text-gray-500'}
                         transition-colors
                       `}>
                         {lesson.title}
@@ -196,6 +210,12 @@ export default function CourseSidebar({ course, progress, currentLessonId }: Cou
                         {isLessonCompleted && (
                           <span className="text-xs text-green-500 font-medium">
                             ✓ Tamamlandı
+                          </span>
+                        )}
+
+                        {!canAccessLesson && (
+                          <span className="text-xs text-gray-500 font-medium">
+                            🔒 Premium
                           </span>
                         )}
                       </div>

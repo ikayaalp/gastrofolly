@@ -316,6 +316,40 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
     }
   }
 
+  // Yorum sil
+  const handleDeleteComment = async (postId: string) => {
+    if (!confirm('Bu yorumu silmek istediğinizden emin misiniz?')) return
+
+    try {
+      const response = await fetch(`/api/forum/posts/${postId}`, {
+        method: 'DELETE'
+      })
+
+      if (response.ok) {
+        // Yorumları güncelle
+        setComments(prevComments =>
+          prevComments.filter(comment => {
+            // Eğer silinen ana yorumsa filtrele
+            if (comment.id === postId) return false
+
+            // Eğer silinen bir yanıtsa, altından sil
+            if (comment.replies) {
+              comment.replies = comment.replies.filter(reply => reply.id !== postId)
+            }
+            return true
+          })
+        )
+        alert('Yorum silindi')
+      } else {
+        const error = await response.json()
+        alert('Hata: ' + error.error)
+      }
+    } catch (error) {
+      console.error('Error deleting comment:', error)
+      alert('Yorum silinirken hata oluştu')
+    }
+  }
+
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
@@ -388,12 +422,6 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
             <div className="flex items-center space-x-4">
               {session?.user ? (
                 <>
-                  <button className="text-gray-300 hover:text-white transition-colors">
-                    <Search className="h-5 w-5" />
-                  </button>
-                  <button className="text-gray-300 hover:text-white">
-                    <Bell className="h-5 w-5" />
-                  </button>
                   <UserDropdown />
                 </>
               ) : (
@@ -490,12 +518,12 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
                       <MessageCircle className="h-3.5 w-3.5 mr-1" />
                       <span>{comments.length}</span>
                     </button>
-                    {/* Delete button for topic owner */}
-                    {session?.user && (
+                    {/* Delete button for topic owner ONLY */}
+                    {session?.user && topic.author.id === session.user.id && (
                       <button
                         onClick={handleDeleteTopic}
                         disabled={deleting}
-                        className="flex items-center text-red-400 hover:text-red-300 transition-colors"
+                        className="flex items-center text-red-500 hover:text-red-400 transition-colors"
                       >
                         <Trash2 className="h-3.5 w-3.5 mr-1" />
                         <span>{deleting ? 'Siliniyor...' : 'Sil'}</span>
@@ -620,6 +648,16 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
                               Yanıtla
                             </button>
                           )}
+                          {/* COMMENT Delete Button */}
+                          {session?.user && comment.author.id === session.user.id && (
+                            <button
+                              onClick={() => handleDeleteComment(comment.id)}
+                              className="flex items-center text-gray-400 hover:text-red-500 transition-colors text-xs"
+                            >
+                              <Trash2 className="h-3 w-3 mr-1" />
+                              Sil
+                            </button>
+                          )}
                         </div>
 
                         {/* Yanıt Ekleme Formu */}
@@ -692,6 +730,16 @@ export default function TopicDetailClient({ session, topic }: TopicDetailClientP
                                           <ThumbsUp className="h-2.5 w-2.5 mr-1" />
                                           {reply.likeCount}
                                         </div>
+                                      )}
+                                      {/* REPLY Delete Button */}
+                                      {session?.user && reply.author.id === session.user.id && (
+                                        <button
+                                          onClick={() => handleDeleteComment(reply.id)}
+                                          className="flex items-center text-gray-400 hover:text-red-500 transition-colors text-xs"
+                                        >
+                                          <Trash2 className="h-2.5 w-2.5 mr-1" />
+                                          Sil
+                                        </button>
                                       )}
                                     </div>
                                   </div>

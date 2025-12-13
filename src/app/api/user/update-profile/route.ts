@@ -6,19 +6,19 @@ import { prisma } from "@/lib/prisma"
 export async function PUT(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Giriş yapmanız gerekiyor" }, { status: 401 })
     }
 
-    const { name, email, image } = await request.json()
-    
+    const { name, email, image, phoneNumber } = await request.json()
+
     // E-posta değişikliği kontrolü
     if (email !== session.user.email) {
       const existingUser = await prisma.user.findUnique({
         where: { email }
       })
-      
+
       if (existingUser && existingUser.id !== session.user.id) {
         return NextResponse.json({ error: "Bu e-posta adresi zaten kullanılıyor" }, { status: 400 })
       }
@@ -29,14 +29,15 @@ export async function PUT(request: NextRequest) {
       data: {
         name: name || null,
         email,
+        phoneNumber: phoneNumber || null,
         image: image || null
       }
     })
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       user: updatedUser,
-      message: "Profil başarıyla güncellendi" 
+      message: "Profil başarıyla güncellendi"
     })
 
   } catch (error) {
