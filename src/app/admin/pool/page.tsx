@@ -92,7 +92,7 @@ export default async function PoolManagementPage() {
     return (
         <div className="min-h-screen bg-black">
             {/* Desktop Header */}
-            <header className="hidden md:block bg-gray-900/30 border-b border-gray-800">
+            <header className="hidden md:block bg-black border-b border-gray-800">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center py-4">
                         <div className="flex items-center space-x-8">
@@ -130,7 +130,7 @@ export default async function PoolManagementPage() {
             </header>
 
             {/* Mobile Top Bar */}
-            <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
+            <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-black border-b border-gray-800">
                 <div className="flex justify-between items-center py-3 px-4">
                     <Link href="/home" className="flex items-center space-x-2">
                         <ChefHat className="h-6 w-6 text-orange-500" />
