@@ -111,6 +111,7 @@ model Course {
   isFree      Boolean     @default(false)
   discountRate Float?     // İndirim oranı (0-100 arası)
   discountedPrice Float?  // İndirimli fiyat (otomatik hesaplanır)
+  accessibleByPlans String[] @default([]) // "COMMIS", "CHEF_DE_PARTIE", "EXECUTIVE"
   imageUrl    String?
   level       CourseLevel @default(BEGINNER)
   duration    Int? // dakika cinsinden

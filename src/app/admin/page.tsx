@@ -1,36 +1,20 @@
-import { getServerSession } from "next-auth"
-import { redirect } from "next/navigation"
+"use client" // This page is client-side because of Client Components (though we could fetch data server side and pass it down, let's stick to server component pattern if possible or client if needed. The original code was mixing them weirdly.)
+// Actually let's make it a Server Component like the others, as it accesses prisma directly.
+
+import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
+import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
-import { ChefHat, BookOpen, Users, Wallet, CreditCard, PlayCircle, BarChart3, TrendingUp, Home, Bell } from "lucide-react"
-import UserDropdown from "@/components/ui/UserDropdown"
-import PushNotificationSender from "@/components/admin/PushNotificationSender"
+import { BookOpen, Users, Wallet, TrendingUp, CreditCard, ArrowUpRight, Activity } from "lucide-react"
 
 async function getAdminData() {
-  const [users, courseList, coursesCount, enrollments, payments] = await Promise.all([
+  const [users, coursesCount, enrollments, payments, recentRegistrations] = await Promise.all([
     prisma.user.findMany({
       select: {
         id: true,
-        name: true,
-        email: true,
         role: true,
-        createdAt: true,
-        _count: {
-          select: {
-            enrollments: true,
-            createdCourses: true,
-            payments: true
-          }
-        }
-      },
-      orderBy: {
-        createdAt: 'desc'
       }
-    }),
-    prisma.course.findMany({
-      select: { id: true, title: true },
-      orderBy: { createdAt: 'desc' }
     }),
     prisma.course.count(),
     prisma.enrollment.count(),
@@ -39,10 +23,22 @@ async function getAdminData() {
         amount: true
       },
       _count: true
+    }),
+    prisma.user.findMany({
+      take: 5,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        image: true
+      }
     })
   ])
 
-  return { users, courseList, coursesCount, enrollments, payments }
+  return { users, coursesCount, enrollments, payments, recentRegistrations }
 }
 
 export default async function AdminPage() {
@@ -62,217 +58,115 @@ export default async function AdminPage() {
     redirect("/dashboard")
   }
 
-  const { users, courseList, coursesCount, enrollments, payments } = await getAdminData()
+  const { users, coursesCount, enrollments, payments, recentRegistrations } = await getAdminData()
 
   return (
-    <div className="min-h-screen bg-black">
-      {/* Desktop Header */}
-      <header className="hidden md:block bg-gray-900/30 border-b border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-8">
-              <Link href="/home" className="flex items-center space-x-2">
-                <ChefHat className="h-8 w-8 text-orange-500" />
-                <span className="text-2xl font-bold text-white">Chef2.0</span>
-                <span className="bg-orange-600 text-white px-2 py-1 rounded text-sm font-medium">Admin</span>
-              </Link>
-              <nav className="hidden md:flex space-x-6">
-                <Link href="/admin" className="text-white font-semibold">
-                  Admin Paneli
-                </Link>
-                <Link href="/admin/courses" className="text-gray-300 hover:text-white transition-colors">
-                  Kurs Yönetimi
-                </Link>
-                <Link href="/admin/users" className="text-gray-300 hover:text-white transition-colors">
-                  Kullanıcı Yönetimi
-                </Link>
-                <Link href="/admin/pool" className="text-gray-300 hover:text-white transition-colors">
-                  Havuz Yönetimi
-                </Link>
-                <Link href="/admin/notifications" className="text-gray-300 hover:text-white transition-colors">
-                  Bildirimler
-                </Link>
-                <Link href="/admin/videos" className="text-gray-300 hover:text-white transition-colors">
-                  Video Yönetimi
-                </Link>
-              </nav>
-            </div>
-            <div className="flex items-center space-x-4">
-              <UserDropdown />
-            </div>
-          </div>
+    <div className="space-y-8">
+      {/* Welcome Section */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-800 pb-6">
+        <div>
+          <h1 className="text-3xl font-bold text-white">Genel Bakış</h1>
+          <p className="text-gray-400 mt-1">Sistem istatistikleri ve özet durumu</p>
         </div>
-      </header>
-
-
-      {/* Mobile Top Bar */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
-        <div className="flex justify-between items-center py-3 px-4">
-          <Link href="/home" className="flex items-center space-x-2">
-            <ChefHat className="h-6 w-6 text-orange-500" />
-            <span className="text-lg font-bold text-white">Chef2.0</span>
-            <span className="bg-orange-600 text-white px-2 py-1 rounded text-xs font-medium">Admin</span>
-          </Link>
-          <UserDropdown />
+        <div className="flex items-center gap-3">
+          <span className="flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 text-green-500 text-xs font-medium border border-green-500/20">
+            <Activity className="w-3 h-3" />
+            Sistem Çalışıyor
+          </span>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-20 md:pt-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Admin Paneli</h1>
-          <p className="text-gray-400">Sistem istatistikleri ve kullanıcı yönetimi</p>
+      {/* İstatistik Kartları */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="bg-black border border-gray-800 rounded-xl p-6 group hover:border-blue-500/30 transition-colors">
+          <div className="flex justify-between items-start mb-4">
+            <div className="bg-blue-500/20 p-3 rounded-xl group-hover:scale-110 transition-transform">
+              <Users className="h-6 w-6 text-blue-400" />
+            </div>
+          </div>
+          <p className="text-gray-400 text-sm font-medium">Toplam Kullanıcı</p>
+          <p className="text-3xl font-bold text-white mt-1">{users.length}</p>
         </div>
 
-        {/* İstatistik Kartları */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-            <div className="flex items-center">
-              <Users className="h-8 w-8 text-blue-500" />
-              <div className="ml-4">
-                <p className="text-2xl font-bold text-white">{users.length}</p>
-                <p className="text-gray-400">Toplam Kullanıcı</p>
-              </div>
+        <div className="bg-black border border-gray-800 rounded-xl p-6 group hover:border-green-500/30 transition-colors">
+          <div className="flex justify-between items-start mb-4">
+            <div className="bg-green-500/20 p-3 rounded-xl group-hover:scale-110 transition-transform">
+              <BookOpen className="h-6 w-6 text-green-400" />
             </div>
           </div>
-
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-            <div className="flex items-center">
-              <BookOpen className="h-8 w-8 text-green-500" />
-              <div className="ml-4">
-                <p className="text-2xl font-bold text-white">{coursesCount}</p>
-                <p className="text-gray-400">Toplam Kurs</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-            <div className="flex items-center">
-              <TrendingUp className="h-8 w-8 text-orange-500" /> {/* Changed from Calendar to TrendingUp */}
-              <div className="ml-4">
-                <p className="text-2xl font-bold text-white">{enrollments}</p>
-                <p className="text-gray-400">Toplam Kayıt</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-            <div className="flex items-center">
-              <CreditCard className="h-8 w-8 text-yellow-500" />
-              <div className="ml-4">
-                <p className="text-2xl font-bold text-white">
-                  ₺{payments._sum.amount?.toFixed(2) || '0.00'}
-                </p>
-                <p className="text-gray-400">Toplam Gelir</p>
-              </div>
-            </div>
-          </div>
+          <p className="text-gray-400 text-sm font-medium">Toplam Kurs</p>
+          <p className="text-3xl font-bold text-white mt-1">{coursesCount}</p>
         </div>
 
-        {/* Admin Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <Link href="/admin/courses" className="bg-gray-900 border border-gray-800 rounded-lg p-6 hover:bg-gray-800 transition-colors">
-            <div className="flex items-center">
-              <BookOpen className="h-8 w-8 text-green-500" />
-              <div className="ml-4">
-                <h3 className="text-lg font-semibold text-white">Kurs Yönetimi</h3>
-                <p className="text-gray-400">Kursları düzenle, yayınla ve yönet</p>
-              </div>
+        <div className="bg-black border border-gray-800 rounded-xl p-6 group hover:border-orange-500/30 transition-colors">
+          <div className="flex justify-between items-start mb-4">
+            <div className="bg-orange-500/20 p-3 rounded-xl group-hover:scale-110 transition-transform">
+              <TrendingUp className="h-6 w-6 text-orange-400" />
             </div>
-          </Link>
-
-          <Link href="/admin/users" className="bg-gray-900 border border-gray-800 rounded-lg p-6 hover:bg-gray-800 transition-colors">
-            <div className="flex items-center">
-              <Users className="h-8 w-8 text-blue-500" />
-              <div className="ml-4">
-                <h3 className="text-lg font-semibold text-white">Kullanıcı Yönetimi</h3>
-                <p className="text-gray-400">Kullanıcıları yönet ve rollerini değiştir</p>
-              </div>
-            </div>
-          </Link>
-
-          <Link href="/admin/pool" className="bg-gray-900 border border-gray-800 rounded-lg p-6 hover:bg-gray-800 transition-colors">
-            <div className="flex items-center">
-              <Wallet className="h-8 w-8 text-green-500" />
-              <div className="ml-4">
-                <h3 className="text-lg font-semibold text-white">Havuz Yönetimi</h3>
-                <p className="text-gray-400">Eğitmen gelir dağılımını görüntüle</p>
-              </div>
-            </div>
-          </Link>
+          </div>
+          <p className="text-gray-400 text-sm font-medium">Toplam Kayıt</p>
+          <p className="text-3xl font-bold text-white mt-1">{enrollments}</p>
         </div>
 
-
-
-        {/* Kullanıcı Listesi */}
-        <div className="bg-gray-900 border border-gray-800 rounded-lg">
-          <div className="px-6 py-4 border-b border-gray-800">
-            <h2 className="text-xl font-bold text-white">Kayıtlı Kullanıcılar</h2>
+        <div className="bg-black border border-gray-800 rounded-xl p-6 group hover:border-yellow-500/30 transition-colors">
+          <div className="flex justify-between items-start mb-4">
+            <div className="bg-yellow-500/20 p-3 rounded-xl group-hover:scale-110 transition-transform">
+              <CreditCard className="h-6 w-6 text-yellow-400" />
+            </div>
           </div>
+          <p className="text-gray-400 text-sm font-medium">Toplam Gelir</p>
+          <p className="text-3xl font-bold text-white mt-1">₺{payments._sum.amount?.toLocaleString('tr-TR', { maximumFractionDigits: 0 }) || '0'}</p>
+        </div>
+      </div>
 
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Recent Registrations Table */}
+        <div className="lg:col-span-2 bg-neutral-900/30 border border-gray-800 rounded-xl overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-800 flex justify-between items-center">
+            <h2 className="text-lg font-bold text-white">Son Kayıtlar</h2>
+            <Link href="/admin/users" className="text-sm text-orange-500 hover:text-orange-400 hover:underline">
+              Tümünü Gör
+            </Link>
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-800">
+              <thead className="bg-black/40">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                    Kullanıcı
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                    E-posta
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                    Rol
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                    Kayıt Tarihi
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                    Kurslar
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                    Ödemeler
-                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Kullanıcı</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Rol</th>
+                  <th className="px-6 py-3 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">Tarih</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-800">
-                {users.map((user) => (
-                  <tr key={user.id} className="hover:bg-gray-800/50">
+                {recentRegistrations.map((user) => (
+                  <tr key={user.id} className="hover:bg-white/5 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="w-10 h-10 rounded-full bg-orange-600 flex items-center justify-center">
-                          <span className="text-lg">👨‍🍳</span>
+                        <div className="flex-shrink-0 h-8 w-8">
+                          {user.image ? (
+                            <img className="h-8 w-8 rounded-full" src={user.image} alt="" />
+                          ) : (
+                            <div className="h-8 w-8 rounded-full bg-gray-800 flex items-center justify-center text-xs font-bold text-gray-400">
+                              {user.name?.charAt(0) || 'U'}
+                            </div>
+                          )}
                         </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-white">
-                            {user.name || 'İsimsiz Kullanıcı'}
-                          </div>
+                        <div className="ml-3">
+                          <p className="text-sm font-medium text-white">{user.name}</p>
+                          <p className="text-xs text-gray-500">{user.email}</p>
                         </div>
                       </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                      {user.email}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${user.role === 'ADMIN' ? 'bg-red-900 text-red-300' :
-                        user.role === 'INSTRUCTOR' ? 'bg-blue-900 text-blue-300' :
-                          'bg-green-900 text-green-300'
+                      <span className={`inline-flex px-2 py-1 text-[10px] font-semibold rounded-full ${user.role === 'ADMIN' ? 'bg-red-900/50 text-red-300 border border-red-800' :
+                          user.role === 'INSTRUCTOR' ? 'bg-blue-900/50 text-blue-300 border border-blue-800' :
+                            'bg-green-900/50 text-green-300 border border-green-800'
                         }`}>
-                        {user.role === 'ADMIN' ? 'Yönetici' :
-                          user.role === 'INSTRUCTOR' ? 'Eğitmen' : 'Öğrenci'}
+                        {user.role}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-400">
                       {new Date(user.createdAt).toLocaleDateString('tr-TR')}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                      <div className="flex flex-col">
-                        <span>Kayıtlı: {user._count.enrollments}</span>
-                        {user.role === 'INSTRUCTOR' && (
-                          <span className="text-orange-400">Oluşturduğu: {user._count.createdCourses}</span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                      {user._count.payments} ödeme
                     </td>
                   </tr>
                 ))}
@@ -280,34 +174,46 @@ export default async function AdminPage() {
             </table>
           </div>
         </div>
-      </div>
 
-      {/* Mobile Bottom Navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-t border-gray-800">
-        <div className="flex justify-around items-center py-2">
-          <Link href="/admin" className="flex flex-col items-center py-2 px-3 text-orange-500">
-            <Home className="h-6 w-6" />
-            <span className="text-xs font-medium mt-1">Panel</span>
-          </Link>
-          <Link href="/admin/courses" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
-            <BookOpen className="h-6 w-6" />
-            <span className="text-xs font-medium mt-1">Kurslar</span>
-          </Link>
-          <Link href="/admin/users" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
-            <Users className="h-6 w-6" />
-            <span className="text-xs font-medium mt-1">Kullanıcılar</span>
-          </Link>
-          <Link href="/admin/pool" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
-            <Wallet className="h-6 w-6" />
-            <span className="text-xs font-medium mt-1">Havuz</span>
-          </Link>
-          <Link href="/admin/notifications" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
-            <Bell className="h-6 w-6" />
-            <span className="text-xs font-medium mt-1">Bildirim</span>
-          </Link>
+        {/* Quick Actions */}
+        <div className="space-y-6">
+          <div className="bg-neutral-900/30 border border-gray-800 rounded-xl p-6">
+            <h2 className="text-lg font-bold text-white mb-4">Hızlı İşlemler</h2>
+            <div className="space-y-3">
+              <Link href="/admin/courses?action=new" className="flex items-center justify-between p-3 rounded-lg bg-gray-800/50 hover:bg-gray-800 border border-gray-700 hover:border-orange-500/50 transition-all group">
+                <span className="text-gray-300 group-hover:text-white">Yeni Kurs Ekle</span>
+                <ArrowUpRight className="h-4 w-4 text-gray-500 group-hover:text-orange-500" />
+              </Link>
+              <Link href="/admin/notifications" className="flex items-center justify-between p-3 rounded-lg bg-gray-800/50 hover:bg-gray-800 border border-gray-700 hover:border-orange-500/50 transition-all group">
+                <span className="text-gray-300 group-hover:text-white">Bildirim Gönder</span>
+                <ArrowUpRight className="h-4 w-4 text-gray-500 group-hover:text-orange-500" />
+              </Link>
+              <Link href="/admin/pool" className="flex items-center justify-between p-3 rounded-lg bg-gray-800/50 hover:bg-gray-800 border border-gray-700 hover:border-orange-500/50 transition-all group">
+                <span className="text-gray-300 group-hover:text-white">Havuz Durumu</span>
+                <ArrowUpRight className="h-4 w-4 text-gray-500 group-hover:text-orange-500" />
+              </Link>
+            </div>
+          </div>
+
+          <div className="bg-neutral-900/30 border border-gray-800 rounded-xl p-6">
+            <h2 className="text-lg font-bold text-white mb-4">Sistem Durumu</h2>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-400">Sunucu Durumu</span>
+                <span className="text-green-500 font-medium">Aktif</span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-400">Veritabanı</span>
+                <span className="text-green-500 font-medium">Bağlı</span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-400">Son Güncelleme</span>
+                <span className="text-gray-400 font-medium">Şimdi</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   )
 }
-

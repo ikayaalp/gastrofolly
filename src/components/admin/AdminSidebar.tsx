@@ -1,0 +1,104 @@
+"use client"
+
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { cn } from "@/lib/utils"
+import {
+    LayoutDashboard,
+    BookOpen,
+    Users,
+    CreditCard,
+    Video,
+    Bell,
+    ChefHat,
+    LogOut
+} from "lucide-react"
+
+const sidebarItems = [
+    {
+        title: "Dashboard",
+        href: "/admin",
+        icon: LayoutDashboard,
+        exact: true
+    },
+    {
+        title: "Kurs Yönetimi",
+        href: "/admin/courses",
+        icon: BookOpen
+    },
+    {
+        title: "Video Yönetimi",
+        href: "/admin/videos",
+        icon: Video
+    },
+    {
+        title: "Kullanıcılar",
+        href: "/admin/users",
+        icon: Users
+    },
+    {
+        title: "Havuz & Finans",
+        href: "/admin/pool",
+        icon: CreditCard
+    },
+    {
+        title: "Bildirimler",
+        href: "/admin/notifications",
+        icon: Bell
+    }
+]
+
+interface AdminSidebarProps {
+    className?: string
+    onClose?: () => void
+}
+
+export default function AdminSidebar({ className, onClose }: AdminSidebarProps) {
+    const pathname = usePathname()
+
+    return (
+        <div className={cn("flex flex-col h-full bg-black border-r border-gray-800 w-64", className)}>
+            <div className="p-6 flex items-center space-x-3 border-b border-gray-800">
+                <div className="bg-orange-600 p-2 rounded-lg">
+                    <ChefHat className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                    <h1 className="text-lg font-bold text-white">Gastrofolly</h1>
+                    <p className="text-xs text-gray-500">Yönetim Paneli</p>
+                </div>
+            </div>
+
+            <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+                {sidebarItems.map((item) => {
+                    const isActive = item.exact
+                        ? pathname === item.href
+                        : pathname.startsWith(item.href)
+
+                    return (
+                        <Link
+                            key={item.href}
+                            href={item.href}
+                            onClick={onClose}
+                            className={cn(
+                                "flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group",
+                                isActive
+                                    ? "bg-orange-600 text-white shadow-lg shadow-orange-900/20"
+                                    : "text-gray-400 hover:text-white hover:bg-white/5"
+                            )}
+                        >
+                            <item.icon className={cn("h-5 w-5", isActive ? "text-white" : "text-gray-400 group-hover:text-white")} />
+                            <span className="font-medium">{item.title}</span>
+                        </Link>
+                    )
+                })}
+            </nav>
+
+            <div className="p-4 border-t border-gray-800">
+                <button className="flex items-center space-x-3 text-gray-400 hover:text-red-400 hover:bg-red-500/10 w-full px-4 py-3 rounded-xl transition-colors">
+                    <LogOut className="h-5 w-5" />
+                    <span className="font-medium">Çıkış Yap</span>
+                </button>
+            </div>
+        </div>
+    )
+}

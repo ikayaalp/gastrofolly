@@ -1,10 +1,4 @@
-import { getServerSession } from "next-auth/next"
-import { authOptions } from "@/lib/auth"
-import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
-import Link from "next/link"
-import { ChefHat, BookOpen, Users, Wallet, Home } from "lucide-react"
-import UserDropdown from "@/components/ui/UserDropdown"
 import CourseManagement from "./CourseManagement"
 
 async function getAllCourses() {
@@ -88,107 +82,37 @@ async function getInstructors() {
   return instructors
 }
 
-export default async function CourseManagementPage() {
-  const session = await getServerSession(authOptions)
-
-  if (!session?.user?.id || session.user.role !== 'ADMIN') {
-    redirect("/auth/signin")
-  }
-
+export default async function CoursesPage() {
   const [courses, categories, instructors] = await Promise.all([
-    getAllCourses(),
-    getCategories(),
-    getInstructors()
+    prisma.course.findMany({
+      include: {
+        instructor: { select: { id: true, name: true, email: true, image: true } },
+        category: { select: { id: true, name: true } },
+        lessons: { select: { id: true, title: true, videoUrl: true, description: true, duration: true, order: true } },
+        _count: { select: { enrollments: true, lessons: true, reviews: true } },
+        reviews: { select: { rating: true } }
+      },
+      orderBy: { createdAt: 'desc' }
+    }),
+    prisma.category.findMany(),
+    prisma.user.findMany({
+      where: { role: 'INSTRUCTOR' },
+      select: { id: true, name: true, email: true, image: true }
+    })
   ])
 
   return (
-    <div className="min-h-screen bg-black">
-      {/* Desktop Header */}
-      <header className="hidden md:block bg-gray-900/30 border-b border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-8">
-              <Link href="/home" className="flex items-center space-x-2">
-                <ChefHat className="h-8 w-8 text-orange-500" />
-                <span className="text-2xl font-bold text-white">Chef2.0</span>
-                <span className="bg-orange-600 text-white px-2 py-1 rounded text-sm font-medium">Admin</span>
-              </Link>
-              <nav className="hidden md:flex space-x-6">
-                <Link href="/admin" className="text-gray-300 hover:text-white transition-colors">
-                  Admin Paneli
-                </Link>
-                <Link href="/admin/courses" className="text-white font-semibold">
-                  Kurs Yönetimi
-                </Link>
-                <Link href="/admin/users" className="text-gray-300 hover:text-white transition-colors">
-                  Kullanıcı Yönetimi
-                </Link>
-                <Link href="/admin/pool" className="text-gray-300 hover:text-white transition-colors">
-                  Havuz Yönetimi
-                </Link>
-                <Link href="/admin/notifications" className="text-gray-300 hover:text-white transition-colors">
-                  Bildirimler
-                </Link>
-                <Link href="/admin/videos" className="text-gray-300 hover:text-white transition-colors">
-                  Video Yönetimi
-                </Link>
-              </nav>
-            </div>
-            <div className="flex items-center space-x-4">
-              <UserDropdown />
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Mobile Top Bar */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
-        <div className="flex justify-between items-center py-3 px-4">
-          <Link href="/home" className="flex items-center space-x-2">
-            <ChefHat className="h-6 w-6 text-orange-500" />
-            <span className="text-lg font-bold text-white">Chef2.0</span>
-            <span className="bg-orange-600 text-white px-2 py-1 rounded text-xs font-medium">Admin</span>
-          </Link>
-          <UserDropdown />
-        </div>
+    <div className="space-y-6">
+      <div className="flex flex-col space-y-2">
+        <h1 className="text-3xl font-bold text-white">Kurs Yönetimi</h1>
+        <p className="text-gray-400">Kursları, dersleri ve abonelik erişimlerini buradan yönetebilirsiniz.</p>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-20 md:pt-8">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Kurs Yönetimi</h1>
-            <p className="text-gray-400">Tüm kursları görüntüleyin, düzenleyin ve yönetin</p>
-          </div>
-        </div>
-
-        <CourseManagement
-          initialCourses={courses}
-          categories={categories}
-          instructors={instructors}
-        />
-      </div>
-
-      {/* Mobile Bottom Navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-t border-gray-800">
-        <div className="flex justify-around items-center py-2">
-          <Link href="/admin" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
-            <Home className="h-6 w-6" />
-            <span className="text-xs font-medium mt-1">Panel</span>
-          </Link>
-          <Link href="/admin/courses" className="flex flex-col items-center py-2 px-3 text-orange-500">
-            <BookOpen className="h-6 w-6" />
-            <span className="text-xs font-medium mt-1">Kurslar</span>
-          </Link>
-          <Link href="/admin/users" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
-            <Users className="h-6 w-6" />
-            <span className="text-xs font-medium mt-1">Kullanıcılar</span>
-          </Link>
-          <Link href="/admin/pool" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
-            <Wallet className="h-6 w-6" />
-            <span className="text-xs font-medium mt-1">Havuz</span>
-          </Link>
-        </div>
-      </div>
+      <CourseManagement
+        initialCourses={courses as any}
+        categories={categories}
+        instructors={instructors}
+      />
     </div>
   )
 }

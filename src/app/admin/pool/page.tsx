@@ -2,9 +2,7 @@ import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import Link from "next/link"
-import { ChefHat, Users, BookOpen, Home, MessageCircle, Wallet, TrendingUp, Clock, Award } from "lucide-react"
-import UserDropdown from "@/components/ui/UserDropdown"
+import { Users, Wallet, TrendingUp, Clock, Award, Info } from "lucide-react"
 
 // Örnek veriler (şu an sistem dakika verisi olmadığı için)
 const sampleInstructors = [
@@ -15,7 +13,7 @@ const sampleInstructors = [
         level: "Commis",
         minutes: 120,
         coefficient: 1,
-        color: "#3b82f6" // blue
+        color: "#f97316" // orange-500
     },
     {
         id: "2",
@@ -24,7 +22,7 @@ const sampleInstructors = [
         level: "Chef de Partie",
         minutes: 90,
         coefficient: 2,
-        color: "#10b981" // green
+        color: "#3b82f6" // blue-500
     },
     {
         id: "3",
@@ -33,7 +31,7 @@ const sampleInstructors = [
         level: "Executive",
         minutes: 60,
         coefficient: 3,
-        color: "#f59e0b" // amber
+        color: "#a855f7" // purple-500
     }
 ]
 
@@ -90,208 +88,164 @@ export default async function PoolManagementPage() {
     }).join(', ')
 
     return (
-        <div className="min-h-screen bg-black">
-            {/* Desktop Header */}
-            <header className="hidden md:block bg-black border-b border-gray-800">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center py-4">
-                        <div className="flex items-center space-x-8">
-                            <Link href="/home" className="flex items-center space-x-2">
-                                <ChefHat className="h-8 w-8 text-orange-500" />
-                                <span className="text-2xl font-bold text-white">Chef2.0</span>
-                                <span className="bg-orange-600 text-white px-2 py-1 rounded text-sm font-medium">Admin</span>
-                            </Link>
-                            <nav className="hidden md:flex space-x-6">
-                                <Link href="/admin" className="text-gray-300 hover:text-white transition-colors">
-                                    Admin Paneli
-                                </Link>
-                                <Link href="/admin/courses" className="text-gray-300 hover:text-white transition-colors">
-                                    Kurs Yönetimi
-                                </Link>
-                                <Link href="/admin/users" className="text-gray-300 hover:text-white transition-colors">
-                                    Kullanıcı Yönetimi
-                                </Link>
-                                <Link href="/admin/pool" className="text-white font-semibold">
-                                    Havuz Yönetimi
-                                </Link>
-                                <Link href="/admin/notifications" className="text-gray-300 hover:text-white transition-colors">
-                                    Bildirimler
-                                </Link>
-                                <Link href="/admin/videos" className="text-gray-300 hover:text-white transition-colors">
-                                    Video Yönetimi
-                                </Link>
-                            </nav>
+        <div className="space-y-8">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div className="bg-black border border-gray-800 rounded-xl p-6 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-green-500/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+                    <div className="flex items-center space-x-4 relative z-10">
+                        <div className="bg-green-500/20 p-3 rounded-xl">
+                            <Wallet className="h-6 w-6 text-green-400" />
                         </div>
-                        <div className="flex items-center space-x-4">
-                            <UserDropdown />
+                        <div>
+                            <p className="text-3xl font-bold text-white">₺{POOL_TOTAL.toLocaleString('tr-TR')}</p>
+                            <p className="text-gray-400 text-sm font-medium">Toplam Havuz</p>
                         </div>
                     </div>
                 </div>
-            </header>
 
-            {/* Mobile Top Bar */}
-            <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-black border-b border-gray-800">
-                <div className="flex justify-between items-center py-3 px-4">
-                    <Link href="/home" className="flex items-center space-x-2">
-                        <ChefHat className="h-6 w-6 text-orange-500" />
-                        <span className="text-lg font-bold text-white">Chef2.0</span>
-                        <span className="bg-orange-600 text-white px-2 py-1 rounded text-xs font-medium">Admin</span>
-                    </Link>
-                    <UserDropdown />
+                <div className="bg-black border border-gray-800 rounded-xl p-6 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+                    <div className="flex items-center space-x-4 relative z-10">
+                        <div className="bg-blue-500/20 p-3 rounded-xl">
+                            <Clock className="h-6 w-6 text-blue-400" />
+                        </div>
+                        <div>
+                            <p className="text-3xl font-bold text-white">{totalMinutes} dk</p>
+                            <p className="text-gray-400 text-sm font-medium">Toplam İzlenme</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="bg-black border border-gray-800 rounded-xl p-6 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+                    <div className="flex items-center space-x-4 relative z-10">
+                        <div className="bg-orange-500/20 p-3 rounded-xl">
+                            <TrendingUp className="h-6 w-6 text-orange-400" />
+                        </div>
+                        <div>
+                            <p className="text-3xl font-bold text-white">{totalPoints}</p>
+                            <p className="text-gray-400 text-sm font-medium">Toplam Etkileşim</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="bg-black border border-gray-800 rounded-xl p-6 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+                    <div className="flex items-center space-x-4 relative z-10">
+                        <div className="bg-purple-500/20 p-3 rounded-xl">
+                            <Users className="h-6 w-6 text-purple-400" />
+                        </div>
+                        <div>
+                            <p className="text-3xl font-bold text-white">{sampleInstructors.length}</p>
+                            <p className="text-gray-400 text-sm font-medium">Aktif Eğitmen</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-20 md:pt-8">
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-white mb-2">Havuz Yönetimi</h1>
-                    <p className="text-gray-400">Eğitmen gelir dağılımı ve puan hesaplaması</p>
-                </div>
-
-                {/* İstatistik Kartları */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                    <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-                        <div className="flex items-center">
-                            <Wallet className="h-8 w-8 text-green-500" />
-                            <div className="ml-4">
-                                <p className="text-2xl font-bold text-white">₺{POOL_TOTAL.toLocaleString('tr-TR')}</p>
-                                <p className="text-gray-400">Toplam Havuz</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-                        <div className="flex items-center">
-                            <Clock className="h-8 w-8 text-blue-500" />
-                            <div className="ml-4">
-                                <p className="text-2xl font-bold text-white">{totalMinutes} dk</p>
-                                <p className="text-gray-400">Toplam Dakika</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-                        <div className="flex items-center">
-                            <TrendingUp className="h-8 w-8 text-orange-500" />
-                            <div className="ml-4">
-                                <p className="text-2xl font-bold text-white">{totalPoints}</p>
-                                <p className="text-gray-400">Toplam Puan</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-                        <div className="flex items-center">
-                            <Users className="h-8 w-8 text-purple-500" />
-                            <div className="ml-4">
-                                <p className="text-2xl font-bold text-white">{sampleInstructors.length}</p>
-                                <p className="text-gray-400">Aktif Eğitmen</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Katsayı Bilgisi */}
-                <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 mb-8">
-                    <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                        <Award className="h-5 w-5 text-yellow-500" />
-                        Katsayı Tablosu
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
-                            <div className="flex items-center justify-between">
-                                <span className="text-gray-300">Commis</span>
-                                <span className="text-2xl font-bold text-blue-400">1×</span>
-                            </div>
-                            <p className="text-sm text-gray-500 mt-1">Dakika başına 1 puan</p>
-                        </div>
-                        <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
-                            <div className="flex items-center justify-between">
-                                <span className="text-gray-300">Chef de Partie</span>
-                                <span className="text-2xl font-bold text-green-400">2×</span>
-                            </div>
-                            <p className="text-sm text-gray-500 mt-1">Dakika başına 2 puan</p>
-                        </div>
-                        <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
-                            <div className="flex items-center justify-between">
-                                <span className="text-gray-300">Executive</span>
-                                <span className="text-2xl font-bold text-amber-400">3×</span>
-                            </div>
-                            <p className="text-sm text-gray-500 mt-1">Dakika başına 3 puan</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {/* Pasta Grafik */}
-                    <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-                        <h2 className="text-xl font-bold text-white mb-6">Gelir Dağılımı</h2>
-                        <div className="flex flex-col items-center">
-                            {/* Pie Chart */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Gelir Dağılımı (Pie Chart) */}
+                <div className="lg:col-span-1 bg-black border border-gray-800 rounded-xl p-6">
+                    <h2 className="text-xl font-bold text-white mb-6">Gelir Dağılımı</h2>
+                    <div className="flex flex-col items-center justify-center py-4">
+                        <div className="relative">
                             <div
-                                className="w-64 h-64 rounded-full mb-6 shadow-2xl"
+                                className="w-64 h-64 rounded-full shadow-[0_0_50px_rgba(249,115,22,0.1)] transition-transform hover:scale-105 duration-500"
                                 style={{
                                     background: `conic-gradient(${conicGradient})`
                                 }}
                             />
+                            <div className="absolute inset-0 m-auto w-32 h-32 bg-black rounded-full flex flex-col items-center justify-center border border-gray-800/50 backdrop-blur-sm">
+                                <span className="text-gray-400 text-xs">Toplam Dağıtılan</span>
+                                <span className="text-white font-bold text-lg mt-1">₺{POOL_TOTAL.toLocaleString('tr-TR', { notation: 'compact' })}</span>
+                            </div>
+                        </div>
 
-                            {/* Legend */}
-                            <div className="w-full space-y-3">
-                                {poolData.map((instructor) => (
-                                    <div key={instructor.id} className="flex items-center justify-between bg-gray-800/50 rounded-lg p-3">
-                                        <div className="flex items-center gap-3">
-                                            <div
-                                                className="w-4 h-4 rounded-full"
-                                                style={{ backgroundColor: instructor.color }}
-                                            />
-                                            <div>
-                                                <p className="text-white font-medium">{instructor.name}</p>
-                                                <p className="text-gray-500 text-sm">{instructor.courseName}</p>
-                                            </div>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="text-white font-bold">{instructor.percentage}%</p>
-                                            <p className="text-gray-400 text-sm">₺{instructor.poolShare.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</p>
+                        <div className="w-full mt-8 space-y-3">
+                            {poolData.map((instructor) => (
+                                <div key={instructor.id} className="flex items-center justify-between bg-white/5 rounded-lg p-3 hover:bg-white/10 transition-colors">
+                                    <div className="flex items-center gap-3">
+                                        <div
+                                            className="w-3 h-3 rounded-full shadow-[0_0_10px]"
+                                            style={{ backgroundColor: instructor.color, boxShadow: `0 0 10px ${instructor.color}` }}
+                                        />
+                                        <div className="flex flex-col">
+                                            <span className="text-white text-sm font-medium">{instructor.name}</span>
+                                            <span className="text-[10px] text-gray-500">{instructor.percentage}% Pay</span>
                                         </div>
                                     </div>
-                                ))}
+                                    <span className="text-white font-bold text-sm">₺{instructor.poolShare.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Detaylar ve Katsayılar */}
+                <div className="lg:col-span-2 space-y-8">
+                    {/* Katsayı Bilgisi */}
+                    <div className="bg-gradient-to-r from-neutral-900 to-black border border-gray-800 rounded-xl p-6">
+                        <div className="flex items-center mb-6 gap-2">
+                            <Award className="h-5 w-5 text-orange-500" />
+                            <h3 className="text-lg font-semibold text-white">Katsayı Sistemi</h3>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="bg-black/40 rounded-xl p-4 border border-white/5 hover:border-orange-500/30 transition-colors">
+                                <div className="flex justify-between items-start mb-2">
+                                    <span className="text-gray-400 text-sm">Başlangıç</span>
+                                    <span className="text-orange-500 font-bold bg-orange-500/10 px-2 py-0.5 rounded text-xs">1×</span>
+                                </div>
+                                <h4 className="text-white font-medium mb-1">Commis</h4>
+                                <p className="text-xs text-gray-500">Dakika başına 1 puan kazandırır.</p>
+                            </div>
+                            <div className="bg-black/40 rounded-xl p-4 border border-white/5 hover:border-blue-500/30 transition-colors">
+                                <div className="flex justify-between items-start mb-2">
+                                    <span className="text-gray-400 text-sm">Orta Seviye</span>
+                                    <span className="text-blue-500 font-bold bg-blue-500/10 px-2 py-0.5 rounded text-xs">2×</span>
+                                </div>
+                                <h4 className="text-white font-medium mb-1">Chef de Partie</h4>
+                                <p className="text-xs text-gray-500">Dakika başına 2 puan kazandırır.</p>
+                            </div>
+                            <div className="bg-black/40 rounded-xl p-4 border border-white/5 hover:border-purple-500/30 transition-colors">
+                                <div className="flex justify-between items-start mb-2">
+                                    <span className="text-gray-400 text-sm">Usta</span>
+                                    <span className="text-purple-500 font-bold bg-purple-500/10 px-2 py-0.5 rounded text-xs">3×</span>
+                                </div>
+                                <h4 className="text-white font-medium mb-1">Executive</h4>
+                                <p className="text-xs text-gray-500">Dakika başına 3 puan kazandırır.</p>
                             </div>
                         </div>
                     </div>
 
-                    {/* Eğitmen Detay Tablosu */}
-                    <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-                        <h2 className="text-xl font-bold text-white mb-6">Puan Hesaplama Detayı</h2>
+                    {/* Detay Tablosu */}
+                    <div className="bg-black border border-gray-800 rounded-xl overflow-hidden">
+                        <div className="px-6 py-4 border-b border-gray-800 flex justify-between items-center">
+                            <h2 className="text-lg font-bold text-white">Hesaplama Detayları</h2>
+                            <div className="flex items-center text-xs text-gray-500 bg-gray-900 px-3 py-1 rounded-full">
+                                <Info className="w-3 h-3 mr-1.5" />
+                                Canlı veriler ile otomatik güncellenir
+                            </div>
+                        </div>
                         <div className="overflow-x-auto">
                             <table className="w-full">
-                                <thead className="bg-gray-800">
+                                <thead className="bg-neutral-900/50">
                                     <tr>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                                            Eğitmen
-                                        </th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                                            Seviye
-                                        </th>
-                                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-300 uppercase tracking-wider">
-                                            Dakika
-                                        </th>
-                                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-300 uppercase tracking-wider">
-                                            Katsayı
-                                        </th>
-                                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-300 uppercase tracking-wider">
-                                            Puan
-                                        </th>
-                                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">
-                                            Pay
-                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Eğitmen</th>
+                                        <th className="px-6 py-3 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">Süre</th>
+                                        <th className="px-6 py-3 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">Katsayı</th>
+                                        <th className="px-6 py-3 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">Puan</th>
+                                        <th className="px-6 py-3 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">Hakediş</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-800">
                                     {poolData.map((instructor) => (
-                                        <tr key={instructor.id} className="hover:bg-gray-800/50">
-                                            <td className="px-4 py-4 whitespace-nowrap">
+                                        <tr key={instructor.id} className="hover:bg-white/5 transition-colors group">
+                                            <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="flex items-center">
                                                     <div
-                                                        className="w-3 h-3 rounded-full mr-3"
+                                                        className="w-2 h-8 rounded-full mr-4 opacity-50 group-hover:opacity-100 transition-opacity"
                                                         style={{ backgroundColor: instructor.color }}
                                                     />
                                                     <div>
@@ -300,93 +254,29 @@ export default async function PoolManagementPage() {
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="px-4 py-4 whitespace-nowrap">
-                                                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${instructor.level === 'Executive' ? 'bg-amber-900 text-amber-300' :
-                                                    instructor.level === 'Chef de Partie' ? 'bg-green-900 text-green-300' :
-                                                        'bg-blue-900 text-blue-300'
+                                            <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-300">
+                                                <span className="bg-gray-800 px-2 py-1 rounded text-xs font-mono">{instructor.minutes} dk</span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
+                                                <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${instructor.level === 'Executive' ? 'text-purple-400 bg-purple-400/10' :
+                                                        instructor.level === 'Chef de Partie' ? 'text-blue-400 bg-blue-400/10' :
+                                                            'text-orange-400 bg-orange-400/10'
                                                     }`}>
-                                                    {instructor.level}
+                                                    ×{instructor.coefficient} ({instructor.level})
                                                 </span>
                                             </td>
-                                            <td className="px-4 py-4 whitespace-nowrap text-center text-sm text-gray-300">
-                                                {instructor.minutes} dk
+                                            <td className="px-6 py-4 whitespace-nowrap text-center">
+                                                <span className="text-sm font-bold text-white">{instructor.points}</span>
                                             </td>
-                                            <td className="px-4 py-4 whitespace-nowrap text-center text-sm text-gray-300">
-                                                ×{instructor.coefficient}
-                                            </td>
-                                            <td className="px-4 py-4 whitespace-nowrap text-center">
-                                                <span className="text-sm font-bold text-orange-400">{instructor.points}</span>
-                                            </td>
-                                            <td className="px-4 py-4 whitespace-nowrap text-right">
-                                                <div className="text-sm font-bold text-white">₺{instructor.poolShare.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</div>
-                                                <div className="text-xs text-gray-500">{instructor.percentage}%</div>
+                                            <td className="px-6 py-4 whitespace-nowrap text-right">
+                                                <div className="text-sm font-bold text-green-400">₺{instructor.poolShare.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</div>
                                             </td>
                                         </tr>
                                     ))}
                                 </tbody>
-                                <tfoot className="bg-gray-800/50">
-                                    <tr>
-                                        <td colSpan={2} className="px-4 py-3 text-sm font-medium text-gray-300">
-                                            Toplam
-                                        </td>
-                                        <td className="px-4 py-3 text-center text-sm font-bold text-white">
-                                            {totalMinutes} dk
-                                        </td>
-                                        <td className="px-4 py-3 text-center text-sm text-gray-400">
-                                            -
-                                        </td>
-                                        <td className="px-4 py-3 text-center text-sm font-bold text-orange-400">
-                                            {totalPoints}
-                                        </td>
-                                        <td className="px-4 py-3 text-right text-sm font-bold text-green-400">
-                                            ₺{POOL_TOTAL.toLocaleString('tr-TR')}
-                                        </td>
-                                    </tr>
-                                </tfoot>
                             </table>
                         </div>
                     </div>
-                </div>
-
-                {/* Formül Açıklaması */}
-                <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 mt-8">
-                    <h3 className="text-lg font-semibold text-white mb-4">Hesaplama Formülü</h3>
-                    <div className="bg-gray-800 rounded-lg p-4 font-mono text-sm">
-                        <p className="text-gray-300 mb-2">
-                            <span className="text-orange-400">Puan</span> = Dakika × Katsayı
-                        </p>
-                        <p className="text-gray-300 mb-2">
-                            <span className="text-orange-400">Oran</span> = Puan / Toplam Puan
-                        </p>
-                        <p className="text-gray-300">
-                            <span className="text-orange-400">Havuz Payı</span> = Havuz Toplam × Oran
-                        </p>
-                    </div>
-                    <p className="text-gray-500 text-sm mt-4">
-                        * Bu sayfa örnek verilerle gösterilmektedir. Gerçek veriler sistemle entegre edildiğinde güncellenecektir.
-                    </p>
-                </div>
-            </div>
-
-            {/* Mobile Bottom Navigation */}
-            <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-t border-gray-800">
-                <div className="flex justify-around items-center py-2">
-                    <Link href="/admin" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
-                        <Home className="h-6 w-6" />
-                        <span className="text-xs font-medium mt-1">Panel</span>
-                    </Link>
-                    <Link href="/admin/courses" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
-                        <BookOpen className="h-6 w-6" />
-                        <span className="text-xs font-medium mt-1">Kurslar</span>
-                    </Link>
-                    <Link href="/admin/users" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
-                        <Users className="h-6 w-6" />
-                        <span className="text-xs font-medium mt-1">Kullanıcılar</span>
-                    </Link>
-                    <Link href="/admin/pool" className="flex flex-col items-center py-2 px-3 text-orange-500">
-                        <Wallet className="h-6 w-6" />
-                        <span className="text-xs font-medium mt-1">Havuz</span>
-                    </Link>
                 </div>
             </div>
         </div>

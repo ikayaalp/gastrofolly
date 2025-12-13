@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Plus, Edit, Trash2, Eye, EyeOff, Play, Users, Star, Upload, Search, Edit2, ListVideo } from "lucide-react"
+import { Plus, Edit2, ListVideo, Trash2, Search, Filter, Play, Users, Eye, EyeOff } from "lucide-react"
 import Image from "next/image"
 import CourseEditModal from "./CourseEditModal"
 import LessonManageModal from "./LessonManageModal"
@@ -10,14 +10,11 @@ interface Course {
   id: string
   title: string
   description: string
-  price: number
-  discountRate: number | null
-  discountedPrice: number | null
   imageUrl: string | null
   level: string
   duration: number | null
   isPublished: boolean
-  isFree: boolean
+  accessibleByPlans: string[]
   instructor: {
     id: string
     name: string | null
@@ -35,7 +32,6 @@ interface Course {
     videoUrl: string | null
     duration: number | null
     order: number
-    isFree: boolean
   }>
   reviews: Array<{
     rating: number
@@ -68,6 +64,12 @@ interface CourseManagementProps {
   instructors: Instructor[]
 }
 
+const SUBSCRIPTION_PLANS: Record<string, { label: string, color: string }> = {
+  'COMMIS': { label: 'Commis', color: 'bg-orange-500/10 text-orange-500 border-orange-500/20' },
+  'CHEF_DE_PARTIE': { label: 'Chef de P.', color: 'bg-blue-500/10 text-blue-500 border-blue-500/20' },
+  'EXECUTIVE': { label: 'Executive', color: 'bg-purple-500/10 text-purple-500 border-purple-500/20' }
+}
+
 export default function CourseManagement({ initialCourses, categories, instructors }: CourseManagementProps) {
   const [courses, setCourses] = useState<Course[]>(initialCourses)
   const [searchTerm, setSearchTerm] = useState("")
@@ -88,12 +90,6 @@ export default function CourseManagement({ initialCourses, categories, instructo
     if (filterStatus === "DRAFT") return matchesSearch && !course.isPublished
     return matchesSearch
   })
-
-  const calculateAverageRating = (reviews: Array<{ rating: number }>) => {
-    if (!reviews || reviews.length === 0) return 0
-    const sum = reviews.reduce((acc, review) => acc + review.rating, 0)
-    return sum / reviews.length
-  }
 
   const togglePublishStatus = async (courseId: string, currentStatus: boolean) => {
     setLoading(courseId)
@@ -161,68 +157,15 @@ export default function CourseManagement({ initialCourses, categories, instructo
 
   return (
     <div className="space-y-8">
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-black border border-gray-800 rounded-xl p-6">
-          <div className="flex items-center space-x-3">
-            <div className="bg-blue-500/20 p-3 rounded-lg">
-              <Play className="h-6 w-6 text-blue-400" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-white">{courses.length}</p>
-              <p className="text-gray-400">Toplam Kurs</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-black border border-gray-800 rounded-xl p-6">
-          <div className="flex items-center space-x-3">
-            <div className="bg-green-500/20 p-3 rounded-lg">
-              <Eye className="h-6 w-6 text-green-400" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-white">{courses.filter(c => c.isPublished).length}</p>
-              <p className="text-gray-400">Yayında</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-black border border-gray-800 rounded-xl p-6">
-          <div className="flex items-center space-x-3">
-            <div className="bg-red-500/20 p-3 rounded-lg">
-              <EyeOff className="h-6 w-6 text-red-400" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-white">{courses.filter(c => !c.isPublished).length}</p>
-              <p className="text-gray-400">Taslak</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-black border border-gray-800 rounded-xl p-6">
-          <div className="flex items-center space-x-3">
-            <div className="bg-orange-500/20 p-3 rounded-lg">
-              <Users className="h-6 w-6 text-orange-400" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-white">
-                {courses.reduce((acc, course) => acc + course._count.enrollments, 0)}
-              </p>
-              <p className="text-gray-400">Toplam Kayıt</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Actions */}
-      <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-        <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
-          <div className="relative w-full md:w-64">
+      {/* Search & filters */}
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-neutral-900/50 p-4 rounded-2xl border border-white/5">
+        <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto flex-1">
+          <div className="relative w-full md:w-96">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-4 w-4" />
             <input
               type="text"
-              placeholder="Kurs ara..."
-              className="w-full bg-black border border-gray-800 text-white pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+              placeholder="Kurs veya eğitmen ara..."
+              className="w-full bg-black border border-gray-800 text-white pl-10 pr-4 py-2.5 rounded-xl focus:outline-none focus:ring-1 focus:ring-orange-500 placeholder-gray-500"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -230,7 +173,7 @@ export default function CourseManagement({ initialCourses, categories, instructo
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value as any)}
-            className="bg-black border border-gray-800 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="bg-black border border-gray-800 text-white px-4 py-2.5 rounded-xl focus:outline-none focus:ring-1 focus:ring-orange-500 appearance-none min-w-[140px]"
           >
             <option value="ALL">Tüm Durumlar</option>
             <option value="PUBLISHED">Yayında</option>
@@ -239,7 +182,7 @@ export default function CourseManagement({ initialCourses, categories, instructo
         </div>
         <button
           onClick={handleCreateCourse}
-          className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors flex items-center space-x-2"
+          className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2.5 rounded-xl font-semibold transition-all flex items-center space-x-2 shadow-lg shadow-orange-900/20"
         >
           <Plus className="h-5 w-5" />
           <span>Yeni Kurs</span>
@@ -247,30 +190,28 @@ export default function CourseManagement({ initialCourses, categories, instructo
       </div>
 
       {/* Course List */}
-      <div className="bg-black border border-gray-800 rounded-xl overflow-hidden">
+      <div className="bg-neutral-900/50 border border-white/5 rounded-2xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-800">
-              <tr>
-                <th className="text-left py-4 px-6 font-semibold text-gray-300">Kurs</th>
-                <th className="text-left py-4 px-6 font-semibold text-gray-300">Kategori</th>
-                <th className="text-left py-4 px-6 font-semibold text-gray-300">Eğitmen</th>
-                <th className="text-left py-4 px-6 font-semibold text-gray-300">Fiyat</th>
-                <th className="text-left py-4 px-6 font-semibold text-gray-300">Durum</th>
-                <th className="text-left py-4 px-6 font-semibold text-gray-300">İstatistikler</th>
-                <th className="text-left py-4 px-6 font-semibold text-gray-300">İşlemler</th>
+            <thead>
+              <tr className="border-b border-white/10 text-left bg-black/20">
+                <th className="py-4 px-6 font-semibold text-gray-400 text-sm">Kurs Bilgisi</th>
+                <th className="py-4 px-6 font-semibold text-gray-400 text-sm">Eğitmen</th>
+                <th className="py-4 px-6 font-semibold text-gray-400 text-sm">Abonelik Erişimi</th>
+                <th className="py-4 px-6 font-semibold text-gray-400 text-sm">İstatistikler</th>
+                <th className="py-4 px-6 font-semibold text-gray-400 text-sm">Durum</th>
+                <th className="py-4 px-6 font-semibold text-gray-400 text-sm text-right">İşlemler</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-800">
+            <tbody className="divide-y divide-white/5">
               {filteredCourses.map((course) => {
-                const averageRating = calculateAverageRating(course.reviews)
                 const videosCount = course.lessons.filter(l => l.videoUrl).length
 
                 return (
-                  <tr key={course.id} className="hover:bg-gray-800/50 transition-colors">
+                  <tr key={course.id} className="hover:bg-white/5 transition-colors group">
                     <td className="py-4 px-6">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-12 h-12 bg-gray-700 rounded-lg overflow-hidden flex-shrink-0 relative">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-16 h-10 bg-gray-800 rounded-lg overflow-hidden flex-shrink-0 relative">
                           {course.imageUrl ? (
                             <Image
                               src={course.imageUrl}
@@ -279,56 +220,61 @@ export default function CourseManagement({ initialCourses, categories, instructo
                               className="object-cover"
                             />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <Play className="h-6 w-6 text-gray-500" />
+                            <div className="w-full h-full flex items-center justify-center bg-gray-800">
+                              <Play className="h-4 w-4 text-gray-600" />
                             </div>
                           )}
                         </div>
                         <div>
-                          <h3 className="font-semibold text-white">{course.title}</h3>
-                          <p className="text-gray-400 text-sm line-clamp-1">{course.description}</p>
+                          <h3 className="font-semibold text-white group-hover:text-orange-500 transition-colors">{course.title}</h3>
+                          <p className="text-gray-500 text-xs mt-0.5">{course.category.name}</p>
                         </div>
                       </div>
-                    </td>
-
-                    <td className="py-4 px-6">
-                      <span className="bg-gray-700 text-gray-300 px-2 py-1 rounded text-sm">
-                        {course.category.name}
-                      </span>
                     </td>
 
                     <td className="py-4 px-6">
                       <div className="flex items-center space-x-2">
-                        <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold text-xs uppercase">
-                          {course.instructor.name?.charAt(0) || "?"}
+                        <div className="w-6 h-6 bg-gray-800 rounded-full overflow-hidden relative">
+                          {course.instructor.image ? (
+                            <Image src={course.instructor.image} alt={course.instructor.name || ""} fill className="object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-400">
+                              {course.instructor.name?.charAt(0)}
+                            </div>
+                          )}
                         </div>
-                        <div>
-                          <div className="text-sm text-gray-300">{course.instructor.name || "İsimsiz"}</div>
-                          <div className="text-xs text-gray-500">{course.instructor.email}</div>
-                        </div>
+                        <span className="text-sm text-gray-300">{course.instructor.name}</span>
                       </div>
                     </td>
 
                     <td className="py-4 px-6">
-                      {course.discountedPrice && course.discountRate ? (
-                        <div className="flex flex-col">
-                          <span className="text-lg font-bold text-green-400">
-                            ₺{course.discountedPrice.toLocaleString('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                          </span>
-                          <div className="flex items-center space-x-2">
-                            <span className="text-sm text-gray-400 line-through">
-                              ₺{course.price.toLocaleString('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                      <div className="flex flex-wrap gap-1">
+                        {course.accessibleByPlans && course.accessibleByPlans.length > 0 ? (
+                          course.accessibleByPlans.map(plan => (
+                            <span
+                              key={plan}
+                              className={`text-[10px] px-2 py-0.5 rounded border ${SUBSCRIPTION_PLANS[plan]?.color || 'bg-gray-800 text-gray-400'}`}
+                            >
+                              {SUBSCRIPTION_PLANS[plan]?.label || plan}
                             </span>
-                            <span className="text-xs bg-red-600 text-white px-1.5 py-0.5 rounded">
-                              %{course.discountRate.toFixed(0)}
-                            </span>
-                          </div>
+                          ))
+                        ) : (
+                          <span className="text-xs text-red-400">Erişim Yok</span>
+                        )}
+                      </div>
+                    </td>
+
+                    <td className="py-4 px-6">
+                      <div className="flex items-center space-x-4 text-sm text-gray-400">
+                        <div className="flex items-center space-x-1" title="Kayıtlar">
+                          <Users className="h-4 w-4" />
+                          <span>{course._count.enrollments}</span>
                         </div>
-                      ) : (
-                        <span className="text-lg font-bold text-orange-500">
-                          {course.price > 0 ? `₺${course.price.toLocaleString('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}` : 'Ücretsiz'}
-                        </span>
-                      )}
+                        <div className="flex items-center space-x-1" title="Dersler">
+                          <Play className="h-4 w-4" />
+                          <span>{videosCount}/{course._count.lessons}</span>
+                        </div>
+                      </div>
                     </td>
 
                     <td className="py-4 px-6">
@@ -336,57 +282,20 @@ export default function CourseManagement({ initialCourses, categories, instructo
                         onClick={() => togglePublishStatus(course.id, course.isPublished)}
                         disabled={loading === course.id}
                         className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${course.isPublished
-                          ? 'bg-green-900/50 text-green-400 hover:bg-green-900'
-                          : 'bg-yellow-900/50 text-yellow-400 hover:bg-yellow-900'
+                          ? 'bg-green-500/10 text-green-400 border border-green-500/20 hover:bg-green-500/20'
+                          : 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 hover:bg-yellow-500/20'
                           }`}
                       >
-                        {loading === course.id ? (
-                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-current mr-1" />
-                        ) : null}
-                        {course.isPublished ? (
-                          <span className="flex items-center space-x-1">
-                            <Eye className="h-3 w-3" />
-                            <span>Yayında</span>
-                          </span>
-                        ) : (
-                          <span className="flex items-center space-x-1">
-                            <EyeOff className="h-3 w-3" />
-                            <span>Taslak</span>
-                          </span>
-                        )}
+                        {loading === course.id && <div className="animate-spin rounded-full h-2 w-2 border-b-2 border-current mr-1" />}
+                        {course.isPublished ? 'Yayında' : 'Taslak'}
                       </button>
                     </td>
 
-                    <td className="py-4 px-6">
-                      <div className="space-y-1 text-sm text-gray-400">
-                        <div className="flex items-center space-x-4">
-                          <div className="flex items-center space-x-1" title="Kayıtlar">
-                            <Users className="h-3 w-3" />
-                            <span>{course._count.enrollments}</span>
-                          </div>
-                          <div className="flex items-center space-x-1" title="Dersler">
-                            <Play className="h-3 w-3" />
-                            <span>{course._count.lessons}</span>
-                          </div>
-                          <div className="flex items-center space-x-1" title="Yüklenen Videolar">
-                            <Upload className="h-3 w-3" />
-                            <span>{videosCount}/{course._count.lessons}</span>
-                          </div>
-                        </div>
-                        {averageRating > 0 && (
-                          <div className="flex items-center space-x-1">
-                            <Star className="h-3 w-3 text-yellow-400 fill-current" />
-                            <span>{averageRating.toFixed(1)} ({course._count.reviews})</span>
-                          </div>
-                        )}
-                      </div>
-                    </td>
-
                     <td className="py-4 px-6 text-right">
-                      <div className="flex items-center justify-end space-x-2">
+                      <div className="flex items-center justify-end space-x-1 opacity-100 group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={() => handleEditCourse(course)}
-                          className="text-blue-400 hover:text-blue-300 p-2 hover:bg-blue-900/20 rounded-lg transition-colors"
+                          className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
                           title="Düzenle"
                         >
                           <Edit2 className="h-4 w-4" />
@@ -394,7 +303,7 @@ export default function CourseManagement({ initialCourses, categories, instructo
 
                         <button
                           onClick={() => handleManageLessons(course)}
-                          className="text-purple-400 hover:text-purple-300 p-2 hover:bg-purple-900/20 rounded-lg transition-colors"
+                          className="p-2 text-gray-400 hover:text-purple-400 hover:bg-purple-500/10 rounded-lg transition-colors"
                           title="Dersleri Yönet"
                         >
                           <ListVideo className="h-4 w-4" />
@@ -402,7 +311,7 @@ export default function CourseManagement({ initialCourses, categories, instructo
 
                         <button
                           onClick={() => deleteCourse(course.id)}
-                          className="text-red-400 hover:text-red-300 p-2 hover:bg-red-900/20 rounded-lg transition-colors"
+                          className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
                           title="Sil"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -432,7 +341,7 @@ export default function CourseManagement({ initialCourses, categories, instructo
 
       {showLessonModal && selectedCourse && (
         <LessonManageModal
-          course={selectedCourse}
+          course={selectedCourse as any}
           onClose={() => {
             setShowLessonModal(false)
             setSelectedCourse(null)
