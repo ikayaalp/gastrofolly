@@ -350,6 +350,7 @@ export default async function LearnPage({ params, searchParams }: LearnPageProps
             isCompleted={isCompleted}
             previousLesson={previousLesson}
             nextLesson={nextLesson}
+            hasFullAccess={hasFullAccess ?? false}
           />
 
           {/* Comments Section */}

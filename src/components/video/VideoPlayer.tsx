@@ -27,13 +27,14 @@ interface VideoPlayerProps {
   isCompleted: boolean
   previousLesson?: Lesson | null
   nextLesson?: Lesson | null
+  hasFullAccess?: boolean // Kullanıcının diğer derslere erişimi var mı?
 }
 
-export default function VideoPlayer({ lesson, course, userId, isCompleted, previousLesson, nextLesson }: VideoPlayerProps) {
+export default function VideoPlayer({ lesson, course, userId, isCompleted, previousLesson, nextLesson, hasFullAccess = true }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const [isPlaying, setIsPlaying] = useState(false)
-  
+
   // Debug için
   console.log("VideoPlayer - lesson:", lesson)
   console.log("VideoPlayer - videoUrl:", lesson.videoUrl)
@@ -149,7 +150,7 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
             video.addEventListener('canplay', resolve, { once: true })
           })
         }
-        
+
         await video.play()
         setIsPlaying(true)
       }
@@ -302,167 +303,167 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
       {lesson.videoUrl && lesson.videoUrl.trim() !== "" ? (
         isYouTubeUrl(lesson.videoUrl) ? (
           // YouTube Player
-          <YouTubePlayer 
+          <YouTubePlayer
             videoUrl={lesson.videoUrl}
             onReady={() => setIsLoading(false)}
           />
         ) : (
           // Regular Video Player
           <>
-          <video
-            ref={videoRef}
-            className="w-full h-full object-contain"
-            onMouseMove={() => {
-              setShowControls(true)
-              setTimeout(() => setShowControls(false), 3000)
-            }}
-            onError={(e) => {
-              console.log('Video error:', e)
-              setIsPlaying(false)
-            }}
-          >
-            <source src={lesson.videoUrl} type="video/mp4" />
-            Tarayıcınız video oynatmayı desteklemiyor.
-          </video>
+            <video
+              ref={videoRef}
+              className="w-full h-full object-contain"
+              onMouseMove={() => {
+                setShowControls(true)
+                setTimeout(() => setShowControls(false), 3000)
+              }}
+              onError={(e) => {
+                console.log('Video error:', e)
+                setIsPlaying(false)
+              }}
+            >
+              <source src={lesson.videoUrl} type="video/mp4" />
+              Tarayıcınız video oynatmayı desteklemiyor.
+            </video>
 
-          {/* Video Controls */}
-          <div
-            className={`video-control-buttons absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 transition-opacity duration-300 ${showControls || showCenterPlay ? 'opacity-100' : 'opacity-0'}`}
-          >
-            {/* Progress Bar */}
-            <div className="mb-4">
-              <input
-                type="range"
-                min="0"
-                max={duration || 0}
-                value={currentTime}
-                onChange={handleSeek}
-                onMouseDown={handleSeekStart}
-                onMouseUp={handleSeekEnd}
-                onTouchStart={handleSeekStart}
-                onTouchEnd={handleSeekEnd}
-                className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer"
-              />
-              <div className="flex justify-between text-white text-sm mt-1">
-                <span>{formatTime(currentTime)}</span>
-                <span>{formatTime(duration)}</span>
-              </div>
-            </div>
-
-            {/* Control Buttons */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                {/* Önceki Ders (SkipBack) */}
-                <button
-                  onClick={() => {
-                    if (previousLesson) {
-                      const url = new URL(window.location.href)
-                      url.searchParams.set('lesson', previousLesson.id)
-                      window.location.href = url.toString()
-                    }
-                  }}
-                  disabled={!previousLesson}
-                  className={`text-white hover:text-orange-400 transition-colors rounded-full p-2 ${!previousLesson ? 'opacity-40 cursor-not-allowed' : ''}`}
-                  title="Önceki ders"
-                >
-                  <SkipBack className="h-7 w-7" />
-                </button>
-
-                {/* Play/Pause */}
-                <button
-                  onClick={togglePlay}
-                  className="bg-orange-600 hover:bg-orange-700 text-white p-3 rounded-full transition-colors mx-2"
-                  title={isPlaying ? "Duraklat" : "Oynat"}
-                >
-                  {isPlaying ? (
-                    <Pause className="h-7 w-7" />
-                  ) : (
-                    <Play className="h-7 w-7 ml-1" />
-                  )}
-                </button>
-
-                {/* Sonraki Ders (SkipForward) */}
-                <button
-                  onClick={() => {
-                    if (nextLesson) {
-                      const url = new URL(window.location.href)
-                      url.searchParams.set('lesson', nextLesson.id)
-                      window.location.href = url.toString()
-                    }
-                  }}
-                  disabled={!nextLesson}
-                  className={`text-white hover:text-orange-400 transition-colors rounded-full p-2 ${!nextLesson ? 'opacity-40 cursor-not-allowed' : ''}`}
-                  title="Sonraki ders"
-                >
-                  <SkipForward className="h-7 w-7" />
-                </button>
-
-                {/* Ses kontrolü */}
-                <button
-                  onClick={toggleMute}
-                  className="text-white hover:text-orange-400 transition-colors ml-4"
-                  title={isMuted ? "Sesi Aç" : "Sesi Kapat"}
-                >
-                  {isMuted ? (
-                    <VolumeX className="h-5 w-5" />
-                  ) : (
-                    <Volume2 className="h-5 w-5" />
-                  )}
-                </button>
+            {/* Video Controls */}
+            <div
+              className={`video-control-buttons absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 transition-opacity duration-300 ${showControls || showCenterPlay ? 'opacity-100' : 'opacity-0'}`}
+            >
+              {/* Progress Bar */}
+              <div className="mb-4">
                 <input
                   type="range"
                   min="0"
-                  max="1"
-                  step="0.1"
-                  value={isMuted ? 0 : volume}
-                  onChange={handleVolumeChange}
-                  className="w-20 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer"
+                  max={duration || 0}
+                  value={currentTime}
+                  onChange={handleSeek}
+                  onMouseDown={handleSeekStart}
+                  onMouseUp={handleSeekEnd}
+                  onTouchStart={handleSeekStart}
+                  onTouchEnd={handleSeekEnd}
+                  className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer"
                 />
+                <div className="flex justify-between text-white text-sm mt-1">
+                  <span>{formatTime(currentTime)}</span>
+                  <span>{formatTime(duration)}</span>
+                </div>
               </div>
-              {/* Tam ekran */}
-              <div className="flex items-center space-x-4">
-                <button
-                  onClick={toggleFullscreen}
-                  className="text-white hover:text-orange-400 transition-colors"
-                >
-                  <Maximize className="h-5 w-5" />
-                </button>
-              </div>
-            </div>
-          </div>
 
-          {/* Lesson Info Overlay */}
-          {/* Tam ekran değilse başlık/açıklama overlay göster */}
-          {!isFullscreen && (
-            <div className="absolute top-4 left-4 text-white z-20">
-              <div className="bg-black/60 backdrop-blur-sm rounded-lg p-4">
-                <h1 className="text-2xl font-bold mb-2">{lesson.title}</h1>
-                <p className="text-orange-500 mb-2">{course.title}</p>
-                <div className="flex items-center space-x-2 text-sm">
-                  <span className="bg-orange-500/20 text-orange-500 px-2 py-1 rounded text-xs">
-                    Chef2.0
-                  </span>
-                  {isCompleted && (
-                    <span className="bg-green-500/20 text-green-500 px-2 py-1 rounded text-xs">
-                      ✓ Tamamlandı
-                    </span>
-                  )}
+              {/* Control Buttons */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  {/* Önceki Ders (SkipBack) - İlk derse her zaman dönebilir */}
+                  <button
+                    onClick={() => {
+                      if (previousLesson) {
+                        const url = new URL(window.location.href)
+                        url.searchParams.set('lesson', previousLesson.id)
+                        window.location.href = url.toString()
+                      }
+                    }}
+                    disabled={!previousLesson}
+                    className={`text-white hover:text-orange-400 transition-colors rounded-full p-2 ${!previousLesson ? 'opacity-40 cursor-not-allowed' : ''}`}
+                    title="Önceki ders"
+                  >
+                    <SkipBack className="h-7 w-7" />
+                  </button>
+
+                  {/* Play/Pause */}
+                  <button
+                    onClick={togglePlay}
+                    className="bg-orange-600 hover:bg-orange-700 text-white p-3 rounded-full transition-colors mx-2"
+                    title={isPlaying ? "Duraklat" : "Oynat"}
+                  >
+                    {isPlaying ? (
+                      <Pause className="h-7 w-7" />
+                    ) : (
+                      <Play className="h-7 w-7 ml-1" />
+                    )}
+                  </button>
+
+                  {/* Sonraki Ders (SkipForward) - Sadece hasFullAccess varsa çalışır */}
+                  <button
+                    onClick={() => {
+                      if (nextLesson && hasFullAccess) {
+                        const url = new URL(window.location.href)
+                        url.searchParams.set('lesson', nextLesson.id)
+                        window.location.href = url.toString()
+                      }
+                    }}
+                    disabled={!nextLesson || !hasFullAccess}
+                    className={`text-white hover:text-orange-400 transition-colors rounded-full p-2 ${(!nextLesson || !hasFullAccess) ? 'opacity-40 cursor-not-allowed' : ''}`}
+                    title={!hasFullAccess ? "Premium abonelik gerekli" : "Sonraki ders"}
+                  >
+                    <SkipForward className="h-7 w-7" />
+                  </button>
+
+                  {/* Ses kontrolü */}
+                  <button
+                    onClick={toggleMute}
+                    className="text-white hover:text-orange-400 transition-colors ml-4"
+                    title={isMuted ? "Sesi Aç" : "Sesi Kapat"}
+                  >
+                    {isMuted ? (
+                      <VolumeX className="h-5 w-5" />
+                    ) : (
+                      <Volume2 className="h-5 w-5" />
+                    )}
+                  </button>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value={isMuted ? 0 : volume}
+                    onChange={handleVolumeChange}
+                    className="w-20 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer"
+                  />
+                </div>
+                {/* Tam ekran */}
+                <div className="flex items-center space-x-4">
+                  <button
+                    onClick={toggleFullscreen}
+                    className="text-white hover:text-orange-400 transition-colors"
+                  >
+                    <Maximize className="h-5 w-5" />
+                  </button>
                 </div>
               </div>
             </div>
-          )}
-          {/* Ortada büyük Play butonu */}
-          {showCenterPlay && (
-            <div className="absolute inset-0 flex justify-center items-center z-30 pointer-events-none">
-              <button
-                className="bg-orange-600 bg-opacity-90 rounded-full p-7 shadow-lg flex items-center justify-center border-2 border-orange-700 animate-pop pointer-events-auto hover:bg-orange-700 transition"
-                style={{ pointerEvents: 'auto' }}
-                onClick={handleCenterPlayClick}
-              >
-                <Play className="h-20 w-20 text-white drop-shadow-md" style={{ color: '#fff6e3' }}/>
-              </button>
-            </div>
-          )}
+
+            {/* Lesson Info Overlay */}
+            {/* Tam ekran değilse başlık/açıklama overlay göster */}
+            {!isFullscreen && (
+              <div className="absolute top-4 left-4 text-white z-20">
+                <div className="bg-black/60 backdrop-blur-sm rounded-lg p-4">
+                  <h1 className="text-2xl font-bold mb-2">{lesson.title}</h1>
+                  <p className="text-orange-500 mb-2">{course.title}</p>
+                  <div className="flex items-center space-x-2 text-sm">
+                    <span className="bg-orange-500/20 text-orange-500 px-2 py-1 rounded text-xs">
+                      Chef2.0
+                    </span>
+                    {isCompleted && (
+                      <span className="bg-green-500/20 text-green-500 px-2 py-1 rounded text-xs">
+                        ✓ Tamamlandı
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+            {/* Ortada büyük Play butonu */}
+            {showCenterPlay && (
+              <div className="absolute inset-0 flex justify-center items-center z-30 pointer-events-none">
+                <button
+                  className="bg-orange-600 bg-opacity-90 rounded-full p-7 shadow-lg flex items-center justify-center border-2 border-orange-700 animate-pop pointer-events-auto hover:bg-orange-700 transition"
+                  style={{ pointerEvents: 'auto' }}
+                  onClick={handleCenterPlayClick}
+                >
+                  <Play className="h-20 w-20 text-white drop-shadow-md" style={{ color: '#fff6e3' }} />
+                </button>
+              </div>
+            )}
           </>
         )
       ) : (
