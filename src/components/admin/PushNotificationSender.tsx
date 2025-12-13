@@ -3,7 +3,11 @@
 import { useState } from "react"
 import { Send, Loader2, AlertCircle, CheckCircle } from "lucide-react"
 
-export default function PushNotificationSender() {
+interface PushNotificationSenderProps {
+    courses: { id: string; title: string }[]
+}
+
+export default function PushNotificationSender({ courses }: PushNotificationSenderProps) {
     const [title, setTitle] = useState("")
     const [message, setMessage] = useState("")
     const [courseId, setCourseId] = useState("")
@@ -88,15 +92,20 @@ export default function PushNotificationSender() {
 
                 <div>
                     <label className="block text-sm font-medium text-gray-300 mb-1">
-                        Kurs ID (Opsiyonel - Tıklanınca açılacak kurs)
+                        Kurs Seç (Opsiyonel - Tıklanınca açılacak kurs)
                     </label>
-                    <input
-                        type="text"
+                    <select
                         value={courseId}
                         onChange={(e) => setCourseId(e.target.value)}
-                        placeholder="Örn: clxxxx..."
-                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    />
+                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none"
+                    >
+                        <option value="">Kurs seçiniz...</option>
+                        {courses.map((course) => (
+                            <option key={course.id} value={course.id}>
+                                {course.title}
+                            </option>
+                        ))}
+                    </select>
                 </div>
 
                 {status && (

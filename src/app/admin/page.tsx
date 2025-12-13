@@ -8,7 +8,7 @@ import UserDropdown from "@/components/ui/UserDropdown"
 import PushNotificationSender from "@/components/admin/PushNotificationSender"
 
 async function getAdminData() {
-  const [users, courses, enrollments, payments] = await Promise.all([
+  const [users, courseList, coursesCount, enrollments, payments] = await Promise.all([
     prisma.user.findMany({
       select: {
         id: true,
@@ -28,6 +28,10 @@ async function getAdminData() {
         createdAt: 'desc'
       }
     }),
+    prisma.course.findMany({
+      select: { id: true, title: true },
+      orderBy: { createdAt: 'desc' }
+    }),
     prisma.course.count(),
     prisma.enrollment.count(),
     prisma.payment.aggregate({
@@ -38,7 +42,7 @@ async function getAdminData() {
     })
   ])
 
-  return { users, courses, enrollments, payments }
+  return { users, courseList, coursesCount, enrollments, payments }
 }
 
 export default async function AdminPage() {
@@ -58,7 +62,7 @@ export default async function AdminPage() {
     redirect("/dashboard")
   }
 
-  const { users, courses, enrollments, payments } = await getAdminData()
+  const { users, courseList, coursesCount, enrollments, payments } = await getAdminData()
 
   return (
     <div className="min-h-screen bg-black">
@@ -128,7 +132,7 @@ export default async function AdminPage() {
             <div className="flex items-center">
               <BookOpen className="h-8 w-8 text-green-500" />
               <div className="ml-4">
-                <p className="text-2xl font-bold text-white">{courses}</p>
+                <p className="text-2xl font-bold text-white">{coursesCount}</p>
                 <p className="text-gray-400">Toplam Kurs</p>
               </div>
             </div>
@@ -192,7 +196,7 @@ export default async function AdminPage() {
 
         {/* Push Notification Sender */}
         <div className="mb-8">
-          <PushNotificationSender />
+          <PushNotificationSender courses={courseList} />
         </div>
 
         {/* Kullanıcı Listesi */}
