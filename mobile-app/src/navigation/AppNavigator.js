@@ -1,9 +1,23 @@
-import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { NavigationContainer } from '@react-navigation/native';
-import { Platform } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { NavigationContainer, createNavigationContainerRef } from '@react-navigation/native';
+
+export const navigationRef = createNavigationContainerRef();
+
+// ... existing code ...
+
+export default function AppNavigator() {
+    return (
+        <NavigationContainer ref={navigationRef}>
+            <Stack.Navigator
+                screenOptions={{ headerShown: false }}
+                initialRouteName="Intro"
+            >
+                {/* ... screens ... */}
+            </Stack.Navigator>
+        </NavigationContainer>
+    );
+}
 
 // Screens
 import HomeScreen from '../screens/HomeScreen';
@@ -149,7 +163,7 @@ function TabNavigator() {
 
 export default function AppNavigator() {
     return (
-        <NavigationContainer>
+        <NavigationContainer ref={navigationRef}>
             <Stack.Navigator
                 screenOptions={{ headerShown: false }}
                 initialRouteName="Intro"

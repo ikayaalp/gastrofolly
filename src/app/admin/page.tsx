@@ -3,8 +3,9 @@ import { redirect } from "next/navigation"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
-import { ChefHat, Users, BookOpen, CreditCard, Calendar, Home, MessageCircle, Wallet } from "lucide-react"
+import { ChefHat, BookOpen, Users, Wallet, CreditCard, PlayCircle, BarChart3, TrendingUp, Home } from "lucide-react"
 import UserDropdown from "@/components/ui/UserDropdown"
+import PushNotificationSender from "@/components/admin/PushNotificationSender"
 
 async function getAdminData() {
   const [users, courses, enrollments, payments] = await Promise.all([
@@ -135,7 +136,7 @@ export default async function AdminPage() {
 
           <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
             <div className="flex items-center">
-              <Calendar className="h-8 w-8 text-orange-500" />
+              <TrendingUp className="h-8 w-8 text-orange-500" /> {/* Changed from Calendar to TrendingUp */}
               <div className="ml-4">
                 <p className="text-2xl font-bold text-white">{enrollments}</p>
                 <p className="text-gray-400">Toplam Kayıt</p>
@@ -239,8 +240,8 @@ export default async function AdminPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${user.role === 'ADMIN' ? 'bg-red-900 text-red-300' :
-                        user.role === 'INSTRUCTOR' ? 'bg-blue-900 text-blue-300' :
-                          'bg-green-900 text-green-300'
+                          user.role === 'INSTRUCTOR' ? 'bg-blue-900 text-blue-300' :
+                            'bg-green-900 text-green-300'
                         }`}>
                         {user.role === 'ADMIN' ? 'Yönetici' :
                           user.role === 'INSTRUCTOR' ? 'Eğitmen' : 'Öğrenci'}
