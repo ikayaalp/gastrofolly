@@ -1,5 +1,11 @@
+"use client"
+
+import { useState } from "react"
 import Link from "next/link"
-import { Users, Eye, DollarSign, ChefHat } from "lucide-react"
+import { Users, Eye, DollarSign, ChefHat, Search } from "lucide-react"
+import UserDropdown from "@/components/ui/UserDropdown"
+import NotificationDropdown from "@/components/ui/NotificationDropdown"
+import SearchModal from "@/components/ui/SearchModal"
 // Simplified interface
 
 
@@ -7,11 +13,15 @@ interface InstructorData {
   totalPool: number
   instructorWatchMinutes: number
   systemWatchMinutes: number
+  instructorTotalPoints: number
+  systemTotalPoints: number
   shareAmount: number
   sharePercentage: number
+  instructorCoefficient: number
   courseStats?: {
     title: string
     minutes: number
+    points: number
   }[]
 }
 
@@ -31,6 +41,8 @@ interface Props {
 }
 
 export default function InstructorDashboardClient({ instructorData, session }: Props) {
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
+
   return (
     <div className="min-h-screen bg-gray-900">
       {/* Desktop Header */}
@@ -63,21 +75,15 @@ export default function InstructorDashboardClient({ instructorData, session }: P
             </div>
 
             <div className="flex items-center space-x-4">
-              {/* UserDropdown/NotificationDropdown placeholder if needed, or keeping it simple for now as per previous design but aligned layout */}
-              {/* Since UserDropdown is a separate component, I can't easily import it without knowing its path/props. 
-                  However, standard header has Search/Notification/User. The user just asked for "headerdan bu kalksın" (remove manage courses).
-                  I will use the same simplistic Profile link from before BUT with the exact same visual layout wrapper as Home. 
-                  Wait, to be "exactly same", I should ideally use the same components.
-                  But I don't have UserDropdown imported here. I will just stick to the text links structure for now, matching the Home structure.
-               */}
-              <div className="flex items-center space-x-4">
-                <Link
-                  href="/instructor-dashboard/profile"
-                  className="bg-gray-800 text-white p-2 rounded-full hover:bg-gray-700 transition-colors border border-gray-700"
-                >
-                  <Users className="h-5 w-5" />
-                </Link>
-              </div>
+              <button
+                onClick={() => setIsSearchOpen(true)}
+                className="text-gray-300 hover:text-white transition-colors"
+                title="Ara"
+              >
+                <Search className="h-5 w-5" />
+              </button>
+              <NotificationDropdown />
+              <UserDropdown />
             </div>
           </div>
         </div>
@@ -91,12 +97,13 @@ export default function InstructorDashboardClient({ instructorData, session }: P
             <span className="text-lg font-bold text-white">Chef2.0</span>
           </Link>
           <div className="flex items-center space-x-3">
-            <Link
-              href="/instructor-dashboard/profile"
+            <button
+              onClick={() => setIsSearchOpen(true)}
               className="p-2 text-gray-300 hover:text-white transition-colors"
             >
-              <Users className="h-5 w-5" />
-            </Link>
+              <Search className="h-5 w-5" />
+            </button>
+            <UserDropdown />
           </div>
         </div>
       </div>
@@ -211,34 +218,29 @@ export default function InstructorDashboardClient({ instructorData, session }: P
                 <thead className="text-xs text-gray-500 uppercase bg-gray-900/50 border-b border-gray-800">
                   <tr>
                     <th className="py-3 px-4">Kurs Adı</th>
-                    <th className="py-3 px-4 text-right">İzlenme (dk)</th>
-                    <th className="py-3 px-4 text-right">Kendi İçindeki Payı</th>
-                    <th className="py-3 px-4 text-right">Sistem Payı</th>
+                    <th className="py-3 px-4 text-center">İzlenme (dk)</th>
+                    <th className="py-3 px-4 text-center">Getirdiği Puan</th>
+                    <th className="py-3 px-4 text-right">Havuz Puan Payı</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-800">
                   {instructorData.courseStats && instructorData.courseStats.length > 0 ? (
                     instructorData.courseStats.map((stat, index) => {
-                      const ownShare = instructorData.instructorWatchMinutes > 0
-                        ? (stat.minutes / instructorData.instructorWatchMinutes) * 100
-                        : 0;
-                      const systemShare = instructorData.systemWatchMinutes > 0
-                        ? (stat.minutes / instructorData.systemWatchMinutes) * 100
+                      // Contribution of this course's points to the TOTAL SYSTEM POINTS
+                      const systemPointShare = instructorData.systemTotalPoints > 0
+                        ? (stat.points / instructorData.systemTotalPoints) * 100
                         : 0;
 
                       return (
                         <tr key={index} className="hover:bg-gray-800/50 transition-colors">
                           <td className="py-4 px-4 font-medium text-white">{stat.title}</td>
-                          <td className="py-4 px-4 text-right font-mono text-blue-400">{stat.minutes} dk</td>
-                          <td className="py-4 px-4 text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              <span className="text-xs">{ownShare.toFixed(1)}%</span>
-                              <div className="w-16 h-1.5 bg-gray-700 rounded-full">
-                                <div className="h-1.5 bg-blue-500 rounded-full" style={{ width: `${Math.min(ownShare, 100)}%` }}></div>
-                              </div>
-                            </div>
+                          <td className="py-4 px-4 text-center font-mono text-gray-400">{stat.minutes} dk</td>
+                          <td className="py-4 px-4 text-center">
+                            <span className="text-blue-400 font-bold bg-blue-400/10 px-2 py-1 rounded">
+                              {stat.points} Puan
+                            </span>
                           </td>
-                          <td className="py-4 px-4 text-right text-orange-500 font-bold">%{systemShare.toFixed(4)}</td>
+                          <td className="py-4 px-4 text-right text-orange-500 font-bold">%{systemPointShare.toFixed(4)}</td>
                         </tr>
                       );
                     })
