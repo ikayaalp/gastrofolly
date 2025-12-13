@@ -55,6 +55,12 @@ export default async function UsersPage() {
                 <Link href="/admin/pool" className="text-gray-300 hover:text-white transition-colors">
                   Havuz Yönetimi
                 </Link>
+                <Link href="/admin/notifications" className="text-gray-300 hover:text-white transition-colors">
+                  Bildirimler
+                </Link>
+                <Link href="/admin/videos" className="text-gray-300 hover:text-white transition-colors">
+                  Video Yönetimi
+                </Link>
               </nav>
             </div>
 

@@ -3,7 +3,7 @@ import { redirect } from "next/navigation"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
-import { ChefHat, BookOpen, Users, Wallet, CreditCard, PlayCircle, BarChart3, TrendingUp, Home } from "lucide-react"
+import { ChefHat, BookOpen, Users, Wallet, CreditCard, PlayCircle, BarChart3, TrendingUp, Home, Bell } from "lucide-react"
 import UserDropdown from "@/components/ui/UserDropdown"
 import PushNotificationSender from "@/components/admin/PushNotificationSender"
 
@@ -89,6 +89,12 @@ export default async function AdminPage() {
                 <Link href="/admin/pool" className="text-gray-300 hover:text-white transition-colors">
                   Havuz Yönetimi
                 </Link>
+                <Link href="/admin/notifications" className="text-gray-300 hover:text-white transition-colors">
+                  Bildirimler
+                </Link>
+                <Link href="/admin/videos" className="text-gray-300 hover:text-white transition-colors">
+                  Video Yönetimi
+                </Link>
               </nav>
             </div>
             <div className="flex items-center space-x-4">
@@ -97,6 +103,7 @@ export default async function AdminPage() {
           </div>
         </div>
       </header>
+
 
       {/* Mobile Top Bar */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
@@ -194,10 +201,7 @@ export default async function AdminPage() {
           </Link>
         </div>
 
-        {/* Push Notification Sender */}
-        <div className="mb-8">
-          <PushNotificationSender courses={courseList} />
-        </div>
+
 
         {/* Kullanıcı Listesi */}
         <div className="bg-gray-900 border border-gray-800 rounded-lg">
@@ -296,6 +300,10 @@ export default async function AdminPage() {
           <Link href="/admin/pool" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
             <Wallet className="h-6 w-6" />
             <span className="text-xs font-medium mt-1">Havuz</span>
+          </Link>
+          <Link href="/admin/notifications" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+            <Bell className="h-6 w-6" />
+            <span className="text-xs font-medium mt-1">Bildirim</span>
           </Link>
         </div>
       </div>

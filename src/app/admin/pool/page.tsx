@@ -114,6 +114,12 @@ export default async function PoolManagementPage() {
                                 <Link href="/admin/pool" className="text-white font-semibold">
                                     Havuz Yönetimi
                                 </Link>
+                                <Link href="/admin/notifications" className="text-gray-300 hover:text-white transition-colors">
+                                    Bildirimler
+                                </Link>
+                                <Link href="/admin/videos" className="text-gray-300 hover:text-white transition-colors">
+                                    Video Yönetimi
+                                </Link>
                             </nav>
                         </div>
                         <div className="flex items-center space-x-4">

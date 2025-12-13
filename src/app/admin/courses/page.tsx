@@ -3,7 +3,7 @@ import { authOptions } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
-import { ChefHat, Home, BookOpen, Users, Wallet } from "lucide-react"
+import { ChefHat, BookOpen, Users, Wallet, Home } from "lucide-react"
 import UserDropdown from "@/components/ui/UserDropdown"
 import CourseManagement from "./CourseManagement"
 
@@ -102,13 +102,13 @@ export default async function CourseManagementPage() {
   ])
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
+    <div className="min-h-screen bg-black">
+      {/* Desktop Header */}
+      <header className="hidden md:block bg-gray-900/30 border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-8">
-              <Link href="/admin" className="flex items-center space-x-2">
+              <Link href="/home" className="flex items-center space-x-2">
                 <ChefHat className="h-8 w-8 text-orange-500" />
                 <span className="text-2xl font-bold text-white">Chef2.0</span>
                 <span className="bg-orange-600 text-white px-2 py-1 rounded text-sm font-medium">Admin</span>
@@ -126,9 +126,14 @@ export default async function CourseManagementPage() {
                 <Link href="/admin/pool" className="text-gray-300 hover:text-white transition-colors">
                   Havuz Yönetimi
                 </Link>
+                <Link href="/admin/notifications" className="text-gray-300 hover:text-white transition-colors">
+                  Bildirimler
+                </Link>
+                <Link href="/admin/videos" className="text-gray-300 hover:text-white transition-colors">
+                  Video Yönetimi
+                </Link>
               </nav>
             </div>
-
             <div className="flex items-center space-x-4">
               <UserDropdown />
             </div>
@@ -136,22 +141,32 @@ export default async function CourseManagementPage() {
         </div>
       </header>
 
-      {/* Page Title */}
-      <div className="pt-20 bg-black border-b border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <h1 className="text-3xl font-bold text-white">Kurs Yönetimi</h1>
-          <p className="text-gray-400 mt-2">Kursları oluşturun, düzenleyin ve yönetin</p>
+      {/* Mobile Top Bar */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
+        <div className="flex justify-between items-center py-3 px-4">
+          <Link href="/home" className="flex items-center space-x-2">
+            <ChefHat className="h-6 w-6 text-orange-500" />
+            <span className="text-lg font-bold text-white">Chef2.0</span>
+            <span className="bg-orange-600 text-white px-2 py-1 rounded text-xs font-medium">Admin</span>
+          </Link>
+          <UserDropdown />
         </div>
       </div>
 
-      {/* Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-20 md:pt-8">
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-white mb-2">Kurs Yönetimi</h1>
+            <p className="text-gray-400">Tüm kursları görüntüleyin, düzenleyin ve yönetin</p>
+          </div>
+        </div>
+
         <CourseManagement
-          courses={courses}
+          initialCourses={courses}
           categories={categories}
           instructors={instructors}
         />
-      </main>
+      </div>
 
       {/* Mobile Bottom Navigation */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-t border-gray-800">

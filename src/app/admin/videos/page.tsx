@@ -87,6 +87,12 @@ export default async function VideoManagementPage() {
                 <Link href="/admin/pool" className="text-gray-300 hover:text-white transition-colors">
                   Havuz Yönetimi
                 </Link>
+                <Link href="/admin/notifications" className="text-gray-300 hover:text-white transition-colors">
+                  Bildirimler
+                </Link>
+                <Link href="/admin/videos" className="text-white font-semibold">
+                  Video Yönetimi
+                </Link>
               </nav>
             </div>
 
