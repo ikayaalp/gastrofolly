@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "0d612dfd-d69e-48be-971d-b9b4c6b52f44"
+      }
+    },
+    "android": {
+      "package": "com.ikayaalpp.chefcourseplatform"
+    }
+  }
+}

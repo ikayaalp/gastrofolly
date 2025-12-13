@@ -137,9 +137,11 @@ export async function sendPushToAllUsers(
         return { success: 0, failed: 0 }
     }
 
-    console.log(`Sending push notifications to ${pushTokens.length} users`)
+    console.log(`Found ${pushTokens.length} tokens. Sending push notifications...`)
+
 
     const tickets = await sendPushNotifications(pushTokens, title, body, data)
+    console.log('Expo returned tickets:', tickets)
 
     const success = tickets.filter(t => t.status === 'ok').length
     const failed = tickets.filter(t => t.status === 'error').length

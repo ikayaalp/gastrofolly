@@ -61,6 +61,7 @@ class NotificationService {
         // Expo push token al
         try {
             const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? Constants.easConfig?.projectId;
+            console.log('Using Project ID for Push:', projectId);
 
             token = (await Notifications.getExpoPushTokenAsync({
                 projectId: projectId,

@@ -26,6 +26,8 @@ export async function PATCH(
 
     // Eğer kurs yayınlandıysa, tüm kullanıcılara bildirim gönder
     if (isPublished) {
+      console.log('Sending push notifications for course:', course.title)
+
       // In-app bildirimler oluştur
       const allUsers = await prisma.user.findMany({
         select: { id: true }
@@ -42,12 +44,14 @@ export async function PATCH(
       })
 
       // Push notification gönder (mobil cihazlara)
-      await sendPushToAllUsers(
+      const pushResult = await sendPushToAllUsers(
         '🎉 Yeni Kurs Eklendi!',
         `"${course.title}" kursu artık yayında! Hemen keşfet.`,
         { courseId: course.id, type: 'NEW_COURSE' }
       )
+      console.log('Push notification result:', pushResult)
     }
+
 
     return NextResponse.json({
       success: true,
