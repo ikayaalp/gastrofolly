@@ -160,7 +160,7 @@ export default function CommentsSection({
           {canComment && instructor && (
             <button
               onClick={() => setShowChefModal(true)}
-              className="bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white px-4 py-2.5 rounded-lg font-medium transition-all flex items-center space-x-2 shadow-lg hover:shadow-purple-500/50"
+              className="bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white px-4 py-2.5 rounded-lg font-medium transition-all flex items-center space-x-2 shadow-lg hover:shadow-orange-500/50"
             >
               <ChefHat className="h-4 w-4" />
               <span>Chef&apos;e Sor</span>
@@ -188,18 +188,6 @@ export default function CommentsSection({
               <MessageCircle className="h-10 w-10 text-gray-600" />
             </div>
             <h3 className="text-lg font-semibold text-white mb-2">Henüz yorum yapılmamış</h3>
-            {canComment && (
-              <>
-                <p className="text-gray-400 text-sm mb-4">İlk yorumu sen yap!</p>
-                <button
-                  onClick={() => setShowCommentModal(true)}
-                  className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-lg font-medium transition-all inline-flex items-center space-x-2"
-                >
-                  <Edit className="h-5 w-5" />
-                  <span>Yorum Yap</span>
-                </button>
-              </>
-            )}
           </div>
         ) : (
           reviews.map((review) => (
@@ -264,12 +252,12 @@ export default function CommentsSection({
       {/* Chef'e Sor Modal */}
       {showChefModal && instructor && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4">
-          <div className="bg-[#0a0a0a] border border-gray-800 rounded-xl w-full max-w-md shadow-2xl shadow-purple-500/10">
+          <div className="bg-[#0a0a0a] border border-gray-800 rounded-xl w-full max-w-md shadow-2xl shadow-orange-500/10">
             {/* Modal Header */}
             <div className="p-6 border-b border-gray-800 flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <div className="bg-purple-500/10 p-2 rounded-lg">
-                  <ChefHat className="h-6 w-6 text-purple-500" />
+                <div className="bg-orange-500/10 p-2 rounded-lg">
+                  <ChefHat className="h-6 w-6 text-orange-500" />
                 </div>
                 <h3 className="text-xl font-bold text-white">Chef&apos;e Sor</h3>
               </div>
@@ -291,21 +279,21 @@ export default function CommentsSection({
                     alt={instructor.name || 'Chef'}
                     width={64}
                     height={64}
-                    className="rounded-full border-2 border-purple-500"
+                    className="rounded-full border-2 border-orange-500"
                   />
                 ) : (
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-600 to-purple-400 flex items-center justify-center border-2 border-purple-500">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-600 to-orange-400 flex items-center justify-center border-2 border-orange-500">
                     <ChefHat className="h-8 w-8 text-white" />
                   </div>
                 )}
                 <div>
                   <h4 className="text-xl font-bold text-white">{instructor.name || 'Chef'}</h4>
-                  <p className="text-purple-400 text-sm">Eğitmen</p>
+                  <p className="text-orange-400 text-sm">Eğitmen</p>
                 </div>
               </div>
 
               {/* Açıklama */}
-              <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-4">
+              <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-4">
                 <p className="text-gray-300 text-sm">
                   Chef&apos;inize mail yolundan ulaşabilirsiniz. Sorularınızı doğrudan aşağıdaki e-posta adresine gönderebilirsiniz.
                 </p>
@@ -317,14 +305,14 @@ export default function CommentsSection({
                   <label className="block text-sm font-medium text-gray-400">E-posta Adresi</label>
                   <div className="flex items-center space-x-2">
                     <div className="flex-1 bg-black border border-gray-800 rounded-lg px-4 py-3 flex items-center space-x-3">
-                      <Mail className="h-5 w-5 text-purple-500" />
+                      <Mail className="h-5 w-5 text-orange-500" />
                       <span className="text-white font-mono text-sm">{instructor.email}</span>
                     </div>
                     <button
                       onClick={handleCopyEmail}
                       className={`p-3 rounded-lg transition-all ${emailCopied
-                          ? 'bg-green-500/20 text-green-500 border border-green-500/30'
-                          : 'bg-purple-500/20 text-purple-400 border border-purple-500/30 hover:bg-purple-500/30'
+                        ? 'bg-green-500/20 text-green-500 border border-green-500/30'
+                        : 'bg-orange-500/20 text-orange-400 border border-orange-500/30 hover:bg-orange-500/30'
                         }`}
                       title="E-postayı kopyala"
                     >
@@ -341,7 +329,7 @@ export default function CommentsSection({
               {instructor.email && (
                 <a
                   href={`mailto:${instructor.email}`}
-                  className="w-full bg-gradient-to-r from-purple-600 to-purple-500 text-white py-3 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-purple-600 transition-all flex items-center justify-center space-x-2 shadow-lg hover:shadow-purple-500/50"
+                  className="w-full bg-gradient-to-r from-orange-600 to-orange-500 text-white py-3 px-4 rounded-lg font-medium hover:from-orange-700 hover:to-orange-600 transition-all flex items-center justify-center space-x-2 shadow-lg hover:shadow-orange-500/50"
                 >
                   <Mail className="h-5 w-5" />
                   <span>Mail Gönder</span>
