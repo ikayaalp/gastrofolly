@@ -145,25 +145,26 @@ export default function CommentsSection({
   return (
     <div className="space-y-6">
       {/* Yorumlar Başlık */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-0">
         <div className="flex items-center space-x-3">
           <div className="bg-orange-500/10 p-2 rounded-lg">
-            <MessageCircle className="h-6 w-6 text-orange-500" />
+            <MessageCircle className="h-5 w-5 md:h-6 md:w-6 text-orange-500" />
           </div>
-          <h2 className="text-2xl font-bold text-white">
+          <h2 className="text-xl md:text-2xl font-bold text-white">
             Yorumlar {reviews.length > 0 && `(${reviews.length})`}
           </h2>
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-2 md:space-x-3">
           {/* Chef'e Sor Butonu */}
           {canComment && instructor && (
             <button
               onClick={() => setShowChefModal(true)}
-              className="bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white px-4 py-2.5 rounded-lg font-medium transition-all flex items-center space-x-2 shadow-lg hover:shadow-orange-500/50"
+              className="bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white px-3 md:px-4 py-2 md:py-2.5 rounded-lg font-medium transition-all flex items-center space-x-1.5 md:space-x-2 shadow-lg hover:shadow-orange-500/50 text-sm md:text-base"
             >
               <ChefHat className="h-4 w-4" />
-              <span>Chef&apos;e Sor</span>
+              <span className="hidden sm:inline">Chef&apos;e Sor</span>
+              <span className="sm:hidden">Chef</span>
             </button>
           )}
 
@@ -171,10 +172,11 @@ export default function CommentsSection({
           {canComment && userId && (
             <button
               onClick={() => setShowCommentModal(true)}
-              className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2.5 rounded-lg font-medium transition-all flex items-center space-x-2 shadow-lg hover:shadow-orange-500/50"
+              className="bg-orange-600 hover:bg-orange-700 text-white px-3 md:px-4 py-2 md:py-2.5 rounded-lg font-medium transition-all flex items-center space-x-1.5 md:space-x-2 shadow-lg hover:shadow-orange-500/50 text-sm md:text-base"
             >
               <Edit className="h-4 w-4" />
-              <span>Yorum Yap</span>
+              <span className="hidden sm:inline">Yorum Yap</span>
+              <span className="sm:hidden">Yorum</span>
             </button>
           )}
         </div>
