@@ -107,13 +107,13 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
       />
 
       {/* Modal */}
-      <div className="relative min-h-screen flex items-start justify-center p-4 pt-16">
-        <div className="relative bg-gradient-to-br from-gray-900 via-black to-gray-900 border border-orange-500/20 rounded-2xl shadow-2xl shadow-orange-500/10 w-full max-w-2xl">
+      <div className="relative min-h-screen md:min-h-0 flex items-start justify-center p-4 pt-4 md:pt-16 pb-[50vh] md:pb-4">
+        <div className="relative bg-gradient-to-br from-gray-900 via-black to-gray-900 border border-orange-500/20 rounded-2xl shadow-2xl shadow-orange-500/10 w-full max-w-2xl max-h-[60vh] md:max-h-none flex flex-col">
           {/* Decorative gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 via-transparent to-purple-500/5 rounded-2xl pointer-events-none"></div>
 
           {/* Header */}
-          <div className="relative flex items-center border-b border-gray-800 p-6">
+          <div className="relative flex items-center border-b border-gray-800 p-4 md:p-6 flex-shrink-0">
             <div className="relative flex-1">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-orange-400" />
               <input
@@ -122,7 +122,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                 placeholder="Kurs, eğitmen veya kategori ara..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 bg-black/40 border-2 border-orange-500/30 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300"
+                className="w-full pl-12 pr-4 py-3 md:py-4 bg-black/40 border-2 border-orange-500/30 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300"
               />
             </div>
             <button
@@ -134,7 +134,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
           </div>
 
           {/* Results */}
-          <div className="relative max-h-96 overflow-y-auto">
+          <div className="relative flex-1 overflow-y-auto max-h-[50vh] md:max-h-96">
             {loading && (
               <div className="flex items-center justify-center py-12">
                 <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-t-2 border-orange-500"></div>

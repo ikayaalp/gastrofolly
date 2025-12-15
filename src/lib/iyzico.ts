@@ -89,7 +89,7 @@ async function makeIyzicoRequest<T>(endpoint: string, requestBody: unknown): Pro
     baseUrl: IYZICO_CONFIG.baseUrl,
     requestBodyLength: bodyString.length
   })
-  
+
   // Tam request body'yi göster (hata ayıklama için)
   console.log('TAM REQUEST BODY:', JSON.stringify(JSON.parse(bodyString), null, 2))
 
