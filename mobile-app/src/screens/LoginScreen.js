@@ -29,6 +29,8 @@ export default function LoginScreen({ navigation }) {
         iosClientId: '334630749775-terb1dfppb1atgem3t1pc0o41chaj3r1.apps.googleusercontent.com',
         androidClientId: '334630749775-meelg2lgcapd5d64rmbm9gmm8h06im0e.apps.googleusercontent.com', // Using WEB ID for Expo Go
         webClientId: '334630749775-meelg2lgcapd5d64rmbm9gmm8h06im0e.apps.googleusercontent.com',
+        // Her seferinde hesap seçim ekranını göster - kullanıcının yanlış hesapla giriş yapmasını önler
+        selectAccount: true,
     });
 
     React.useEffect(() => {
