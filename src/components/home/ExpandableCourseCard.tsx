@@ -103,6 +103,11 @@ export default function ExpandableCourseCard({ course, showProgress }: Expandabl
 
     // Handle mouse enter with delay
     const handleMouseEnter = () => {
+        // Disable hover expansion on mobile (< 768px)
+        if (typeof window !== 'undefined' && window.innerWidth < 768) {
+            return
+        }
+
         // Clear any pending close timer
         if (closeTimeoutRef.current) {
             clearTimeout(closeTimeoutRef.current)
