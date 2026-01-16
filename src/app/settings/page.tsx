@@ -21,6 +21,7 @@ async function getUserData(userId: string) {
       subscriptionPlan: true,
       subscriptionStartDate: true,
       subscriptionEndDate: true,
+      subscriptionCancelled: true,
       _count: {
         select: {
           enrollments: true,

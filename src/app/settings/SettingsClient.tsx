@@ -18,6 +18,7 @@ interface UserData {
   subscriptionPlan: string | null
   subscriptionStartDate: Date | null
   subscriptionEndDate: Date | null
+  subscriptionCancelled: boolean
   _count: {
     enrollments: number
     reviews: number
@@ -210,7 +211,19 @@ export default function SettingsClient({ user }: SettingsClientProps) {
   ]
 
   const handleCancelSubscription = async () => {
-    if (!confirm('Aboneliğinizi iptal etmek istediğinizden emin misiniz? Bu işlem geri alınamaz ve mevcut aboneliğiniz hemen sona erer.')) {
+    const endDate = user.subscriptionEndDate
+      ? new Date(user.subscriptionEndDate).toLocaleDateString('tr-TR', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })
+      : null
+
+    const confirmMessage = endDate
+      ? `Aboneliğinizi iptal etmek istediğinizden emin misiniz? Premium erişiminiz ${endDate} tarihine kadar devam edecektir.`
+      : 'Aboneliğinizi iptal etmek istediğinizden emin misiniz?'
+
+    if (!confirm(confirmMessage)) {
       return
     }
 
@@ -393,8 +406,11 @@ export default function SettingsClient({ user }: SettingsClientProps) {
                       <p className="text-orange-400 text-sm font-medium">Aktif Abonelik</p>
                     </div>
                   </div>
-                  <span className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm font-semibold">
-                    Aktif
+                  <span className={`px-3 py-1 rounded-full text-sm font-semibold ${user.subscriptionCancelled
+                      ? 'bg-yellow-500/20 text-yellow-400'
+                      : 'bg-green-500/20 text-green-400'
+                    }`}>
+                    {user.subscriptionCancelled ? 'İptal Edildi' : 'Aktif'}
                   </span>
                 </div>
 
@@ -416,16 +432,32 @@ export default function SettingsClient({ user }: SettingsClientProps) {
 
               <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
                 <h4 className="text-white font-semibold mb-2">Abonelik Yönetimi</h4>
-                <p className="text-gray-400 text-sm mb-4">
-                  Aboneliğinizi iptal ederseniz, mevcut dönem sonuna kadar erişiminiz devam etmez ve anında sona erer.
-                </p>
-                <button
-                  onClick={handleCancelSubscription}
-                  disabled={loading}
-                  className="text-red-400 hover:text-red-300 text-sm font-medium transition-colors disabled:opacity-50"
-                >
-                  {loading ? "İşleniyor..." : "Aboneliği İptal Et"}
-                </button>
+                {user.subscriptionCancelled ? (
+                  <>
+                    <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 mb-4">
+                      <p className="text-yellow-400 text-sm font-medium mb-1">Aboneliğiniz iptal edildi</p>
+                      <p className="text-gray-400 text-sm">
+                        Premium erişiminiz {user.subscriptionEndDate ? formatDate(user.subscriptionEndDate) : '-'} tarihine kadar devam edecektir.
+                      </p>
+                    </div>
+                    <p className="text-gray-400 text-sm">
+                      Aboneliğinizi yenilemek isterseniz Planları İncele butonunu kullanabilirsiniz.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-gray-400 text-sm mb-4">
+                      Aboneliğinizi iptal ederseniz, mevcut dönem sonuna kadar erişiminiz devam edecektir.
+                    </p>
+                    <button
+                      onClick={handleCancelSubscription}
+                      disabled={loading}
+                      className="text-red-400 hover:text-red-300 text-sm font-medium transition-colors disabled:opacity-50"
+                    >
+                      {loading ? "İşleniyor..." : "Aboneliği İptal Et"}
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           ) : (

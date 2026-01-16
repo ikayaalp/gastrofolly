@@ -25,32 +25,65 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        // Aboneliği iptal et
+        if (!user.subscriptionPlan) {
+            return NextResponse.json(
+                { error: "Aktif aboneliğiniz bulunmuyor" },
+                { status: 400 }
+            )
+        }
+
+        if (user.subscriptionCancelled) {
+            return NextResponse.json(
+                { error: "Aboneliğiniz zaten iptal edilmiş" },
+                { status: 400 }
+            )
+        }
+
+        // Aboneliği iptal olarak işaretle (dönem sonuna kadar erişim devam eder)
         // Yeni Kural:
-        // 1. Progress kayıtlarını SİL (Kaldığın yerden devam et gözükmesin)
-        // 2. Aboneliği hemen sonlandır (My Courses ve Home'da kurslar gözükmesin)
-        // 3. Enrollment kayıtlarını KORU (Kursiyer sayısı değişmesin)
+        // 1. subscriptionCancelled = true yap
+        // 2. subscriptionEndDate'e kadar premium erişim devam eder
+        // 3. Dönem sonunda cron job ile subscription temizlenecek
+        // 4. Progress kayıtları KORUNUR (dönem sonuna kadar erişim var)
+        // 5. Enrollment kayıtları KORUNUR (kursiyer sayısı değişmez)
 
-        // 1. Kullanıcının tüm Progress kayıtlarını sil
-        await prisma.progress.deleteMany({
-            where: { userId: user.id }
-        })
-
-        // 2. Aboneliği hemen iptal et
         await prisma.user.update({
             where: { id: user.id },
             data: {
-                subscriptionPlan: null,
-                subscriptionEndDate: new Date(), // Şu an iptal (geçmiş tarih)
-                subscriptionStartDate: null
+                subscriptionCancelled: true
             }
         })
 
-        // NOT: Enrollment kayıtları korunur (kursiyer sayısı değişmez)
+        // Kullanıcıya güncel bilgileri döndür
+        const updatedUser = await prisma.user.findUnique({
+            where: { id: user.id },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                image: true,
+                role: true,
+                subscriptionPlan: true,
+                subscriptionStartDate: true,
+                subscriptionEndDate: true,
+                subscriptionCancelled: true
+            }
+        })
+
+        const endDate = user.subscriptionEndDate
+            ? new Date(user.subscriptionEndDate).toLocaleDateString('tr-TR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            })
+            : null
 
         return NextResponse.json({
             success: true,
-            message: "Abonelik iptal edildi"
+            message: endDate
+                ? `Aboneliğiniz iptal edildi. Premium erişiminiz ${endDate} tarihine kadar devam edecek.`
+                : "Aboneliğiniz iptal edildi.",
+            user: updatedUser
         })
 
     } catch (error) {

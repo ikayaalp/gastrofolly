@@ -70,9 +70,17 @@ export default function SubscriptionScreen({ navigation }) {
     );
 
     const handleCancelSubscription = () => {
+        const endDate = userData?.subscriptionEndDate
+            ? formatDate(userData.subscriptionEndDate)
+            : null;
+
+        const confirmMessage = endDate
+            ? `Aboneliğinizi iptal etmek istediğinize emin misiniz? Premium erişiminiz ${endDate} tarihine kadar devam edecek.`
+            : 'Aboneliğinizi iptal etmek istediğinize emin misiniz?';
+
         showAlert(
             'Abonelik İptali',
-            'Aboneliğinizi iptal etmek istediğinize emin misiniz? Bu işlem geri alınamaz ve premium özelliklere erişiminizi kaybedersiniz.',
+            confirmMessage,
             [
                 { text: 'Vazgeç', style: 'cancel' },
                 {
@@ -82,8 +90,8 @@ export default function SubscriptionScreen({ navigation }) {
                         setLoading(true);
                         const result = await authService.cancelSubscription();
                         if (result.success) {
-                            showAlert('Başarılı', 'Aboneliğiniz iptal edildi.', [{ text: 'Tamam' }], 'success');
-                            loadUserData(); // Reload to show free plan
+                            showAlert('Başarılı', result.message || 'Aboneliğiniz iptal edildi.', [{ text: 'Tamam' }], 'success');
+                            loadUserData(); // Reload to show updated status
                         } else {
                             showAlert('Hata', result.error, [{ text: 'Tamam' }], 'error');
                             setLoading(false);
@@ -157,10 +165,20 @@ export default function SubscriptionScreen({ navigation }) {
                         )}
                     </View>
 
-                    <View style={styles.statusBadge}>
+                    <View style={[styles.statusBadge, userData?.subscriptionCancelled && styles.statusBadgeCancelled]}>
                         <Shield size={12} color="white" />
-                        <Text style={styles.statusText}>Aktif Abonelik</Text>
+                        <Text style={styles.statusText}>
+                            {userData?.subscriptionCancelled ? 'İptal Edildi' : 'Aktif Abonelik'}
+                        </Text>
                     </View>
+
+                    {userData?.subscriptionCancelled && (
+                        <View style={styles.cancelledInfo}>
+                            <Text style={styles.cancelledInfoText}>
+                                Premium erişiminiz {userData?.subscriptionEndDate ? formatDate(userData.subscriptionEndDate) : '-'} tarihine kadar devam edecek.
+                            </Text>
+                        </View>
+                    )}
                 </LinearGradient>
 
                 <View style={styles.infoSection}>
@@ -173,7 +191,7 @@ export default function SubscriptionScreen({ navigation }) {
                     </View>
                 </View>
 
-                {userData?.subscriptionPlan && userData?.subscriptionPlan !== 'FREE' && (
+                {userData?.subscriptionPlan && userData?.subscriptionPlan !== 'FREE' && !userData?.subscriptionCancelled && (
                     <TouchableOpacity
                         style={[styles.manageButton, styles.cancelButton]}
                         onPress={handleCancelSubscription}
@@ -368,5 +386,22 @@ const styles = StyleSheet.create({
         lineHeight: 18,
         paddingHorizontal: 20,
         paddingBottom: 40,
+    },
+    statusBadgeCancelled: {
+        backgroundColor: 'rgba(234, 179, 8, 0.3)',
+        borderColor: 'rgba(234, 179, 8, 0.4)',
+    },
+    cancelledInfo: {
+        marginTop: 16,
+        backgroundColor: 'rgba(234, 179, 8, 0.1)',
+        borderRadius: 12,
+        padding: 12,
+        borderWidth: 1,
+        borderColor: 'rgba(234, 179, 8, 0.3)',
+    },
+    cancelledInfoText: {
+        color: '#fbbf24',
+        fontSize: 13,
+        textAlign: 'center',
     },
 });

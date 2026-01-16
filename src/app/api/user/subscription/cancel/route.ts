@@ -22,34 +22,67 @@ export async function POST(request: NextRequest) {
 
         const userId = decoded.userId;
 
-        // In a real production app with Stripe, you would call Stripe API here to cancel the subscription.
-        // For this implementation, we interpret "cancel" as removing the subscription access immediately or marking it as finished.
+        // Mevcut kullanıcıyı bul
+        const currentUser = await prisma.user.findUnique({
+            where: { id: userId }
+        });
 
-        // We will updated the user to remove subscription details.
-        // Alternatively, if we want to keep it until the end of period but cancel renewal, we need a 'cancelAtPeriodEnd' flag which doesn't exist in schema.
-        // So we will assume immediate cancellation for this task scope or just valid until existing end date but clear plan? 
-        // Best approach for "Cancel" button usually is to stop auto-renew. 
-        // Since we don't have stripe integration shown in schema for auto-renew flags clearly (except stripePaymentId in Payment), 
-        // we'll assume a direct "End Subscription" action for simplicity as requested.
+        if (!currentUser) {
+            return NextResponse.json({ message: 'Kullanıcı bulunamadı' }, { status: 404 });
+        }
 
-        // Let's set subscriptionEndDate to NOW to expire it immediately, and clear certain flags if needed.
-        // Or just keep the end date but maybe we should clear the plan? 
-        // If we clear the plan, the mobile app checkAccess might fail immediately.
+        if (!currentUser.subscriptionPlan) {
+            return NextResponse.json({ message: 'Aktif aboneliğiniz bulunmuyor' }, { status: 400 });
+        }
+
+        if (currentUser.subscriptionCancelled) {
+            return NextResponse.json({ message: 'Aboneliğiniz zaten iptal edilmiş' }, { status: 400 });
+        }
+
+        // Aboneliği iptal olarak işaretle (dönem sonuna kadar erişim devam eder)
+        // Yeni Kural:
+        // 1. subscriptionCancelled = true yap
+        // 2. subscriptionEndDate'e kadar premium erişim devam eder
+        // 3. Dönem sonunda cron job ile subscription temizlenecek
+        // 4. Progress kayıtları KORUNUR (dönem sonuna kadar erişim var)
+        // 5. Enrollment kayıtları KORUNUR (kursiyer sayısı değişmez)
 
         const user = await prisma.user.update({
             where: { id: userId },
             data: {
-                subscriptionPlan: null,
-                subscriptionEndDate: new Date(), // Set to now to expire it
+                subscriptionCancelled: true
             }
         });
 
+        // Calculate if subscription is still valid (until endDate)
+        const isSubscriptionValid = user.subscriptionEndDate
+            ? new Date(user.subscriptionEndDate) > new Date()
+            : false;
+
+        const endDate = user.subscriptionEndDate
+            ? new Date(user.subscriptionEndDate).toLocaleDateString('tr-TR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            })
+            : null;
+
         return NextResponse.json({
             success: true,
-            message: 'Abonelik başarıyla iptal edildi.',
+            message: endDate
+                ? `Abonelik iptal edildi. Premium erişiminiz ${endDate} tarihine kadar devam edecek.`
+                : 'Abonelik iptal edildi.',
             user: {
-                ...user,
-                isSubscriptionValid: false // Explicitly return this for mobile app update
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                image: user.image,
+                role: user.role,
+                subscriptionPlan: user.subscriptionPlan,
+                subscriptionStartDate: user.subscriptionStartDate,
+                subscriptionEndDate: user.subscriptionEndDate,
+                subscriptionCancelled: user.subscriptionCancelled,
+                isSubscriptionValid: isSubscriptionValid
             }
         });
 
