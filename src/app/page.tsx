@@ -119,7 +119,7 @@ export default function Home() {
               Gastronomi Dünyasına
               <span className="text-orange-500"> Yolculuk</span>
             </h1>
-            <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
+            <p className="text-lg md:text-xl text-white md:text-gray-300 mb-8 max-w-3xl mx-auto font-medium md:font-normal">
               Profesyonel şeflerden öğren, mutfakta ustalaş.
               Video dersler, uygulamalı projeler ve sertifikalar ile gastronomi kariyerine başla.
             </p>
