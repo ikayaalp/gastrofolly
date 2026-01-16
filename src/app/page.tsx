@@ -87,10 +87,10 @@ export default function Home() {
         {/* Background Grid */}
         <div className="absolute inset-0 z-0">
           {/* Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/70 to-black z-10"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/60 to-black z-10"></div>
 
-          {/* Course Images Grid */}
-          <div className="grid grid-cols-6 grid-rows-2 gap-2 opacity-80">
+          {/* Course Images Grid - Responsive: 3 cols mobile, 6 cols desktop */}
+          <div className="grid grid-cols-3 md:grid-cols-6 gap-1 md:gap-2 opacity-90">
             {featured.length > 0 && featured.slice(0, 12).map((course, index) => (
               <div key={index} className="aspect-square overflow-hidden">
                 <img
