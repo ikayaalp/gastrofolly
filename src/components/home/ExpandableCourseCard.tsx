@@ -185,7 +185,7 @@ export default function ExpandableCourseCard({ course, showProgress, rank }: Exp
             <div className={`relative flex-shrink-0 ${rank ? 'flex items-center' : ''}`}>
                 {/* Netflix-style Ranking Number - Large, partially behind */}
                 {rank && (
-                    <div className="relative z-0 flex items-center w-[120px] -mr-[35px]">
+                    <div className="relative z-0 flex items-center w-[140px] -mr-[25px]">
                         <span
                             className="text-[250px] font-black leading-none select-none"
                             style={{
