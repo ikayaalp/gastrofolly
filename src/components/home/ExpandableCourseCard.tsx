@@ -181,181 +181,186 @@ export default function ExpandableCourseCard({ course, showProgress, rank }: Exp
     // Base card (unexpanded) - Original Design Restored
     return (
         <>
-            <div
-                ref={cardRef}
-                className={`relative bg-black border border-gray-800 rounded-xl overflow-hidden hover:border-orange-500/50 transition-all duration-300 group cursor-pointer flex-shrink-0 ${rank ? 'min-w-[320px] w-[320px] ml-8' : 'min-w-[320px] w-[320px]'} h-[256px]`}
-                onMouseEnter={handleMouseEnter}
-                onMouseLeave={handleMouseLeave}
-            >
-                {/* Netflix-style Ranking Number - Behind the image */}
+            {/* Wrapper for ranking number + card */}
+            <div className={`relative flex-shrink-0 ${rank ? 'flex items-center' : ''}`}>
+                {/* Netflix-style Ranking Number - Large, partially behind */}
                 {rank && (
-                    <div className="absolute -left-8 top-1/2 -translate-y-1/2 z-0 pointer-events-none">
+                    <div className="relative z-0 flex items-center justify-end w-[70px] -mr-[30px]">
                         <span
-                            className="text-[140px] font-black leading-none"
+                            className="text-[200px] font-black leading-none select-none"
                             style={{
-                                color: 'transparent',
-                                WebkitTextStroke: '3px #f97316',
-                                textShadow: '0 0 30px rgba(249, 115, 22, 0.5), 0 0 60px rgba(249, 115, 22, 0.3)',
-                                fontFamily: 'Arial Black, sans-serif'
+                                background: 'linear-gradient(180deg, #ff6b00 0%, #cc4400 50%, #8b2500 100%)',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                                WebkitTextStroke: '4px #1a1a1a',
+                                filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.8))',
+                                fontFamily: 'Arial Black, Impact, sans-serif'
                             }}
                         >
                             {rank}
                         </span>
                     </div>
                 )}
-                <Link href={`/course/${course.id}`} className="block w-full h-full relative z-10">
-                    {course.imageUrl ? (
-                        <img
-                            src={course.imageUrl}
-                            alt={course.title}
-                            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                    ) : (
-                        <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-black">
-                            <span className="text-xs text-zinc-500">Görsel Yok</span>
-                        </div>
-                    )}
-
-                    {/* Gradient Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"></div>
-
-                    {/* Progress Bar */}
-                    {showProgress && (
-                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-700 z-10">
-                            <div className="h-full bg-orange-500 w-1/3"></div>
-                        </div>
-                    )}
-
-                    {/* Course Info Overlay */}
-                    <div className="absolute bottom-0 left-0 right-0 p-4 z-10">
-                        <h3 className="text-base font-bold text-white mb-2 group-hover:text-orange-500 transition-colors overflow-hidden" style={{
-                            display: '-webkit-box',
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: 'vertical',
-                            lineHeight: '1.3',
-                            textShadow: '0 2px 4px rgba(0,0,0,0.8)'
-                        }}>
-                            {course.title}
-                        </h3>
-
-                        <div className="flex items-center justify-between">
-                            {/* Instructor */}
-                            <div className="flex items-center overflow-hidden">
-                                <div className="w-5 h-5 rounded-full bg-orange-500 flex items-center justify-center mr-2 flex-shrink-0">
-                                    <span className="text-xs font-bold text-white">
-                                        {course.instructor.name?.charAt(0) || "?"}
-                                    </span>
-                                </div>
-                                <span className="text-xs text-white/90 truncate" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}>
-                                    {course.instructor.name || "Bilinmeyen Eğitmen"}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </Link>
-            </div>
-
-            {/* Expanded Card Portal */}
-            {isHovered && position && createPortal(
                 <div
-                    className="fixed z-50 flex items-center justify-center pointer-events-auto"
-                    style={{
-                        top: position.top,
-                        left: position.left,
-                        width: position.width,
-                        height: 'auto',
-                        minHeight: position.height,
-                        animation: 'card-expand-animation 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-                        transformOrigin: 'center center'
-                    }}
-                    onMouseEnter={() => {
-                        if (timeoutRef.current) clearTimeout(timeoutRef.current)
-                        if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current)
-                        setIsHovered(true)
-                    }}
+                    ref={cardRef}
+                    className="relative bg-black border border-gray-800 rounded-xl overflow-hidden hover:border-orange-500/50 transition-all duration-300 group cursor-pointer flex-shrink-0 min-w-[320px] w-[320px] h-[256px] z-10"
+                    onMouseEnter={handleMouseEnter}
                     onMouseLeave={handleMouseLeave}
                 >
-                    <style jsx global>{`
+                    <Link href={`/course/${course.id}`} className="block w-full h-full relative">
+                        {course.imageUrl ? (
+                            <img
+                                src={course.imageUrl}
+                                alt={course.title}
+                                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                        ) : (
+                            <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-black">
+                                <span className="text-xs text-zinc-500">Görsel Yok</span>
+                            </div>
+                        )}
+
+                        {/* Gradient Overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"></div>
+
+                        {/* Progress Bar */}
+                        {showProgress && (
+                            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-700 z-10">
+                                <div className="h-full bg-orange-500 w-1/3"></div>
+                            </div>
+                        )}
+
+                        {/* Course Info Overlay */}
+                        <div className="absolute bottom-0 left-0 right-0 p-4 z-10">
+                            <h3 className="text-base font-bold text-white mb-2 group-hover:text-orange-500 transition-colors overflow-hidden" style={{
+                                display: '-webkit-box',
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: 'vertical',
+                                lineHeight: '1.3',
+                                textShadow: '0 2px 4px rgba(0,0,0,0.8)'
+                            }}>
+                                {course.title}
+                            </h3>
+
+                            <div className="flex items-center justify-between">
+                                {/* Instructor */}
+                                <div className="flex items-center overflow-hidden">
+                                    <div className="w-5 h-5 rounded-full bg-orange-500 flex items-center justify-center mr-2 flex-shrink-0">
+                                        <span className="text-xs font-bold text-white">
+                                            {course.instructor.name?.charAt(0) || "?"}
+                                        </span>
+                                    </div>
+                                    <span className="text-xs text-white/90 truncate" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}>
+                                        {course.instructor.name || "Bilinmeyen Eğitmen"}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </Link>
+                </div>
+
+                {/* Expanded Card Portal */}
+                {isHovered && position && createPortal(
+                    <div
+                        className="fixed z-50 flex items-center justify-center pointer-events-auto"
+                        style={{
+                            top: position.top,
+                            left: position.left,
+                            width: position.width,
+                            height: 'auto',
+                            minHeight: position.height,
+                            animation: 'card-expand-animation 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                            transformOrigin: 'center center'
+                        }}
+                        onMouseEnter={() => {
+                            if (timeoutRef.current) clearTimeout(timeoutRef.current)
+                            if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current)
+                            setIsHovered(true)
+                        }}
+                        onMouseLeave={handleMouseLeave}
+                    >
+                        <style jsx global>{`
                 @keyframes card-expand-animation {
                     0% { opacity: 0; transform: scale(0.95); }
                     100% { opacity: 1; transform: scale(1); }
                 }
             `}</style>
-                    <div
-                        onClick={handleCardClick}
-                        className="w-full h-full bg-zinc-900 rounded-xl shadow-2xl overflow-hidden shadow-black/50 border border-zinc-800 flex flex-col cursor-pointer hover:border-zinc-700 transition-colors"
-                    >
-                        {/* Visual Media Area - Matches Aspect Ratio */}
-                        <div className="relative w-full h-48 bg-zinc-950 flex-shrink-0">
-                            {course.imageUrl && (
-                                <img
-                                    src={course.imageUrl}
-                                    alt={course.title}
-                                    className="w-full h-full object-cover"
-                                />
-                            )}
-                            {/* Video would go here */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-transparent to-transparent" />
-                        </div>
-
-                        {/* Content Area */}
-                        <div className="p-4 bg-zinc-900 text-white relative flex-grow flex flex-col">
-                            <h3 className="text-white font-bold text-lg mb-2 line-clamp-1">
-                                {course.title}
-                            </h3>
-
-                            {/* Actions Row */}
-                            <div className="flex items-center space-x-2 mb-4">
-                                <Link
-                                    href={`/course/${course.id}`}
-                                    className="flex items-center justify-center w-10 h-10 bg-orange-500 rounded-full hover:bg-orange-600 text-white transition-colors"
-                                >
-                                    <Play className="w-5 h-5 fill-white ml-1" />
-                                </Link>
-                                <button
-                                    className={`flex items-center justify-center w-10 h-10 border-2 rounded-full transition-colors ${isFavorited
-                                        ? "border-red-500 bg-red-500 text-white hover:bg-red-600 hover:border-red-600"
-                                        : "border-zinc-500 hover:border-white hover:bg-zinc-800 text-gray-300"
-                                        }`}
-                                    title={isFavorited ? "Favorilerden Çıkar" : "Favorilere Ekle"}
-                                    onClick={handleToggleFavorite}
-                                >
-                                    <Heart className={`w-5 h-5 ${isFavorited ? "fill-current text-white" : ""}`} />
-                                </button>
-                            </div>
-
-                            {/* Metadata Row */}
-                            <div className="flex items-center space-x-3 text-sm font-semibold mb-3">
-                                <span className="text-green-500 flex items-center">
-                                    <Star className="w-3 h-3 fill-green-500 mr-1" />
-                                    {averageRating.toFixed(1)} Puan
-                                </span>
-                                <span className={`border px-1 text-[10px] uppercase ${packageInfo.className}`}>
-                                    {packageInfo.label}
-                                </span>
-                                {course.duration && (
-                                    <span className="text-zinc-400 text-sm">
-                                        {Math.round(course.duration / 60)}s {course.duration % 60}dk
-                                    </span>
+                        <div
+                            onClick={handleCardClick}
+                            className="w-full h-full bg-zinc-900 rounded-xl shadow-2xl overflow-hidden shadow-black/50 border border-zinc-800 flex flex-col cursor-pointer hover:border-zinc-700 transition-colors"
+                        >
+                            {/* Visual Media Area - Matches Aspect Ratio */}
+                            <div className="relative w-full h-48 bg-zinc-950 flex-shrink-0">
+                                {course.imageUrl && (
+                                    <img
+                                        src={course.imageUrl}
+                                        alt={course.title}
+                                        className="w-full h-full object-cover"
+                                    />
                                 )}
+                                {/* Video would go here */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-transparent to-transparent" />
                             </div>
 
-                            {/* Tags/Categories */}
-                            <div className="flex flex-wrap gap-2 text-xs text-white">
-                                <span className="text-zinc-300">{course.category.name}</span>
-                                <span className="text-zinc-500">•</span>
-                                <span className="text-zinc-300">{course.instructor.name}</span>
-                            </div>
+                            {/* Content Area */}
+                            <div className="p-4 bg-zinc-900 text-white relative flex-grow flex flex-col">
+                                <h3 className="text-white font-bold text-lg mb-2 line-clamp-1">
+                                    {course.title}
+                                </h3>
 
-                            {/* Description Preview */}
-                            <p className="mt-3 text-xs text-zinc-400 line-clamp-3">
-                                {course.description}
-                            </p>
+                                {/* Actions Row */}
+                                <div className="flex items-center space-x-2 mb-4">
+                                    <Link
+                                        href={`/course/${course.id}`}
+                                        className="flex items-center justify-center w-10 h-10 bg-orange-500 rounded-full hover:bg-orange-600 text-white transition-colors"
+                                    >
+                                        <Play className="w-5 h-5 fill-white ml-1" />
+                                    </Link>
+                                    <button
+                                        className={`flex items-center justify-center w-10 h-10 border-2 rounded-full transition-colors ${isFavorited
+                                            ? "border-red-500 bg-red-500 text-white hover:bg-red-600 hover:border-red-600"
+                                            : "border-zinc-500 hover:border-white hover:bg-zinc-800 text-gray-300"
+                                            }`}
+                                        title={isFavorited ? "Favorilerden Çıkar" : "Favorilere Ekle"}
+                                        onClick={handleToggleFavorite}
+                                    >
+                                        <Heart className={`w-5 h-5 ${isFavorited ? "fill-current text-white" : ""}`} />
+                                    </button>
+                                </div>
+
+                                {/* Metadata Row */}
+                                <div className="flex items-center space-x-3 text-sm font-semibold mb-3">
+                                    <span className="text-green-500 flex items-center">
+                                        <Star className="w-3 h-3 fill-green-500 mr-1" />
+                                        {averageRating.toFixed(1)} Puan
+                                    </span>
+                                    <span className={`border px-1 text-[10px] uppercase ${packageInfo.className}`}>
+                                        {packageInfo.label}
+                                    </span>
+                                    {course.duration && (
+                                        <span className="text-zinc-400 text-sm">
+                                            {Math.round(course.duration / 60)}s {course.duration % 60}dk
+                                        </span>
+                                    )}
+                                </div>
+
+                                {/* Tags/Categories */}
+                                <div className="flex flex-wrap gap-2 text-xs text-white">
+                                    <span className="text-zinc-300">{course.category.name}</span>
+                                    <span className="text-zinc-500">•</span>
+                                    <span className="text-zinc-300">{course.instructor.name}</span>
+                                </div>
+
+                                {/* Description Preview */}
+                                <p className="mt-3 text-xs text-zinc-400 line-clamp-3">
+                                    {course.description}
+                                </p>
+                            </div>
                         </div>
-                    </div>
-                </div>,
-                document.body
-            )}
+                    </div>,
+                    document.body
+                )}
+            </div>
         </>
     )
 }
