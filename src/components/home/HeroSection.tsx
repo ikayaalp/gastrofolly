@@ -35,6 +35,11 @@ interface HeroSectionProps {
 export default function HeroSection({ courses }: HeroSectionProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isTransitioning, setIsTransitioning] = useState(false)
+  const [touchStart, setTouchStart] = useState<number | null>(null)
+  const [touchEnd, setTouchEnd] = useState<number | null>(null)
+
+  // Minimum swipe mesafesi
+  const minSwipeDistance = 50
 
   // Manuel geçiş fonksiyonları
   const goToPrevious = () => {
@@ -65,12 +70,40 @@ export default function HeroSection({ courses }: HeroSectionProps) {
     }, 300)
   }
 
+  // Touch event handlers
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null)
+    setTouchStart(e.targetTouches[0].clientX)
+  }
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX)
+  }
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return
+    const distance = touchStart - touchEnd
+    const isLeftSwipe = distance > minSwipeDistance
+    const isRightSwipe = distance < -minSwipeDistance
+
+    if (isLeftSwipe) {
+      goToNext()
+    } else if (isRightSwipe) {
+      goToPrevious()
+    }
+  }
+
   if (courses.length === 0) return null
 
   const course = courses[currentIndex]
 
   return (
-    <div className="relative h-[70vh] min-h-[500px] overflow-hidden group">
+    <div
+      className="relative h-[70vh] min-h-[500px] overflow-hidden group"
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+    >
       {/* Background Image */}
       <div className="absolute inset-0">
         <div className={`w-full h-full transition-all duration-500 ease-in-out ${isTransitioning ? 'opacity-0 scale-105' : 'opacity-100 scale-100'}`}>
