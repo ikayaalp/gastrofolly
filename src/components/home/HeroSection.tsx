@@ -35,6 +35,7 @@ interface HeroSectionProps {
 export default function HeroSection({ courses }: HeroSectionProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isTransitioning, setIsTransitioning] = useState(false)
+  const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('left')
   const [touchStart, setTouchStart] = useState<number | null>(null)
   const [touchEnd, setTouchEnd] = useState<number | null>(null)
 
@@ -43,31 +44,34 @@ export default function HeroSection({ courses }: HeroSectionProps) {
 
   // Manuel geçiş fonksiyonları
   const goToPrevious = () => {
-    if (courses.length <= 1) return
+    if (courses.length <= 1 || isTransitioning) return
+    setSlideDirection('right')
     setIsTransitioning(true)
     setTimeout(() => {
       setCurrentIndex((prev) => (prev - 1 + courses.length) % courses.length)
       setIsTransitioning(false)
-    }, 300)
+    }, 400)
   }
 
   const goToNext = () => {
-    if (courses.length <= 1) return
+    if (courses.length <= 1 || isTransitioning) return
+    setSlideDirection('left')
     setIsTransitioning(true)
     setTimeout(() => {
       setCurrentIndex((prev) => (prev + 1) % courses.length)
       setIsTransitioning(false)
-    }, 300)
+    }, 400)
   }
 
   // Nokta tıklama
   const goToSlide = (index: number) => {
-    if (courses.length <= 1) return
+    if (courses.length <= 1 || isTransitioning) return
+    setSlideDirection(index > currentIndex ? 'left' : 'right')
     setIsTransitioning(true)
     setTimeout(() => {
       setCurrentIndex(index)
       setIsTransitioning(false)
-    }, 300)
+    }, 400)
   }
 
   // Touch event handlers
@@ -97,6 +101,14 @@ export default function HeroSection({ courses }: HeroSectionProps) {
 
   const course = courses[currentIndex]
 
+  // Animasyon sınıfları
+  const getSlideClass = () => {
+    if (!isTransitioning) return 'translate-x-0 opacity-100'
+    return slideDirection === 'left'
+      ? '-translate-x-full opacity-0'
+      : 'translate-x-full opacity-0'
+  }
+
   return (
     <div
       className="relative h-[70vh] min-h-[500px] overflow-hidden group"
@@ -106,7 +118,7 @@ export default function HeroSection({ courses }: HeroSectionProps) {
     >
       {/* Background Image */}
       <div className="absolute inset-0">
-        <div className={`w-full h-full transition-all duration-500 ease-in-out ${isTransitioning ? 'opacity-0 scale-105' : 'opacity-100 scale-100'}`}>
+        <div className={`w-full h-full transition-all duration-400 ease-out ${getSlideClass()}`}>
           {course.imageUrl ? (
             <img
               src={course.imageUrl}
