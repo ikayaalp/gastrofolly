@@ -21,6 +21,7 @@ import FavoriteButton from "@/components/course/FavoriteButton"
 import ShareButton from "@/components/course/ShareButton"
 import CommentsSection from "@/components/course/CommentsSection"
 import UserDropdown from "@/components/ui/UserDropdown"
+import NotificationDropdown from "@/components/ui/NotificationDropdown"
 import FreeLessonModal from "@/components/course/FreeLessonModal"
 
 interface CoursePageProps {
@@ -197,7 +198,10 @@ export default async function CoursePage({ params }: CoursePageProps) {
           </Link>
           <div className="flex items-center space-x-3">
             {session?.user ? (
-              <UserDropdown />
+              <>
+                <NotificationDropdown />
+                <UserDropdown />
+              </>
             ) : (
               <Link
                 href="/auth/signin"

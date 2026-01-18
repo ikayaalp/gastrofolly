@@ -7,6 +7,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { ChefHat, Play, Clock, BookOpen, Star, Home, Users, MessageCircle, Search } from "lucide-react"
 import UserDropdown from "@/components/ui/UserDropdown"
+import NotificationDropdown from "@/components/ui/NotificationDropdown"
 import SearchModal from "@/components/ui/SearchModal"
 
 interface Enrollment {
@@ -154,6 +155,7 @@ export default function MyCoursesPage() {
             >
               <Search className="h-5 w-5" />
             </button>
+            <NotificationDropdown />
             <UserDropdown />
           </div>
         </div>

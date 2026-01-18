@@ -4,6 +4,7 @@ import Link from "next/link"
 import { useState, useEffect } from "react"
 import { ChefHat, Search, Bell, Plus, MessageCircle, ThumbsUp, Clock, User, Home, BookOpen, Users } from "lucide-react"
 import UserDropdown from "@/components/ui/UserDropdown"
+import NotificationDropdown from "@/components/ui/NotificationDropdown"
 
 interface Category {
   id: string
@@ -351,6 +352,7 @@ export default function ChefSosyalClient({
             <span className="text-lg font-bold text-white">Chef2.0</span>
           </Link>
           <div className="flex items-center space-x-3">
+            <NotificationDropdown />
             <UserDropdown />
           </div>
         </div>
