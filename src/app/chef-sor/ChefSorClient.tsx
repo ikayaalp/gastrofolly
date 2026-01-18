@@ -257,8 +257,8 @@ export default function ChefSorClient({ session }: Props) {
                   {/* Instructor Header */}
                   <div className="p-6 border-b border-gray-800">
                     <div className="flex items-start space-x-4 mb-4">
-                      {/* Avatar - Fixed Size Container */}
-                      <div className="flex-shrink-0 w-20 h-20">
+                      {/* Avatar - Fixed Size Container - Clickable */}
+                      <Link href={`/instructor/${instructor.id}`} className="flex-shrink-0 w-20 h-20 hover:opacity-80 transition-opacity">
                         {instructor.image ? (
                           <Image
                             src={instructor.image}
@@ -272,13 +272,15 @@ export default function ChefSorClient({ session }: Props) {
                             <User className="h-10 w-10 text-white" />
                           </div>
                         )}
-                      </div>
+                      </Link>
 
                       {/* Instructor Info */}
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-xl font-bold text-white mb-1 truncate">
-                          {instructor.name || 'İsimsiz Eğitmen'}
-                        </h3>
+                        <Link href={`/instructor/${instructor.id}`} className="hover:text-orange-400 transition-colors">
+                          <h3 className="text-xl font-bold text-white mb-1 truncate hover:text-orange-400">
+                            {instructor.name || 'İsimsiz Eğitmen'}
+                          </h3>
+                        </Link>
 
                         {/* Copyable Email */}
                         <button
