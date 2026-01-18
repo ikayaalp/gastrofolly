@@ -35,9 +35,10 @@ interface Course {
 interface ExpandableCourseCardProps {
     course: Course
     showProgress?: boolean
+    rank?: number
 }
 
-export default function ExpandableCourseCard({ course, showProgress }: ExpandableCourseCardProps) {
+export default function ExpandableCourseCard({ course, showProgress, rank }: ExpandableCourseCardProps) {
     const [isHovered, setIsHovered] = useState(false)
     const [position, setPosition] = useState<{ top: number; left: number; width: number; height: number } | null>(null)
     const cardRef = useRef<HTMLDivElement>(null)
@@ -182,11 +183,25 @@ export default function ExpandableCourseCard({ course, showProgress }: Expandabl
         <>
             <div
                 ref={cardRef}
-                className="relative bg-black border border-gray-800 rounded-xl overflow-hidden hover:border-orange-500/50 transition-all duration-300 group cursor-pointer min-w-[320px] w-[320px] h-[256px] flex-shrink-0"
+                className={`relative bg-black border border-gray-800 rounded-xl overflow-hidden hover:border-orange-500/50 transition-all duration-300 group cursor-pointer flex-shrink-0 flex ${rank ? 'min-w-[380px] w-[380px]' : 'min-w-[320px] w-[320px]'} h-[256px]`}
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
             >
-                <Link href={`/course/${course.id}`} className="block w-full h-full">
+                {/* Netflix-style Ranking Number */}
+                {rank && (
+                    <div className="flex-shrink-0 w-[60px] flex items-center justify-center bg-black">
+                        <span
+                            className="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-b from-orange-400 to-orange-600"
+                            style={{
+                                WebkitTextStroke: '2px #f97316',
+                                textShadow: '0 4px 12px rgba(249, 115, 22, 0.4)'
+                            }}
+                        >
+                            {rank}
+                        </span>
+                    </div>
+                )}
+                <Link href={`/course/${course.id}`} className="block flex-1 h-full relative">
                     {course.imageUrl ? (
                         <img
                             src={course.imageUrl}

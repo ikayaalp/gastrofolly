@@ -190,6 +190,7 @@ export default function HomePageClient({
           <CourseRow
             title="Popüler Kurslar"
             courses={popularCourses}
+            showRanking={true}
           />
 
           {/* Yeni Kurslar */}

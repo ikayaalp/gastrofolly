@@ -32,9 +32,10 @@ interface CourseRowProps {
   title: string
   courses: Course[]
   showProgress?: boolean
+  showRanking?: boolean
 }
 
-export default function CourseRow({ title, courses, showProgress = false }: CourseRowProps) {
+export default function CourseRow({ title, courses, showProgress = false, showRanking = false }: CourseRowProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
@@ -115,11 +116,12 @@ export default function CourseRow({ title, courses, showProgress = false }: Cour
           className="flex overflow-x-auto scrollbar-hide space-x-2 py-8 px-4 sm:px-6 lg:px-8"
           style={{ scrollPaddingLeft: '4%', scrollPaddingRight: '4%' }}
         >
-          {courses.map((course) => (
+          {courses.map((course, index) => (
             <ExpandableCourseCard
               key={course.id}
               course={course}
               showProgress={showProgress}
+              rank={showRanking ? index + 1 : undefined}
             />
           ))}
         </div>
