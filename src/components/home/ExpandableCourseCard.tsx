@@ -36,9 +36,10 @@ interface ExpandableCourseCardProps {
     course: Course
     showProgress?: boolean
     rank?: number
+    large?: boolean
 }
 
-export default function ExpandableCourseCard({ course, showProgress, rank }: ExpandableCourseCardProps) {
+export default function ExpandableCourseCard({ course, showProgress, rank, large = false }: ExpandableCourseCardProps) {
     const [isHovered, setIsHovered] = useState(false)
     const [position, setPosition] = useState<{ top: number; left: number; width: number; height: number } | null>(null)
     const cardRef = useRef<HTMLDivElement>(null)
@@ -201,7 +202,7 @@ export default function ExpandableCourseCard({ course, showProgress, rank }: Exp
                 )}
                 <div
                     ref={cardRef}
-                    className="relative bg-black border border-gray-800 rounded-xl overflow-hidden hover:border-orange-500/50 transition-all duration-300 group cursor-pointer flex-shrink-0 min-w-[320px] w-[320px] h-[256px] z-10"
+                    className={`relative bg-black border border-gray-800 rounded-xl overflow-hidden hover:border-orange-500/50 transition-all duration-300 group cursor-pointer flex-shrink-0 z-10 ${large ? 'min-w-[400px] w-[400px] h-[320px]' : 'min-w-[320px] w-[320px] h-[256px]'}`}
                     onMouseEnter={handleMouseEnter}
                     onMouseLeave={handleMouseLeave}
                 >

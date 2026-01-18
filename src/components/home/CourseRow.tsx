@@ -33,9 +33,10 @@ interface CourseRowProps {
   courses: Course[]
   showProgress?: boolean
   showRanking?: boolean
+  largeCards?: boolean
 }
 
-export default function CourseRow({ title, courses, showProgress = false, showRanking = false }: CourseRowProps) {
+export default function CourseRow({ title, courses, showProgress = false, showRanking = false, largeCards = false }: CourseRowProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
@@ -122,6 +123,7 @@ export default function CourseRow({ title, courses, showProgress = false, showRa
               course={course}
               showProgress={showProgress}
               rank={showRanking ? index + 1 : undefined}
+              large={largeCards}
             />
           ))}
         </div>
