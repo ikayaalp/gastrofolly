@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import Link from "next/link"
 import { Play, ChevronLeft, ChevronRight } from "lucide-react"
 
@@ -35,21 +35,6 @@ interface HeroSectionProps {
 export default function HeroSection({ courses }: HeroSectionProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isTransitioning, setIsTransitioning] = useState(false)
-
-  // Otomatik geçiş
-  useEffect(() => {
-    if (courses.length <= 1) return
-
-    const interval = setInterval(() => {
-      setIsTransitioning(true)
-      setTimeout(() => {
-        setCurrentIndex((prev) => (prev + 1) % courses.length)
-        setIsTransitioning(false)
-      }, 300)
-    }, 5000)
-
-    return () => clearInterval(interval)
-  }, [courses.length])
 
   // Manuel geçiş fonksiyonları
   const goToPrevious = () => {
