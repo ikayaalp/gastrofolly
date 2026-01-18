@@ -101,12 +101,12 @@ export default function HeroSection({ courses }: HeroSectionProps) {
 
   const course = courses[currentIndex]
 
-  // Animasyon sınıfları
+  // Animasyon sınıfları - daha smooth kayma efekti
   const getSlideClass = () => {
-    if (!isTransitioning) return 'translate-x-0 opacity-100'
+    if (!isTransitioning) return 'translate-x-0'
     return slideDirection === 'left'
-      ? '-translate-x-full opacity-0'
-      : 'translate-x-full opacity-0'
+      ? '-translate-x-[10%] opacity-50'
+      : 'translate-x-[10%] opacity-50'
   }
 
   return (
@@ -118,7 +118,7 @@ export default function HeroSection({ courses }: HeroSectionProps) {
     >
       {/* Background Image */}
       <div className="absolute inset-0">
-        <div className={`w-full h-full transition-all duration-400 ease-out ${getSlideClass()}`}>
+        <div className={`w-full h-full transition-all duration-300 ease-in-out ${getSlideClass()}`}>
           {course.imageUrl ? (
             <img
               src={course.imageUrl}
