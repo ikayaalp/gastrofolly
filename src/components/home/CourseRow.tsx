@@ -113,7 +113,7 @@ export default function CourseRow({ title, courses, showProgress = false, showRa
 
         <div
           ref={scrollContainerRef}
-          className={`flex overflow-x-auto scrollbar-hide py-8 px-4 sm:px-6 lg:px-8 ${showRanking ? 'space-x-4' : 'space-x-2'}`}
+          className={`flex overflow-x-auto scrollbar-hide py-8 px-4 sm:px-6 lg:px-8 ${showRanking ? 'space-x-6' : 'space-x-2'}`}
           style={{ scrollPaddingLeft: '4%', scrollPaddingRight: '4%' }}
         >
           {courses.map((course, index) => (

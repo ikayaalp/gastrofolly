@@ -185,9 +185,9 @@ export default function ExpandableCourseCard({ course, showProgress, rank }: Exp
             <div className={`relative flex-shrink-0 ${rank ? 'flex items-center' : ''}`}>
                 {/* Netflix-style Ranking Number - Large, partially behind */}
                 {rank && (
-                    <div className="relative z-0 flex items-center w-[100px] -mr-[40px]">
+                    <div className="relative z-0 flex items-center w-[120px] -mr-[35px]">
                         <span
-                            className="text-[220px] font-black leading-none select-none"
+                            className="text-[250px] font-black leading-none select-none"
                             style={{
                                 background: 'linear-gradient(180deg, #ff8c00 0%, #ff6600 50%, #ff4500 100%)',
                                 WebkitBackgroundClip: 'text',
