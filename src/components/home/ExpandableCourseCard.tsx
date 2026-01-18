@@ -189,11 +189,9 @@ export default function ExpandableCourseCard({ course, showProgress, rank }: Exp
                         <span
                             className="text-[220px] font-black leading-none select-none"
                             style={{
-                                background: 'linear-gradient(180deg, #ff6b00 0%, #cc4400 50%, #8b2500 100%)',
+                                background: 'linear-gradient(180deg, #ff8c00 0%, #ff6600 50%, #ff4500 100%)',
                                 WebkitBackgroundClip: 'text',
                                 WebkitTextFillColor: 'transparent',
-                                WebkitTextStroke: '4px #1a1a1a',
-                                filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.8))',
                                 fontFamily: 'Arial Black, Impact, sans-serif'
                             }}
                         >
