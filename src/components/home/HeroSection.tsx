@@ -34,58 +34,56 @@ interface HeroSectionProps {
 
 export default function HeroSection({ courses }: HeroSectionProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [isTransitioning, setIsTransitioning] = useState(false)
-  const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('left')
   const [touchStart, setTouchStart] = useState<number | null>(null)
   const [touchEnd, setTouchEnd] = useState<number | null>(null)
+  const [dragOffset, setDragOffset] = useState(0)
+  const [isDragging, setIsDragging] = useState(false)
 
   // Minimum swipe mesafesi
   const minSwipeDistance = 50
 
   // Manuel geçiş fonksiyonları
   const goToPrevious = () => {
-    if (courses.length <= 1 || isTransitioning) return
-    setSlideDirection('right')
-    setIsTransitioning(true)
-    setTimeout(() => {
-      setCurrentIndex((prev) => (prev - 1 + courses.length) % courses.length)
-      setIsTransitioning(false)
-    }, 400)
+    if (courses.length <= 1) return
+    setCurrentIndex((prev) => (prev - 1 + courses.length) % courses.length)
   }
 
   const goToNext = () => {
-    if (courses.length <= 1 || isTransitioning) return
-    setSlideDirection('left')
-    setIsTransitioning(true)
-    setTimeout(() => {
-      setCurrentIndex((prev) => (prev + 1) % courses.length)
-      setIsTransitioning(false)
-    }, 400)
+    if (courses.length <= 1) return
+    setCurrentIndex((prev) => (prev + 1) % courses.length)
   }
 
   // Nokta tıklama
   const goToSlide = (index: number) => {
-    if (courses.length <= 1 || isTransitioning) return
-    setSlideDirection(index > currentIndex ? 'left' : 'right')
-    setIsTransitioning(true)
-    setTimeout(() => {
-      setCurrentIndex(index)
-      setIsTransitioning(false)
-    }, 400)
+    if (courses.length <= 1) return
+    setCurrentIndex(index)
   }
 
-  // Touch event handlers
+  // Touch event handlers - gerçek zamanlı takip
   const onTouchStart = (e: React.TouchEvent) => {
     setTouchEnd(null)
     setTouchStart(e.targetTouches[0].clientX)
+    setIsDragging(true)
   }
 
   const onTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX)
+    if (!touchStart) return
+    const currentTouch = e.targetTouches[0].clientX
+    setTouchEnd(currentTouch)
+    // Parmak hareketine göre offset hesapla (maksimum %30)
+    const diff = currentTouch - touchStart
+    const maxOffset = window.innerWidth * 0.3
+    const clampedOffset = Math.max(-maxOffset, Math.min(maxOffset, diff))
+    setDragOffset(clampedOffset)
   }
 
   const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return
+    setIsDragging(false)
+    if (!touchStart || !touchEnd) {
+      setDragOffset(0)
+      return
+    }
+
     const distance = touchStart - touchEnd
     const isLeftSwipe = distance > minSwipeDistance
     const isRightSwipe = distance < -minSwipeDistance
@@ -95,19 +93,15 @@ export default function HeroSection({ courses }: HeroSectionProps) {
     } else if (isRightSwipe) {
       goToPrevious()
     }
+
+    setDragOffset(0)
+    setTouchStart(null)
+    setTouchEnd(null)
   }
 
   if (courses.length === 0) return null
 
   const course = courses[currentIndex]
-
-  // Animasyon sınıfları - daha smooth kayma efekti
-  const getSlideClass = () => {
-    if (!isTransitioning) return 'translate-x-0'
-    return slideDirection === 'left'
-      ? '-translate-x-[10%] opacity-50'
-      : 'translate-x-[10%] opacity-50'
-  }
 
   return (
     <div
@@ -118,7 +112,13 @@ export default function HeroSection({ courses }: HeroSectionProps) {
     >
       {/* Background Image */}
       <div className="absolute inset-0">
-        <div className={`w-full h-full transition-all duration-300 ease-in-out ${getSlideClass()}`}>
+        <div
+          className="w-full h-full"
+          style={{
+            transform: `translateX(${dragOffset}px)`,
+            transition: isDragging ? 'none' : 'transform 0.3s ease-out'
+          }}
+        >
           {course.imageUrl ? (
             <img
               src={course.imageUrl}
@@ -172,7 +172,7 @@ export default function HeroSection({ courses }: HeroSectionProps) {
       {/* Content */}
       <div className="relative h-full flex items-center justify-center text-center">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-          <div className={`max-w-4xl mx-auto -mt-16 transition-all duration-500 ease-in-out ${isTransitioning ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
+          <div className="max-w-4xl mx-auto -mt-16">
 
             {/* Başlık */}
             <h1 className="text-4xl md:text-6xl font-bold text-white mb-3 leading-tight drop-shadow-lg">
