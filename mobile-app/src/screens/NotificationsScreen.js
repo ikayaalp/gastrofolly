@@ -98,6 +98,17 @@ export default function NotificationsScreen({ navigation }) {
         </TouchableOpacity>
     );
 
+    const handleMarkAllRead = async () => {
+        setLoading(true);
+        const result = await notificationService.markAllNotificationsAsRead();
+        if (result.success) {
+            setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+        } else {
+            console.log("Failed to mark all read");
+        }
+        setLoading(false);
+    };
+
     if (loading) {
         return (
             <View style={styles.loadingContainer}>
@@ -113,7 +124,10 @@ export default function NotificationsScreen({ navigation }) {
                     <Ionicons name="arrow-back" size={24} color="white" />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Bildirimler</Text>
-                <View style={{ width: 40 }} />
+
+                <TouchableOpacity onPress={handleMarkAllRead} style={styles.markReadButton}>
+                    <Ionicons name="checkmark-done-circle-outline" size={24} color="#ea580c" />
+                </TouchableOpacity>
             </View>
 
             {notifications.length > 0 ? (

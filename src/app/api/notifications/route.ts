@@ -71,3 +71,32 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Bildirim oluşturulamadı' }, { status: 500 })
     }
 }
+// PATCH - Bildirimleri güncelle (Tümünü okundu işaretle)
+export async function PATCH(request: NextRequest) {
+    try {
+        const user = await getAuthUser(request)
+        if (!user) {
+            return NextResponse.json({ error: 'Yetkilendirme gerekli' }, { status: 401 })
+        }
+
+        const body = await request.json()
+        const { action } = body
+
+        if (action === 'markAllRead') {
+            await prisma.notification.updateMany({
+                where: {
+                    userId: user.id,
+                    isRead: false
+                },
+                data: { isRead: true }
+            })
+
+            return NextResponse.json({ success: true, message: 'Tüm bildirimler okundu işaretlendi' })
+        }
+
+        return NextResponse.json({ error: 'Geçersiz işlem' }, { status: 400 })
+    } catch (error) {
+        console.error('Error updating notifications:', error)
+        return NextResponse.json({ error: 'İşlem başarısız' }, { status: 500 })
+    }
+}

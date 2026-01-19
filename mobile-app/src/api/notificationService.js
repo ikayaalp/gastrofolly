@@ -192,6 +192,29 @@ class NotificationService {
         }
     }
 
+    // Tümünü okundu işaretle
+    async markAllNotificationsAsRead() {
+        try {
+            const authToken = await AsyncStorage.getItem('authToken');
+            if (!authToken) return { success: false };
+
+            await axios.patch(
+                `${config.API_BASE_URL}/api/notifications`,
+                { action: 'markAllRead' },
+                {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                }
+            );
+
+            return { success: true };
+        } catch (error) {
+            console.error('Error marking all as read:', error);
+            return { success: false };
+        }
+    }
+
     // Badge sayısını temizle
     async clearBadge() {
         await Notifications.setBadgeCountAsync(0);

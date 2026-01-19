@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, Text, View, Image, Dimensions, TouchableOpacity, ScrollView, ActivityIndicator, StatusBar, Platform } from 'react-native';
+import { StyleSheet, Text, View, Image, Dimensions, TouchableOpacity, ScrollView, ActivityIndicator, StatusBar, Platform, RefreshControl } from 'react-native';
+
 import { Ionicons } from '@expo/vector-icons';
 import { ChefHat, BookOpen, Star, Play, Plus, Info } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -19,8 +20,15 @@ export default function HomeScreen({ navigation }) {
     const [stories, setStories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [userName, setUserName] = useState('');
+    const [refreshing, setRefreshing] = useState(false);
     const scrollViewRef = useRef(null);
     const [currentIndex, setCurrentIndex] = useState(0);
+
+    const onRefresh = React.useCallback(async () => {
+        setRefreshing(true);
+        await loadData();
+        setRefreshing(false);
+    }, []);
 
     useEffect(() => {
         loadData();
@@ -54,46 +62,52 @@ export default function HomeScreen({ navigation }) {
             if (storyResult && storyResult.success) {
                 // Group stories by creator logic (similar to web)
                 if (storyResult.stories) {
-                    // Grouping Logic:
-                    // 1. Group by Title if exists.
-                    // 2. If no title, treat as individual (unique group).
-                    const groupedStories = {};
+                    // 1. Group stories first
+                    const groupedMap = {};
 
                     storyResult.stories.forEach(story => {
                         const key = story.title ? `title:${story.title}` : `id:${story.id}`;
-
-                        if (!groupedStories[key]) {
-                            let avatarUrl = story.coverImage;
-                            // Thumbnail logic
-                            if (!avatarUrl && story.mediaType === 'VIDEO' && story.mediaUrl?.includes('cloudinary')) {
-                                avatarUrl = story.mediaUrl.replace(/\.[^/.]+$/, ".jpg");
-                            }
-                            if (!avatarUrl) {
-                                avatarUrl = story.mediaType === 'IMAGE' ? story.mediaUrl : story.creator.image;
-                            }
-
-                            groupedStories[key] = {
+                        if (!groupedMap[key]) {
+                            groupedMap[key] = {
                                 id: key,
-                                user: {
-                                    name: story.title || story.creator.name || "Chef",
-                                    avatar: avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(story.creator.name)}`
-                                },
-                                stories: []
+                                tempStories: [] // Temporary array to hold stories before sorting
                             };
                         }
-                        groupedStories[key].stories.push(story);
+                        groupedMap[key].tempStories.push(story);
                     });
 
-                    // Convert to array and sort stories within groups by creation time
-                    const formattedStories = Object.values(groupedStories).map(group => {
-                        group.stories.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-                        return group;
+                    // 2. Process each group: Sort by date ASC, then pick cover from the FIRST (Oldest) story
+                    const formattedStories = Object.values(groupedMap).map(group => {
+                        // Sort Oldest to Newest
+                        group.tempStories.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+                        const firstStory = group.tempStories[0]; // The "First" (Oldest) story determines the identity
+
+                        let avatarUrl = firstStory.coverImage;
+
+                        // Thumbnail logic for the first story
+                        if (!avatarUrl && firstStory.mediaType === 'VIDEO' && firstStory.mediaUrl?.includes('cloudinary')) {
+                            avatarUrl = firstStory.mediaUrl.replace(/\.[^/.]+$/, ".jpg");
+                        }
+                        if (!avatarUrl) {
+                            avatarUrl = firstStory.mediaType === 'IMAGE' ? firstStory.mediaUrl : firstStory.creator.image;
+                        }
+
+                        return {
+                            id: group.id,
+                            user: {
+                                name: firstStory.title || firstStory.creator.name || "Chef",
+                                avatar: avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(firstStory.creator.name)}`
+                            },
+                            stories: group.tempStories
+                        };
                     });
 
-                    // Optional: Sort groups by newest story?
-                    formattedStories.sort((a, b) => {
-                        const lastStoryA = a.stories[a.stories.length - 1];
-                        const lastStoryB = b.stories[b.stories.length - 1];
+                    // 3. Sort the GROUPS themselves by the *Latest* update? 
+                    // Usually apps show the group with the most recent story first.
+                    formattedStories.sort((groupA, groupB) => {
+                        const lastStoryA = groupA.stories[groupA.stories.length - 1]; // Newest in A
+                        const lastStoryB = groupB.stories[groupB.stories.length - 1]; // Newest in B
                         return new Date(lastStoryB.createdAt) - new Date(lastStoryA.createdAt);
                     });
 
@@ -275,7 +289,13 @@ export default function HomeScreen({ navigation }) {
                 </View>
             </View>
 
-            <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+            <ScrollView
+                style={styles.scrollView}
+                contentContainerStyle={styles.scrollContent}
+                refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ea580c" colors={['#ea580c']} />
+                }
+            >
                 {/* Auto-Scrolling Carousel */}
                 {featuredCourses.length > 0 && (
                     <View style={styles.carouselSection}>
