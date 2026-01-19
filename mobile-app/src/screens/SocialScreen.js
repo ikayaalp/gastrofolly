@@ -199,8 +199,8 @@ export default function SocialScreen({ navigation }) {
     };
 
     const handleCreateTopic = async () => {
-        if (!newTopicForm.title.trim() || !newTopicForm.content.trim()) {
-            showAlert('Hata', 'Başlık ve içerik alanları zorunludur.', [{ text: 'Tamam' }], 'error');
+        if ((!newTopicForm.title.trim() && !newTopicForm.content.trim() && !selectedMedia)) {
+            showAlert('Hata', 'Lütfen başlık, içerik veya medya ekleyin.', [{ text: 'Tamam' }], 'error');
             return;
         }
 
@@ -217,8 +217,8 @@ export default function SocialScreen({ navigation }) {
             setUploading(false);
 
             if (uploadResult.success) {
-                mediaUrl = uploadResult.data.url;
-                thumbnailUrl = uploadResult.data.thumbnailUrl || (selectedMedia.type === 'image' ? uploadResult.data.url : null);
+                mediaUrl = uploadResult.data.mediaUrl;
+                thumbnailUrl = uploadResult.data.thumbnailUrl || (selectedMedia.type === 'image' ? uploadResult.data.mediaUrl : null);
                 mediaType = selectedMedia.type;
             } else {
                 showAlert('Hata', uploadResult.error || 'Medya yüklenemedi', [{ text: 'Tamam' }], 'error');
