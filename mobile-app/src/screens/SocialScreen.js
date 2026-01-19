@@ -265,92 +265,99 @@ export default function SocialScreen({ navigation }) {
         <TouchableOpacity
             style={styles.topicCard}
             onPress={() => navigation.navigate('TopicDetail', { topicId: item.id })}
+            activeOpacity={0.7}
         >
+            {/* Reddit-style Header: avatar + u/author • time • category */}
             <View style={styles.topicHeader}>
                 {item.author?.image ? (
-                    <Image source={{ uri: item.author.image }} style={styles.avatar} />
+                    <Image source={{ uri: item.author.image }} style={styles.authorAvatar} />
                 ) : (
-                    <View style={styles.avatarPlaceholder}>
-                        <User size={20} color="#fff" />
+                    <View style={styles.authorAvatarPlaceholder}>
+                        <User size={14} color="#9ca3af" />
                     </View>
                 )}
-                <View style={styles.topicMeta}>
-                    <View
-                        style={[
-                            styles.categoryBadge,
-                            { backgroundColor: (item.category?.color || '#6b7280') + '20' },
-                        ]}
-                    >
-                        <Text style={[styles.categoryBadgeText, { color: item.category?.color || '#6b7280' }]}>
-                            {item.category?.name || 'Genel'}
-                        </Text>
-                    </View>
-                    <View style={styles.timeContainer}>
-                        <Clock size={12} color="#6b7280" />
-                        <Text style={styles.timeText}>{formatTimeAgo(item.createdAt)}</Text>
-                    </View>
+                <Text style={styles.authorName}>u/{item.author?.name || 'anonim'}</Text>
+                <Text style={styles.dotSeparator}>•</Text>
+                <Text style={styles.timeText}>{formatTimeAgo(item.createdAt)}</Text>
+                <Text style={styles.dotSeparator}>•</Text>
+                <View
+                    style={[
+                        styles.categoryBadge,
+                        { backgroundColor: (item.category?.color || '#6b7280') + '20' },
+                    ]}
+                >
+                    <Text style={[styles.categoryBadgeText, { color: item.category?.color || '#6b7280' }]}>
+                        {item.category?.name || 'Genel'}
+                    </Text>
                 </View>
             </View>
 
+            {/* Title */}
             <Text style={styles.topicTitle} numberOfLines={2}>
                 {item.title}
             </Text>
 
-            {/* Media Preview */}
+            {/* Media Preview - Full Width */}
             {item.mediaUrl && item.mediaType === 'image' && (
-                <Image
-                    source={{ uri: item.thumbnailUrl || item.mediaUrl }}
-                    style={styles.topicMediaImage}
-                    resizeMode="cover"
-                />
+                <View style={styles.mediaContainer}>
+                    <Image
+                        source={{ uri: item.thumbnailUrl || item.mediaUrl }}
+                        style={styles.topicMediaImage}
+                        resizeMode="cover"
+                    />
+                </View>
             )}
             {item.mediaUrl && item.mediaType === 'video' && (
-                <View style={styles.topicVideoContainer}>
+                <View style={styles.mediaContainer}>
                     <Image
-                        source={{ uri: item.thumbnailUrl || 'https://via.placeholder.com/400x200?text=Video' }}
+                        source={{ uri: item.thumbnailUrl || 'https://via.placeholder.com/400x240?text=Video' }}
                         style={styles.topicMediaImage}
                         resizeMode="cover"
                     />
                     <View style={styles.videoPlayOverlay}>
-                        <Film size={32} color="#fff" />
+                        <View style={styles.playButton}>
+                            <Film size={24} color="#fff" />
+                        </View>
+                    </View>
+                    <View style={styles.videoBadge}>
+                        <Clock size={10} color="#fff" />
+                        <Text style={styles.videoBadgeText}>Video</Text>
                     </View>
                 </View>
             )}
 
-            <Text style={styles.topicContent} numberOfLines={2}>
-                {item.content}
-            </Text>
+            {/* Text Content Preview (only if no media) */}
+            {!item.mediaUrl && (
+                <Text style={styles.topicContent} numberOfLines={3}>
+                    {item.content}
+                </Text>
+            )}
 
-            <View style={styles.topicFooter}>
-                <View style={styles.footerItem}>
-                    <User size={14} color="#6b7280" />
-                    <Text style={styles.footerText}>{item.author?.name || 'Anonim'}</Text>
-                </View>
-                <View style={styles.footerItem}>
-                    <MessageCircle size={14} color="#6b7280" />
-                    <Text style={styles.footerText}>{item._count?.posts || 0}</Text>
-                </View>
+            {/* Action Bar - Reddit Style */}
+            <View style={styles.actionBar}>
                 <TouchableOpacity
-                    style={styles.footerItem}
+                    style={[
+                        styles.actionButton,
+                        likedTopics.has(item.id) && styles.actionButtonActive,
+                    ]}
                     onPress={() => handleLike(item.id)}
                 >
                     <ThumbsUp
-                        size={14}
+                        size={16}
                         color={likedTopics.has(item.id) ? '#ea580c' : '#6b7280'}
                         fill={likedTopics.has(item.id) ? '#ea580c' : 'transparent'}
                     />
-                    <Text
-                        style={[
-                            styles.footerText,
-                            likedTopics.has(item.id) && styles.likedText,
-                        ]}
-                    >
+                    <Text style={[styles.actionButtonText, likedTopics.has(item.id) && styles.actionButtonTextActive]}>
                         {item.likeCount || 0}
                     </Text>
                 </TouchableOpacity>
-            </View>
 
-            <View style={styles.topicAccent} />
+                <View style={styles.actionButton}>
+                    <MessageCircle size={16} color="#6b7280" />
+                    <Text style={styles.actionButtonText}>{item._count?.posts || 0}</Text>
+                    <Text style={styles.actionButtonLabel}>Yorum</Text>
+                </View>
+            </View>
         </TouchableOpacity>
     );
 
@@ -691,57 +698,131 @@ const styles = StyleSheet.create({
     },
     categoryBadge: {
         paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 4,
+        paddingVertical: 2,
+        borderRadius: 12,
     },
     categoryBadgeText: {
+        fontSize: 11,
+        fontWeight: '600',
+    },
+    // Reddit-style topic card styles
+    authorAvatar: {
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+    },
+    authorAvatarPlaceholder: {
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+        backgroundColor: '#374151',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    authorName: {
+        color: '#9ca3af',
         fontSize: 12,
         fontWeight: '500',
     },
-    timeContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
+    dotSeparator: {
+        color: '#4b5563',
+        fontSize: 12,
+        marginHorizontal: 4,
     },
     timeText: {
         color: '#6b7280',
         fontSize: 12,
     },
     topicTitle: {
-        fontSize: 16,
-        fontWeight: 'bold',
+        fontSize: 17,
+        fontWeight: '600',
+        color: '#e5e7eb',
+        paddingHorizontal: 12,
+        marginBottom: 10,
+        lineHeight: 22,
+    },
+    mediaContainer: {
+        marginHorizontal: 12,
+        marginBottom: 12,
+        borderRadius: 8,
+        overflow: 'hidden',
+        backgroundColor: '#111',
+        borderWidth: 1,
+        borderColor: '#1f2937',
+    },
+    topicMediaImage: {
+        width: '100%',
+        height: 220,
+    },
+    videoPlayOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0,0,0,0.3)',
+    },
+    playButton: {
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        borderRadius: 30,
+        padding: 16,
+    },
+    videoBadge: {
+        position: 'absolute',
+        bottom: 8,
+        right: 8,
+        backgroundColor: 'rgba(0,0,0,0.7)',
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 4,
+        gap: 4,
+    },
+    videoBadgeText: {
         color: '#fff',
-        paddingHorizontal: 16,
-        marginBottom: 8,
+        fontSize: 11,
+        fontWeight: '500',
     },
     topicContent: {
         fontSize: 14,
         color: '#9ca3af',
-        paddingHorizontal: 16,
+        paddingHorizontal: 12,
         marginBottom: 12,
+        lineHeight: 20,
     },
-    topicFooter: {
+    actionBar: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 16,
-        paddingBottom: 12,
-        gap: 16,
+        paddingHorizontal: 8,
+        paddingBottom: 8,
+        gap: 8,
     },
-    footerItem: {
+    actionButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 4,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 20,
+        backgroundColor: 'transparent',
+        gap: 6,
     },
-    footerText: {
+    actionButtonActive: {
+        backgroundColor: 'rgba(234, 88, 12, 0.1)',
+    },
+    actionButtonText: {
         color: '#6b7280',
-        fontSize: 12,
+        fontSize: 13,
+        fontWeight: '600',
     },
-    likedText: {
+    actionButtonTextActive: {
         color: '#ea580c',
     },
-    topicAccent: {
-        height: 3,
-        backgroundColor: '#ea580c',
+    actionButtonLabel: {
+        color: '#6b7280',
+        fontSize: 13,
     },
     emptyContainer: {
         flex: 1,
