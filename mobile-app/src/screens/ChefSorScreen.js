@@ -95,7 +95,15 @@ export default function ChefSorScreen({ navigation }) {
     const renderInstructorItem = ({ item }) => (
         <View style={styles.instructorCard}>
             {/* Header */}
-            <View style={styles.instructorHeader}>
+            <TouchableOpacity
+                style={styles.instructorHeader}
+                activeOpacity={0.7}
+                onPress={() => navigation.navigate('InstructorProfile', {
+                    instructorId: item.id,
+                    instructorName: item.name,
+                    instructorImage: item.image
+                })}
+            >
                 <View style={styles.avatarContainer}>
                     {item.image ? (
                         <Image source={{ uri: item.image }} style={styles.avatar} />
@@ -119,7 +127,7 @@ export default function ChefSorScreen({ navigation }) {
                         <Text style={styles.courseCountText}>{item.courses?.length || 0} Kurs</Text>
                     </View>
                 </View>
-            </View>
+            </TouchableOpacity>
 
             {/* Gmail Button */}
             <TouchableOpacity

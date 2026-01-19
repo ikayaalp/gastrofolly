@@ -142,6 +142,56 @@ class NotificationService {
         return await AsyncStorage.getItem('expoPushToken');
     }
 
+    // Bildirimleri getir
+    async getNotifications() {
+        try {
+            const authToken = await AsyncStorage.getItem('authToken');
+            if (!authToken) {
+                return { success: false, error: 'Oturum açılmamış' };
+            }
+
+            const response = await axios.get(
+                `${config.API_BASE_URL}/api/notifications`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                }
+            );
+
+            return { success: true, data: response.data };
+        } catch (error) {
+            console.error('Error fetching notifications:', error);
+            return {
+                success: false,
+                error: error.response?.data?.message || 'Bildirimler alınamadı'
+            };
+        }
+    }
+
+    // Bildirimi okundu olarak işaretle
+    async markAsRead(notificationId) {
+        try {
+            const authToken = await AsyncStorage.getItem('authToken');
+            if (!authToken) return { success: false };
+
+            await axios.put(
+                `${config.API_BASE_URL}/api/notifications/${notificationId}/read`,
+                {},
+                {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                }
+            );
+
+            return { success: true };
+        } catch (error) {
+            console.error('Error marking notification as read:', error);
+            return { success: false };
+        }
+    }
+
     // Badge sayısını temizle
     async clearBadge() {
         await Notifications.setBadgeCountAsync(0);

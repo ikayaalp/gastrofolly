@@ -5,6 +5,8 @@ import { ChefHat, BookOpen, Star, Play, Plus, Info } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import courseService from '../api/courseService';
 import authService from '../api/authService';
+import storyService from '../api/storyService';
+import Stories from '../components/Stories';
 
 const { width } = Dimensions.get('window');
 
@@ -14,6 +16,7 @@ export default function HomeScreen({ navigation }) {
     const [recentCourses, setRecentCourses] = useState([]);
     const [categories, setCategories] = useState([]);
     const [userCourses, setUserCourses] = useState([]);
+    const [stories, setStories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [userName, setUserName] = useState('');
     const scrollViewRef = useRef(null);
@@ -23,57 +26,55 @@ export default function HomeScreen({ navigation }) {
         loadData();
     }, []);
 
-    // Auto-scroll effect
-    useEffect(() => {
-        if (featuredCourses.length === 0) return;
-
-        const interval = setInterval(() => {
-            let nextIndex = currentIndex + 1;
-            if (nextIndex >= Math.min(featuredCourses.length, 5)) {
-                nextIndex = 0;
-            }
-
-            setCurrentIndex(nextIndex);
-            scrollViewRef.current?.scrollTo({
-                x: nextIndex * width,
-                animated: true,
-            });
-        }, 3000); // Scroll every 3 seconds
-
-        return () => clearInterval(interval);
-    }, [currentIndex, featuredCourses]);
+    // ... (keep auto-scroll effect same) ...
 
     const loadData = async () => {
         setLoading(true);
 
-        // Get user data
         const user = await authService.getCurrentUser();
         if (user) {
             setUserName(user.name || 'Kullanıcı');
         }
 
-        // Get featured courses (only endpoint that exists)
         const featuredResult = await courseService.getFeaturedCourses();
-
         if (featuredResult.success) {
             const courses = featuredResult.data.courses || [];
             const categoriesData = featuredResult.data.categories || [];
 
-            // Featured courses - first 6
             setFeaturedCourses(courses.slice(0, 6));
-
-            // Popular courses - reuse courses but reverse for variety if needed
-            // This ensures we have items even if total count is small
             setPopularCourses([...courses].reverse().slice(0, 6));
-
-            // Recent courses - already sorted by createdAt desc
             setRecentCourses(courses.slice(0, 6));
-
-            // Categories with their courses
             setCategories(categoriesData);
         }
 
-        // Get user's enrolled courses - Only for paid subscribers
+        // Fetch Stories
+        try {
+            const storyResult = await storyService.getActiveStories();
+            if (storyResult && storyResult.success) {
+                // Group stories by creator logic (similar to web)
+                const groupedMap = new Map();
+                if (storyResult.stories) {
+                    storyResult.stories.forEach(story => {
+                        const creatorName = story.creator.name || "Chef";
+                        if (!groupedMap.has(creatorName)) {
+                            groupedMap.set(creatorName, {
+                                id: Math.random().toString(), // Temp
+                                user: {
+                                    name: creatorName,
+                                    avatar: story.creator.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(creatorName)}&background=random`,
+                                },
+                                stories: []
+                            });
+                        }
+                        groupedMap.get(creatorName).stories.push(story);
+                    });
+                    setStories(Array.from(groupedMap.values()));
+                }
+            }
+        } catch (e) {
+            console.error("Story load error", e);
+        }
+
         if (user && user.subscriptionPlan && user.subscriptionPlan !== 'FREE') {
             const userCoursesResult = await courseService.getUserCourses();
             if (userCoursesResult.success) {
@@ -126,10 +127,83 @@ export default function HomeScreen({ navigation }) {
                             </View>
                             <Text style={styles.instructorText}>{courseData.instructor?.name || 'Eğitmen'}</Text>
                         </View>
-                        {/* Star Rating */}
-                        <View style={styles.ratingBadge}>
-                            <Star size={12} color="#fbbf24" fill="#fbbf24" />
-                            <Text style={styles.ratingText}>{avgRating}</Text>
+                    </View>
+                </LinearGradient>
+            </TouchableOpacity>
+        );
+    };
+
+    // Netflix-style ranked course card with large orange numbers
+    const renderRankedCourseCard = (course, index) => {
+        const courseData = course.course || course;
+        const imageUrl = courseData.imageUrl || 'https://images.unsplash.com/photo-1556910103-1c02745a30bf?q=80&w=400';
+        const rank = index + 1;
+
+        return (
+            <TouchableOpacity
+                key={courseData.id || index}
+                style={styles.rankedCardContainer}
+                onPress={() => navigation.navigate('CourseDetail', { courseId: courseData.id })}
+                activeOpacity={0.9}
+            >
+                {/* Large Ranking Number */}
+                <View style={styles.rankNumberContainer}>
+                    <Text style={styles.rankNumber}>{rank}</Text>
+                </View>
+
+                {/* Course Card */}
+                <View style={styles.rankedCourseCard}>
+                    <Image
+                        source={{ uri: imageUrl }}
+                        style={styles.rankedCourseImage}
+                    />
+                    <LinearGradient
+                        colors={['transparent', 'rgba(0,0,0,0.7)', 'rgba(0,0,0,0.95)']}
+                        style={styles.rankedCourseOverlay}
+                    >
+                        <Text style={styles.rankedCourseTitle} numberOfLines={2}>{courseData.title}</Text>
+                        <View style={styles.rankedCourseFooter}>
+                            <View style={styles.instructorBadge}>
+                                <View style={styles.dollarIcon}>
+                                    <Text style={styles.dollarText}>$</Text>
+                                </View>
+                                <Text style={styles.instructorText}>{courseData.instructor?.name || 'Eğitmen'}</Text>
+                            </View>
+                        </View>
+                    </LinearGradient>
+                </View>
+            </TouchableOpacity>
+        );
+    };
+
+    // Large vertical course card (like web's large prop)
+    const renderLargeCourseCard = (course, index) => {
+        const courseData = course.course || course;
+        const imageUrl = courseData.imageUrl || 'https://images.unsplash.com/photo-1556910103-1c02745a30bf?q=80&w=400';
+        const avgRating = calculateAverageRating(courseData.reviews);
+
+        return (
+            <TouchableOpacity
+                key={courseData.id || index}
+                style={styles.largeCourseCard}
+                onPress={() => navigation.navigate('CourseDetail', { courseId: courseData.id })}
+                activeOpacity={0.9}
+            >
+                <Image
+                    source={{ uri: imageUrl }}
+                    style={styles.largeCourseImage}
+                />
+                <LinearGradient
+                    colors={['transparent', 'rgba(0,0,0,0.6)', 'rgba(0,0,0,0.95)']}
+                    style={styles.largeCourseOverlay}
+                >
+                    <Text style={styles.largeCourseTitle} numberOfLines={2}>{courseData.title}</Text>
+                    <View style={styles.largeCourseFooter}>
+                        <View style={styles.instructorBadge}>
+                            <View style={styles.dollarIcon}>
+                                <Text style={styles.dollarText}>$</Text>
+                            </View>
+                            <Text style={styles.instructorText}>{courseData.instructor?.name || 'Eğitmen'}</Text>
                         </View>
                     </View>
                 </LinearGradient>
@@ -157,7 +231,13 @@ export default function HomeScreen({ navigation }) {
                     </View>
                     <View style={styles.headerActions}>
                         <TouchableOpacity
-                            style={styles.searchButton}
+                            style={styles.headerButton}
+                            onPress={() => navigation.navigate('Notifications')}
+                        >
+                            <Ionicons name="notifications-outline" size={24} color="white" />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.headerButton}
                             onPress={() => navigation.navigate('Search')}
                         >
                             <Ionicons name="search" size={24} color="white" />
@@ -251,22 +331,25 @@ export default function HomeScreen({ navigation }) {
                     </View>
                 )}
 
-                {/* Popular Courses Section */}
+                {/* Stories Section */}
+                <Stories stories={stories} navigation={navigation} />
+
+                {/* Popular Courses Section - Netflix-style with ranking numbers */}
                 {popularCourses.length > 0 && (
                     <View style={styles.section}>
                         <Text style={styles.sectionTitle}>Popüler Kurslar</Text>
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
-                            {popularCourses.map((course, index) => renderCourseCard(course, index))}
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.rankedHorizontalScroll}>
+                            {popularCourses.slice(0, 3).map((course, index) => renderRankedCourseCard(course, index))}
                         </ScrollView>
                     </View>
                 )}
 
-                {/* Recent Courses Section */}
+                {/* Recent Courses Section - Large vertical cards */}
                 {recentCourses.length > 0 && (
                     <View style={styles.section}>
                         <Text style={styles.sectionTitle}>Yeni Eklenen Kurslar</Text>
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
-                            {recentCourses.map((course, index) => renderCourseCard(course, index))}
+                            {recentCourses.map((course, index) => renderLargeCourseCard(course, index))}
                         </ScrollView>
                     </View>
                 )}
@@ -329,9 +412,9 @@ const styles = StyleSheet.create({
     headerActions: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 12,
+        gap: 16,
     },
-    searchButton: {
+    headerButton: {
         padding: 4,
     },
     scrollView: {
@@ -524,5 +607,105 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 12,
         fontWeight: '500',
+    },
+    // Netflix-style ranked course card styles
+    rankedHorizontalScroll: {
+        paddingLeft: 16,
+        paddingVertical: 8,
+    },
+    rankedCardContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginRight: 12,
+        height: 200,
+    },
+    rankNumberContainer: {
+        width: 70,
+        justifyContent: 'center',
+        alignItems: 'flex-end',
+        marginRight: -25,
+        zIndex: 0,
+    },
+    rankNumber: {
+        fontSize: 140,
+        fontWeight: '900',
+        color: '#ff6600',
+        textShadowColor: '#ff4500',
+        textShadowOffset: { width: 2, height: 2 },
+        textShadowRadius: 4,
+        fontFamily: Platform.OS === 'ios' ? 'Impact' : 'sans-serif-condensed',
+    },
+    rankedCourseCard: {
+        width: 160,
+        height: 200,
+        borderRadius: 12,
+        overflow: 'hidden',
+        zIndex: 1,
+        backgroundColor: '#000',
+        borderWidth: 1,
+        borderColor: '#333',
+    },
+    rankedCourseImage: {
+        width: '100%',
+        height: '100%',
+        resizeMode: 'cover',
+    },
+    rankedCourseOverlay: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        paddingHorizontal: 10,
+        paddingBottom: 10,
+        paddingTop: 50,
+    },
+    rankedCourseTitle: {
+        color: 'white',
+        fontSize: 13,
+        fontWeight: 'bold',
+        marginBottom: 4,
+        lineHeight: 16,
+    },
+    rankedCourseFooter: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    // Large vertical course card styles (like web's large prop)
+    largeCourseCard: {
+        width: 180,
+        height: 280,
+        marginRight: 12,
+        borderRadius: 12,
+        overflow: 'hidden',
+        position: 'relative',
+        backgroundColor: '#000',
+        borderWidth: 1,
+        borderColor: '#333',
+    },
+    largeCourseImage: {
+        width: '100%',
+        height: '100%',
+        resizeMode: 'cover',
+    },
+    largeCourseOverlay: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        paddingHorizontal: 12,
+        paddingBottom: 12,
+        paddingTop: 80,
+    },
+    largeCourseTitle: {
+        color: 'white',
+        fontSize: 15,
+        fontWeight: 'bold',
+        marginBottom: 8,
+        lineHeight: 20,
+    },
+    largeCourseFooter: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
     },
 });

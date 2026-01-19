@@ -29,6 +29,7 @@ import OnboardingScreen from '../screens/OnboardingScreen';
 import { Home, BookOpen, Users, MessageCircle, User } from 'lucide-react-native';
 
 import SearchScreen from '../screens/SearchScreen';
+import NotificationsScreen from '../screens/NotificationsScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import AccountScreen from '../screens/AccountScreen';
 import SubscriptionScreen from '../screens/SubscriptionScreen';
@@ -48,6 +49,7 @@ function HomeStackNavigator() {
             <HomeStack.Screen name="Learn" component={LearnScreen} />
             <HomeStack.Screen name="InstructorProfile" component={InstructorProfileScreen} />
             <HomeStack.Screen name="Search" component={SearchScreen} />
+            <HomeStack.Screen name="Notifications" component={NotificationsScreen} />
             <HomeStack.Screen name="Settings" component={SettingsScreen} />
             <HomeStack.Screen name="ChefSor" component={ChefSorScreen} />
         </HomeStack.Navigator>
@@ -173,6 +175,7 @@ export default function AppNavigator() {
                 <Stack.Screen name="ChefSor" component={ChefSorScreen} />
                 <Stack.Screen name="Search" component={SearchScreen} />
                 <Stack.Screen name="Subscription" component={SubscriptionScreen} />
+                <Stack.Screen name="InstructorProfile" component={InstructorProfileScreen} />
             </Stack.Navigator>
         </NavigationContainer>
     );

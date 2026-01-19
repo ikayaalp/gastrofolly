@@ -83,6 +83,7 @@ model User {
   messages      Message[]
   certificates  Certificate[]
   notifications Notification[]
+  stories       Story[]
 }
 
 enum UserRole {
@@ -133,6 +134,7 @@ model Course {
   payments    Payment[]
   messages    Message[]
   certificates Certificate[]
+  stories      Story[]
 }
 
 enum CourseLevel {
@@ -377,3 +379,19 @@ enum NotificationType {
   SYSTEM
 }
 
+
+// Hikaye Modeli
+model Story {
+  id          String   @id @default(cuid())
+  mediaUrl    String   // Resim veya Video URL
+  mediaType   String   // "IMAGE" veya "VIDEO"
+  duration    Int      @default(5000) // Ms cinsinden süre
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime // Hikayenin yayından kalkacağı zaman
+
+  courseId    String?
+  course      Course?  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  
+  creatorId   String
+  creator     User     @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+}

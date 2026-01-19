@@ -24,17 +24,17 @@ export default function App() {
           console.log('Notification data:', data);
 
           if (navigationRef.isReady()) {
-            // Manuel gönderilen ve screen bilgisi içeren bildirimler
-            if (data.screen && data.params) {
-              navigationRef.navigate(data.screen, data.params);
+            // Screen ve params varsa direkt oraya git
+            if (data.screen) {
+              navigationRef.navigate(data.screen, data.params || {});
             }
-            // "Yeni Kurs" tipindeki otomatik bildirimler
-            else if (data.type === 'NEW_COURSE' && data.courseId) {
-              navigationRef.navigate('CourseDetail', { courseId: data.courseId });
-            }
-            // Sadece courseId varsa (eski uyumluluk veya basit gönderim)
+            // Course ID varsa kurs detayına git
             else if (data.courseId) {
               navigationRef.navigate('CourseDetail', { courseId: data.courseId });
+            }
+            // Topic ID varsa forum detayına git (gelecekte kullanım için)
+            else if (data.topicId) {
+              // navigationRef.navigate('TopicDetail', { topicId: data.topicId });
             }
           }
         }

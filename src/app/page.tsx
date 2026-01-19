@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ChefHat, Play, Star, Users, Crown, BookOpen, Zap, ArrowRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import AutoScrollCourses from "@/components/home/AutoScrollCourses";
+import HomeStories from "@/components/home/HomeStories";
 import { useRouter } from "next/navigation";
 
 export default function Home() {
@@ -217,6 +218,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Stories Section (Mobile Only) */}
+      <HomeStories />
 
       {/* Auto Scrolling Courses */}
       {featured.length > 0 && (
