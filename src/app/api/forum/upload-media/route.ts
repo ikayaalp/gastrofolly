@@ -75,9 +75,12 @@ export async function POST(request: NextRequest) {
         uploadFormData.append('public_id', `forum_${Date.now()}_${Math.random().toString(36).substring(7)}`)
 
         // Video için thumbnail oluşturma ayarı
+        // Unsigned upload'da eager parametresi kullanılamıyor, bu yüzden fallback mekanizması kullanılacak
+        /* 
         if (isVideo) {
             uploadFormData.append('eager', 'c_thumb,w_400,h_300,g_auto')
         }
+        */
 
         const response = await fetch(cloudinaryUrl, {
             method: 'POST',

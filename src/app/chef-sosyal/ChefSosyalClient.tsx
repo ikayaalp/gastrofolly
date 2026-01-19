@@ -342,17 +342,17 @@ export default function ChefSosyalClient({
               {session.user.image ? (
                 <img src={session.user.image} alt={session.user.name || ''} className="w-9 h-9 rounded-full object-cover" />
               ) : (
-                <div className="w-9 h-9 rounded-full bg-gray-700 flex items-center justify-center">
-                  <User className="h-5 w-5 text-gray-400" />
+                <div className="w-9 h-9 rounded-full bg-orange-600 flex items-center justify-center">
+                  <User className="h-5 w-5 text-white" />
                 </div>
               )}
               <input
                 type="text"
                 placeholder="Bir şeyler paylaş..."
-                className="flex-1 bg-[#1a1a1a] border border-gray-700 hover:border-orange-500 hover:bg-[#0a0a0a] rounded py-2 px-4 text-sm text-orange-500 placeholder-orange-500 transition-colors cursor-text focus:outline-none focus:border-orange-500"
+                className="flex-1 bg-[#1a1a1a] border border-gray-700 hover:border-white hover:bg-[#0a0a0a] rounded py-2 px-4 text-sm text-white placeholder-gray-500 transition-colors cursor-text focus:outline-none"
                 onClick={() => setShowNewTopicModal(true)}
               />
-              <button onClick={() => { setActiveTab('image'); setShowNewTopicModal(true); }} className="p-2 hover:bg-gray-800 rounded text-orange-500 hover:text-orange-400 transition-colors">
+              <button onClick={() => { setActiveTab('image'); setShowNewTopicModal(true); }} className="p-2 hover:bg-gray-800 rounded text-gray-400 hover:text-white transition-colors">
                 <ImageIcon className="h-6 w-6" />
               </button>
             </div>

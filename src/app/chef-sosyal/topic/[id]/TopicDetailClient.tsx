@@ -348,25 +348,44 @@ export default function TopicDetailClient({ session, topic, categories }: TopicD
 
               {/* Comment Input Area */}
               {session?.user ? (
-                <div className="mt-6 mb-8">
-                  <div className="text-sm text-gray-400 mb-1">
-                    <span className="text-orange-500">u/{session.user.name}</span> olarak yorum yap
+                <div className="mt-6 mb-8 flex gap-3">
+                  <div className="flex-shrink-0">
+                    {session.user.image ? (
+                      <img src={session.user.image} className="w-8 h-8 rounded-full object-cover" alt={session.user.name || ''} />
+                    ) : (
+                      <div className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center">
+                        <User className="w-4 h-4 text-gray-400" />
+                      </div>
+                    )}
                   </div>
-                  <form onSubmit={handleAddComment} className="border border-gray-700 rounded-md overflow-hidden bg-[#1a1a1a] focus-within:border-white transition-colors">
-                    <textarea
-                      value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                      className="w-full px-4 py-3 bg-transparent text-white placeholder-gray-500 focus:outline-none resize-none min-h-[120px]"
-                      placeholder="Düşüncelerini paylaş..."
-                    />
-                    <div className="bg-[#151515] px-2 py-2 flex justify-end">
-                      <button
-                        type="submit"
-                        disabled={!newComment.trim() || submitting}
-                        className="px-4 py-1.5 bg-white text-black text-xs font-bold rounded-full hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        Yorum Yap
-                      </button>
+                  <form onSubmit={handleAddComment} className="flex-1 relative group">
+                    <div className="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-purple-500/20 rounded-2xl blur opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
+                    <div className="relative bg-[#0a0a0a] border border-gray-800 rounded-2xl focus-within:border-gray-700 transition-colors overflow-hidden">
+                      <textarea
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                        className="w-full px-4 py-3 bg-transparent text-white placeholder-gray-500 focus:outline-none resize-none min-h-[50px] text-sm"
+                        placeholder="Düşüncelerini paylaş..."
+                        style={{ minHeight: '48px' }}
+                        onInput={(e) => {
+                          const target = e.target as HTMLTextAreaElement;
+                          target.style.height = 'auto';
+                          target.style.height = target.scrollHeight + 'px';
+                        }}
+                      />
+                      {/* Action Bar inside the input box */}
+                      <div className={`px-2 pb-2 flex justify-between items-center ${!newComment.trim() ? 'hidden' : 'flex'} animate-in fade-in slide-in-from-top-1`}>
+                        <div className="text-xs text-gray-500 px-2">
+                          <span className="text-orange-500">@{session.user.name}</span> olarak
+                        </div>
+                        <button
+                          type="submit"
+                          disabled={!newComment.trim() || submitting}
+                          className="px-4 py-1.5 bg-white text-black text-xs font-bold rounded-full hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                        >
+                          Yorum Yap
+                        </button>
+                      </div>
                     </div>
                   </form>
                 </div>
