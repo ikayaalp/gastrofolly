@@ -456,115 +456,151 @@ export default function ChefSosyalClient({
 
       </div>
 
-      {/* New Topic Modal (Reddit Style) */}
+      {/* New Topic Modal (Twitter-style modern & simple) */}
       {showNewTopicModal && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
-          <div className="bg-[#0a0a0a] border border-gray-800 rounded-lg w-full max-w-2xl h-[80vh] flex flex-col shadow-2xl overflow-hidden">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 sm:p-4">
+          <div className="absolute inset-0 bg-black/90 backdrop-blur-sm" onClick={() => setShowNewTopicModal(false)}></div>
+          <div className="relative w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-2xl sm:rounded-2xl bg-[#000] sm:border sm:border-gray-800 flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+
             {/* Header */}
-            <div className="flex justify-between items-center p-4 border-b border-gray-800">
-              <h2 className="text-lg font-medium text-white">Gönderi Oluştur</h2>
-              <button onClick={() => setShowNewTopicModal(false)} className="text-gray-400 hover:text-white">
+            <div className="flex justify-between items-center px-4 py-3 border-b border-gray-900">
+              <button onClick={() => setShowNewTopicModal(false)} className="p-2 -ml-2 text-white hover:bg-gray-900 rounded-full transition-colors">
                 <X className="h-6 w-6" />
               </button>
-            </div>
 
-            {/* Tabs */}
-            <div className="flex border-b border-gray-800">
               <button
-                onClick={() => setActiveTab('post')}
-                className={`flex-1 py-4 text-sm font-bold flex items-center justify-center space-x-2 border-b-2 transition-colors ${activeTab === 'post' ? 'border-orange-500 text-white' : 'border-transparent text-gray-400 hover:bg-gray-900'}`}
-              >
-                <Type className="h-5 w-5" />
-                <span>Yazı</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('image')}
-                className={`flex-1 py-4 text-sm font-bold flex items-center justify-center space-x-2 border-b-2 transition-colors ${activeTab === 'image' ? 'border-orange-500 text-white' : 'border-transparent text-gray-400 hover:bg-gray-900'}`}
-              >
-                <ImageIcon className="h-5 w-5" />
-                <span>Resim & Video</span>
-              </button>
-            </div>
-
-            {/* Content Form */}
-            <div className="flex-1 overflow-y-auto p-6">
-              <form id="create-topic-form" onSubmit={handleCreateTopic} className="space-y-4">
-                {/* Title Input */}
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={newTopicForm.title}
-                    onChange={(e) => setNewTopicForm({ ...newTopicForm, title: e.target.value })}
-                    placeholder="Başlık"
-                    maxLength={300}
-                    className="w-full bg-[#1a1a1a] border border-gray-700 rounded px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-white focus:bg-black pr-12"
-                    required
-                  />
-                  <span className="absolute right-3 top-2.5 text-xs text-gray-500 font-bold">
-                    {newTopicForm.title.length}/300
-                  </span>
-                </div>
-
-                {/* Content Logic based on Tab */}
-                {activeTab === 'post' ? (
-                  <textarea
-                    value={newTopicForm.content}
-                    onChange={(e) => setNewTopicForm({ ...newTopicForm, content: e.target.value })}
-                    placeholder="Yazı (isteğe bağlı)"
-                    className="w-full h-64 bg-[#1a1a1a] border border-gray-700 rounded p-4 text-white placeholder-gray-500 focus:outline-none focus:border-white focus:bg-black resize-none"
-                  />
-                ) : (
-                  <div className="border border-gray-700 rounded p-4 min-h-[250px] flex items-center justify-center bg-[#1a1a1a]">
-                    <div className="w-full">
-                      <MediaUploader
-                        currentMedia={topicMedia}
-                        onUploadComplete={(mediaData) => setTopicMedia(mediaData)}
-                        onRemove={() => setTopicMedia(null)}
-                      />
-                      <div className="mt-4">
-                        <textarea
-                          value={newTopicForm.content}
-                          onChange={(e) => setNewTopicForm({ ...newTopicForm, content: e.target.value })}
-                          placeholder="Açıklama veya başlık (isteğe bağlı)"
-                          className="w-full h-20 bg-black border border-gray-700 rounded p-3 text-white placeholder-gray-500 focus:outline-none text-sm resize-none"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Category Selection */}
-                <div>
-                  <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">Topluluk Seç</label>
-                  <select
-                    value={newTopicForm.categoryId}
-                    onChange={(e) => setNewTopicForm({ ...newTopicForm, categoryId: e.target.value })}
-                    className="w-full sm:w-1/2 bg-[#1a1a1a] border border-gray-700 rounded px-4 py-2 text-white focus:outline-none focus:border-orange-500"
-                  >
-                    {categories.map(cat => (
-                      <option key={cat.id} value={cat.id}>{cat.name}</option>
-                    ))}
-                  </select>
-                </div>
-              </form>
-            </div>
-
-            {/* Footer */}
-            <div className="p-4 border-t border-gray-800 flex justify-end space-x-3 bg-[#0a0a0a]">
-              <button
-                onClick={() => setShowNewTopicModal(false)}
-                className="px-5 py-2 rounded-full font-bold text-gray-400 hover:bg-gray-800 transition-colors"
-              >
-                İptal
-              </button>
-              <button
-                type="submit"
-                form="create-topic-form"
-                disabled={!newTopicForm.title || submitting}
-                className="px-6 py-2 rounded-full font-bold bg-white text-black hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={handleCreateTopic}
+                disabled={submitting || (!newTopicForm.title.trim() && !newTopicForm.content.trim() && !topicMedia)}
+                className={`px-5 py-1.5 rounded-full font-bold text-sm transition-all ${submitting || (!newTopicForm.title.trim() && !newTopicForm.content.trim() && !topicMedia)
+                    ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                    : 'bg-[#ea580c] text-white hover:bg-[#c2410c]'
+                  }`}
               >
                 {submitting ? 'Paylaşılıyor...' : 'Paylaş'}
               </button>
+            </div>
+
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 no-scrollbar">
+              {/* User Info Row */}
+              <div className="flex items-center space-x-3 mb-6">
+                {session?.user?.image ? (
+                  <img src={session.user.image} alt={session.user.name || 'User'} className="w-10 h-10 rounded-full object-cover border border-gray-800" />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center border border-gray-700">
+                    <User className="w-5 h-5 text-gray-400" />
+                  </div>
+                )}
+                <div className="flex flex-col">
+                  <span className="text-white font-bold text-sm">{session?.user?.name || 'Kullanıcı'}</span>
+                  <div className="px-2 py-0.5 rounded-full border border-gray-800 bg-gray-900 w-fit mt-1">
+                    <span className="text-[10px] font-bold text-gray-400 flex items-center">
+                      Genel <ArrowDown className="h-3 w-3 ml-1" />
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Title Input */}
+              <input
+                type="text"
+                value={newTopicForm.title}
+                onChange={(e) => setNewTopicForm({ ...newTopicForm, title: e.target.value })}
+                placeholder="Başlık"
+                maxLength={100}
+                className="w-full bg-transparent border-none p-0 text-xl font-bold text-white placeholder-gray-500 focus:ring-0 mb-3"
+              />
+
+              {/* Content Input (Auto-growing textarea ideally, but standard for now) */}
+              <textarea
+                value={newTopicForm.content}
+                onChange={(e) => setNewTopicForm({ ...newTopicForm, content: e.target.value })}
+                placeholder="Neler oluyor? Bir şeyler paylaş..."
+                className="w-full bg-transparent border-none p-0 text-base text-gray-300 placeholder-gray-600 focus:ring-0 min-h-[120px] resize-none"
+              />
+
+              {/* Media Preview */}
+              {topicMedia && (
+                <div className="relative mt-4 rounded-xl overflow-hidden bg-gray-900 border border-gray-800 group">
+                  <button
+                    onClick={() => setTopicMedia(null)}
+                    className="absolute top-2 right-2 p-1.5 bg-black/60 rounded-full text-white hover:bg-black/80 transition-colors z-10"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                  {topicMedia.mediaType === 'VIDEO' ? (
+                    <video
+                      src={topicMedia.mediaUrl}
+                      className="w-full max-h-[400px] object-contain bg-black"
+                      controls
+                    />
+                  ) : (
+                    <img
+                      src={topicMedia.mediaUrl}
+                      alt="Preview"
+                      className="w-full max-h-[400px] object-cover"
+                    />
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Bottom Toolbar */}
+            <div className="p-4 border-t border-gray-900 bg-black/50 backdrop-blur-xl">
+              <div className="flex items-center space-x-6 text-[#ea580c]">
+                <button
+                  onClick={() => document.getElementById('media-upload-image')?.click()}
+                  className="p-2 -ml-2 hover:bg-[#ea580c]/10 rounded-full transition-colors"
+                  title="Resim Ekle"
+                >
+                  <ImageIcon className="h-6 w-6" />
+                </button>
+                <button
+                  onClick={() => document.getElementById('media-upload-camera')?.click()}
+                  className="p-2 hover:bg-[#ea580c]/10 rounded-full transition-colors"
+                  title="Fotoğraf Çek"
+                >
+                  <Camera className="h-6 w-6" />
+                </button>
+                <button
+                  onClick={() => document.getElementById('media-upload-video')?.click()}
+                  className="p-2 hover:bg-[#ea580c]/10 rounded-full transition-colors"
+                  title="Video Ekle"
+                >
+                  <Film className="h-6 w-6" />
+                </button>
+
+                {/* Separator */}
+                <div className="h-6 w-px bg-gray-800 mx-2"></div>
+
+                <div className="text-xs text-gray-500 font-bold ml-auto">
+                  {newTopicForm.title.length}/100
+                </div>
+              </div>
+
+              {/* Hidden Inputs for Media */}
+              <input
+                type="file"
+                id="media-upload-image"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => handleMediaSelect(e, 'IMAGE')}
+              />
+              <input
+                type="file"
+                id="media-upload-camera"
+                accept="image/*"
+                capture="user"
+                className="hidden"
+                onChange={(e) => handleMediaSelect(e, 'IMAGE')}
+              />
+              <input
+                type="file"
+                id="media-upload-video"
+                accept="video/*"
+                className="hidden"
+                onChange={(e) => handleMediaSelect(e, 'VIDEO')}
+              />
             </div>
           </div>
         </div>
