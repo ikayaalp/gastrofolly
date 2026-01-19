@@ -237,7 +237,61 @@ export default function ChefSosyalClient({
   }
 
   // Yeni başlık oluştur
-  const handleCreateTopic = async (e: React.FormEvent) => {
+  // Handle media selection from hidden inputs
+  const handleMediaSelect = async (e: React.ChangeEvent<HTMLInputElement>, type: 'IMAGE' | 'VIDEO') => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Simple validation
+    if (file.size > (type === 'VIDEO' ? 100 * 1024 * 1024 : 10 * 1024 * 1024)) {
+      alert('Dosya boyutu çok yüksek.')
+      return
+    }
+
+    try {
+      // Create FormData
+      const formData = new FormData()
+      formData.append('file', file)
+
+      // Upload directly
+      // In a real app we might want to show loading state specifically for media
+      // For now let's just use a simple approach to get the URL
+
+      // Temporary optimistic preview
+      const objectUrl = URL.createObjectURL(file)
+      setTopicMedia({
+        url: objectUrl,
+        publicId: 'temp',
+        type: type
+      })
+
+      // Real upload
+      const response = await fetch('/api/forum/upload-media', {
+        method: 'POST',
+        body: formData
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Upload failed')
+      }
+
+      // Update with real data
+      setTopicMedia({
+        url: data.mediaUrl,
+        publicId: data.publicId,
+        type: data.mediaType as 'IMAGE' | 'VIDEO'
+      })
+
+    } catch (error) {
+      console.error('Upload error:', error)
+      alert('Medya yüklenirken hata oluştu.')
+      setTopicMedia(null)
+    }
+  }
+
+  const handleCreateTopic = async (e?: React.FormEvent) => {
     e.preventDefault()
     setSubmitting(true)
 
