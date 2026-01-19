@@ -764,7 +764,9 @@ const styles = StyleSheet.create({
     },
     topicMediaImage: {
         width: '100%',
-        height: 350,
+        height: undefined,
+        aspectRatio: 0.8,
+        maxHeight: 500,
     },
     videoPlayOverlay: {
         position: 'absolute',
