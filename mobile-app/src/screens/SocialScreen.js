@@ -303,7 +303,7 @@ export default function SocialScreen({ navigation }) {
                     <Image
                         source={{ uri: item.thumbnailUrl || item.mediaUrl }}
                         style={styles.topicMediaImage}
-                        resizeMode="cover"
+                        resizeMode="contain"
                     />
                 </View>
             )}
@@ -789,7 +789,9 @@ const styles = StyleSheet.create({
     },
     topicMediaImage: {
         width: '100%',
-        height: 220,
+        height: undefined,
+        aspectRatio: 4 / 3,
+        minHeight: 280,
     },
     videoPlayOverlay: {
         position: 'absolute',
