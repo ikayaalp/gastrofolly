@@ -298,7 +298,7 @@ export default function SocialScreen({ navigation }) {
             </Text>
 
             {/* Media Preview - Full Width */}
-            {item.mediaUrl && item.mediaType === 'image' && (
+            {item.mediaUrl && (item.mediaType === 'image' || item.mediaType === 'IMAGE') && (
                 <View style={styles.mediaContainer}>
                     <Image
                         source={{ uri: item.thumbnailUrl || item.mediaUrl }}
@@ -307,7 +307,7 @@ export default function SocialScreen({ navigation }) {
                     />
                 </View>
             )}
-            {item.mediaUrl && item.mediaType === 'video' && (
+            {item.mediaUrl && (item.mediaType === 'video' || item.mediaType === 'VIDEO') && (
                 <View style={styles.mediaContainer}>
                     <Image
                         source={{ uri: item.thumbnailUrl || 'https://via.placeholder.com/400x240?text=Video' }}

@@ -308,7 +308,7 @@ export default function TopicDetailScreen({ route, navigation }) {
             <Text style={styles.topicTitle}>{topic.title}</Text>
 
             {/* Media Display */}
-            {topic.mediaUrl && topic.mediaType === 'image' && (
+            {topic.mediaUrl && (topic.mediaType === 'image' || topic.mediaType === 'IMAGE') && (
                 <View style={styles.mediaContainer}>
                     <Image
                         source={{ uri: topic.mediaUrl }}
@@ -317,7 +317,7 @@ export default function TopicDetailScreen({ route, navigation }) {
                     />
                 </View>
             )}
-            {topic.mediaUrl && topic.mediaType === 'video' && (
+            {topic.mediaUrl && (topic.mediaType === 'video' || topic.mediaType === 'VIDEO') && (
                 <View style={styles.mediaContainer}>
                     <Video
                         source={{ uri: topic.mediaUrl }}
