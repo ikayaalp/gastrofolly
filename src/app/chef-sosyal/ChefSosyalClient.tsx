@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useState, useEffect } from "react"
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useRouter } from "next/navigation"
 import { ChefHat, Search, Bell, Plus, MessageCircle, ThumbsUp, Clock, User, Home, BookOpen, Users, Image as ImageIcon, Play, Menu, X, Filter, Type } from "lucide-react"
 import UserDropdown from "@/components/ui/UserDropdown"
 import NotificationDropdown from "@/components/ui/NotificationDropdown"
@@ -71,15 +71,18 @@ export default function ChefSosyalClient({
   initialTopics
 }: ChefSosyalClientProps) {
   const searchParams = useSearchParams()
+  const router = useRouter()
 
   // URL'den başlangıç değerlerini al
   const initialCategoryParam = searchParams.get('category') || 'all'
   const initialSortParam = searchParams.get('sort') || 'newest'
+  const initialSearchParam = searchParams.get('search') || ''
 
   const [categories, setCategories] = useState(initialCategories)
   const [topics, setTopics] = useState(initialTopics)
   const [selectedCategory, setSelectedCategory] = useState(initialCategoryParam)
   const [sortBy, setSortBy] = useState(initialSortParam)
+  const [searchTerm, setSearchTerm] = useState(initialSearchParam)
   const [loading, setLoading] = useState(false)
   const [showNewTopicModal, setShowNewTopicModal] = useState(false)
   const [activeTab, setActiveTab] = useState<'post' | 'image'>('post') // Modal tab state
@@ -108,9 +111,24 @@ export default function ChefSosyalClient({
   useEffect(() => {
     const category = searchParams.get('category') || 'all'
     const sort = searchParams.get('sort') || 'newest'
+    const search = searchParams.get('search') || ''
     setSelectedCategory(category)
     setSortBy(sort)
+    setSearchTerm(search)
   }, [searchParams])
+
+  // Arama İşlemi
+  const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      const params = new URLSearchParams(searchParams.toString())
+      if (searchTerm.trim()) {
+        params.set('search', searchTerm.trim())
+      } else {
+        params.delete('search')
+      }
+      router.push(`/chef-sosyal?${params.toString()}`)
+    }
+  }
 
   // Modal açıldığında kategorileri yükle
   useEffect(() => {
@@ -157,7 +175,6 @@ export default function ChefSosyalClient({
   // Like/Unlike işlemi
   const handleLike = async (topicId: string) => {
     if (!session?.user?.id) {
-      // Redirect or show login if not logged in (optional logic here)
       return
     }
 
@@ -173,7 +190,6 @@ export default function ChefSosyalClient({
       if (response.ok) {
         const data = await response.json()
 
-        // Topic listesini güncelle
         setTopics(prevTopics =>
           prevTopics.map(topic =>
             topic.id === topicId
@@ -182,7 +198,6 @@ export default function ChefSosyalClient({
           )
         )
 
-        // Liked topics state'ini güncelle
         setLikedTopics(prev => {
           const newSet = new Set(prev)
           if (data.liked) {
@@ -198,17 +213,12 @@ export default function ChefSosyalClient({
     }
   }
 
-  // Başlıkları yeniden yükle - Client side filtering/sorting if needed, but normally handled by page.tsx via URL
-  const loadTopics = async (category = selectedCategory, sort = sortBy) => {
+  // Client side fetching logic (for actions that don't change URL like refresh button, though mostly we use URL now)
+  const loadTopics = async () => {
     setLoading(true)
     try {
-      const params = new URLSearchParams({
-        category: category === 'all' ? '' : category,
-        sort,
-        limit: '15'
-      })
-
-      const response = await fetch(`/api/forum/topics?${params}`)
+      const params = new URLSearchParams(searchParams.toString())
+      const response = await fetch(`/api/forum/topics?${params.toString()}`)
       const data = await response.json()
       setTopics(data.topics)
     } catch (error) {
@@ -218,18 +228,12 @@ export default function ChefSosyalClient({
     }
   }
 
-  // Sıralama değiştiğinde (URL update)
+  // Sıralama değiştiğinde
   const handleSortChange = (sort: string) => {
-    // Direct URL navigation would be better handled by Link, but for compatibility with existing logic:
-    setSortBy(sort)
-    // Update URL without refresh if possible, or force navigate
-    // Actually, since we use page props, we SHOULD navigate.
-    // But here we use loadTopics() for immediate client update, which is fine for "sort"
-    // Ideally we should use router.push but let's keep it simple for now as per previous logic.
-    // Revert: Just use loadTopics is fine for client interaction without full reload, 
-    // BUT initialTopics prop won't update unless we navigate.
-    // Let's rely on client-side fetch for sort changes to be snappy.
-    loadTopics(selectedCategory, sort)
+    // URL güncelle ve SSR tetikle
+    const params = new URLSearchParams(searchParams.toString())
+    params.set('sort', sort)
+    router.push(`/chef-sosyal?${params.toString()}`)
   }
 
   // Yeni başlık oluştur
@@ -252,12 +256,12 @@ export default function ChefSosyalClient({
       })
 
       if (response.ok) {
-        // Başarılı olursa modal'ı kapat ve başlıkları yenile
         setShowNewTopicModal(false)
         setNewTopicForm({ title: '', content: '', categoryId: categories.length > 0 ? categories[0].id : '' })
         setTopicMedia(null)
         setActiveTab('post')
-        loadTopics()
+        // Sayfayı yenile veya yeniden fetch et
+        router.refresh()
       } else {
         const error = await response.json()
         console.error('Topic creation failed:', error)
@@ -292,8 +296,11 @@ export default function ChefSosyalClient({
               </div>
               <input
                 type="text"
-                className="block w-full pl-10 pr-3 py-2 border border-gray-800 rounded-full leading-5 bg-[#1a1a1a] text-gray-300 placeholder-gray-500 focus:outline-none focus:bg-black focus:border-orange-500 sm:text-sm"
-                placeholder="Chef2.0'da ara"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={handleSearch}
+                className="block w-full pl-10 pr-3 py-2 border border-gray-800 rounded-full leading-5 bg-[#1a1a1a] text-gray-300 placeholder-gray-500 focus:outline-none focus:bg-black focus:border-orange-500 sm:text-sm transition-colors"
+                placeholder="Chef Sosyal'de ara..."
               />
             </div>
           </div>
@@ -388,7 +395,7 @@ export default function ChefSosyalClient({
 
             {!loading && topics.length === 0 && (
               <div className="text-center py-12 text-gray-500">
-                Henüz hiç içerik yok. İlk paylaşımı sen yap!
+                {searchTerm ? 'Aradığınız kriterlere uygun sonuç bulunamadı.' : 'Henüz hiç içerik yok. İlk paylaşımı sen yap!'}
               </div>
             )}
           </div>

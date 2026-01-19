@@ -28,11 +28,20 @@ export async function GET(request: NextRequest) {
     }
 
     // Kategori filtresi
-    const where: Record<string, unknown> = {}
+    const where: any = {}
     if (category && category !== 'all') {
       where.category = {
         slug: category
       }
+    }
+
+    // Arama filtresi
+    const search = searchParams.get('search')
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: 'insensitive' } },
+        { content: { contains: search, mode: 'insensitive' } }
+      ]
     }
 
     const [topics, totalCount] = await Promise.all([

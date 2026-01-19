@@ -14,6 +14,7 @@ export default async function ChefSosyalPage({ searchParams }: PageProps) {
   // URL parametrelerini al
   const categorySlug = searchParams.category as string | undefined
   const sort = searchParams.sort as string | undefined
+  const search = searchParams.search as string | undefined
 
   // Veritabanından kategorileri çek
   const categories = await prisma.forumCategory.findMany({
@@ -30,13 +31,19 @@ export default async function ChefSosyalPage({ searchParams }: PageProps) {
   })
 
   // Filtreleme ve Sıralama Ayarları
-  let whereClause = {}
+  let whereClause: any = {}
   if (categorySlug && categorySlug !== 'all') {
-    whereClause = {
-      category: {
-        slug: categorySlug
-      }
+    whereClause.category = {
+      slug: categorySlug
     }
+  }
+
+  // Arama Filtresi
+  if (search) {
+    whereClause.OR = [
+      { title: { contains: search, mode: 'insensitive' } },
+      { content: { contains: search, mode: 'insensitive' } }
+    ]
   }
 
   let orderByClause: any = { createdAt: 'desc' }
