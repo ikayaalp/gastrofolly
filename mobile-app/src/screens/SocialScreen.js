@@ -25,7 +25,8 @@ import {
     Plus,
     X,
     ImageIcon,
-    Film,
+    Check,
+    Camera,
 } from 'lucide-react-native';
 import { Video, ResizeMode } from 'expo-av';
 import * as ImagePicker from 'expo-image-picker';
@@ -425,6 +426,7 @@ export default function SocialScreen({ navigation }) {
             )}
 
             {/* New Topic Modal */}
+            {/* Premium Create Topic Modal */}
             <Modal
                 visible={showNewTopicModal}
                 animationType="slide"
@@ -432,97 +434,112 @@ export default function SocialScreen({ navigation }) {
                 onRequestClose={() => setShowNewTopicModal(false)}
             >
                 <KeyboardAvoidingView
-                    style={styles.modalOverlay}
                     behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                    style={styles.modalContainer}
                 >
                     <View style={styles.modalContent}>
+                        {/* Header */}
                         <View style={styles.modalHeader}>
-                            <Text style={styles.modalTitle}>Yeni Tartışma</Text>
-                            <TouchableOpacity onPress={() => setShowNewTopicModal(false)}>
-                                <X size={24} color="#9ca3af" />
-                            </TouchableOpacity>
-                        </View>
-
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Başlık"
-                            placeholderTextColor="#6b7280"
-                            value={newTopicForm.title}
-                            onChangeText={(text) => setNewTopicForm({ ...newTopicForm, title: text })}
-                        />
-
-                        <TextInput
-                            style={[styles.input, styles.textArea]}
-                            placeholder="İçerik"
-                            placeholderTextColor="#6b7280"
-                            value={newTopicForm.content}
-                            onChangeText={(text) => setNewTopicForm({ ...newTopicForm, content: text })}
-                            multiline
-                            numberOfLines={6}
-                            textAlignVertical="top"
-                        />
-
-                        {/* Media Picker Buttons */}
-                        <View style={styles.mediaPickerRow}>
-                            <TouchableOpacity style={styles.mediaPickerButton} onPress={pickImage}>
-                                <ImageIcon size={20} color="#ea580c" />
-                                <Text style={styles.mediaPickerText}>Fotoğraf</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity style={styles.mediaPickerButton} onPress={pickVideo}>
-                                <Film size={20} color="#ea580c" />
-                                <Text style={styles.mediaPickerText}>Video</Text>
-                            </TouchableOpacity>
-                        </View>
-
-                        {/* Selected Media Preview */}
-                        {selectedMedia && (
-                            <View style={styles.mediaPreviewContainer}>
-                                {selectedMedia.type === 'image' ? (
-                                    <Image source={{ uri: selectedMedia.uri }} style={styles.mediaPreview} />
-                                ) : (
-                                    <Video
-                                        source={{ uri: selectedMedia.uri }}
-                                        style={styles.mediaPreview}
-                                        resizeMode={ResizeMode.COVER}
-                                        shouldPlay={false}
-                                        isMuted={true}
-                                    />
-                                )}
-                                <TouchableOpacity
-                                    style={styles.removeMediaButton}
-                                    onPress={() => setSelectedMedia(null)}
-                                >
-                                    <X size={16} color="#fff" />
-                                </TouchableOpacity>
-                            </View>
-                        )}
-
-                        {uploading && (
-                            <View style={styles.uploadingIndicator}>
-                                <ActivityIndicator size="small" color="#ea580c" />
-                                <Text style={styles.uploadingText}>Medya yükleniyor...</Text>
-                            </View>
-                        )}
-
-                        <View style={styles.modalButtons}>
                             <TouchableOpacity
-                                style={styles.cancelButton}
                                 onPress={() => { setShowNewTopicModal(false); setSelectedMedia(null); }}
+                                style={styles.closeButton}
                             >
-                                <Text style={styles.cancelButtonText}>İptal</Text>
+                                <X size={24} color="#fff" />
                             </TouchableOpacity>
                             <TouchableOpacity
-                                style={[styles.submitButton, (submitting || uploading) && styles.submitButtonDisabled]}
+                                style={[styles.headerPostButton, (submitting || uploading || !newTopicForm.title.trim()) && styles.headerPostButtonDisabled]}
                                 onPress={handleCreateTopic}
-                                disabled={submitting || uploading}
+                                disabled={submitting || uploading || !newTopicForm.title.trim()}
                             >
                                 {submitting ? (
                                     <ActivityIndicator size="small" color="#fff" />
                                 ) : (
-                                    <Text style={styles.submitButtonText}>Paylaş</Text>
+                                    <Text style={styles.headerPostButtonText}>Paylaş</Text>
                                 )}
                             </TouchableOpacity>
                         </View>
+
+                        <ScrollView style={styles.modalBody}>
+                            <View style={styles.userInfoRow}>
+                                <View style={styles.modalUserAvatar}>
+                                    <User size={20} color="#fff" />
+                                </View>
+                                <View style={styles.categorySelector}>
+                                    <Text style={styles.categorySelectorText}>Genel</Text>
+                                </View>
+                            </View>
+
+                            <TextInput
+                                style={styles.modalTitleInput}
+                                placeholder="Başlık"
+                                placeholderTextColor="#6b7280"
+                                value={newTopicForm.title}
+                                onChangeText={(text) => setNewTopicForm({ ...newTopicForm, title: text })}
+                                maxLength={100}
+                            />
+
+                            <TextInput
+                                style={styles.modalContentInput}
+                                placeholder="Neler oluyor? Bir şeyler paylaş..."
+                                placeholderTextColor="#6b7280"
+                                value={newTopicForm.content}
+                                onChangeText={(text) => setNewTopicForm({ ...newTopicForm, content: text })}
+                                multiline
+                                textAlignVertical="top"
+                            />
+
+                            {/* Selected Media Preview */}
+                            {selectedMedia && (
+                                <View style={styles.modalMediaPreviewContainer}>
+                                    {selectedMedia.type === 'image' ? (
+                                        <Image source={{ uri: selectedMedia.uri }} style={styles.modalMediaPreview} resizeMode="cover" />
+                                    ) : (
+                                        <Video
+                                            source={{ uri: selectedMedia.uri }}
+                                            style={styles.modalMediaPreview}
+                                            resizeMode={ResizeMode.COVER}
+                                            shouldPlay={false}
+                                            useNativeControls={false}
+                                        />
+                                    )}
+                                    <TouchableOpacity
+                                        style={styles.removeMediaButton}
+                                        onPress={() => setSelectedMedia(null)}
+                                    >
+                                        <X size={16} color="#fff" />
+                                    </TouchableOpacity>
+                                </View>
+                            )}
+                        </ScrollView>
+
+                        {/* Bottom Toolbar */}
+                        <View style={styles.modalToolbar}>
+                            <TouchableOpacity
+                                style={styles.toolbarButton}
+                                onPress={pickImage}
+                            >
+                                <ImageIcon size={24} color="#ea580c" />
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={styles.toolbarButton}
+                                onPress={pickImageFromCamera}
+                            >
+                                <Camera size={24} color="#ea580c" />
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={styles.toolbarButton}
+                                onPress={pickVideo}
+                            >
+                                <Film size={24} color="#ea580c" />
+                            </TouchableOpacity>
+                        </View>
+
+                        {uploading && (
+                            <View style={styles.uploadingOverlay}>
+                                <ActivityIndicator size="large" color="#ea580c" />
+                                <Text style={styles.uploadingText}>Medya yükleniyor...</Text>
+                            </View>
+                        )}
                     </View>
                 </KeyboardAvoidingView>
             </Modal>
@@ -1001,10 +1018,130 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         gap: 8,
+        padding: 10,
+    },
+    // Modern Modal Styles
+    modalContainer: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.9)',
+        justifyContent: 'flex-start',
+        paddingTop: 50, // iOS status bar offset
+    },
+    modalContent: {
+        flex: 1,
+        backgroundColor: '#000',
+        borderRadius: 20,
+        marginHorizontal: 0,
+        overflow: 'hidden',
+    },
+    modalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: '#1a1a1a',
+    },
+    headerPostButton: {
+        backgroundColor: '#ea580c',
+        paddingHorizontal: 20,
+        paddingVertical: 6,
+        borderRadius: 20,
+    },
+    headerPostButtonDisabled: {
+        opacity: 0.5,
+    },
+    headerPostButtonText: {
+        color: '#fff',
+        fontWeight: 'bold',
+        fontSize: 14,
+    },
+    modalBody: {
+        flex: 1,
+        padding: 16,
+    },
+    userInfoRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 16,
+    },
+    modalUserAvatar: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: '#374151',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 12,
+    },
+    categorySelector: {
+        paddingHorizontal: 12,
+        paddingVertical: 4,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: '#ea580c',
+    },
+    categorySelectorText: {
+        color: '#ea580c',
+        fontSize: 12,
+        fontWeight: 'bold',
+    },
+    modalTitleInput: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#fff',
         marginBottom: 12,
+        padding: 0,
+    },
+    modalContentInput: {
+        fontSize: 16,
+        color: '#e5e7eb',
+        minHeight: 100,
+        padding: 0,
+        marginBottom: 20,
+    },
+    modalMediaPreviewContainer: {
+        width: '100%',
+        height: 250,
+        borderRadius: 12,
+        overflow: 'hidden',
+        position: 'relative',
+        backgroundColor: '#111',
+        marginBottom: 20,
+    },
+    modalMediaPreview: {
+        width: '100%',
+        height: '100%',
+    },
+    modalToolbar: {
+        flexDirection: 'row',
+        padding: 16,
+        borderTopWidth: 1,
+        borderTopColor: '#1a1a1a',
+        backgroundColor: '#000',
+        gap: 20,
+        alignItems: 'center',
+    },
+    toolbarButton: {
+        padding: 8,
+        borderRadius: 50,
+        backgroundColor: 'transparent',
+    },
+    uploadingOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0,0,0,0.7)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 10,
     },
     uploadingText: {
-        color: '#ea580c',
-        fontSize: 14,
+        color: '#fff',
+        marginTop: 10,
+        fontWeight: '500',
     },
 });
