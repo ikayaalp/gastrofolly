@@ -71,7 +71,7 @@ export default function SocialScreen({ navigation }) {
         const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ['images'],
             allowsEditing: true,
-            aspect: [1, 1], // Instagram-style square crop
+            aspect: [4, 5], // Instagram-style portrait crop
             quality: 0.8,
         });
         if (!result.canceled && result.assets[0]) {
@@ -765,7 +765,7 @@ const styles = StyleSheet.create({
     },
     topicMediaImage: {
         width: '100%',
-        aspectRatio: 1,
+        aspectRatio: 4 / 5,
     },
     videoPlayOverlay: {
         position: 'absolute',
