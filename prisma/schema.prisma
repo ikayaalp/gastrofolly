@@ -394,4 +394,7 @@ model Story {
   
   creatorId   String
   creator     User     @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  
+  title       String?  // Hikaye başlığı
+  coverImage  String?  // Hikaye kapak resmi URL
 }

@@ -27,9 +27,12 @@ export default function AdminStoriesPage() {
 
     // Form State
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [selectedCoverFile, setSelectedCoverFile] = useState<File | null>(null); // New
+    const [title, setTitle] = useState(""); // New
     const [selectedCourse, setSelectedCourse] = useState("");
     const [mediaType, setMediaType] = useState("IMAGE");
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [coverPreviewUrl, setCoverPreviewUrl] = useState<string | null>(null); // New
 
     useEffect(() => {
         fetchData();
@@ -77,6 +80,16 @@ export default function AdminStoriesPage() {
         }
     };
 
+    // New handler for cover image
+    const handleCoverSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setSelectedCoverFile(file);
+            const url = URL.createObjectURL(file);
+            setCoverPreviewUrl(url);
+        }
+    };
+
     const handleDelete = async (id: string) => {
         if (!confirm("Bu hikayeyi silmek istediğinize emin misiniz?")) return;
 
@@ -100,6 +113,10 @@ export default function AdminStoriesPage() {
             setUploading(true);
             const formData = new FormData();
             formData.append("media", selectedFile);
+            if (selectedCoverFile) {
+                formData.append("coverImage", selectedCoverFile);
+            }
+            formData.append("title", title);
             formData.append("mediaType", mediaType);
 
             // Default duration: 5000ms for image, 15000ms for video if not specified
@@ -120,7 +137,10 @@ export default function AdminStoriesPage() {
             if (data.success) {
                 // Reset form
                 setSelectedFile(null);
+                setSelectedCoverFile(null);
                 setPreviewUrl(null);
+                setCoverPreviewUrl(null);
+                setTitle("");
                 setSelectedCourse("");
 
                 // Refresh list
@@ -148,28 +168,63 @@ export default function AdminStoriesPage() {
                     <h2 className="text-xl font-semibold mb-4 border-b border-gray-800 pb-2">Yeni Hikaye Ekle</h2>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
-                        {/* File Input */}
+                        {/* Title Input */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-400 mb-2">Başlık (Opsiyonel)</label>
+                            <input
+                                type="text"
+                                value={title}
+                                onChange={(e) => setTitle(e.target.value)}
+                                placeholder="Örn: Haftanın Tarifi"
+                                className="w-full bg-black border border-gray-700 rounded-lg p-2 text-white focus:border-orange-500 outline-none"
+                            />
+                        </div>
+
+                        {/* File Input (Main Media) */}
                         <div>
                             <label className="block text-sm font-medium text-gray-400 mb-2">Medya Dosyası (Resim/Video)</label>
                             <div className="flex items-center justify-center w-full">
-                                <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-gray-700 border-dashed rounded-lg cursor-pointer bg-gray-800 hover:bg-gray-700 hover:border-orange-500 transition-all">
+                                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-700 border-dashed rounded-lg cursor-pointer bg-gray-800 hover:bg-gray-700 hover:border-orange-500 transition-all">
                                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
                                         {previewUrl ? (
                                             mediaType === "VIDEO" ? (
-                                                <video src={previewUrl} className="h-40 w-full object-contain" controls />
+                                                <video src={previewUrl} className="h-24 w-full object-contain" controls />
                                             ) : (
-                                                <img src={previewUrl} alt="Preview" className="h-40 w-full object-contain" />
+                                                <img src={previewUrl} alt="Preview" className="h-24 w-full object-contain" />
                                             )
                                         ) : (
                                             <>
                                                 <div className="mb-2 text-gray-400">
                                                     <Plus className="w-8 h-8 mx-auto mb-2" />
                                                 </div>
-                                                <p className="text-xs text-gray-400">PNG, JPG veya Video</p>
+                                                <p className="text-xs text-gray-400">Medya Seç</p>
                                             </>
                                         )}
                                     </div>
                                     <input type="file" className="hidden" accept="image/*,video/*" onChange={handleFileSelect} />
+                                </label>
+                            </div>
+                        </div>
+
+                        {/* Cover Image Input */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-400 mb-2">Kapak Resmi (Opsiyonel)</label>
+                            <p className="text-xs text-gray-500 mb-2">Listenin başında görünecek yuvarlak resim. Seçilmezse medya kullanılır.</p>
+                            <div className="flex items-center justify-center w-full">
+                                <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-gray-700 border-dashed rounded-lg cursor-pointer bg-gray-800 hover:bg-gray-700 hover:border-orange-500 transition-all">
+                                    <div className="flex flex-col items-center justify-center pt-2 pb-2">
+                                        {coverPreviewUrl ? (
+                                            <img src={coverPreviewUrl} alt="Cover Preview" className="h-20 w-full object-contain" />
+                                        ) : (
+                                            <>
+                                                <div className="mb-1 text-gray-400">
+                                                    <ImageIcon className="w-5 h-5 mx-auto" />
+                                                </div>
+                                                <p className="text-xs text-gray-400">Kapak Seç</p>
+                                            </>
+                                        )}
+                                    </div>
+                                    <input type="file" className="hidden" accept="image/*" onChange={handleCoverSelect} />
                                 </label>
                             </div>
                         </div>

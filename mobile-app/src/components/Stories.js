@@ -5,85 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 const { width, height } = Dimensions.get('window');
 
-const STORIES_DATA = [
-    {
-        id: 1,
-        user: {
-            name: 'Chef Mehmet',
-            avatar: 'https://images.unsplash.com/photo-1583394293214-28ded15ee548?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&q=80',
-        },
-        stories: [
-            {
-                id: 1,
-                content: 'https://images.unsplash.com/photo-1556910103-1c02745a30bf?q=80&w=800', // Using image as video placeholder
-                type: 'image',
-                duration: 5000,
-            }
-        ]
-    },
-    {
-        id: 2,
-        user: {
-            name: 'Chef Zeynep',
-            avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&q=80',
-        },
-        stories: [
-            {
-                id: 2,
-                content: 'https://images.unsplash.com/photo-1626202158864-4a5d89b37d40?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80',
-                type: 'image',
-                duration: 5000,
-            }
-        ]
-    },
-    {
-        id: 3,
-        user: {
-            name: 'Pasta 101',
-            avatar: 'https://images.unsplash.com/photo-1481070414801-51fd732d7184?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&q=80',
-        },
-        stories: [
-            {
-                id: 3,
-                content: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80',
-                type: 'image',
-                duration: 5000,
-            }
-        ]
-    },
-    {
-        id: 4,
-        user: {
-            name: 'Steak House',
-            avatar: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&q=80',
-        },
-        stories: [
-            {
-                id: 4,
-                content: 'https://images.unsplash.com/photo-1546964124-0cce460f38ef?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80',
-                type: 'image',
-                duration: 5000,
-            }
-        ]
-    },
-    {
-        id: 5,
-        user: {
-            name: 'Sushi Art',
-            avatar: 'https://images.unsplash.com/photo-1534482421-64566f976cfa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&q=80',
-        },
-        stories: [
-            {
-                id: 5,
-                content: 'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80',
-                type: 'image',
-                duration: 5000,
-            }
-        ]
-    },
-];
-
-const StoryViewer = ({ stories, initialIndex, onClose }) => {
+const StoryViewer = ({ stories, initialIndex, onClose, navigation }) => {
     const [currentIndex, setCurrentIndex] = useState(initialIndex);
     const [progress, setProgress] = useState(0);
     const progressInterval = useRef(null);
@@ -139,8 +61,28 @@ const StoryViewer = ({ stories, initialIndex, onClose }) => {
         }
     };
 
+    // Safety checks
+    if (!stories || stories.length === 0 || !stories[currentIndex]) {
+        return null;
+    }
+
+    // Group structure from HomeScreen: { user: {name, avatar}, stories: [ {id, mediaUrl/content, type, duration, courseId} ] }
     const currentStoryGroup = stories[currentIndex];
-    const currentStoryItem = currentStoryGroup.stories[0]; // Assuming 1 story per user for now
+
+    // Get the first story of the group (assuming single story per user for simplicty in this version)
+    // The backend/HomeScreen provides consistent structure.
+    const currentStoryItem = currentStoryGroup.stories && currentStoryGroup.stories.length > 0 ? currentStoryGroup.stories[0] : null;
+
+    if (!currentStoryItem) return null;
+
+    const handleNavigate = () => {
+        if (currentStoryItem.courseId) {
+            onClose();
+            if (navigation) {
+                navigation.navigate('CourseDetail', { courseId: currentStoryItem.courseId });
+            }
+        }
+    };
 
     return (
         <Modal
@@ -154,7 +96,7 @@ const StoryViewer = ({ stories, initialIndex, onClose }) => {
 
                 {/* Background Image */}
                 <Image
-                    source={{ uri: currentStoryItem.content }}
+                    source={{ uri: currentStoryItem.mediaUrl || currentStoryItem.content }}
                     style={viewerStyles.backgroundImage}
                 />
 
@@ -177,7 +119,7 @@ const StoryViewer = ({ stories, initialIndex, onClose }) => {
                                 style={viewerStyles.userAvatarSmall}
                             />
                             <Text style={viewerStyles.userNameSmall}>{currentStoryGroup.user.name}</Text>
-                            <Text style={viewerStyles.timeText}>2sa</Text>
+                            <Text style={viewerStyles.timeText}>Yeni</Text>
 
                             <TouchableOpacity style={viewerStyles.closeButton} onPress={onClose}>
                                 <Ionicons name="close" size={28} color="white" />
@@ -192,10 +134,14 @@ const StoryViewer = ({ stories, initialIndex, onClose }) => {
                     </View>
 
                     {/* Footer (Swipe Up hint etc) */}
-                    <View style={viewerStyles.footer}>
-                        <Text style={viewerStyles.swipeText}>Daha Fazla</Text>
-                        <Ionicons name="chevron-up" size={20} color="white" />
-                    </View>
+                    <TouchableOpacity style={viewerStyles.footer} onPress={handleNavigate}>
+                        {currentStoryItem.courseId && (
+                            <>
+                                <Text style={viewerStyles.swipeText}>Daha Fazla</Text>
+                                <Ionicons name="chevron-up" size={20} color="white" />
+                            </>
+                        )}
+                    </TouchableOpacity>
 
                 </LinearGradient>
             </View>
@@ -203,7 +149,7 @@ const StoryViewer = ({ stories, initialIndex, onClose }) => {
     );
 };
 
-export default function Stories() {
+export default function Stories({ stories = [], navigation }) {
     const [viewerVisible, setViewerVisible] = useState(false);
     const [selectedStoryIndex, setSelectedStoryIndex] = useState(0);
 
@@ -211,6 +157,10 @@ export default function Stories() {
         setSelectedStoryIndex(index);
         setViewerVisible(true);
     };
+
+    if (!stories || stories.length === 0) {
+        return null;
+    }
 
     return (
         <View style={styles.container}>
@@ -222,12 +172,10 @@ export default function Stories() {
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.scrollContent}
             >
-
-
-                {/* Other Stories */}
-                {STORIES_DATA.map((story, index) => (
+                {/* Stories List */}
+                {stories.map((story, index) => (
                     <TouchableOpacity
-                        key={story.id}
+                        key={story.id || index}
                         style={styles.storyContainer}
                         onPress={() => openStory(index)}
                     >
@@ -251,9 +199,10 @@ export default function Stories() {
 
             {viewerVisible && (
                 <StoryViewer
-                    stories={STORIES_DATA}
+                    stories={stories}
                     initialIndex={selectedStoryIndex}
                     onClose={() => setViewerVisible(false)}
+                    navigation={navigation}
                 />
             )}
         </View>
@@ -398,6 +347,8 @@ const viewerStyles = StyleSheet.create({
     closeButton: {
         marginLeft: 'auto',
         padding: 5,
+        paddingLeft: 20,
+        paddingBottom: 20,
     },
     contentLayer: {
         flex: 1,

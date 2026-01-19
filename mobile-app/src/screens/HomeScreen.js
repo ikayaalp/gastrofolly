@@ -50,25 +50,25 @@ export default function HomeScreen({ navigation }) {
         // Fetch Stories
         try {
             const storyResult = await storyService.getActiveStories();
+            console.log("Story Result:", JSON.stringify(storyResult, null, 2));
             if (storyResult && storyResult.success) {
                 // Group stories by creator logic (similar to web)
-                const groupedMap = new Map();
                 if (storyResult.stories) {
-                    storyResult.stories.forEach(story => {
-                        const creatorName = story.creator.name || "Chef";
-                        if (!groupedMap.has(creatorName)) {
-                            groupedMap.set(creatorName, {
-                                id: Math.random().toString(), // Temp
-                                user: {
-                                    name: creatorName,
-                                    avatar: story.creator.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(creatorName)}&background=random`,
-                                },
-                                stories: []
-                            });
-                        }
-                        groupedMap.get(creatorName).stories.push(story);
-                    });
-                    setStories(Array.from(groupedMap.values()));
+                    // Directly map stories to the structure needed by Stories component
+                    // We no longer group by creator. Each story is a separate item.
+                    const formattedStories = storyResult.stories.map(story => ({
+                        id: story.id,
+                        user: {
+                            name: story.title || story.creator.name || "Chef",
+                            avatar: story.coverImage || story.mediaUrl || story.creator.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(story.creator.name)}`
+                        },
+                        // Stories component expects an array of stories for the viewer, 
+                        // but since we are ungrouping, each "Item/Author" has just this one story in its list?
+                        // OR, we can still pass all stories to the viewer but start at index?
+                        // Let's stick to the structure: one item in the list = one story object wrapper.
+                        stories: [story]
+                    }));
+                    setStories(formattedStories);
                 }
             }
         } catch (e) {
