@@ -23,6 +23,7 @@ import {
     Reply,
     Trash2,
 } from 'lucide-react-native';
+import { Video } from 'expo-av';
 import forumService from '../api/forumService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CommonActions } from '@react-navigation/native';
@@ -312,6 +313,24 @@ export default function TopicDetailScreen({ route, navigation }) {
 
             {/* Title */}
             <Text style={styles.topicTitle}>{topic.title}</Text>
+
+            {/* Media Display */}
+            {topic.mediaUrl && topic.mediaType === 'image' && (
+                <Image
+                    source={{ uri: topic.mediaUrl }}
+                    style={styles.topicMediaImage}
+                    resizeMode="cover"
+                />
+            )}
+            {topic.mediaUrl && topic.mediaType === 'video' && (
+                <Video
+                    source={{ uri: topic.mediaUrl }}
+                    style={styles.topicMediaVideo}
+                    resizeMode="cover"
+                    useNativeControls
+                    shouldPlay={false}
+                />
+            )}
 
             {/* Content */}
             <Text style={styles.topicContent}>{topic.content}</Text>
@@ -932,5 +951,18 @@ const styles = StyleSheet.create({
     loginPromptText: {
         color: '#9ca3af',
         fontSize: 14,
+    },
+    topicMediaImage: {
+        width: '100%',
+        height: 250,
+        borderRadius: 8,
+        marginVertical: 12,
+    },
+    topicMediaVideo: {
+        width: '100%',
+        height: 250,
+        borderRadius: 8,
+        marginVertical: 12,
+        backgroundColor: '#000',
     },
 });

@@ -100,13 +100,16 @@ const forumService = {
         }
     },
 
-    // Create new topic
-    createTopic: async (title, content, categoryId = 'default-category') => {
+    // Create new topic (with optional media)
+    createTopic: async (title, content, categoryId = 'default-category', mediaUrl = null, thumbnailUrl = null, mediaType = null) => {
         try {
             const response = await api.post('/api/forum/topics', {
                 title,
                 content,
                 categoryId,
+                mediaUrl,
+                thumbnailUrl,
+                mediaType,
             });
             return { success: true, data: response.data };
         } catch (error) {
@@ -173,6 +176,89 @@ const forumService = {
             return {
                 success: false,
                 error: error.response?.data?.message || 'Yorum silinemedi',
+            };
+        }
+    },
+
+    // Upload media (image or video)
+    uploadMedia: async (uri, type) => {
+        try {
+            const formData = new FormData();
+            const filename = uri.split('/').pop();
+            const match = /\.(\w+)$/.exec(filename);
+            const ext = match ? match[1] : type === 'video' ? 'mp4' : 'jpg';
+            const mimeType = type === 'video' ? `video/${ext}` : `image/${ext}`;
+
+            formData.append('file', {
+                uri,
+                name: filename,
+                type: mimeType,
+            });
+
+            // "Content-Type" header is automatically set by axios/fetch when sending FormData
+            // We need to bypass the default JSON header we set globally
+            const response = await fetch(`${config.API_BASE_URL}/api/forum/upload-media`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Accept': 'application/json',
+                    // Don't set Content-Type here, let the browser/native fetch handle the boundary
+                },
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                return { success: false, error: result.error || 'Yükleme hatası' };
+            }
+
+            return { success: true, data: result };
+        } catch (error) {
+            console.error('Upload media error:', error);
+            return {
+                success: false,
+                error: 'Medya yüklenirken bir hata oluştu',
+            };
+        }
+    },
+
+    // Upload media (image or video) to Cloudinary via backend
+    uploadMedia: async (uri, type) => {
+        try {
+            const formData = new FormData();
+            const filename = uri.split('/').pop();
+            const match = /\.(\w+)$/.exec(filename);
+            const ext = match ? match[1] : type === 'video' ? 'mp4' : 'jpg';
+            const mimeType = type === 'video' ? `video/${ext}` : `image/${ext}`;
+
+            formData.append('file', {
+                uri,
+                name: filename,
+                type: mimeType,
+            });
+
+            const token = await AsyncStorage.getItem('authToken');
+            const response = await fetch(`${config.API_BASE_URL}/api/forum/upload-media`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Accept': 'application/json',
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+                },
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                return { success: false, error: result.error || 'Yükleme hatası' };
+            }
+
+            return { success: true, data: result };
+        } catch (error) {
+            console.error('Upload media error:', error);
+            return {
+                success: false,
+                error: 'Medya yüklenirken bir hata oluştu',
             };
         }
     },

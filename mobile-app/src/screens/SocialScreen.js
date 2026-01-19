@@ -24,7 +24,11 @@ import {
     User,
     Plus,
     X,
+    ImageIcon,
+    Film,
 } from 'lucide-react-native';
+import { Video, ResizeMode } from 'expo-av';
+import * as ImagePicker from 'expo-image-picker';
 import forumService from '../api/forumService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomAlert from '../components/CustomAlert';
@@ -48,10 +52,48 @@ export default function SocialScreen({ navigation }) {
         buttons: [],
         type: 'info'
     });
+    // Media state for new topic
+    const [selectedMedia, setSelectedMedia] = useState(null); // { uri, type: 'image'|'video' }
+    const [uploading, setUploading] = useState(false);
 
     const showAlert = (title, message, buttons = [{ text: 'Tamam' }], type = 'info') => {
         setAlertConfig({ title, message, buttons, type });
         setAlertVisible(true);
+    };
+
+    // Pick image from gallery
+    const pickImage = async () => {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+            showAlert('İzin Gerekli', 'Fotoğraf seçmek için galeri izni gerekiyor.', [{ text: 'Tamam' }], 'warning');
+            return;
+        }
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            quality: 0.8,
+        });
+        if (!result.canceled && result.assets[0]) {
+            setSelectedMedia({ uri: result.assets[0].uri, type: 'image' });
+        }
+    };
+
+    // Pick video from gallery
+    const pickVideo = async () => {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+            showAlert('İzin Gerekli', 'Video seçmek için galeri izni gerekiyor.', [{ text: 'Tamam' }], 'warning');
+            return;
+        }
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+            allowsEditing: true,
+            quality: 0.7,
+            videoMaxDuration: 60, // 60 seconds max
+        });
+        if (!result.canceled && result.assets[0]) {
+            setSelectedMedia({ uri: result.assets[0].uri, type: 'video' });
+        }
     };
 
     const checkLoginStatus = async () => {
@@ -142,15 +184,41 @@ export default function SocialScreen({ navigation }) {
         }
 
         setSubmitting(true);
+
+        let mediaUrl = null;
+        let thumbnailUrl = null;
+        let mediaType = null;
+
+        // Upload media if selected
+        if (selectedMedia) {
+            setUploading(true);
+            const uploadResult = await forumService.uploadMedia(selectedMedia.uri, selectedMedia.type);
+            setUploading(false);
+
+            if (uploadResult.success) {
+                mediaUrl = uploadResult.data.url;
+                thumbnailUrl = uploadResult.data.thumbnailUrl || (selectedMedia.type === 'image' ? uploadResult.data.url : null);
+                mediaType = selectedMedia.type;
+            } else {
+                showAlert('Hata', uploadResult.error || 'Medya yüklenemedi', [{ text: 'Tamam' }], 'error');
+                setSubmitting(false);
+                return;
+            }
+        }
+
         const result = await forumService.createTopic(
             newTopicForm.title,
             newTopicForm.content,
-            'default-category'
+            'default-category',
+            mediaUrl,
+            thumbnailUrl,
+            mediaType
         );
 
         if (result.success) {
             setShowNewTopicModal(false);
             setNewTopicForm({ title: '', content: '' });
+            setSelectedMedia(null);
             loadData();
         } else {
             showAlert('Hata', result.error, [{ text: 'Tamam' }], 'error');
@@ -227,6 +295,28 @@ export default function SocialScreen({ navigation }) {
             <Text style={styles.topicTitle} numberOfLines={2}>
                 {item.title}
             </Text>
+
+            {/* Media Preview */}
+            {item.mediaUrl && item.mediaType === 'image' && (
+                <Image
+                    source={{ uri: item.thumbnailUrl || item.mediaUrl }}
+                    style={styles.topicMediaImage}
+                    resizeMode="cover"
+                />
+            )}
+            {item.mediaUrl && item.mediaType === 'video' && (
+                <View style={styles.topicVideoContainer}>
+                    <Image
+                        source={{ uri: item.thumbnailUrl || 'https://via.placeholder.com/400x200?text=Video' }}
+                        style={styles.topicMediaImage}
+                        resizeMode="cover"
+                    />
+                    <View style={styles.videoPlayOverlay}>
+                        <Film size={32} color="#fff" />
+                    </View>
+                </View>
+            )}
+
             <Text style={styles.topicContent} numberOfLines={2}>
                 {item.content}
             </Text>
@@ -386,17 +476,59 @@ export default function SocialScreen({ navigation }) {
                             textAlignVertical="top"
                         />
 
+                        {/* Media Picker Buttons */}
+                        <View style={styles.mediaPickerRow}>
+                            <TouchableOpacity style={styles.mediaPickerButton} onPress={pickImage}>
+                                <ImageIcon size={20} color="#ea580c" />
+                                <Text style={styles.mediaPickerText}>Fotoğraf</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.mediaPickerButton} onPress={pickVideo}>
+                                <Film size={20} color="#ea580c" />
+                                <Text style={styles.mediaPickerText}>Video</Text>
+                            </TouchableOpacity>
+                        </View>
+
+                        {/* Selected Media Preview */}
+                        {selectedMedia && (
+                            <View style={styles.mediaPreviewContainer}>
+                                {selectedMedia.type === 'image' ? (
+                                    <Image source={{ uri: selectedMedia.uri }} style={styles.mediaPreview} />
+                                ) : (
+                                    <Video
+                                        source={{ uri: selectedMedia.uri }}
+                                        style={styles.mediaPreview}
+                                        resizeMode={ResizeMode.COVER}
+                                        shouldPlay={false}
+                                        isMuted={true}
+                                    />
+                                )}
+                                <TouchableOpacity
+                                    style={styles.removeMediaButton}
+                                    onPress={() => setSelectedMedia(null)}
+                                >
+                                    <X size={16} color="#fff" />
+                                </TouchableOpacity>
+                            </View>
+                        )}
+
+                        {uploading && (
+                            <View style={styles.uploadingIndicator}>
+                                <ActivityIndicator size="small" color="#ea580c" />
+                                <Text style={styles.uploadingText}>Medya yükleniyor...</Text>
+                            </View>
+                        )}
+
                         <View style={styles.modalButtons}>
                             <TouchableOpacity
                                 style={styles.cancelButton}
-                                onPress={() => setShowNewTopicModal(false)}
+                                onPress={() => { setShowNewTopicModal(false); setSelectedMedia(null); }}
                             >
                                 <Text style={styles.cancelButtonText}>İptal</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
-                                style={[styles.submitButton, submitting && styles.submitButtonDisabled]}
+                                style={[styles.submitButton, (submitting || uploading) && styles.submitButtonDisabled]}
                                 onPress={handleCreateTopic}
-                                disabled={submitting}
+                                disabled={submitting || uploading}
                             >
                                 {submitting ? (
                                     <ActivityIndicator size="small" color="#fff" />
@@ -706,5 +838,79 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 16,
         fontWeight: '600',
+    },
+    // Media styles
+    topicMediaImage: {
+        width: '100%',
+        height: 200,
+        marginHorizontal: 0,
+        marginVertical: 8,
+        borderRadius: 8,
+    },
+    topicVideoContainer: {
+        position: 'relative',
+        marginHorizontal: 16,
+        marginVertical: 8,
+    },
+    videoPlayOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0,0,0,0.4)',
+        borderRadius: 8,
+    },
+    mediaPickerRow: {
+        flexDirection: 'row',
+        gap: 12,
+        marginBottom: 12,
+    },
+    mediaPickerButton: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+        backgroundColor: '#1a1a1a',
+        padding: 12,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#374151',
+    },
+    mediaPickerText: {
+        color: '#ea580c',
+        fontSize: 14,
+        fontWeight: '500',
+    },
+    mediaPreviewContainer: {
+        position: 'relative',
+        marginBottom: 12,
+    },
+    mediaPreview: {
+        width: '100%',
+        height: 180,
+        borderRadius: 8,
+    },
+    removeMediaButton: {
+        position: 'absolute',
+        top: 8,
+        right: 8,
+        backgroundColor: 'rgba(0,0,0,0.7)',
+        borderRadius: 12,
+        padding: 6,
+    },
+    uploadingIndicator: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+        marginBottom: 12,
+    },
+    uploadingText: {
+        color: '#ea580c',
+        fontSize: 14,
     },
 });
