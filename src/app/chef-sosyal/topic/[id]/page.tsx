@@ -15,7 +15,7 @@ interface TopicDetailPageProps {
 export default async function TopicDetailPage({ params }: TopicDetailPageProps) {
   const session = await getServerSession(authOptions)
   const resolvedParams = await params
-  
+
   // Başlığı ve yorumlarını çek
   const topic = await prisma.topic.findUnique({
     where: { id: resolvedParams.id },
@@ -52,6 +52,20 @@ export default async function TopicDetailPage({ params }: TopicDetailPageProps) 
     }
   })
 
+  // Kategorileri çek (Sidebar için)
+  const categories = await prisma.forumCategory.findMany({
+    include: {
+      _count: {
+        select: {
+          topics: true
+        }
+      }
+    },
+    orderBy: {
+      name: 'asc'
+    }
+  })
+
   if (!topic) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
@@ -66,9 +80,10 @@ export default async function TopicDetailPage({ params }: TopicDetailPageProps) 
   }
 
   return (
-    <TopicDetailClient 
-      session={session} 
+    <TopicDetailClient
+      session={session}
       topic={topic}
+      categories={categories}
     />
   )
 }

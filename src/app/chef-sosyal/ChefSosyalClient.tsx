@@ -349,10 +349,10 @@ export default function ChefSosyalClient({
               <input
                 type="text"
                 placeholder="Bir şeyler paylaş..."
-                className="flex-1 bg-[#1a1a1a] border border-gray-700 hover:border-white hover:bg-[#0a0a0a] rounded py-2 px-4 text-sm text-white placeholder-gray-500 transition-colors cursor-text focus:outline-none"
+                className="flex-1 bg-[#1a1a1a] border border-gray-700 hover:border-orange-500 hover:bg-[#0a0a0a] rounded py-2 px-4 text-sm text-orange-500 placeholder-orange-500 transition-colors cursor-text focus:outline-none focus:border-orange-500"
                 onClick={() => setShowNewTopicModal(true)}
               />
-              <button onClick={() => { setActiveTab('image'); setShowNewTopicModal(true); }} className="p-2 hover:bg-gray-800 rounded text-gray-400 hover:text-white transition-colors">
+              <button onClick={() => { setActiveTab('image'); setShowNewTopicModal(true); }} className="p-2 hover:bg-gray-800 rounded text-orange-500 hover:text-orange-400 transition-colors">
                 <ImageIcon className="h-6 w-6" />
               </button>
             </div>
@@ -371,7 +371,6 @@ export default function ChefSosyalClient({
               onClick={() => handleSortChange('popular')}
               className={`flex items-center space-x-2 px-3 py-1.5 rounded-full font-bold text-sm transition-colors ${sortBy === 'popular' ? 'bg-gray-800 text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}`}
             >
-              <ThumbsUp className="h-4 w-4" />
               <span>Popüler</span>
             </button>
           </div>
