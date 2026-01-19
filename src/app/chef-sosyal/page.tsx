@@ -3,8 +3,17 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import ChefSosyalClient from "./ChefSosyalClient"
 
-export default async function ChefSosyalPage() {
+// Next.js 13/14 App Router Page Props Interface
+interface PageProps {
+  searchParams: { [key: string]: string | string[] | undefined }
+}
+
+export default async function ChefSosyalPage({ searchParams }: PageProps) {
   const session = await getServerSession(authOptions)
+
+  // URL parametrelerini al
+  const categorySlug = searchParams.category as string | undefined
+  const sort = searchParams.sort as string | undefined
 
   // Veritabanından kategorileri çek
   const categories = await prisma.forumCategory.findMany({
@@ -20,12 +29,28 @@ export default async function ChefSosyalPage() {
     }
   })
 
+  // Filtreleme ve Sıralama Ayarları
+  let whereClause = {}
+  if (categorySlug && categorySlug !== 'all') {
+    whereClause = {
+      category: {
+        slug: categorySlug
+      }
+    }
+  }
+
+  let orderByClause: any = { createdAt: 'desc' }
+  if (sort === 'popular') {
+    orderByClause = { likeCount: 'desc' }
+  } else if (sort === 'mostReplies') {
+    orderByClause = { posts: { _count: 'desc' } }
+  }
+
   // Veritabanından başlıkları çek
   const topicsData = await prisma.topic.findMany({
-    orderBy: {
-      createdAt: 'desc'
-    },
-    take: 10,
+    where: whereClause,
+    orderBy: orderByClause,
+    take: 20, // Daha fazla içerik
     include: {
       author: {
         select: {
@@ -50,7 +75,7 @@ export default async function ChefSosyalPage() {
     }
   })
 
-  // Topic tipinde dönüştür - mediaType string olarak geliyor, cast ediyoruz
+  // Topic tipinde dönüştür
   const topics = topicsData.map((topic: any) => ({
     ...topic,
     mediaType: topic.mediaType as 'IMAGE' | 'VIDEO' | null

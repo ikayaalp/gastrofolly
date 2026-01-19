@@ -2,10 +2,14 @@
 
 import Link from "next/link"
 import { useState, useEffect } from "react"
-import { ChefHat, Search, Bell, Plus, MessageCircle, ThumbsUp, Clock, User, Home, BookOpen, Users, Image as ImageIcon, Play } from "lucide-react"
+import { useSearchParams } from "next/navigation"
+import { ChefHat, Search, Bell, Plus, MessageCircle, ThumbsUp, Clock, User, Home, BookOpen, Users, Image as ImageIcon, Play, Menu, X, Filter, Type } from "lucide-react"
 import UserDropdown from "@/components/ui/UserDropdown"
 import NotificationDropdown from "@/components/ui/NotificationDropdown"
 import MediaUploader from "@/components/forum/MediaUploader"
+import LeftSidebar from "@/components/forum/LeftSidebar"
+import RightSidebar from "@/components/forum/RightSidebar"
+import TopicCard from "@/components/forum/TopicCard"
 
 interface Category {
   id: string
@@ -66,29 +70,56 @@ export default function ChefSosyalClient({
   initialCategories,
   initialTopics
 }: ChefSosyalClientProps) {
+  const searchParams = useSearchParams()
+
+  // URL'den başlangıç değerlerini al
+  const initialCategoryParam = searchParams.get('category') || 'all'
+  const initialSortParam = searchParams.get('sort') || 'newest'
+
   const [categories, setCategories] = useState(initialCategories)
   const [topics, setTopics] = useState(initialTopics)
-  const [selectedCategory, setSelectedCategory] = useState('all')
-  const [sortBy, setSortBy] = useState('newest')
+  const [selectedCategory, setSelectedCategory] = useState(initialCategoryParam)
+  const [sortBy, setSortBy] = useState(initialSortParam)
   const [loading, setLoading] = useState(false)
   const [showNewTopicModal, setShowNewTopicModal] = useState(false)
+  const [activeTab, setActiveTab] = useState<'post' | 'image'>('post') // Modal tab state
+
   const [newTopicForm, setNewTopicForm] = useState({
     title: '',
     content: '',
-    categoryId: 'default-category' // Varsayılan kategori ID'si
+    categoryId: initialCategories.length > 0 ? initialCategories[0].id : ''
   })
+
   const [topicMedia, setTopicMedia] = useState<{
     mediaUrl: string
     mediaType: 'IMAGE' | 'VIDEO'
     thumbnailUrl?: string
   } | null>(null)
+
   const [submitting, setSubmitting] = useState(false)
   const [likedTopics, setLikedTopics] = useState<Set<string>>(new Set())
+
+  // Props değiştiğinde (URL değişimi sonrası yeni veri geldiğinde) state'i güncelle
+  useEffect(() => {
+    setTopics(initialTopics)
+  }, [initialTopics])
+
+  // URL parametreleri değiştiğinde state'i güncelle
+  useEffect(() => {
+    const category = searchParams.get('category') || 'all'
+    const sort = searchParams.get('sort') || 'newest'
+    setSelectedCategory(category)
+    setSortBy(sort)
+  }, [searchParams])
 
   // Modal açıldığında kategorileri yükle
   useEffect(() => {
     if (showNewTopicModal && categories.length === 0) {
       loadCategories()
+    }
+    // Set default category if not set
+    if (categories.length > 0 && !newTopicForm.categoryId) {
+      setNewTopicForm(prev => ({ ...prev, categoryId: categories[0].id }))
     }
   }, [showNewTopicModal, categories.length])
 
@@ -125,7 +156,10 @@ export default function ChefSosyalClient({
 
   // Like/Unlike işlemi
   const handleLike = async (topicId: string) => {
-    if (!session?.user?.id) return
+    if (!session?.user?.id) {
+      // Redirect or show login if not logged in (optional logic here)
+      return
+    }
 
     try {
       const response = await fetch('/api/forum/like', {
@@ -164,14 +198,14 @@ export default function ChefSosyalClient({
     }
   }
 
-  // Başlıkları yeniden yükle
+  // Başlıkları yeniden yükle - Client side filtering/sorting if needed, but normally handled by page.tsx via URL
   const loadTopics = async (category = selectedCategory, sort = sortBy) => {
     setLoading(true)
     try {
       const params = new URLSearchParams({
-        category,
+        category: category === 'all' ? '' : category,
         sort,
-        limit: '10'
+        limit: '15'
       })
 
       const response = await fetch(`/api/forum/topics?${params}`)
@@ -184,15 +218,17 @@ export default function ChefSosyalClient({
     }
   }
 
-  // Kategori değiştiğinde başlıkları yeniden yükle
-  const handleCategoryChange = (categorySlug: string) => {
-    setSelectedCategory(categorySlug)
-    loadTopics(categorySlug, sortBy)
-  }
-
-  // Sıralama değiştiğinde başlıkları yeniden yükle
+  // Sıralama değiştiğinde (URL update)
   const handleSortChange = (sort: string) => {
+    // Direct URL navigation would be better handled by Link, but for compatibility with existing logic:
     setSortBy(sort)
+    // Update URL without refresh if possible, or force navigate
+    // Actually, since we use page props, we SHOULD navigate.
+    // But here we use loadTopics() for immediate client update, which is fine for "sort"
+    // Ideally we should use router.push but let's keep it simple for now as per previous logic.
+    // Revert: Just use loadTopics is fine for client interaction without full reload, 
+    // BUT initialTopics prop won't update unless we navigate.
+    // Let's rely on client-side fetch for sort changes to be snappy.
     loadTopics(selectedCategory, sort)
   }
 
@@ -200,7 +236,6 @@ export default function ChefSosyalClient({
   const handleCreateTopic = async (e: React.FormEvent) => {
     e.preventDefault()
     setSubmitting(true)
-
 
     try {
       const response = await fetch('/api/forum/topics', {
@@ -219,9 +254,10 @@ export default function ChefSosyalClient({
       if (response.ok) {
         // Başarılı olursa modal'ı kapat ve başlıkları yenile
         setShowNewTopicModal(false)
-        setNewTopicForm({ title: '', content: '', categoryId: 'default-category' })
-        setTopicMedia(null) // Medyayı sıfırla
-        loadTopics() // Başlıkları yenile
+        setNewTopicForm({ title: '', content: '', categoryId: categories.length > 0 ? categories[0].id : '' })
+        setTopicMedia(null)
+        setActiveTab('post')
+        loadTopics()
       } else {
         const error = await response.json()
         console.error('Topic creation failed:', error)
@@ -235,431 +271,270 @@ export default function ChefSosyalClient({
     }
   }
 
-  // Zaman formatı
-  const formatTimeAgo = (dateString: string) => {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
-
-    if (diffInSeconds < 60) return 'Az önce'
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} dakika önce`
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} saat önce`
-    if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)} gün önce`
-
-    return date.toLocaleDateString('tr-TR')
-  }
-
-  // Kullanıcı avatar'ı
-  const getUserAvatar = (user: Topic['author']) => {
-    if (user.image) {
-      return (
-        <img
-          src={user.image}
-          alt={user.name || 'User'}
-          className="w-12 h-12 rounded-full object-cover"
-        />
-      )
-    }
-    return (
-      <div className="w-12 h-12 bg-orange-600 rounded-full flex items-center justify-center">
-        <User className="h-6 w-6 text-white" />
-      </div>
-    )
-  }
-
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Desktop Header */}
-      <header className="hidden md:block fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            {session?.user ? (
-              // Giriş yapmış kullanıcı için: Logo + Navigation solda
-              <div className="flex items-center space-x-8">
-                <Link href="/home" className="flex items-center space-x-2">
-                  <ChefHat className="h-8 w-8 text-orange-500" />
-                  <span className="text-2xl font-bold text-white">Chef2.0</span>
-                  {session.user.role === 'ADMIN' && (
-                    <span className="bg-orange-600 text-white px-2 py-1 rounded text-sm font-medium">Admin</span>
-                  )}
-                </Link>
-                <nav className="flex space-x-6">
-                  <Link href="/home" className="text-gray-300 hover:text-white transition-colors">
-                    Ana Sayfa
-                  </Link>
-                  <Link href="/my-courses" className="text-gray-300 hover:text-white transition-colors">
-                    Kurslarım
-                  </Link>
-                  {session.user.role === 'ADMIN' && (
-                    <>
-                      <Link href="/admin" className="text-gray-300 hover:text-white transition-colors">
-                        Admin Paneli
-                      </Link>
-                      <Link href="/admin/courses" className="text-gray-300 hover:text-white transition-colors">
-                        Kurs Yönetimi
-                      </Link>
-                    </>
-                  )}
-                  <Link href="/chef-sosyal" className="text-white font-semibold">
-                    Chef Sosyal
-                  </Link>
-                  <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
-                    İletişim
-                  </Link>
-                </nav>
-              </div>
-            ) : (
-              // Giriş yapmamış kullanıcı için: Logo solda
-              <>
-                <Link href="/" className="flex items-center space-x-2">
-                  <ChefHat className="h-8 w-8 text-orange-500" />
-                  <span className="text-2xl font-bold text-white">Chef2.0</span>
-                </Link>
-                {/* Navigation ortada */}
-                <nav className="flex space-x-8">
-                  <Link href="/" className="text-gray-300 hover:text-orange-500">
-                    Ana Sayfa
-                  </Link>
-                  <Link href="/about" className="text-gray-300 hover:text-orange-500">
-                    Hakkımızda
-                  </Link>
-                  <Link href="/chef-sosyal" className="text-orange-500">
-                    Chef Sosyal
-                  </Link>
-                  <Link href="/contact" className="text-gray-300 hover:text-orange-500">
-                    İletişim
-                  </Link>
-                </nav>
-              </>
-            )}
+      {/* Navbar */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-[#0a0a0a] border-b border-gray-800 h-16">
+        <div className="flex items-center justify-between px-4 h-full max-w-[1600px] mx-auto">
+          {/* Sol: Logo */}
+          <div className="flex items-center space-x-12">
+            <Link href="/home" className="flex items-center space-x-2">
+              <ChefHat className="h-8 w-8 text-orange-500" />
+              <span className="text-xl font-bold hidden sm:block">Chef2.0</span>
+            </Link>
+          </div>
 
-            <div className="flex items-center space-x-4">
-              {session?.user ? (
-                <>
-                  <UserDropdown />
-                </>
-              ) : (
-                <>
-                  <Link
-                    href="/auth/signin"
-                    className="text-gray-300 hover:text-orange-500"
-                  >
-                    Giriş Yap
-                  </Link>
-                  <Link
-                    href="/auth/signup"
-                    className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors"
-                  >
-                    Kayıt Ol
-                  </Link>
-                </>
-              )}
+          {/* Orta: Arama Çubuğu (Reddit Style) */}
+          <div className="hidden md:flex flex-1 max-w-xl px-4">
+            <div className="relative w-full">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 text-gray-500" />
+              </div>
+              <input
+                type="text"
+                className="block w-full pl-10 pr-3 py-2 border border-gray-800 rounded-full leading-5 bg-[#1a1a1a] text-gray-300 placeholder-gray-500 focus:outline-none focus:bg-black focus:border-orange-500 sm:text-sm"
+                placeholder="Chef2.0'da ara"
+              />
             </div>
+          </div>
+
+          {/* Sağ: İkonlar ve Profil */}
+          <div className="flex items-center space-x-3 sm:space-x-4">
+            {session?.user ? (
+              <>
+                <button className="text-gray-400 hover:text-white transition-colors">
+                  <Bell className="h-6 w-6" />
+                </button>
+                <UserDropdown />
+              </>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <Link href="/auth/signin" className="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-full text-sm font-medium transition-colors">
+                  Giriş
+                </Link>
+                <Link href="/auth/signup" className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-full text-sm font-medium transition-colors">
+                  Kaydol
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </header>
 
-      {/* Mobile Top Bar */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
-        <div className="flex justify-between items-center py-3 px-4">
-          <Link href="/home" className="flex items-center space-x-2">
-            <ChefHat className="h-6 w-6 text-orange-500" />
-            <span className="text-lg font-bold text-white">Chef2.0</span>
-          </Link>
-          <div className="flex items-center space-x-3">
-            <NotificationDropdown />
-            <UserDropdown />
-          </div>
-        </div>
-      </div>
+      {/* Main Grid Layout */}
+      <div className="max-w-[1600px] mx-auto pt-20 flex justify-center">
 
-      {/* Hero Section */}
-      <section className="pt-16 md:pt-28 pb-8 bg-black">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
-                Chef Sosyal
-              </h1>
-              <p className="text-gray-400">
-                Gastronomi tutkunlarının buluşma noktası
-              </p>
-            </div>
-            {session?.user && (
-              <button
-                onClick={() => setShowNewTopicModal(true)}
-                className="hidden md:flex bg-orange-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-orange-700 transition-colors items-center space-x-2"
-              >
-                <Plus className="h-5 w-5" />
-                <span>Yeni Tartışma</span>
-              </button>
-            )}
-          </div>
-        </div>
-      </section>
+        <LeftSidebar categories={categories} selectedCategory={selectedCategory} />
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="max-w-5xl mx-auto">
-          {/* Ana İçerik - Tartışmalar */}
-          <div>
-            <div className="flex justify-between items-center mb-6">
-              <div>
-                <h2 className="text-2xl font-bold text-white">Son Tartışmalar</h2>
-                <p className="text-gray-400 mt-1">Topluluktan en yeni konular</p>
-              </div>
-              <div className="flex items-center space-x-3">
-                <select
-                  value={sortBy}
-                  onChange={(e) => handleSortChange(e.target.value)}
-                  className="bg-black border border-gray-800 rounded-lg px-4 py-2 text-white focus:border-orange-500 focus:outline-none"
-                >
-                  <option value="newest">En Yeni</option>
-                  <option value="popular">En Popüler</option>
-                  <option value="mostReplies">En Çok Yanıtlanan</option>
-                </select>
-              </div>
-            </div>
+        {/* Main Feed */}
+        <div className="w-full max-w-[640px] px-0 sm:px-4 pb-20">
 
-            {/* Tartışma Listesi */}
-            <div className="space-y-4">
-              {loading ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto"></div>
-                  <p className="text-gray-400 mt-2">Yükleniyor...</p>
-                </div>
+          {/* Create Post Input Trigger */}
+          {session?.user && (
+            <div className="bg-[#0a0a0a] border border-gray-800 rounded-md p-3 mb-4 flex items-center space-x-3">
+              {session.user.image ? (
+                <img src={session.user.image} alt={session.user.name || ''} className="w-9 h-9 rounded-full object-cover" />
               ) : (
-                topics.map((topic) => (
-                  <Link key={topic.id} href={`/chef-sosyal/topic/${topic.id}`}>
-                    <div className="group bg-[#0a0a0a] border border-gray-800 rounded-xl overflow-hidden hover:border-orange-500/50 transition-all hover:shadow-lg hover:shadow-orange-500/10">
-                      <div className="p-5">
-                        <div className="flex items-start space-x-4">
-                          {getUserAvatar(topic.author)}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center space-x-2 mb-2">
-                              <span
-                                className="px-2 py-0.5 rounded text-xs font-medium"
-                                style={{
-                                  backgroundColor: `${topic.category.color || '#6b7280'}20`,
-                                  color: topic.category.color || '#6b7280'
-                                }}
-                              >
-                                {topic.category.name}
-                              </span>
-                              <span className="text-gray-500 text-xs flex items-center">
-                                <Clock className="h-3 w-3 mr-1" />
-                                {formatTimeAgo(topic.createdAt.toString())}
-                              </span>
-                            </div>
-                            <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-orange-400 transition-colors line-clamp-2">
-                              {topic.title}
-                            </h3>
-                            <p className="text-gray-400 text-sm mb-3 line-clamp-2">
-                              {topic.content}
-                            </p>
-                            <div className="flex items-center space-x-4 text-xs text-gray-500">
-                              <span className="flex items-center">
-                                <User className="h-3.5 w-3.5 mr-1" />
-                                {topic.author.name || 'Anonim'}
-                              </span>
-                              <span className="flex items-center">
-                                <MessageCircle className="h-3.5 w-3.5 mr-1" />
-                                {topic._count.posts}
-                              </span>
-                              {session?.user ? (
-                                <button
-                                  onClick={(e) => {
-                                    e.preventDefault()
-                                    e.stopPropagation()
-                                    handleLike(topic.id)
-                                  }}
-                                  className={`flex items-center transition-colors ${likedTopics.has(topic.id)
-                                    ? 'text-orange-400 hover:text-orange-300'
-                                    : 'hover:text-orange-400'
-                                    }`}
-                                >
-                                  <ThumbsUp className="h-3.5 w-3.5 mr-1" />
-                                  <span>{topic.likeCount}</span>
-                                </button>
-                              ) : (
-                                <span className="flex items-center">
-                                  <ThumbsUp className="h-3.5 w-3.5 mr-1" />
-                                  {topic.likeCount}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Medya Önizleme - Reddit tarzı sağ tarafta */}
-                          {topic.mediaUrl && (
-                            <div className="flex-shrink-0 relative">
-                              {topic.mediaType === 'VIDEO' ? (
-                                <div className="relative w-24 h-20 md:w-32 md:h-24 rounded-lg overflow-hidden bg-gray-800">
-                                  <img
-                                    src={topic.thumbnailUrl || topic.mediaUrl.replace(/\.[^.]+$/, '.jpg')}
-                                    alt="Video önizleme"
-                                    className="w-full h-full object-cover"
-                                    onError={(e) => {
-                                      (e.target as HTMLImageElement).src = topic.mediaUrl || ''
-                                    }}
-                                  />
-                                  <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-                                    <div className="bg-orange-500 rounded-full p-1.5">
-                                      <Play className="h-4 w-4 text-white fill-white" />
-                                    </div>
-                                  </div>
-                                </div>
-                              ) : (
-                                <div className="w-24 h-20 md:w-32 md:h-24 rounded-lg overflow-hidden bg-gray-800">
-                                  <img
-                                    src={topic.mediaUrl}
-                                    alt="Gönderi görseli"
-                                    className="w-full h-full object-cover"
-                                  />
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <div className="h-1 bg-gradient-to-r from-orange-600 to-orange-400 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
-                    </div>
-                  </Link>
-                ))
+                <div className="w-9 h-9 rounded-full bg-gray-700 flex items-center justify-center">
+                  <User className="h-5 w-5 text-gray-400" />
+                </div>
               )}
+              <input
+                type="text"
+                placeholder="Bir şeyler paylaş..."
+                className="flex-1 bg-[#1a1a1a] border border-gray-700 hover:border-white hover:bg-[#0a0a0a] rounded py-2 px-4 text-sm text-white placeholder-gray-500 transition-colors cursor-text focus:outline-none"
+                onClick={() => setShowNewTopicModal(true)}
+              />
+              <button onClick={() => { setActiveTab('image'); setShowNewTopicModal(true); }} className="p-2 hover:bg-gray-800 rounded text-gray-400 hover:text-white transition-colors">
+                <ImageIcon className="h-6 w-6" />
+              </button>
             </div>
+          )}
 
-            {/* Daha Fazla Yükle */}
-            {!loading && topics.length > 0 && (
-              <div className="text-center mt-8">
-                <button
-                  onClick={() => loadTopics()}
-                  className="bg-black border border-gray-800 hover:bg-gray-900 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-                >
-                  Daha Fazla Tartışma Yükle
-                </button>
+          {/* Filter Tabs */}
+          <div className="flex items-center space-x-4 mb-4 px-2 sm:px-0">
+            <button
+              onClick={() => handleSortChange('newest')}
+              className={`flex items-center space-x-2 px-3 py-1.5 rounded-full font-bold text-sm transition-colors ${sortBy === 'newest' ? 'bg-gray-800 text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}`}
+            >
+              <Clock className="h-4 w-4" />
+              <span>Yeni</span>
+            </button>
+            <button
+              onClick={() => handleSortChange('popular')}
+              className={`flex items-center space-x-2 px-3 py-1.5 rounded-full font-bold text-sm transition-colors ${sortBy === 'popular' ? 'bg-gray-800 text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}`}
+            >
+              <ThumbsUp className="h-4 w-4" />
+              <span>Popüler</span>
+            </button>
+          </div>
+
+          {/* Posts Feed */}
+          <div className="">
+            {loading ? (
+              <div className="flex justify-center py-10">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+              </div>
+            ) : (
+              topics.map(topic => (
+                <TopicCard
+                  key={topic.id}
+                  topic={topic}
+                  isLiked={likedTopics.has(topic.id)}
+                  onLike={handleLike}
+                />
+              ))
+            )}
+
+            {!loading && topics.length === 0 && (
+              <div className="text-center py-12 text-gray-500">
+                Henüz hiç içerik yok. İlk paylaşımı sen yap!
               </div>
             )}
           </div>
         </div>
+
+        <RightSidebar />
+
       </div>
-      {/* ismail kayaalp */}
 
-      {/* Floating Action Button - Mobil */}
-      {session?.user && (
-        <button
-          onClick={() => setShowNewTopicModal(true)}
-          className="fixed bottom-24 right-6 bg-orange-600 hover:bg-orange-700 text-white p-4 rounded-full shadow-lg transition-colors md:hidden"
-        >
-          <Plus className="h-6 w-6" />
-        </button>
-      )}
-
-      {/* Yeni Başlık Modal */}
+      {/* New Topic Modal (Reddit Style) */}
       {showNewTopicModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-black border border-gray-800 rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-white">Yeni Başlık Aç</h2>
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
+          <div className="bg-[#0a0a0a] border border-gray-800 rounded-lg w-full max-w-2xl h-[80vh] flex flex-col shadow-2xl overflow-hidden">
+            {/* Header */}
+            <div className="flex justify-between items-center p-4 border-b border-gray-800">
+              <h2 className="text-lg font-medium text-white">Gönderi Oluştur</h2>
+              <button onClick={() => setShowNewTopicModal(false)} className="text-gray-400 hover:text-white">
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            {/* Tabs */}
+            <div className="flex border-b border-gray-800">
+              <button
+                onClick={() => setActiveTab('post')}
+                className={`flex-1 py-4 text-sm font-bold flex items-center justify-center space-x-2 border-b-2 transition-colors ${activeTab === 'post' ? 'border-orange-500 text-white' : 'border-transparent text-gray-400 hover:bg-gray-900'}`}
+              >
+                <Type className="h-5 w-5" />
+                <span>Yazı</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('image')}
+                className={`flex-1 py-4 text-sm font-bold flex items-center justify-center space-x-2 border-b-2 transition-colors ${activeTab === 'image' ? 'border-orange-500 text-white' : 'border-transparent text-gray-400 hover:bg-gray-900'}`}
+              >
+                <ImageIcon className="h-5 w-5" />
+                <span>Resim & Video</span>
+              </button>
+            </div>
+
+            {/* Content Form */}
+            <div className="flex-1 overflow-y-auto p-6">
+              <form id="create-topic-form" onSubmit={handleCreateTopic} className="space-y-4">
+                {/* Title Input */}
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={newTopicForm.title}
+                    onChange={(e) => setNewTopicForm({ ...newTopicForm, title: e.target.value })}
+                    placeholder="Başlık"
+                    maxLength={300}
+                    className="w-full bg-[#1a1a1a] border border-gray-700 rounded px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-white focus:bg-black pr-12"
+                    required
+                  />
+                  <span className="absolute right-3 top-2.5 text-xs text-gray-500 font-bold">
+                    {newTopicForm.title.length}/300
+                  </span>
+                </div>
+
+                {/* Content Logic based on Tab */}
+                {activeTab === 'post' ? (
+                  <textarea
+                    value={newTopicForm.content}
+                    onChange={(e) => setNewTopicForm({ ...newTopicForm, content: e.target.value })}
+                    placeholder="Yazı (isteğe bağlı)"
+                    className="w-full h-64 bg-[#1a1a1a] border border-gray-700 rounded p-4 text-white placeholder-gray-500 focus:outline-none focus:border-white focus:bg-black resize-none"
+                  />
+                ) : (
+                  <div className="border border-gray-700 rounded p-4 min-h-[250px] flex items-center justify-center bg-[#1a1a1a]">
+                    <div className="w-full">
+                      <MediaUploader
+                        currentMedia={topicMedia}
+                        onUploadComplete={(mediaData) => setTopicMedia(mediaData)}
+                        onRemove={() => setTopicMedia(null)}
+                      />
+                      <div className="mt-4">
+                        <textarea
+                          value={newTopicForm.content}
+                          onChange={(e) => setNewTopicForm({ ...newTopicForm, content: e.target.value })}
+                          placeholder="Açıklama veya başlık (isteğe bağlı)"
+                          className="w-full h-20 bg-black border border-gray-700 rounded p-3 text-white placeholder-gray-500 focus:outline-none text-sm resize-none"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Category Selection */}
+                <div>
+                  <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">Topluluk Seç</label>
+                  <select
+                    value={newTopicForm.categoryId}
+                    onChange={(e) => setNewTopicForm({ ...newTopicForm, categoryId: e.target.value })}
+                    className="w-full sm:w-1/2 bg-[#1a1a1a] border border-gray-700 rounded px-4 py-2 text-white focus:outline-none focus:border-orange-500"
+                  >
+                    {categories.map(cat => (
+                      <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </form>
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 border-t border-gray-800 flex justify-end space-x-3 bg-[#0a0a0a]">
               <button
                 onClick={() => setShowNewTopicModal(false)}
-                className="text-gray-400 hover:text-white transition-colors"
+                className="px-5 py-2 rounded-full font-bold text-gray-400 hover:bg-gray-800 transition-colors"
               >
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                İptal
+              </button>
+              <button
+                type="submit"
+                form="create-topic-form"
+                disabled={!newTopicForm.title || submitting}
+                className="px-6 py-2 rounded-full font-bold bg-white text-black hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {submitting ? 'Paylaşılıyor...' : 'Paylaş'}
               </button>
             </div>
-
-            <form onSubmit={handleCreateTopic} className="space-y-6">
-              <div>
-                <label htmlFor="title" className="block text-sm font-medium text-gray-300 mb-2">
-                  Başlık
-                </label>
-                <input
-                  type="text"
-                  id="title"
-                  value={newTopicForm.title}
-                  onChange={(e) => setNewTopicForm({ ...newTopicForm, title: e.target.value })}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:border-orange-500 focus:outline-none"
-                  placeholder="Başlığınızı yazın..."
-                  required
-                />
-              </div>
-
-
-              <div>
-                <label htmlFor="content" className="block text-sm font-medium text-gray-300 mb-2">
-                  İçerik
-                </label>
-                <textarea
-                  id="content"
-                  value={newTopicForm.content}
-                  onChange={(e) => setNewTopicForm({ ...newTopicForm, content: e.target.value })}
-                  rows={6}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:border-orange-500 focus:outline-none resize-none"
-                  placeholder="Tartışmanızı detaylandırın..."
-                  required
-                />
-              </div>
-
-              {/* Medya Yükleme Alanı */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Fotoğraf veya Video (Opsiyonel)
-                </label>
-                <MediaUploader
-                  currentMedia={topicMedia}
-                  onUploadComplete={(mediaData) => setTopicMedia(mediaData)}
-                  onRemove={() => setTopicMedia(null)}
-                />
-              </div>
-
-              <div className="flex justify-end space-x-4">
-                <button
-                  type="button"
-                  onClick={() => setShowNewTopicModal(false)}
-                  className="px-6 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
-                >
-                  İptal
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
-                >
-                  {submitting && (
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  )}
-                  <span>{submitting ? 'Oluşturuluyor...' : 'Başlık Aç'}</span>
-                </button>
-              </div>
-            </form>
           </div>
         </div>
       )}
 
       {/* Mobile Bottom Navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-black border-t border-gray-800">
-        <div className="flex justify-around items-center py-2">
-          <Link href="/home" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#0a0a0a] border-t border-gray-800">
+        <div className="flex justify-around items-center h-14">
+          <Link href="/home" className="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-white">
             <Home className="h-6 w-6" />
-            <span className="text-xs font-medium mt-1">Ana Sayfa</span>
           </Link>
-          <Link href="/my-courses" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
-            <BookOpen className="h-6 w-6" />
-            <span className="text-xs font-medium mt-1">Kurslarım</span>
-          </Link>
-          <Link href="/chef-sosyal" className="flex flex-col items-center py-2 px-3 text-orange-500">
+          <Link href="/chef-sosyal" className="flex flex-col items-center justify-center w-full h-full text-white">
             <Users className="h-6 w-6" />
-            <span className="text-xs font-medium mt-1">Sosyal</span>
           </Link>
-          <Link href="/chef-sor" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+          <button onClick={() => setShowNewTopicModal(true)} className="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-white">
+            <div className="bg-orange-600 rounded-lg p-1">
+              <Plus className="h-6 w-6 text-white" />
+            </div>
+          </button>
+          <Link href="/chef-sor" className="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-white">
             <MessageCircle className="h-6 w-6" />
-            <span className="text-xs font-medium mt-1">Chef&apos;e Sor</span>
+          </Link>
+          <Link href="/my-courses" className="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-white">
+            <BookOpen className="h-6 w-6" />
           </Link>
         </div>
       </div>
+
     </div>
   )
 }
