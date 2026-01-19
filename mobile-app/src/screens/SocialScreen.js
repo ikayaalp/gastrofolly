@@ -466,9 +466,9 @@ export default function SocialScreen({ navigation }) {
                                 <X size={24} color="#fff" />
                             </TouchableOpacity>
                             <TouchableOpacity
-                                style={[styles.headerPostButton, (submitting || uploading || !newTopicForm.title.trim()) && styles.headerPostButtonDisabled]}
+                                style={[styles.headerPostButton, (submitting || uploading || (!newTopicForm.title.trim() && !newTopicForm.content.trim() && !selectedMedia)) && styles.headerPostButtonDisabled]}
                                 onPress={handleCreateTopic}
-                                disabled={submitting || uploading || !newTopicForm.title.trim()}
+                                disabled={submitting || uploading || (!newTopicForm.title.trim() && !newTopicForm.content.trim() && !selectedMedia)}
                             >
                                 {submitting ? (
                                     <ActivityIndicator size="small" color="#fff" />
