@@ -279,36 +279,29 @@ export default function TopicDetailScreen({ route, navigation }) {
 
     const renderHeader = () => (
         <View style={styles.topicContainer}>
-            {/* Author Info */}
-            <View style={styles.authorContainer}>
+            {/* Reddit-style Header: avatar + u/author • time • category */}
+            <View style={styles.topicHeader}>
                 {topic.author?.image ? (
-                    <Image source={{ uri: topic.author.image }} style={styles.authorAvatar} />
+                    <Image source={{ uri: topic.author.image }} style={styles.headerAvatar} />
                 ) : (
-                    <View style={styles.authorAvatarPlaceholder}>
-                        <User size={24} color="#fff" />
+                    <View style={styles.headerAvatarPlaceholder}>
+                        <User size={14} color="#9ca3af" />
                     </View>
                 )}
-                <View style={styles.authorInfo}>
-                    <Text style={styles.authorName}>{topic.author?.name || 'Anonim'}</Text>
-                    <View style={styles.timeContainer}>
-                        <Clock size={12} color="#6b7280" />
-                        <Text style={styles.timeText}>{formatTimeAgo(topic.createdAt)}</Text>
-                    </View>
-                </View>
-            </View>
-
-            {/* Category Badge */}
-            <View
-                style={[
-                    styles.categoryBadge,
-                    { backgroundColor: (topic.category?.color || '#6b7280') + '20' },
-                ]}
-            >
-                <Text
-                    style={[styles.categoryBadgeText, { color: topic.category?.color || '#6b7280' }]}
+                <Text style={styles.headerAuthorName}>u/{topic.author?.name || 'anonim'}</Text>
+                <Text style={styles.headerDot}>•</Text>
+                <Text style={styles.headerTime}>{formatTimeAgo(topic.createdAt)}</Text>
+                <Text style={styles.headerDot}>•</Text>
+                <View
+                    style={[
+                        styles.headerCategoryBadge,
+                        { backgroundColor: (topic.category?.color || '#6b7280') + '20' },
+                    ]}
                 >
-                    {topic.category?.name || 'Genel'}
-                </Text>
+                    <Text style={[styles.headerCategoryText, { color: topic.category?.color || '#6b7280' }]}>
+                        {topic.category?.name || 'Genel'}
+                    </Text>
+                </View>
             </View>
 
             {/* Title */}
@@ -316,46 +309,56 @@ export default function TopicDetailScreen({ route, navigation }) {
 
             {/* Media Display */}
             {topic.mediaUrl && topic.mediaType === 'image' && (
-                <Image
-                    source={{ uri: topic.mediaUrl }}
-                    style={styles.topicMediaImage}
-                    resizeMode="cover"
-                />
+                <View style={styles.mediaContainer}>
+                    <Image
+                        source={{ uri: topic.mediaUrl }}
+                        style={styles.topicMediaImage}
+                        resizeMode="contain"
+                    />
+                </View>
             )}
             {topic.mediaUrl && topic.mediaType === 'video' && (
-                <Video
-                    source={{ uri: topic.mediaUrl }}
-                    style={styles.topicMediaVideo}
-                    resizeMode="cover"
-                    useNativeControls
-                    shouldPlay={false}
-                />
+                <View style={styles.mediaContainer}>
+                    <Video
+                        source={{ uri: topic.mediaUrl }}
+                        style={styles.topicMediaVideo}
+                        resizeMode="contain"
+                        useNativeControls
+                        shouldPlay={false}
+                    />
+                </View>
             )}
 
-            {/* Content */}
-            <Text style={styles.topicContent}>{topic.content}</Text>
+            {/* Text Content */}
+            {topic.content && (
+                <Text style={styles.topicContent}>{topic.content}</Text>
+            )}
 
-            {/* Actions */}
-            <View style={styles.actionsContainer}>
-                <TouchableOpacity style={styles.actionButton} onPress={handleTopicLike}>
+            {/* Action Bar - Reddit Style */}
+            <View style={styles.actionBar}>
+                <TouchableOpacity
+                    style={[styles.actionButton, isLiked && styles.actionButtonActive]}
+                    onPress={handleTopicLike}
+                >
                     <ThumbsUp
-                        size={20}
-                        color={isLiked ? '#ea580c' : '#9ca3af'}
+                        size={16}
+                        color={isLiked ? '#ea580c' : '#6b7280'}
                         fill={isLiked ? '#ea580c' : 'transparent'}
                     />
-                    <Text style={[styles.actionText, isLiked && styles.actionTextActive]}>
-                        {topic.likeCount || 0} Beğeni
+                    <Text style={[styles.actionButtonText, isLiked && styles.actionButtonTextActive]}>
+                        {topic.likeCount || 0}
                     </Text>
                 </TouchableOpacity>
+
                 <View style={styles.actionButton}>
-                    <MessageCircle size={20} color="#9ca3af" />
-                    <Text style={styles.actionText}>{comments.length} Yanıt</Text>
+                    <MessageCircle size={16} color="#6b7280" />
+                    <Text style={styles.actionButtonText}>{comments.length} Yorum</Text>
                 </View>
             </View>
 
-            {/* Replies Header */}
-            <View style={styles.repliesHeader}>
-                <Text style={styles.repliesTitle}>Yorumlar ({comments.length})</Text>
+            {/* Comments Section Header */}
+            <View style={styles.commentsHeader}>
+                <Text style={styles.commentsHeaderText}>Yorumlar ({comments.length})</Text>
             </View>
         </View>
     );
@@ -694,22 +697,103 @@ const styles = StyleSheet.create({
     actionButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 8,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 20,
+        gap: 6,
     },
-    actionText: {
-        fontSize: 14,
-        color: '#9ca3af',
+    actionButtonActive: {
+        backgroundColor: 'rgba(234, 88, 12, 0.1)',
     },
-    actionTextActive: {
+    actionButtonText: {
+        fontSize: 13,
+        fontWeight: '600',
+        color: '#6b7280',
+    },
+    actionButtonTextActive: {
         color: '#ea580c',
     },
-    repliesHeader: {
-        marginTop: 16,
+    // Reddit-style header styles
+    topicHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 12,
+        flexWrap: 'wrap',
     },
-    repliesTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#fff',
+    headerAvatar: {
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+    },
+    headerAvatarPlaceholder: {
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+        backgroundColor: '#374151',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    headerAuthorName: {
+        color: '#9ca3af',
+        fontSize: 12,
+        fontWeight: '500',
+        marginLeft: 8,
+    },
+    headerDot: {
+        color: '#4b5563',
+        fontSize: 12,
+        marginHorizontal: 6,
+    },
+    headerTime: {
+        color: '#6b7280',
+        fontSize: 12,
+    },
+    headerCategoryBadge: {
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        borderRadius: 12,
+    },
+    headerCategoryText: {
+        fontSize: 11,
+        fontWeight: '600',
+    },
+    mediaContainer: {
+        marginBottom: 16,
+        borderRadius: 8,
+        overflow: 'hidden',
+        backgroundColor: '#111',
+        borderWidth: 1,
+        borderColor: '#1f2937',
+    },
+    topicMediaImage: {
+        width: '100%',
+        minHeight: 250,
+        maxHeight: 500,
+    },
+    topicMediaVideo: {
+        width: '100%',
+        height: 280,
+        backgroundColor: '#000',
+    },
+    actionBar: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        paddingTop: 12,
+        borderTopWidth: 1,
+        borderTopColor: 'rgba(31, 41, 55, 0.5)',
+        marginTop: 12,
+    },
+    commentsHeader: {
+        marginTop: 20,
+        paddingTop: 16,
+        borderTopWidth: 1,
+        borderTopColor: '#1f2937',
+    },
+    commentsHeaderText: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: '#e5e7eb',
     },
     commentCard: {
         padding: 16,
