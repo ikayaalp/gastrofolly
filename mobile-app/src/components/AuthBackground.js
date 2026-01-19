@@ -6,7 +6,7 @@ export default function AuthBackground() {
     return (
         <View style={styles.container}>
             <ImageBackground
-                source={require('../../assets/auth_background.png')}
+                source={require('../../assets/auth-background.png')}
                 style={styles.imageBackground}
                 resizeMode="cover"
             >

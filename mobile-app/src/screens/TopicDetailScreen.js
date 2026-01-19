@@ -73,10 +73,15 @@ export default function TopicDetailScreen({ route, navigation }) {
                 const mainComments = allPosts.filter(p => !p.parentId);
                 const replies = allPosts.filter(p => p.parentId);
 
+                // Sort main comments: Newest first
+                mainComments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
                 // Attach replies to parent comments
                 const commentsWithReplies = mainComments.map(comment => ({
                     ...comment,
-                    replies: replies.filter(r => r.parentId === comment.id)
+                    replies: replies
+                        .filter(r => r.parentId === comment.id)
+                        .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)) // Replies: Oldest first
                 }));
 
                 setComments(commentsWithReplies);
@@ -105,6 +110,25 @@ export default function TopicDetailScreen({ route, navigation }) {
         checkLoginStatus();
         loadTopicDetail();
     }, [topicId]);
+
+    // Keyboard listener for dynamic padding
+    const [keyboardVisible, setKeyboardVisible] = useState(false);
+
+    useEffect(() => {
+        const keyboardWillShowListener = Keyboard.addListener(
+            Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+            () => setKeyboardVisible(true)
+        );
+        const keyboardWillHideListener = Keyboard.addListener(
+            Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+            () => setKeyboardVisible(false)
+        );
+
+        return () => {
+            keyboardWillShowListener.remove();
+            keyboardWillHideListener.remove();
+        };
+    }, []);
 
     const onRefresh = () => {
         setRefreshing(true);
@@ -396,7 +420,7 @@ export default function TopicDetailScreen({ route, navigation }) {
 
     const renderCommentItem = ({ item }) => (
         <View style={styles.commentCard}>
-            <View style={styles.commentHeader}>
+            <View style={styles.commentAvatarContainer}>
                 {item.author?.image ? (
                     <Image source={{ uri: item.author.image }} style={styles.commentAvatar} />
                 ) : (
@@ -404,82 +428,87 @@ export default function TopicDetailScreen({ route, navigation }) {
                         <User size={16} color="#fff" />
                     </View>
                 )}
-                <View style={styles.commentMeta}>
+            </View>
+
+            <View style={styles.commentBody}>
+                <View style={styles.commentHeader}>
                     <Text style={styles.commentAuthor}>{item.author?.name || 'Anonim'}</Text>
+                    <Text style={styles.commentDot}>•</Text>
                     <Text style={styles.commentTime}>{formatTimeAgo(item.createdAt)}</Text>
                 </View>
-            </View>
-            <Text style={styles.commentContent}>{item.content}</Text>
 
-            {/* Comment Actions */}
-            <View style={styles.commentActions}>
-                {isLoggedIn && (
-                    <>
-                        <TouchableOpacity
-                            style={[styles.likeButton, likedComments.has(item.id) && styles.likeButtonActive]}
-                            onPress={() => handleCommentLike(item.id)}
-                        >
-                            <ThumbsUp size={14} color={likedComments.has(item.id) ? '#fff' : '#6b7280'} />
-                            <Text style={[styles.likeButtonText, likedComments.has(item.id) && styles.likeButtonTextActive]}>
-                                {item.likeCount || 0}
-                            </Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={styles.replyToButton}
-                            onPress={() => setReplyingTo(replyingTo === item.id ? null : item.id)}
-                        >
-                            <Reply size={14} color="#6b7280" />
-                            <Text style={styles.replyToText}>Yanıtla</Text>
-                        </TouchableOpacity>
-                        {/* Delete button - only for own comments */}
-                        {currentUserId && item.author?.id === currentUserId && (
+                <Text style={styles.commentContent}>{item.content}</Text>
+
+                {/* Comment Actions */}
+                <View style={styles.commentActions}>
+                    {isLoggedIn && (
+                        <>
                             <TouchableOpacity
-                                style={styles.deleteButton}
-                                onPress={() => handleDeleteComment(item.id)}
+                                style={[styles.likeButton, likedComments.has(item.id) && styles.likeButtonActive]}
+                                onPress={() => handleCommentLike(item.id)}
                             >
-                                <Trash2 size={14} color="#ef4444" />
+                                <ThumbsUp size={14} color={likedComments.has(item.id) ? '#fff' : '#6b7280'} />
+                                <Text style={[styles.likeButtonText, likedComments.has(item.id) && styles.likeButtonTextActive]}>
+                                    {item.likeCount || 0}
+                                </Text>
                             </TouchableOpacity>
-                        )}
-                    </>
+                            <TouchableOpacity
+                                style={styles.replyToButton}
+                                onPress={() => setReplyingTo(replyingTo === item.id ? null : item.id)}
+                            >
+                                <Reply size={14} color="#6b7280" />
+                                <Text style={styles.replyToText}>Yanıtla</Text>
+                            </TouchableOpacity>
+                            {/* Delete button - only for own comments */}
+                            {currentUserId && item.author?.id === currentUserId && (
+                                <TouchableOpacity
+                                    style={styles.deleteButton}
+                                    onPress={() => handleDeleteComment(item.id)}
+                                >
+                                    <Trash2 size={14} color="#ef4444" />
+                                </TouchableOpacity>
+                            )}
+                        </>
+                    )}
+                </View>
+
+                {/* Reply Form for this comment */}
+                {replyingTo === item.id && (
+                    <View style={styles.inlineReplyForm}>
+                        <TextInput
+                            style={styles.inlineReplyInput}
+                            placeholder="Yanıtınızı yazın..."
+                            placeholderTextColor="#6b7280"
+                            value={replyText}
+                            onChangeText={setReplyText}
+                            multiline
+                        />
+                        <View style={styles.inlineReplyActions}>
+                            <TouchableOpacity onPress={() => { setReplyingTo(null); setReplyText(''); }}>
+                                <Text style={styles.cancelText}>İptal</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.sendButton, (!replyText.trim() || submitting) && styles.sendButtonDisabled]}
+                                onPress={handleSubmitReply}
+                                disabled={!replyText.trim() || submitting}
+                            >
+                                {submitting ? (
+                                    <ActivityIndicator size="small" color="#fff" />
+                                ) : (
+                                    <Text style={styles.sendButtonText}>Yanıtla</Text>
+                                )}
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                )}
+
+                {/* Nested Replies */}
+                {item.replies && item.replies.length > 0 && (
+                    <View style={styles.repliesContainer}>
+                        {item.replies.map(renderReply)}
+                    </View>
                 )}
             </View>
-
-            {/* Reply Form for this comment */}
-            {replyingTo === item.id && (
-                <View style={styles.inlineReplyForm}>
-                    <TextInput
-                        style={styles.inlineReplyInput}
-                        placeholder="Yanıtınızı yazın..."
-                        placeholderTextColor="#6b7280"
-                        value={replyText}
-                        onChangeText={setReplyText}
-                        multiline
-                    />
-                    <View style={styles.inlineReplyActions}>
-                        <TouchableOpacity onPress={() => { setReplyingTo(null); setReplyText(''); }}>
-                            <Text style={styles.cancelText}>İptal</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={[styles.sendButton, (!replyText.trim() || submitting) && styles.sendButtonDisabled]}
-                            onPress={handleSubmitReply}
-                            disabled={!replyText.trim() || submitting}
-                        >
-                            {submitting ? (
-                                <ActivityIndicator size="small" color="#fff" />
-                            ) : (
-                                <Text style={styles.sendButtonText}>Yanıtla</Text>
-                            )}
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            )}
-
-            {/* Nested Replies */}
-            {item.replies && item.replies.length > 0 && (
-                <View style={styles.repliesContainer}>
-                    {item.replies.map(renderReply)}
-                </View>
-            )}
         </View>
     );
 
@@ -543,7 +572,7 @@ export default function TopicDetailScreen({ route, navigation }) {
             />
 
             {/* Main Reply Input (for new main comment) */}
-            <View style={styles.replyInputContainer}>
+            <View style={[styles.replyInputContainer, { paddingBottom: keyboardVisible ? 16 : 90 }]}>
                 {isLoggedIn ? (
                     <>
                         <TextInput
@@ -1012,7 +1041,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         padding: 16,
-        paddingBottom: 120, // Extra padding for tab bar
+        paddingBottom: 16, // Base padding, overridden dynamically
         backgroundColor: '#0a0a0a',
         borderTopWidth: 1,
         borderTopColor: '#1a1a1a',
