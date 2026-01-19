@@ -27,8 +27,8 @@ export default function LeftSidebar({ categories, selectedCategory }: LeftSideba
                     <Link
                         href="/chef-sosyal"
                         className={`flex items-center px-2 py-2 rounded-lg text-sm font-medium transition-colors ${selectedCategory === 'all'
-                                ? 'bg-gray-800 text-white'
-                                : 'text-gray-400 hover:bg-gray-800/50 hover:text-white'
+                            ? 'bg-gray-800 text-white'
+                            : 'text-gray-400 hover:bg-gray-800/50 hover:text-white'
                             }`}
                     >
                         <Home className="h-5 w-5 mr-3" />
@@ -53,8 +53,8 @@ export default function LeftSidebar({ categories, selectedCategory }: LeftSideba
                             key={category.id}
                             href={`/chef-sosyal?category=${category.slug}`}
                             className={`flex items-center px-2 py-2 rounded-lg text-sm font-medium transition-colors group ${selectedCategory === category.slug
-                                    ? 'bg-gray-800 text-white'
-                                    : 'text-gray-400 hover:bg-gray-800/50 hover:text-white'
+                                ? 'bg-gray-800 text-white'
+                                : 'text-gray-400 hover:bg-gray-800/50 hover:text-white'
                                 }`}
                         >
                             <span
@@ -69,20 +69,7 @@ export default function LeftSidebar({ categories, selectedCategory }: LeftSideba
                 </div>
             </div>
 
-            {/* Resources Section - Statik Linkler */}
-            <div>
-                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 px-2">Kaynaklar</h3>
-                <div className="space-y-1">
-                    <Link href="/rules" className="flex items-center px-2 py-2 rounded-lg text-sm font-medium text-gray-400 hover:bg-gray-800/50 hover:text-white transition-colors">
-                        <Star className="h-5 w-5 mr-3" />
-                        Kurallar
-                    </Link>
-                    <Link href="/premium" className="flex items-center px-2 py-2 rounded-lg text-sm font-medium text-gray-400 hover:bg-gray-800/50 hover:text-white transition-colors">
-                        <Flame className="h-5 w-5 mr-3" />
-                        Premium Üyelik
-                    </Link>
-                </div>
-            </div>
+
 
             <div className="mt-auto pt-6 border-t border-gray-800 text-xs text-gray-600 px-2 pb-4">
                 <p>© 2026 Chef 2.0</p>

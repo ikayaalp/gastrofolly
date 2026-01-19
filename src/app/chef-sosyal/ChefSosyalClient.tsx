@@ -519,24 +519,23 @@ export default function ChefSosyalClient({
       )}
 
       {/* Mobile Bottom Navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#0a0a0a] border-t border-gray-800">
-        <div className="flex justify-around items-center h-14">
-          <Link href="/home" className="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-white">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-black border-t border-gray-800">
+        <div className="flex justify-around items-center py-2">
+          <Link href="/home" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
             <Home className="h-6 w-6" />
+            <span className="text-xs font-medium mt-1">Ana Sayfa</span>
           </Link>
-          <Link href="/chef-sosyal" className="flex flex-col items-center justify-center w-full h-full text-white">
-            <Users className="h-6 w-6" />
-          </Link>
-          <button onClick={() => setShowNewTopicModal(true)} className="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-white">
-            <div className="bg-orange-600 rounded-lg p-1">
-              <Plus className="h-6 w-6 text-white" />
-            </div>
-          </button>
-          <Link href="/chef-sor" className="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-white">
-            <MessageCircle className="h-6 w-6" />
-          </Link>
-          <Link href="/my-courses" className="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-white">
+          <Link href="/my-courses" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
             <BookOpen className="h-6 w-6" />
+            <span className="text-xs font-medium mt-1">Kurslarım</span>
+          </Link>
+          <Link href="/chef-sosyal" className="flex flex-col items-center py-2 px-3 text-orange-500">
+            <Users className="h-6 w-6" />
+            <span className="text-xs font-medium mt-1">Sosyal</span>
+          </Link>
+          <Link href="/chef-sor" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+            <MessageCircle className="h-6 w-6" />
+            <span className="text-xs font-medium mt-1">Chef'e Sor</span>
           </Link>
         </div>
       </div>
