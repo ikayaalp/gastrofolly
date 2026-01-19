@@ -442,7 +442,7 @@ export default function TopicDetailClient({ session, topic, categories }: TopicD
                         </button>
 
                         {session?.user && comment.author.id === session.user.id && (
-                          <button onClick={() => handleDeleteComment(comment.id)} className="text-xs font-bold text-gray-500 hover:text-red-500">
+                          <button onClick={() => handleDeleteComment(comment.id)} className="text-xs font-bold text-red-500 hover:text-red-400">
                             Sil
                           </button>
                         )}
@@ -493,7 +493,7 @@ export default function TopicDetailClient({ session, topic, categories }: TopicD
                                     <span>{reply.likeCount || 0}</span>
                                   </button>
                                   {session?.user && reply.author.id === session.user.id && (
-                                    <button onClick={() => handleDeleteComment(reply.id)} className="text-xs font-bold text-gray-500 hover:text-red-500">
+                                    <button onClick={() => handleDeleteComment(reply.id)} className="text-xs font-bold text-red-500 hover:text-red-400">
                                       Sil
                                     </button>
                                   )}
