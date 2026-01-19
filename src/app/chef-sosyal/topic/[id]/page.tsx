@@ -82,7 +82,10 @@ export default async function TopicDetailPage({ params }: TopicDetailPageProps) 
   return (
     <TopicDetailClient
       session={session}
-      topic={topic}
+      topic={{
+        ...topic,
+        mediaType: (topic as any).mediaType as 'IMAGE' | 'VIDEO' | null
+      }}
       categories={categories}
     />
   )
