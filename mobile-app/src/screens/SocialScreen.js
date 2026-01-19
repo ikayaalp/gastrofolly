@@ -379,28 +379,6 @@ export default function SocialScreen({ navigation }) {
                 </View>
             </View>
 
-            {/* Create Post Input Trigger (like web) */}
-            {isLoggedIn && (
-                <TouchableOpacity
-                    style={styles.createPostBar}
-                    onPress={() => setShowNewTopicModal(true)}
-                    activeOpacity={0.8}
-                >
-                    <View style={styles.createPostAvatar}>
-                        <User size={18} color="#fff" />
-                    </View>
-                    <View style={styles.createPostInput}>
-                        <Text style={styles.createPostPlaceholder}>Bir şeyler paylaş...</Text>
-                    </View>
-                    <TouchableOpacity
-                        style={styles.createPostImageButton}
-                        onPress={() => { pickImage(); setShowNewTopicModal(true); }}
-                    >
-                        <ImageIcon size={22} color="#6b7280" />
-                    </TouchableOpacity>
-                </TouchableOpacity>
-            )}
-
             {/* Filter Tabs (like web) */}
             <View style={styles.filterTabsContainer}>
                 <TouchableOpacity
