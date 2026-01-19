@@ -85,9 +85,8 @@ export default {
         ],
         "extra": {
             "eas": {
-                "projectId": "b516f8ca-586e-4c27-8895-4eeb55549f80"
+                "projectId": "2c8e9c53-462a-426d-993b-42bce6d04342"
             }
-        },
-        "owner": "ikayaalpp"
+        }
     }
 };

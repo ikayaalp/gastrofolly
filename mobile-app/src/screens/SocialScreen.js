@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
     StyleSheet,
     Text,
@@ -14,6 +14,7 @@ import {
     KeyboardAvoidingView,
     Platform,
     StatusBar,
+    Dimensions,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import {
@@ -34,6 +35,16 @@ import * as ImagePicker from 'expo-image-picker';
 import forumService from '../api/forumService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomAlert from '../components/CustomAlert';
+import ImageViewerModal from '../components/ImageViewerModal';
+import TopicCard from '../components/TopicCard';
+
+const formatDuration = (millis) => {
+    if (!millis) return 'Video';
+    const totalSeconds = Math.round(millis / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+};
 
 export default function SocialScreen({ navigation }) {
     const [categories, setCategories] = useState([]);
@@ -55,8 +66,32 @@ export default function SocialScreen({ navigation }) {
         type: 'info'
     });
     // Media state for new topic
-    const [selectedMedia, setSelectedMedia] = useState(null); // { uri, type: 'image'|'video' }
+    const [selectedMedias, setSelectedMedias] = useState([]);
     const [uploading, setUploading] = useState(false);
+    const [fullscreenImageUrl, setFullscreenImageUrl] = useState(null); // For fullscreen modal
+    const [fullscreenVideoUrl, setFullscreenVideoUrl] = useState(null); // For fullscreen video
+    const [playingVideoId, setPlayingVideoId] = useState(null);
+    const [videoDurations, setVideoDurations] = useState({});
+    const [videoProgress, setVideoProgress] = useState({});
+
+    const viewabilityConfig = useRef({
+        itemVisiblePercentThreshold: 80,
+    }).current;
+
+    const onViewableItemsChanged = useCallback(({ viewableItems }) => {
+        if (viewableItems.length > 0) {
+            const videoItem = viewableItems.find(
+                item => item.item.mediaUrl &&
+                    (item.item.mediaType === 'video' || item.item.mediaType === 'VIDEO')
+            );
+
+            if (videoItem) {
+                setPlayingVideoId(videoItem.item.id);
+            } else {
+                setPlayingVideoId(null);
+            }
+        }
+    }, []);
 
     const showAlert = (title, message, buttons = [{ text: 'Tamam' }], type = 'info') => {
         setAlertConfig({ title, message, buttons, type });
@@ -72,12 +107,13 @@ export default function SocialScreen({ navigation }) {
         }
         const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ['images'],
-            allowsEditing: true,
-            aspect: [4, 5], // Instagram-style portrait crop
+            allowsEditing: false,
+            allowsMultipleSelection: true,
+            selectionLimit: 10,
             quality: 0.8,
         });
-        if (!result.canceled && result.assets[0]) {
-            setSelectedMedia({ uri: result.assets[0].uri, type: 'image' });
+        if (!result.canceled && result.assets) {
+            setSelectedMedias(result.assets.map(a => ({ uri: a.uri, type: 'image' })));
         }
     };
 
@@ -97,7 +133,7 @@ export default function SocialScreen({ navigation }) {
             quality: 0.8,
         });
         if (!result.canceled && result.assets[0]) {
-            setSelectedMedia({ uri: result.assets[0].uri, type: 'image' });
+            setSelectedMedias([{ uri: result.assets[0].uri, type: 'image' }]);
         }
     };
     const pickVideo = async () => {
@@ -113,7 +149,7 @@ export default function SocialScreen({ navigation }) {
             videoMaxDuration: 60, // 60 seconds max
         });
         if (!result.canceled && result.assets[0]) {
-            setSelectedMedia({ uri: result.assets[0].uri, type: 'video' });
+            setSelectedMedias([{ uri: result.assets[0].uri, type: 'video' }]);
         }
     };
 
@@ -199,7 +235,7 @@ export default function SocialScreen({ navigation }) {
     };
 
     const handleCreateTopic = async () => {
-        if ((!newTopicForm.title.trim() && !newTopicForm.content.trim() && !selectedMedia)) {
+        if ((!newTopicForm.title.trim() && !newTopicForm.content.trim() && selectedMedias.length === 0)) {
             showAlert('Hata', 'Lütfen başlık, içerik veya medya ekleyin.', [{ text: 'Tamam' }], 'error');
             return;
         }
@@ -210,21 +246,37 @@ export default function SocialScreen({ navigation }) {
         let thumbnailUrl = null;
         let mediaType = null;
 
-        // Upload media if selected
-        if (selectedMedia) {
+        if (selectedMedias.length > 0) {
             setUploading(true);
-            const uploadResult = await forumService.uploadMedia(selectedMedia.uri, selectedMedia.type);
-            setUploading(false);
+            try {
+                if (selectedMedias.some(m => m.type === 'video')) {
+                    const video = selectedMedias.find(m => m.type === 'video');
+                    const uploadResult = await forumService.uploadMedia(video.uri, 'video');
+                    if (uploadResult.success) {
+                        mediaUrl = uploadResult.data.mediaUrl;
+                        thumbnailUrl = uploadResult.data.thumbnailUrl;
+                        mediaType = 'video';
+                    } else {
+                        throw new Error(uploadResult.error || 'Video yüklenemedi');
+                    }
+                } else {
+                    const uploadPromises = selectedMedias.map(m => forumService.uploadMedia(m.uri, 'image'));
+                    const results = await Promise.all(uploadPromises);
+                    const failed = results.find(r => !r.success);
+                    if (failed) throw new Error(failed.error || 'Bazı resimler yüklenemedi');
 
-            if (uploadResult.success) {
-                mediaUrl = uploadResult.data.mediaUrl;
-                thumbnailUrl = uploadResult.data.thumbnailUrl || (selectedMedia.type === 'image' ? uploadResult.data.mediaUrl : null);
-                mediaType = selectedMedia.type;
-            } else {
-                showAlert('Hata', uploadResult.error || 'Medya yüklenemedi', [{ text: 'Tamam' }], 'error');
+                    const urls = results.map(r => r.data.mediaUrl);
+                    mediaUrl = urls.join(',');
+                    mediaType = 'image';
+                    thumbnailUrl = urls[0];
+                }
+            } catch (err) {
+                showAlert('Hata', err.message, [{ text: 'Tamam' }], 'error');
+                setUploading(false);
                 setSubmitting(false);
                 return;
             }
+            setUploading(false);
         }
 
         const result = await forumService.createTopic(
@@ -282,105 +334,24 @@ export default function SocialScreen({ navigation }) {
         </TouchableOpacity>
     );
 
-    const renderTopicItem = ({ item }) => (
-        <TouchableOpacity
-            style={styles.topicCard}
+    const renderTopicItem = useCallback(({ item }) => (
+        <TopicCard
+            item={item}
             onPress={() => navigation.navigate('TopicDetail', { topicId: item.id })}
-            activeOpacity={0.7}
-        >
-            {/* Reddit-style Header: avatar + u/author • time • category */}
-            <View style={styles.topicHeader}>
-                {item.author?.image ? (
-                    <Image source={{ uri: item.author.image }} style={styles.authorAvatar} />
-                ) : (
-                    <View style={styles.authorAvatarPlaceholder}>
-                        <User size={14} color="#9ca3af" />
-                    </View>
-                )}
-                <Text style={styles.authorName}>u/{item.author?.name || 'anonim'}</Text>
-                <Text style={styles.dotSeparator}>•</Text>
-                <Text style={styles.timeText}>{formatTimeAgo(item.createdAt)}</Text>
-                <Text style={styles.dotSeparator}>•</Text>
-                <View
-                    style={[
-                        styles.categoryBadge,
-                        { backgroundColor: (item.category?.color || '#6b7280') + '20' },
-                    ]}
-                >
-                    <Text style={[styles.categoryBadgeText, { color: item.category?.color || '#6b7280' }]}>
-                        {item.category?.name || 'Genel'}
-                    </Text>
-                </View>
-            </View>
-
-            {/* Title */}
-            <Text style={styles.topicTitle} numberOfLines={2}>
-                {item.title}
-            </Text>
-
-            {/* Media Preview - Full Width */}
-            {item.mediaUrl && (item.mediaType === 'image' || item.mediaType === 'IMAGE') && (
-                <View style={styles.mediaContainer}>
-                    <Image
-                        source={{ uri: item.thumbnailUrl || item.mediaUrl }}
-                        style={styles.topicMediaImage}
-                        resizeMode="cover"
-                    />
-                </View>
-            )}
-            {item.mediaUrl && (item.mediaType === 'video' || item.mediaType === 'VIDEO') && (
-                <View style={styles.mediaContainer}>
-                    <Image
-                        source={{ uri: item.thumbnailUrl || 'https://via.placeholder.com/400x240?text=Video' }}
-                        style={styles.topicMediaImage}
-                        resizeMode="cover"
-                    />
-                    <View style={styles.videoPlayOverlay}>
-                        <View style={styles.playButton}>
-                            <Film size={24} color="#fff" />
-                        </View>
-                    </View>
-                    <View style={styles.videoBadge}>
-                        <Clock size={10} color="#fff" />
-                        <Text style={styles.videoBadgeText}>Video</Text>
-                    </View>
-                </View>
-            )}
-
-            {/* Text Content Preview (only if no media) */}
-            {!item.mediaUrl && (
-                <Text style={styles.topicContent} numberOfLines={3}>
-                    {item.content}
-                </Text>
-            )}
-
-            {/* Action Bar - Reddit Style */}
-            <View style={styles.actionBar}>
-                <TouchableOpacity
-                    style={[
-                        styles.actionButton,
-                        likedTopics.has(item.id) && styles.actionButtonActive,
-                    ]}
-                    onPress={() => handleLike(item.id)}
-                >
-                    <ThumbsUp
-                        size={16}
-                        color={likedTopics.has(item.id) ? '#ea580c' : '#6b7280'}
-                        fill={likedTopics.has(item.id) ? '#ea580c' : 'transparent'}
-                    />
-                    <Text style={[styles.actionButtonText, likedTopics.has(item.id) && styles.actionButtonTextActive]}>
-                        {item.likeCount || 0}
-                    </Text>
-                </TouchableOpacity>
-
-                <View style={styles.actionButton}>
-                    <MessageCircle size={16} color="#6b7280" />
-                    <Text style={styles.actionButtonText}>{item._count?.posts || 0}</Text>
-                    <Text style={styles.actionButtonLabel}>Yorum</Text>
-                </View>
-            </View>
-        </TouchableOpacity>
-    );
+            onLike={handleLike}
+            isLiked={likedTopics.has(item.id)}
+            onMediaPress={(url, type) => {
+                if (type === 'image') setFullscreenImageUrl(url);
+                else setFullscreenVideoUrl(url);
+            }}
+            playingVideoId={playingVideoId}
+            videoProgress={videoProgress}
+            videoDurations={videoDurations}
+            setVideoDurations={setVideoDurations}
+            setVideoProgress={setVideoProgress}
+            formatTimeAgo={formatTimeAgo}
+        />
+    ), [playingVideoId, videoProgress, videoDurations, likedTopics, handleLike, formatTimeAgo, navigation]);
 
     if (loading) {
         return (
@@ -426,6 +397,8 @@ export default function SocialScreen({ navigation }) {
                 refreshControl={
                     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ea580c" />
                 }
+                onViewableItemsChanged={onViewableItemsChanged}
+                viewabilityConfig={viewabilityConfig}
                 ListEmptyComponent={
                     <View style={styles.emptyContainer}>
                         <Users size={64} color="#374151" />
@@ -460,15 +433,15 @@ export default function SocialScreen({ navigation }) {
                         {/* Header */}
                         <View style={styles.modalHeader}>
                             <TouchableOpacity
-                                onPress={() => { setShowNewTopicModal(false); setSelectedMedia(null); }}
+                                onPress={() => { setShowNewTopicModal(false); setSelectedMedias([]); }}
                                 style={styles.closeButton}
                             >
                                 <X size={24} color="#fff" />
                             </TouchableOpacity>
                             <TouchableOpacity
-                                style={[styles.headerPostButton, (submitting || uploading || (!newTopicForm.title.trim() && !newTopicForm.content.trim() && !selectedMedia)) && styles.headerPostButtonDisabled]}
+                                style={[styles.headerPostButton, (submitting || uploading || (!newTopicForm.title.trim() && !newTopicForm.content.trim() && selectedMedias.length === 0)) && styles.headerPostButtonDisabled]}
                                 onPress={handleCreateTopic}
-                                disabled={submitting || uploading || (!newTopicForm.title.trim() && !newTopicForm.content.trim() && !selectedMedia)}
+                                disabled={submitting || uploading || (!newTopicForm.title.trim() && !newTopicForm.content.trim() && selectedMedias.length === 0)}
                             >
                                 {submitting ? (
                                     <ActivityIndicator size="small" color="#fff" />
@@ -489,6 +462,7 @@ export default function SocialScreen({ navigation }) {
                             </View>
 
                             <TextInput
+                                autoFocus={true}
                                 style={styles.modalTitleInput}
                                 placeholder="Başlık"
                                 placeholderTextColor="#6b7280"
@@ -508,25 +482,35 @@ export default function SocialScreen({ navigation }) {
                             />
 
                             {/* Selected Media Preview */}
-                            {selectedMedia && (
+                            {selectedMedias.length > 0 && (
                                 <View style={styles.modalMediaPreviewContainer}>
-                                    {selectedMedia.type === 'image' ? (
-                                        <Image source={{ uri: selectedMedia.uri }} style={styles.modalMediaPreview} resizeMode="cover" />
-                                    ) : (
-                                        <Video
-                                            source={{ uri: selectedMedia.uri }}
-                                            style={styles.modalMediaPreview}
-                                            resizeMode={ResizeMode.COVER}
-                                            shouldPlay={false}
-                                            useNativeControls={false}
-                                        />
-                                    )}
-                                    <TouchableOpacity
-                                        style={styles.removeMediaButton}
-                                        onPress={() => setSelectedMedia(null)}
-                                    >
-                                        <X size={16} color="#fff" />
-                                    </TouchableOpacity>
+                                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                                        {selectedMedias.map((media, index) => (
+                                            <View key={index} style={{ marginRight: 10 }}>
+                                                {media.type === 'image' ? (
+                                                    <Image source={{ uri: media.uri }} style={styles.modalMediaPreview} resizeMode="cover" />
+                                                ) : (
+                                                    <Video
+                                                        source={{ uri: media.uri }}
+                                                        style={styles.modalMediaPreview}
+                                                        resizeMode={ResizeMode.COVER}
+                                                        shouldPlay={false}
+                                                        useNativeControls={false}
+                                                    />
+                                                )}
+                                                <TouchableOpacity
+                                                    style={styles.removeMediaButton}
+                                                    onPress={() => {
+                                                        const newMedias = [...selectedMedias];
+                                                        newMedias.splice(index, 1);
+                                                        setSelectedMedias(newMedias);
+                                                    }}
+                                                >
+                                                    <X size={16} color="#fff" />
+                                                </TouchableOpacity>
+                                            </View>
+                                        ))}
+                                    </ScrollView>
                                 </View>
                             )}
                         </ScrollView>
@@ -572,6 +556,46 @@ export default function SocialScreen({ navigation }) {
                 type={alertConfig.type}
                 onClose={() => setAlertVisible(false)}
             />
+
+            {/* Fullscreen Image Viewer Modal */}
+            <ImageViewerModal
+                visible={!!fullscreenImageUrl}
+                imageUrl={fullscreenImageUrl}
+                onClose={() => setFullscreenImageUrl(null)}
+            />
+
+            {/* Fullscreen Video Player Modal */}
+            <Modal
+                visible={!!fullscreenVideoUrl}
+                animationType="slide"
+                transparent={false}
+                onRequestClose={() => setFullscreenVideoUrl(null)}
+            >
+                <View style={{ flex: 1, backgroundColor: '#000', justifyContent: 'center' }}>
+                    <Video
+                        source={{ uri: fullscreenVideoUrl }}
+                        style={{ width: '100%', height: '100%' }}
+                        resizeMode={ResizeMode.CONTAIN}
+                        useNativeControls
+                        shouldPlay
+                        isLooping
+                    />
+                    <TouchableOpacity
+                        style={{
+                            position: 'absolute',
+                            top: 50,
+                            left: 20,
+                            padding: 8,
+                            backgroundColor: 'rgba(0,0,0,0.5)',
+                            borderRadius: 20,
+                            zIndex: 10,
+                        }}
+                        onPress={() => setFullscreenVideoUrl(null)}
+                    >
+                        <X size={24} color="#fff" />
+                    </TouchableOpacity>
+                </View>
+            </Modal>
         </View>
     );
 }
@@ -712,16 +736,13 @@ const styles = StyleSheet.create({
         color: '#fff',
     },
     topicsList: {
-        paddingHorizontal: 12,
         paddingBottom: 100,
     },
     topicCard: {
         backgroundColor: '#0a0a0a',
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: '#1a1a1a',
-        marginBottom: 16,
-        overflow: 'hidden',
+        marginBottom: 8,
+        borderBottomWidth: 8,
+        borderBottomColor: '#000', // To separate posts visually
     },
     topicHeader: {
         flexDirection: 'row',
@@ -787,22 +808,77 @@ const styles = StyleSheet.create({
         fontSize: 12,
     },
     topicTitle: {
-        fontSize: 17,
-        fontWeight: '600',
+        fontSize: 18,
+        fontWeight: 'bold',
         color: '#e5e7eb',
-        paddingHorizontal: 12,
+        paddingHorizontal: 16,
         marginBottom: 10,
         lineHeight: 22,
     },
     mediaContainer: {
         marginHorizontal: 0,
         marginBottom: 8,
-        overflow: 'hidden',
+        width: '100%',
+    },
+    mediaContainerExpanded: {
+        marginHorizontal: 0,
+        marginLeft: 0,
+        marginRight: 0,
+        borderRadius: 0,
+        borderWidth: 0,
         backgroundColor: '#000',
     },
     topicMediaImage: {
         width: '100%',
-        aspectRatio: 4 / 5,
+        aspectRatio: 1, // Square like Twitter/Instagram
+    },
+    topicMediaImageExpanded: {
+        aspectRatio: undefined,
+        height: 400, // Fixed height when expanded for contain mode
+    },
+    tapToExpandHint: {
+        position: 'absolute',
+        bottom: 12,
+        left: 0,
+        right: 0,
+        alignItems: 'center',
+    },
+    tapToExpandText: {
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        color: '#fff',
+        fontSize: 11,
+        fontWeight: '500',
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 12,
+        overflow: 'hidden',
+    },
+    tapHintBadge: {
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 4,
+    },
+    tapHintText: {
+        color: '#fff',
+        fontSize: 10,
+        fontWeight: '500',
+    },
+    fullscreenHint: {
+        position: 'absolute',
+        bottom: 12,
+        left: 0,
+        right: 0,
+        alignItems: 'center',
+    },
+    fullscreenHintText: {
+        backgroundColor: 'rgba(234, 88, 12, 0.9)',
+        color: '#fff',
+        fontSize: 12,
+        fontWeight: '600',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 16,
     },
     videoPlayOverlay: {
         position: 'absolute',
@@ -838,15 +914,15 @@ const styles = StyleSheet.create({
     },
     topicContent: {
         fontSize: 14,
-        color: '#9ca3af',
-        paddingHorizontal: 12,
+        color: '#e5e7eb',
+        paddingHorizontal: 16,
         marginBottom: 12,
         lineHeight: 20,
     },
     actionBar: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 8,
+        paddingHorizontal: 16,
         paddingBottom: 8,
         gap: 8,
     },
@@ -971,13 +1047,7 @@ const styles = StyleSheet.create({
         fontWeight: '600',
     },
     // Media styles
-    topicMediaImage: {
-        width: '100%',
-        height: 200,
-        marginHorizontal: 0,
-        marginVertical: 8,
-        borderRadius: 8,
-    },
+
     topicVideoContainer: {
         position: 'relative',
         marginHorizontal: 16,

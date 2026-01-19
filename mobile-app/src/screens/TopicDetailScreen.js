@@ -12,6 +12,7 @@ import {
     KeyboardAvoidingView,
     Platform,
     Keyboard,
+    Dimensions,
 } from 'react-native';
 import {
     ArrowLeft,
@@ -28,11 +29,13 @@ import forumService from '../api/forumService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CommonActions } from '@react-navigation/native';
 import CustomAlert from '../components/CustomAlert';
+import ImageViewerModal from '../components/ImageViewerModal';
 
 export default function TopicDetailScreen({ route, navigation }) {
     const { topicId } = route.params;
     const [topic, setTopic] = useState(null);
     const [comments, setComments] = useState([]);
+
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [replyText, setReplyText] = useState('');
@@ -42,6 +45,7 @@ export default function TopicDetailScreen({ route, navigation }) {
     const [likedComments, setLikedComments] = useState(new Set());
     const [replyingTo, setReplyingTo] = useState(null); // For reply-to-reply
     const [currentUserId, setCurrentUserId] = useState(null);
+    const [fullscreenImageUrl, setFullscreenImageUrl] = useState(null); // For fullscreen image viewer
     const [alertVisible, setAlertVisible] = useState(false);
     const [alertConfig, setAlertConfig] = useState({
         title: '',
@@ -331,15 +335,27 @@ export default function TopicDetailScreen({ route, navigation }) {
             {/* Title */}
             <Text style={styles.topicTitle}>{topic.title}</Text>
 
-            {/* Media Display */}
+            {/* Text Content - Moved above media */}
+            {topic.content && (
+                <Text style={styles.topicContent}>{topic.content}</Text>
+            )}
+
+            {/* Media Display - Tappable for fullscreen */}
             {topic.mediaUrl && (topic.mediaType === 'image' || topic.mediaType === 'IMAGE') && (
-                <View style={styles.mediaContainer}>
+                <TouchableOpacity
+                    style={[styles.mediaContainer, { marginHorizontal: -20, borderRadius: 0, borderWidth: 0 }]}
+                    onPress={() => setFullscreenImageUrl(topic.mediaUrl)}
+                    activeOpacity={0.9}
+                >
                     <Image
                         source={{ uri: topic.mediaUrl }}
-                        style={styles.topicMediaImage}
-                        resizeMode="contain"
+                        style={[styles.topicMediaImage, { width: Dimensions.get('window').width, height: Dimensions.get('window').width }]}
+                        resizeMode="cover"
                     />
-                </View>
+                    <View style={styles.tapToExpandHint}>
+                        <Text style={styles.tapToExpandText}>Büyütmek için dokun</Text>
+                    </View>
+                </TouchableOpacity>
             )}
             {topic.mediaUrl && (topic.mediaType === 'video' || topic.mediaType === 'VIDEO') && (
                 <View style={styles.mediaContainer}>
@@ -353,10 +369,7 @@ export default function TopicDetailScreen({ route, navigation }) {
                 </View>
             )}
 
-            {/* Text Content */}
-            {topic.content && (
-                <Text style={styles.topicContent}>{topic.content}</Text>
-            )}
+
 
             {/* Action Bar - Reddit Style */}
             <View style={styles.actionBar}>
@@ -614,6 +627,13 @@ export default function TopicDetailScreen({ route, navigation }) {
                 type={alertConfig.type}
                 onClose={() => setAlertVisible(false)}
             />
+
+            {/* Fullscreen Image Viewer Modal */}
+            <ImageViewerModal
+                visible={!!fullscreenImageUrl}
+                imageUrl={fullscreenImageUrl}
+                onClose={() => setFullscreenImageUrl(null)}
+            />
         </KeyboardAvoidingView>
     );
 }
@@ -788,7 +808,7 @@ const styles = StyleSheet.create({
     },
     mediaContainer: {
         marginBottom: 16,
-        borderRadius: 8,
+        borderRadius: 12,
         overflow: 'hidden',
         backgroundColor: '#111',
         borderWidth: 1,
@@ -796,8 +816,24 @@ const styles = StyleSheet.create({
     },
     topicMediaImage: {
         width: '100%',
-        minHeight: 250,
-        maxHeight: 500,
+        minHeight: 280,
+        maxHeight: 450,
+    },
+    tapToExpandHint: {
+        position: 'absolute',
+        bottom: 12,
+        left: 0,
+        right: 0,
+        alignItems: 'center',
+    },
+    tapToExpandText: {
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        color: '#fff',
+        fontSize: 11,
+        fontWeight: '500',
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 12,
     },
     topicMediaVideo: {
         width: '100%',
