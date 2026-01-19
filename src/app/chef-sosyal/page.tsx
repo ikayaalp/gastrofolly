@@ -1,14 +1,11 @@
-import Link from "next/link"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
-import { ChefHat, Search, Bell, Plus, MessageCircle, ThumbsUp, Clock, User } from "lucide-react"
-import UserDropdown from "@/components/ui/UserDropdown"
 import { prisma } from "@/lib/prisma"
 import ChefSosyalClient from "./ChefSosyalClient"
 
 export default async function ChefSosyalPage() {
   const session = await getServerSession(authOptions)
-  
+
   // Veritabanından kategorileri çek
   const categories = await prisma.forumCategory.findMany({
     include: {
@@ -24,7 +21,7 @@ export default async function ChefSosyalPage() {
   })
 
   // Veritabanından başlıkları çek
-  const topics = await prisma.topic.findMany({
+  const topicsData = await prisma.topic.findMany({
     orderBy: {
       createdAt: 'desc'
     },
@@ -53,11 +50,17 @@ export default async function ChefSosyalPage() {
     }
   })
 
+  // Topic tipinde dönüştür - mediaType string olarak geliyor, cast ediyoruz
+  const topics = topicsData.map((topic: any) => ({
+    ...topic,
+    mediaType: topic.mediaType as 'IMAGE' | 'VIDEO' | null
+  }))
+
   return (
-    <ChefSosyalClient 
-      session={session} 
-      initialCategories={categories} 
-      initialTopics={topics}
+    <ChefSosyalClient
+      session={session}
+      initialCategories={categories}
+      initialTopics={topics as any}
     />
   )
 }
