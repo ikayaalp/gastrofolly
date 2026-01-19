@@ -60,19 +60,6 @@ export default function TopicCard({ topic, isLiked, onLike }: TopicCardProps) {
         <Link href={`/chef-sosyal/topic/${topic.id}`} className="block">
             <div className="flex bg-[#0a0a0a] border border-gray-800 rounded-md hover:border-gray-700 transition-colors overflow-hidden cursor-pointer mb-3">
 
-                {/* Left Side: Vote (Desktop) */}
-                <div className="hidden sm:flex flex-col items-center p-3 bg-[#0d0d0d] w-12 border-r border-gray-800/50">
-                    <button
-                        onClick={handleLike}
-                        className={`p-1 rounded hover:bg-gray-800 transition-colors ${isLiked ? 'text-orange-500' : 'text-gray-500 hover:text-orange-400'}`}
-                    >
-                        <ThumbsUp className={`h-5 w-5 ${isLiked ? 'fill-current' : ''}`} />
-                    </button>
-                    <span className={`text-xs font-bold my-1 ${isLiked ? 'text-orange-500' : 'text-gray-400'}`}>
-                        {topic.likeCount}
-                    </span>
-                </div>
-
                 {/* Content Area */}
                 <div className="flex-1 p-3 pb-1">
                     {/* Header */}
@@ -146,24 +133,28 @@ export default function TopicCard({ topic, isLiked, onLike }: TopicCardProps) {
                     )}
 
                     {/* Action Bar */}
-                    <div className="flex items-center space-x-1 text-gray-500 text-xs font-bold pt-1">
-                        <div className="sm:hidden flex items-center space-x-1 p-2 hover:bg-gray-800 rounded">
-                            <ThumbsUp className={`h-4 w-4 ${isLiked ? 'text-orange-500' : ''}`} />
-                            <span className={isLiked ? 'text-orange-500' : ''}>{topic.likeCount}</span>
+                    <div className="flex items-center space-x-3 text-gray-500 text-xs font-bold pt-1">
+                        {/* Vote Button */}
+                        <button
+                            onClick={handleLike}
+                            className={`flex items-center space-x-1.5 px-3 py-2 rounded-full transition-all duration-200 ${isLiked
+                                    ? 'bg-orange-500/10 text-orange-500'
+                                    : 'hover:bg-gray-800 text-gray-400 hover:text-orange-500'
+                                }`}
+                        >
+                            <ThumbsUp className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
+                            <span className="text-sm">{topic.likeCount}</span>
+                        </button>
+
+                        <div className="flex items-center space-x-1.5 px-3 py-2 hover:bg-gray-800 rounded-full transition-colors group cursor-pointer text-gray-400 hover:text-white">
+                            <MessageCircle className="h-4 w-4" />
+                            <span className="text-sm">{topic._count.posts}</span>
+                            <span className="hidden sm:inline">Yorum</span>
                         </div>
 
-                        <div className="flex items-center space-x-2 p-2 hover:bg-gray-800 rounded transition-colors group">
-                            <MessageCircle className="h-4 w-4 group-hover:text-gray-300" />
-                            <span className="group-hover:text-gray-300">{topic._count.posts} Yorum</span>
-                        </div>
-
-                        <div className="flex items-center space-x-2 p-2 hover:bg-gray-800 rounded transition-colors group">
-                            <Share2 className="h-4 w-4 group-hover:text-gray-300" />
-                            <span className="group-hover:text-gray-300">Paylaş</span>
-                        </div>
-
-                        <div className="flex items-center space-x-2 p-2 hover:bg-gray-800 rounded transition-colors group">
-                            <MoreHorizontal className="h-4 w-4 group-hover:text-gray-300" />
+                        <div className="flex items-center space-x-1.5 px-3 py-2 hover:bg-gray-800 rounded-full transition-colors group cursor-pointer text-gray-400 hover:text-white">
+                            <Share2 className="h-4 w-4" />
+                            <span className="hidden sm:inline">Paylaş</span>
                         </div>
                     </div>
                 </div>
