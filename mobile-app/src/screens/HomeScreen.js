@@ -56,18 +56,31 @@ export default function HomeScreen({ navigation }) {
                 if (storyResult.stories) {
                     // Directly map stories to the structure needed by Stories component
                     // We no longer group by creator. Each story is a separate item.
-                    const formattedStories = storyResult.stories.map(story => ({
-                        id: story.id,
-                        user: {
-                            name: story.title || story.creator.name || "Chef",
-                            avatar: story.coverImage || story.mediaUrl || story.creator.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(story.creator.name)}`
-                        },
-                        // Stories component expects an array of stories for the viewer, 
-                        // but since we are ungrouping, each "Item/Author" has just this one story in its list?
-                        // OR, we can still pass all stories to the viewer but start at index?
-                        // Let's stick to the structure: one item in the list = one story object wrapper.
-                        stories: [story]
-                    }));
+                    const formattedStories = storyResult.stories.map(story => {
+                        let avatarUrl = story.coverImage;
+
+                        // If no cover image and it's a video, try to generate a thumbnail
+                        if (!avatarUrl && story.mediaType === 'VIDEO') {
+                            if (story.mediaUrl && story.mediaUrl.includes('cloudinary')) {
+                                // Cloudinary: Replace extension (e.g. .mp4) with .jpg for thumbnail
+                                avatarUrl = story.mediaUrl.replace(/\.[^/.]+$/, ".jpg");
+                            }
+                        }
+
+                        // Fallback to mediaUrl (if image) or creator image
+                        if (!avatarUrl) {
+                            avatarUrl = story.mediaType === 'IMAGE' ? story.mediaUrl : story.creator.image;
+                        }
+
+                        return {
+                            id: story.id,
+                            user: {
+                                name: story.title || story.creator.name || "Chef",
+                                avatar: avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(story.creator.name)}`
+                            },
+                            stories: [story]
+                        };
+                    });
                     setStories(formattedStories);
                 }
             }

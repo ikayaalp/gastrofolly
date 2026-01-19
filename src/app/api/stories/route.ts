@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { getAuthUser } from "@/lib/mobileAuth";
 import { v2 as cloudinary } from 'cloudinary';
 
+export const dynamic = 'force-dynamic';
+
 // GET: Fetch all active stories
 export async function GET(request: NextRequest) {
     try {
@@ -31,6 +33,8 @@ export async function GET(request: NextRequest) {
             },
         });
 
+        // console.log("API GET Stories:", stories.length, stories[0]); // Debug log
+
         return NextResponse.json({ success: true, stories });
     } catch (error) {
         console.error("Error fetching stories:", error);
@@ -57,11 +61,20 @@ export async function POST(request: NextRequest) {
         const duration = parseInt(formData.get("duration") as string) || 5000;
         const courseId = formData.get("courseId") as string;
 
+        const title = formData.get("title") as string;
+        const coverFile = formData.get("coverImage") as File;
+
+        console.log("---- DEBUG STORY UPLOAD ----");
+        console.log("Received Title:", title);
+        console.log("Received CoverFile:", coverFile ? coverFile.name : "None");
+        console.log("FormData Keys:", Array.from(formData.keys()));
+        console.log("----------------------------");
+
         if (!file) {
             return NextResponse.json({ error: "Medya dosyası bulunamadı" }, { status: 400 });
         }
 
-        // Cloudinary Upload Logic
+        // Cloudinary Upload Logic for Main Media
         const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
         const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET || 'chef-courses-unsigned';
         const folder = 'stories'; // Separate folder for stories
@@ -70,36 +83,38 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "Server konfigürasyon hatası (Cloudinary)" }, { status: 500 });
         }
 
-        // Determine resource type based on input
-        // Note: 'video' resource type covers videos, 'image' covers images.
-        // If coming from our admin panel, type might be 'VIDEO' or 'IMAGE'.
-        // Cloudinary expects lowercase 'video' or 'image' typically for the API URL, 
-        // OR 'auto' if using the unsigned upload correctly.
+        // Helper to upload to Cloudinary
+        const uploadToCloudinary = async (fileToUpload: File, resourceType: 'image' | 'video' = 'image') => {
+            const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`;
+            const uploadFormData = new FormData();
+            uploadFormData.append('file', fileToUpload);
+            if (uploadPreset) {
+                uploadFormData.append('upload_preset', uploadPreset);
+            }
+            uploadFormData.append('folder', folder);
+            uploadFormData.append('public_id', `story_${Date.now()}_${Math.random().toString(36).substring(7)}`);
+
+            const res = await fetch(cloudinaryUrl, {
+                method: 'POST',
+                body: uploadFormData
+            });
+
+            if (!res.ok) {
+                const errData = await res.json();
+                throw new Error(errData.error?.message || 'Cloudinary upload failed');
+            }
+            const data = await res.json();
+            return data.secure_url;
+        };
 
         const resourceType = type === 'VIDEO' ? 'video' : 'image';
-        const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`;
+        const mediaUrl = await uploadToCloudinary(file, resourceType);
 
-        const uploadFormData = new FormData();
-        uploadFormData.append('file', file);
-        if (uploadPreset) {
-            uploadFormData.append('upload_preset', uploadPreset);
+        let coverImageUrl = null;
+        if (coverFile) {
+            // Upload cover image
+            coverImageUrl = await uploadToCloudinary(coverFile, 'image');
         }
-        uploadFormData.append('folder', folder);
-        uploadFormData.append('public_id', `story_${Date.now()}`);
-
-        const cloudRes = await fetch(cloudinaryUrl, {
-            method: 'POST',
-            body: uploadFormData
-        });
-
-        if (!cloudRes.ok) {
-            const errData = await cloudRes.json();
-            console.error('Cloudinary upload error:', errData);
-            throw new Error(errData.error?.message || 'Cloudinary upload failed');
-        }
-
-        const cloudData = await cloudRes.json();
-        const mediaUrl = cloudData.secure_url;
 
         // Expiry: 24 hours from now
         const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -112,6 +127,8 @@ export async function POST(request: NextRequest) {
                 expiresAt,
                 courseId: courseId || null,
                 creatorId: user.id,
+                title: title || null,
+                coverImage: coverImageUrl || null,
             },
         });
 

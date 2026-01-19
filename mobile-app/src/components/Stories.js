@@ -3,25 +3,42 @@ import { StyleSheet, Text, View, Image, ScrollView, TouchableOpacity, Modal, Dim
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 
+import { Video, ResizeMode } from 'expo-av';
+
 const { width, height } = Dimensions.get('window');
 
 const StoryViewer = ({ stories, initialIndex, onClose, navigation }) => {
     const [currentIndex, setCurrentIndex] = useState(initialIndex);
     const [progress, setProgress] = useState(0);
     const progressInterval = useRef(null);
+    const videoRef = useRef(null);
+    const [isVideoReady, setIsVideoReady] = useState(false);
+
+    // Group structure from HomeScreen: { user: {name, avatar}, stories: [ {id, mediaUrl/content, type, duration, courseId} ] }
+    const currentStoryGroup = stories[currentIndex];
+    const currentStoryItem = currentStoryGroup?.stories?.[0];
+    const isVideo = currentStoryItem?.mediaType === 'VIDEO' || currentStoryItem?.mediaUrl?.endsWith('.mp4') || currentStoryItem?.mediaUrl?.includes('/video/');
 
     // Reset progress when changing story
     useEffect(() => {
         setProgress(0);
-        startProgress();
+        setIsVideoReady(false);
+
+        if (!isVideo) {
+            // For images, start timer immediately
+            startProgress();
+        } else {
+            // For videos, wait for verify load
+            stopProgress();
+        }
 
         return () => stopProgress();
-    }, [currentIndex]);
+    }, [currentIndex, isVideo]);
 
     const startProgress = () => {
         stopProgress();
-        const duration = 5000; // 5 seconds per story
-        const intervalTime = 50; // Update every 50ms
+        const duration = currentStoryItem?.duration || 5000;
+        const intervalTime = 50;
         const step = 100 / (duration / intervalTime);
 
         progressInterval.current = setInterval(() => {
@@ -42,6 +59,14 @@ const StoryViewer = ({ stories, initialIndex, onClose, navigation }) => {
         }
     };
 
+    const handleVideoLoad = (status) => {
+        setIsVideoReady(true);
+        // Start progress bar matched to video duration if possible, 
+        // but for now we rely on our own timer or video 'onPlaybackStatusUpdate'
+        // Simpler for this MVP: Use the same timer logic once video starts playing.
+        startProgress();
+    };
+
     const handleNext = () => {
         if (currentIndex < stories.length - 1) {
             setCurrentIndex(currentIndex + 1);
@@ -54,10 +79,10 @@ const StoryViewer = ({ stories, initialIndex, onClose, navigation }) => {
         if (currentIndex > 0) {
             setCurrentIndex(currentIndex - 1);
         } else {
-            // Restart current story or close if at beginning? 
-            // Usually instagram just stays at start or goes to prev user. 
-            // For simplicity, reset progress.
             setProgress(0);
+            if (videoRef.current) {
+                videoRef.current.replayAsync();
+            }
         }
     };
 
@@ -65,13 +90,6 @@ const StoryViewer = ({ stories, initialIndex, onClose, navigation }) => {
     if (!stories || stories.length === 0 || !stories[currentIndex]) {
         return null;
     }
-
-    // Group structure from HomeScreen: { user: {name, avatar}, stories: [ {id, mediaUrl/content, type, duration, courseId} ] }
-    const currentStoryGroup = stories[currentIndex];
-
-    // Get the first story of the group (assuming single story per user for simplicty in this version)
-    // The backend/HomeScreen provides consistent structure.
-    const currentStoryItem = currentStoryGroup.stories && currentStoryGroup.stories.length > 0 ? currentStoryGroup.stories[0] : null;
 
     if (!currentStoryItem) return null;
 
@@ -94,11 +112,29 @@ const StoryViewer = ({ stories, initialIndex, onClose, navigation }) => {
             <View style={viewerStyles.container}>
                 <StatusBar hidden />
 
-                {/* Background Image */}
-                <Image
-                    source={{ uri: currentStoryItem.mediaUrl || currentStoryItem.content }}
-                    style={viewerStyles.backgroundImage}
-                />
+                {/* Media Content */}
+                {isVideo ? (
+                    <Video
+                        ref={videoRef}
+                        style={viewerStyles.backgroundImage}
+                        source={{ uri: currentStoryItem.mediaUrl }}
+                        useNativeControls={false}
+                        resizeMode={ResizeMode.COVER}
+                        isLooping={false}
+                        shouldPlay={true}
+                        onPlaybackStatusUpdate={status => {
+                            if (status.didJustFinish) {
+                                handleNext();
+                            }
+                        }}
+                        onLoad={handleVideoLoad}
+                    />
+                ) : (
+                    <Image
+                        source={{ uri: currentStoryItem.mediaUrl || currentStoryItem.content }}
+                        style={viewerStyles.backgroundImage}
+                    />
+                )}
 
                 {/* Overlay */}
                 <LinearGradient
@@ -118,7 +154,10 @@ const StoryViewer = ({ stories, initialIndex, onClose, navigation }) => {
                                 source={{ uri: currentStoryGroup.user.avatar }}
                                 style={viewerStyles.userAvatarSmall}
                             />
-                            <Text style={viewerStyles.userNameSmall}>{currentStoryGroup.user.name}</Text>
+                            {/* Display Title or Creator Name */}
+                            <Text style={viewerStyles.userNameSmall}>
+                                {currentStoryGroup.user.name}
+                            </Text>
                             <Text style={viewerStyles.timeText}>Yeni</Text>
 
                             <TouchableOpacity style={viewerStyles.closeButton} onPress={onClose}>
