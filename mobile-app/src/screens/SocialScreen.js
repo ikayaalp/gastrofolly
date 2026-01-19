@@ -27,6 +27,7 @@ import {
     ImageIcon,
     Check,
     Camera,
+    Film,
 } from 'lucide-react-native';
 import { Video, ResizeMode } from 'expo-av';
 import * as ImagePicker from 'expo-image-picker';
