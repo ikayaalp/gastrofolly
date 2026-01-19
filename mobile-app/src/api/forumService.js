@@ -109,7 +109,7 @@ const forumService = {
                 categoryId,
                 mediaUrl,
                 thumbnailUrl,
-                mediaType,
+                mediaType: mediaType ? mediaType.toUpperCase() : null, // API expects 'IMAGE' or 'VIDEO'
             });
             return { success: true, data: response.data };
         } catch (error) {
