@@ -261,7 +261,6 @@ export default function ChefSosyalClient({
       const objectUrl = URL.createObjectURL(file)
       setTopicMedia({
         mediaUrl: objectUrl,
-        publicId: 'temp',
         type: type
       })
 
@@ -280,7 +279,6 @@ export default function ChefSosyalClient({
       // Update with real data
       setTopicMedia({
         mediaUrl: data.mediaUrl,
-        publicId: data.publicId,
         type: data.mediaType as 'IMAGE' | 'VIDEO'
       })
 
