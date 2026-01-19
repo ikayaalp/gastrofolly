@@ -510,7 +510,7 @@ export default function ChefSosyalClient({
                 className="w-full bg-transparent border-none p-0 text-xl font-bold text-white placeholder-gray-500 focus:ring-0 mb-3"
               />
 
-              {/* Content Input (Auto-growing textarea ideally, but standard for now) */}
+              {/* Content Input (Auto-growing textarea ideally, but standardfghgfgow) */}
               <textarea
                 value={newTopicForm.content}
                 onChange={(e) => setNewTopicForm({ ...newTopicForm, content: e.target.value })}
