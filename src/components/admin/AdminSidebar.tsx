@@ -12,7 +12,8 @@ import {
     Video,
     Bell,
     ChefHat,
-    LogOut
+    LogOut,
+    Camera
 } from "lucide-react"
 
 const sidebarItems = [
@@ -31,6 +32,11 @@ const sidebarItems = [
         title: "Video Yönetimi",
         href: "/admin/videos",
         icon: Video
+    },
+    {
+        title: "Hikayeler",
+        href: "/admin/stories",
+        icon: Camera
     },
     {
         title: "Kullanıcılar",
