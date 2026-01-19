@@ -379,43 +379,43 @@ export default function SocialScreen({ navigation }) {
                 </View>
             </View>
 
-            {/* Categories Horizontal Scroll */}
-            <View style={styles.categoriesContainer}>
-                <FlatList
-                    horizontal
-                    data={[{ id: 'all', slug: 'all', name: 'Tümü', _count: { topics: topics.length } }, ...categories]}
-                    renderItem={renderCategoryItem}
-                    keyExtractor={(item) => item.id || item.slug}
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.categoriesList}
-                />
-            </View>
+            {/* Create Post Input Trigger (like web) */}
+            {isLoggedIn && (
+                <TouchableOpacity
+                    style={styles.createPostBar}
+                    onPress={() => setShowNewTopicModal(true)}
+                    activeOpacity={0.8}
+                >
+                    <View style={styles.createPostAvatar}>
+                        <User size={18} color="#fff" />
+                    </View>
+                    <View style={styles.createPostInput}>
+                        <Text style={styles.createPostPlaceholder}>Bir şeyler paylaş...</Text>
+                    </View>
+                    <TouchableOpacity
+                        style={styles.createPostImageButton}
+                        onPress={() => { pickImage(); setShowNewTopicModal(true); }}
+                    >
+                        <ImageIcon size={22} color="#6b7280" />
+                    </TouchableOpacity>
+                </TouchableOpacity>
+            )}
 
-            {/* Sort Options */}
-            <View style={styles.sortContainer}>
-                <Text style={styles.sortLabel}>Sırala:</Text>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                    {[
-                        { key: 'newest', label: 'En Yeni' },
-                        { key: 'popular', label: 'En Popüler' },
-                        { key: 'mostReplies', label: 'En Çok Yanıt' },
-                    ].map((option) => (
-                        <TouchableOpacity
-                            key={option.key}
-                            style={[styles.sortOption, sortBy === option.key && styles.sortOptionActive]}
-                            onPress={() => setSortBy(option.key)}
-                        >
-                            <Text
-                                style={[
-                                    styles.sortOptionText,
-                                    sortBy === option.key && styles.sortOptionTextActive,
-                                ]}
-                            >
-                                {option.label}
-                            </Text>
-                        </TouchableOpacity>
-                    ))}
-                </ScrollView>
+            {/* Filter Tabs (like web) */}
+            <View style={styles.filterTabsContainer}>
+                <TouchableOpacity
+                    style={[styles.filterTab, sortBy === 'newest' && styles.filterTabActive]}
+                    onPress={() => setSortBy('newest')}
+                >
+                    <Clock size={14} color={sortBy === 'newest' ? '#fff' : '#6b7280'} />
+                    <Text style={[styles.filterTabText, sortBy === 'newest' && styles.filterTabTextActive]}>Yeni</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={[styles.filterTab, sortBy === 'popular' && styles.filterTabActive]}
+                    onPress={() => setSortBy('popular')}
+                >
+                    <Text style={[styles.filterTabText, sortBy === 'popular' && styles.filterTabTextActive]}>Popüler</Text>
+                </TouchableOpacity>
             </View>
 
             {/* Topics List */}
@@ -630,36 +630,73 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 12,
     },
-    sortContainer: {
+    // Create Post Bar styles (matching web)
+    createPostBar: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#0a0a0a',
+        borderWidth: 1,
+        borderColor: '#1f2937',
+        borderRadius: 8,
+        padding: 12,
+        marginHorizontal: 16,
+        marginBottom: 16,
+        gap: 12,
+    },
+    createPostAvatar: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: '#ea580c',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    createPostInput: {
+        flex: 1,
+        backgroundColor: '#1a1a1a',
+        borderWidth: 1,
+        borderColor: '#374151',
+        borderRadius: 6,
+        paddingVertical: 10,
+        paddingHorizontal: 14,
+    },
+    createPostPlaceholder: {
+        color: '#6b7280',
+        fontSize: 14,
+    },
+    createPostImageButton: {
+        padding: 8,
+    },
+    // Filter Tabs styles (matching web)
+    filterTabsContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 16,
-        paddingVertical: 12,
+        marginBottom: 12,
+        gap: 12,
     },
-    sortLabel: {
-        color: '#9ca3af',
+    filterTab: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 8,
+        paddingHorizontal: 14,
+        borderRadius: 20,
+        backgroundColor: 'transparent',
+        gap: 6,
+    },
+    filterTabActive: {
+        backgroundColor: '#1f2937',
+    },
+    filterTabText: {
+        color: '#6b7280',
         fontSize: 14,
-        marginRight: 8,
+        fontWeight: '700',
     },
-    sortOption: {
-        paddingVertical: 6,
-        paddingHorizontal: 12,
-        borderRadius: 16,
-        marginRight: 8,
-        backgroundColor: '#1a1a1a',
-    },
-    sortOptionActive: {
-        backgroundColor: '#ea580c',
-    },
-    sortOptionText: {
-        color: '#9ca3af',
-        fontSize: 13,
-    },
-    sortOptionTextActive: {
+    filterTabTextActive: {
         color: '#fff',
     },
     topicsList: {
-        padding: 16,
+        paddingHorizontal: 12,
         paddingBottom: 100,
     },
     topicCard: {
