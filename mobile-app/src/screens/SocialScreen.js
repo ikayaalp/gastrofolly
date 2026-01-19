@@ -303,7 +303,7 @@ export default function SocialScreen({ navigation }) {
                     <Image
                         source={{ uri: item.thumbnailUrl || item.mediaUrl }}
                         style={styles.topicMediaImage}
-                        resizeMode="contain"
+                        resizeMode="cover"
                     />
                 </View>
             )}
@@ -757,19 +757,15 @@ const styles = StyleSheet.create({
         lineHeight: 22,
     },
     mediaContainer: {
-        marginHorizontal: 12,
-        marginBottom: 12,
-        borderRadius: 8,
+        marginHorizontal: 0,
+        marginBottom: 8,
         overflow: 'hidden',
-        backgroundColor: '#111',
-        borderWidth: 1,
-        borderColor: '#1f2937',
+        backgroundColor: '#000',
     },
     topicMediaImage: {
         width: '100%',
         height: undefined,
-        aspectRatio: 4 / 3,
-        minHeight: 280,
+        aspectRatio: 1,
     },
     videoPlayOverlay: {
         position: 'absolute',
