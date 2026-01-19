@@ -183,6 +183,11 @@ const forumService = {
     // Upload media (image or video)
     uploadMedia: async (uri, type) => {
         try {
+            const token = await AsyncStorage.getItem('authToken');
+            if (!token) {
+                return { success: false, error: 'Giriş yapmalısınız' };
+            }
+
             const formData = new FormData();
             const filename = uri.split('/').pop();
             const match = /\.(\w+)$/.exec(filename);
@@ -195,14 +200,12 @@ const forumService = {
                 type: mimeType,
             });
 
-            // "Content-Type" header is automatically set by axios/fetch when sending FormData
-            // We need to bypass the default JSON header we set globally
             const response = await fetch(`${config.API_BASE_URL}/api/forum/upload-media`, {
                 method: 'POST',
                 body: formData,
                 headers: {
                     'Accept': 'application/json',
-                    // Don't set Content-Type here, let the browser/native fetch handle the boundary
+                    'Authorization': `Bearer ${token}`,
                 },
             });
 
