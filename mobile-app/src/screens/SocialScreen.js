@@ -71,6 +71,7 @@ export default function SocialScreen({ navigation }) {
         const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
+            aspect: [1, 1], // Instagram-style square crop
             quality: 0.8,
         });
         if (!result.canceled && result.assets[0]) {
@@ -303,7 +304,7 @@ export default function SocialScreen({ navigation }) {
                     <Image
                         source={{ uri: item.thumbnailUrl || item.mediaUrl }}
                         style={styles.topicMediaImage}
-                        resizeMode="contain"
+                        resizeMode="cover"
                     />
                 </View>
             )}
@@ -764,9 +765,7 @@ const styles = StyleSheet.create({
     },
     topicMediaImage: {
         width: '100%',
-        height: undefined,
-        aspectRatio: 0.8,
-        maxHeight: 500,
+        aspectRatio: 1,
     },
     videoPlayOverlay: {
         position: 'absolute',
