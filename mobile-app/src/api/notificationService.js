@@ -151,7 +151,7 @@ class NotificationService {
             }
 
             const response = await axios.get(
-                `${config.API_BASE_URL}/api/notifications`,
+                `${config.API_BASE_URL}/api/notifications?_t=${new Date().getTime()}`,
                 {
                     headers: {
                         'Authorization': `Bearer ${authToken}`

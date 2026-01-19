@@ -3,6 +3,7 @@ import { getAuthUser } from '@/lib/mobileAuth'
 import { prisma } from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 // GET - Kullanıcının bildirimlerini getir
 export async function GET(request: NextRequest) {
@@ -23,7 +24,16 @@ export async function GET(request: NextRequest) {
             where: { userId: user.id, isRead: false }
         })
 
-        return NextResponse.json({ notifications, unreadCount })
+        return NextResponse.json(
+            { notifications, unreadCount },
+            {
+                headers: {
+                    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                    'Pragma': 'no-cache',
+                    'Expires': '0',
+                }
+            }
+        )
     } catch (error) {
         console.error('Error fetching notifications:', error)
         return NextResponse.json({ error: 'Bildirimler getirilemedi' }, { status: 500 })
