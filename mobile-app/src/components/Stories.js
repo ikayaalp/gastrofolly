@@ -8,32 +8,40 @@ import { Video, ResizeMode } from 'expo-av';
 const { width, height } = Dimensions.get('window');
 
 const StoryViewer = ({ stories, initialIndex, onClose, navigation }) => {
-    const [currentIndex, setCurrentIndex] = useState(initialIndex);
+    const [currentIndex, setCurrentIndex] = useState(initialIndex); // Index of the GROUP (Circle)
+    const [currentStoryIndex, setCurrentStoryIndex] = useState(0);  // Index of the STORY within the group
     const [progress, setProgress] = useState(0);
     const progressInterval = useRef(null);
     const videoRef = useRef(null);
     const [isVideoReady, setIsVideoReady] = useState(false);
 
-    // Group structure from HomeScreen: { user: {name, avatar}, stories: [ {id, mediaUrl/content, type, duration, courseId} ] }
+    // Group structure: { user: {...}, stories: [story1, story2...] }
     const currentStoryGroup = stories[currentIndex];
-    const currentStoryItem = currentStoryGroup?.stories?.[0];
+    // Safety check: ensure stories array exists and has items
+    const currentStoryItem = currentStoryGroup?.stories?.[currentStoryIndex];
+
     const isVideo = currentStoryItem?.mediaType === 'VIDEO' || currentStoryItem?.mediaUrl?.endsWith('.mp4') || currentStoryItem?.mediaUrl?.includes('/video/');
 
-    // Reset progress when changing story
+    // When switching GROUP, reset story index to 0
+    useEffect(() => {
+        setCurrentStoryIndex(0);
+    }, [currentIndex]);
+
+    // Reset progress/video when switching STORY (or Group)
     useEffect(() => {
         setProgress(0);
         setIsVideoReady(false);
 
+        if (!currentStoryItem) return;
+
         if (!isVideo) {
-            // For images, start timer immediately
             startProgress();
         } else {
-            // For videos, wait for verify load
             stopProgress();
         }
 
         return () => stopProgress();
-    }, [currentIndex, isVideo]);
+    }, [currentIndex, currentStoryIndex, isVideo, currentStoryItem]); // Added dependencies
 
     const startProgress = () => {
         stopProgress();
@@ -61,24 +69,37 @@ const StoryViewer = ({ stories, initialIndex, onClose, navigation }) => {
 
     const handleVideoLoad = (status) => {
         setIsVideoReady(true);
-        // Start progress bar matched to video duration if possible, 
-        // but for now we rely on our own timer or video 'onPlaybackStatusUpdate'
-        // Simpler for this MVP: Use the same timer logic once video starts playing.
         startProgress();
     };
 
     const handleNext = () => {
-        if (currentIndex < stories.length - 1) {
-            setCurrentIndex(currentIndex + 1);
-        } else {
+        // 1. Is there another story in THIS group?
+        if (currentStoryGroup && currentStoryIndex < currentStoryGroup.stories.length - 1) {
+            setCurrentStoryIndex(prev => prev + 1);
+        }
+        // 2. Is there another GROUP?
+        else if (currentIndex < stories.length - 1) {
+            setCurrentIndex(prev => prev + 1);
+            // currentStoryIndex will be reset by useEffect
+        }
+        // 3. End of all stories
+        else {
             onClose();
         }
     };
 
     const handlePrev = () => {
-        if (currentIndex > 0) {
-            setCurrentIndex(currentIndex - 1);
-        } else {
+        // 1. Is there a previous story in THIS group?
+        if (currentStoryIndex > 0) {
+            setCurrentStoryIndex(prev => prev - 1);
+        }
+        // 2. Is there a previous GROUP?
+        else if (currentIndex > 0) {
+            setCurrentIndex(prev => prev - 1);
+            //Ideally set to LAST story of previous group? For now logic sets to 0 (start of group) via useEffect.
+        }
+        // 3. Start of all stories
+        else {
             setProgress(0);
             if (videoRef.current) {
                 videoRef.current.replayAsync();
@@ -143,9 +164,24 @@ const StoryViewer = ({ stories, initialIndex, onClose, navigation }) => {
                 >
                     {/* Header: Progress & User Info */}
                     <View style={viewerStyles.header}>
-                        {/* Progress Bar */}
-                        <View style={viewerStyles.progressBarContainer}>
-                            <View style={[viewerStyles.progressBar, { width: `${progress}%` }]} />
+                        {/* Progress Bar Row */}
+                        <View style={viewerStyles.progressBarRow}>
+                            {currentStoryGroup?.stories?.map((story, index) => {
+                                let barProgress = 0;
+                                if (index < currentStoryIndex) {
+                                    barProgress = 100;
+                                } else if (index === currentStoryIndex) {
+                                    barProgress = progress;
+                                } else {
+                                    barProgress = 0;
+                                }
+
+                                return (
+                                    <View key={index} style={viewerStyles.progressBarContainer}>
+                                        <View style={[viewerStyles.progressBar, { width: `${barProgress}%` }]} />
+                                    </View>
+                                );
+                            })}
                         </View>
 
                         {/* User Info */}

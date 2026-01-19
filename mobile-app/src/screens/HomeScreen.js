@@ -54,33 +54,49 @@ export default function HomeScreen({ navigation }) {
             if (storyResult && storyResult.success) {
                 // Group stories by creator logic (similar to web)
                 if (storyResult.stories) {
-                    // Directly map stories to the structure needed by Stories component
-                    // We no longer group by creator. Each story is a separate item.
-                    const formattedStories = storyResult.stories.map(story => {
-                        let avatarUrl = story.coverImage;
+                    // Grouping Logic:
+                    // 1. Group by Title if exists.
+                    // 2. If no title, treat as individual (unique group).
+                    const groupedStories = {};
 
-                        // If no cover image and it's a video, try to generate a thumbnail
-                        if (!avatarUrl && story.mediaType === 'VIDEO') {
-                            if (story.mediaUrl && story.mediaUrl.includes('cloudinary')) {
-                                // Cloudinary: Replace extension (e.g. .mp4) with .jpg for thumbnail
+                    storyResult.stories.forEach(story => {
+                        const key = story.title ? `title:${story.title}` : `id:${story.id}`;
+
+                        if (!groupedStories[key]) {
+                            let avatarUrl = story.coverImage;
+                            // Thumbnail logic
+                            if (!avatarUrl && story.mediaType === 'VIDEO' && story.mediaUrl?.includes('cloudinary')) {
                                 avatarUrl = story.mediaUrl.replace(/\.[^/.]+$/, ".jpg");
                             }
-                        }
+                            if (!avatarUrl) {
+                                avatarUrl = story.mediaType === 'IMAGE' ? story.mediaUrl : story.creator.image;
+                            }
 
-                        // Fallback to mediaUrl (if image) or creator image
-                        if (!avatarUrl) {
-                            avatarUrl = story.mediaType === 'IMAGE' ? story.mediaUrl : story.creator.image;
+                            groupedStories[key] = {
+                                id: key,
+                                user: {
+                                    name: story.title || story.creator.name || "Chef",
+                                    avatar: avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(story.creator.name)}`
+                                },
+                                stories: []
+                            };
                         }
-
-                        return {
-                            id: story.id,
-                            user: {
-                                name: story.title || story.creator.name || "Chef",
-                                avatar: avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(story.creator.name)}`
-                            },
-                            stories: [story]
-                        };
+                        groupedStories[key].stories.push(story);
                     });
+
+                    // Convert to array and sort stories within groups by creation time
+                    const formattedStories = Object.values(groupedStories).map(group => {
+                        group.stories.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+                        return group;
+                    });
+
+                    // Optional: Sort groups by newest story?
+                    formattedStories.sort((a, b) => {
+                        const lastStoryA = a.stories[a.stories.length - 1];
+                        const lastStoryB = b.stories[b.stories.length - 1];
+                        return new Date(lastStoryB.createdAt) - new Date(lastStoryA.createdAt);
+                    });
+
                     setStories(formattedStories);
                 }
             }
