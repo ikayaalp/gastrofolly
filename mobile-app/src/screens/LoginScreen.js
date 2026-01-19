@@ -22,14 +22,9 @@ export default function LoginScreen({ navigation }) {
     });
 
     const [request, response, promptAsync] = Google.useAuthRequest({
-        // EXPO GO DEBUGGING:
-        // When using Expo Go, we must use the Web Client ID for Android because the package name (host.exp.exponent) 
-        // doesn't match our specific Android Client ID (com.chef2.app).
-        // So for now, we use the Web Client ID for 'androidClientId' as well.
         iosClientId: '334630749775-terb1dfppb1atgem3t1pc0o41chaj3r1.apps.googleusercontent.com',
-        androidClientId: '334630749775-meelg2lgcapd5d64rmbm9gmm8h06im0e.apps.googleusercontent.com', // Using WEB ID for Expo Go
+        androidClientId: '334630749775-terb1dfppb1atgem3t1pc0o41chaj3r1.apps.googleusercontent.com', // Using Native ID for APK
         webClientId: '334630749775-meelg2lgcapd5d64rmbm9gmm8h06im0e.apps.googleusercontent.com',
-        // Her seferinde hesap seçim ekranını göster - kullanıcının yanlış hesapla giriş yapmasını önler
         selectAccount: true,
     });
 

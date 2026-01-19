@@ -507,7 +507,6 @@ export default function ChefSosyalClient({
                 value={newTopicForm.title}
                 onChange={(e) => setNewTopicForm({ ...newTopicForm, title: e.target.value })}
                 placeholder="Başlık"
-                maxLength={100}
                 className="w-full bg-transparent border-none p-0 text-xl font-bold text-white placeholder-gray-500 focus:ring-0 mb-3"
               />
 
@@ -569,13 +568,6 @@ export default function ChefSosyalClient({
                 >
                   <Film className="h-6 w-6" />
                 </button>
-
-                {/* Separator */}
-                <div className="h-6 w-px bg-gray-800 mx-2"></div>
-
-                <div className="text-xs text-gray-500 font-bold ml-auto">
-                  {newTopicForm.title.length}/100
-                </div>
               </div>
 
               {/* Hidden Inputs for Media */}

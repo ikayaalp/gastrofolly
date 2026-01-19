@@ -1,25 +1,22 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, ImageBackground, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-
-// Using gradient background instead of image to avoid build issues
-
 
 export default function AuthBackground() {
     return (
         <View style={styles.container}>
-            {/* Base Dark Background */}
-            <View style={styles.baseBackground} />
-
-            {/* Gradient Overlay with warm tones */}
-            <LinearGradient
-                colors={['#1a1a1a', '#2d1810', '#1a1a1a', '#0a0a0a']}
-                locations={[0, 0.3, 0.7, 1]}
-                style={styles.gradient}
-            />
-
-            {/* Subtle overlay for depth */}
-            <View style={styles.blurOverlay} />
+            <ImageBackground
+                source={require('../../assets/auth_background.png')}
+                style={styles.imageBackground}
+                resizeMode="cover"
+            >
+                {/* Dark Gradient Overlay for readability */}
+                <LinearGradient
+                    colors={['rgba(0,0,0,0.3)', 'rgba(0,0,0,0.7)', '#000000']}
+                    locations={[0, 0.6, 1]}
+                    style={styles.gradient}
+                />
+            </ImageBackground>
         </View>
     );
 }
@@ -32,14 +29,11 @@ const styles = StyleSheet.create({
         right: 0,
         bottom: 0,
         zIndex: -1,
+        backgroundColor: '#000',
     },
-    baseBackground: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: '#0a0a0a',
+    imageBackground: {
+        width: '100%',
+        height: '100%',
     },
     gradient: {
         position: 'absolute',
@@ -47,13 +41,5 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         bottom: 0,
-    },
-    blurOverlay: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(255, 107, 0, 0.05)',
     },
 });
