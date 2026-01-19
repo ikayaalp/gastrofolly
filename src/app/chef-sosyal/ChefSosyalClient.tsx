@@ -261,7 +261,7 @@ export default function ChefSosyalClient({
       const objectUrl = URL.createObjectURL(file)
       setTopicMedia({
         mediaUrl: objectUrl,
-        type: type
+        mediaType: type
       })
 
       // Real upload
@@ -279,7 +279,7 @@ export default function ChefSosyalClient({
       // Update with real data
       setTopicMedia({
         mediaUrl: data.mediaUrl,
-        type: data.mediaType as 'IMAGE' | 'VIDEO'
+        mediaType: data.mediaType as 'IMAGE' | 'VIDEO'
       })
 
     } catch (error) {
@@ -290,7 +290,7 @@ export default function ChefSosyalClient({
   }
 
   const handleCreateTopic = async (e?: React.FormEvent) => {
-    e.preventDefault()
+    e?.preventDefault()
     setSubmitting(true)
 
     try {
