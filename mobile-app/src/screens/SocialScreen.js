@@ -80,481 +80,499 @@ export default function SocialScreen({ navigation }) {
         }
     };
 
-    // Pick video from gallery
-    const pickVideo = async () => {
-        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (status !== 'granted') {
-            showAlert('İzin Gerekli', 'Video seçmek için galeri izni gerekiyor.', [{ text: 'Tamam' }], 'warning');
-            return;
-        }
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ['videos'],
-            allowsEditing: true,
-            quality: 0.7,
-            videoMaxDuration: 60, // 60 seconds max
-        });
-        if (!result.canceled && result.assets[0]) {
-            setSelectedMedia({ uri: result.assets[0].uri, type: 'video' });
-        }
-    };
+};
 
-    const checkLoginStatus = async () => {
+// Pick image from camera
+const pickImageFromCamera = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+        showAlert('İzin Gerekli', 'Fotoğraf çekmek için kamera izni gerekiyor.', [{ text: 'Tamam' }], 'warning');
+        return;
+    }
+    const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [4, 5],
+        quality: 0.8,
+    });
+    if (!result.canceled && result.assets[0]) {
+        setSelectedMedia({ uri: result.assets[0].uri, type: 'image' });
+    }
+};
+const pickVideo = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+        showAlert('İzin Gerekli', 'Video seçmek için galeri izni gerekiyor.', [{ text: 'Tamam' }], 'warning');
+        return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['videos'],
+        allowsEditing: true,
+        quality: 0.7,
+        videoMaxDuration: 60, // 60 seconds max
+    });
+    if (!result.canceled && result.assets[0]) {
+        setSelectedMedia({ uri: result.assets[0].uri, type: 'video' });
+    }
+};
+
+const checkLoginStatus = async () => {
+    const token = await AsyncStorage.getItem('authToken');
+    setIsLoggedIn(!!token);
+};
+
+const loadData = async () => {
+    try {
         const token = await AsyncStorage.getItem('authToken');
-        setIsLoggedIn(!!token);
-    };
 
-    const loadData = async () => {
-        try {
-            const token = await AsyncStorage.getItem('authToken');
+        const [categoriesResult, topicsResult] = await Promise.all([
+            forumService.getCategories(),
+            forumService.getTopics(selectedCategory, sortBy),
+        ]);
 
-            const [categoriesResult, topicsResult] = await Promise.all([
-                forumService.getCategories(),
-                forumService.getTopics(selectedCategory, sortBy),
-            ]);
-
-            if (categoriesResult.success) {
-                setCategories(categoriesResult.data || []);
-            }
-
-            if (topicsResult.success) {
-                setTopics(topicsResult.data.topics || []);
-            }
-
-            // Only fetch liked topics if logged in
-            if (token) {
-                const likedResult = await forumService.getLikedTopics();
-                if (likedResult.success && likedResult.data.likedTopicIds) {
-                    setLikedTopics(new Set(likedResult.data.likedTopicIds));
-                }
-            }
-        } catch (error) {
-            console.error('Error loading data:', error);
-        } finally {
-            setLoading(false);
-            setRefreshing(false);
+        if (categoriesResult.success) {
+            setCategories(categoriesResult.data || []);
         }
-    };
 
-    useFocusEffect(
-        useCallback(() => {
-            checkLoginStatus();
-            loadData();
-        }, [selectedCategory, sortBy])
-    );
+        if (topicsResult.success) {
+            setTopics(topicsResult.data.topics || []);
+        }
 
-    const onRefresh = () => {
-        setRefreshing(true);
+        // Only fetch liked topics if logged in
+        if (token) {
+            const likedResult = await forumService.getLikedTopics();
+            if (likedResult.success && likedResult.data.likedTopicIds) {
+                setLikedTopics(new Set(likedResult.data.likedTopicIds));
+            }
+        }
+    } catch (error) {
+        console.error('Error loading data:', error);
+    } finally {
+        setLoading(false);
+        setRefreshing(false);
+    }
+};
+
+useFocusEffect(
+    useCallback(() => {
+        checkLoginStatus();
         loadData();
-    };
+    }, [selectedCategory, sortBy])
+);
 
-    const handleCategoryChange = (categorySlug) => {
-        setSelectedCategory(categorySlug);
-    };
+const onRefresh = () => {
+    setRefreshing(true);
+    loadData();
+};
 
-    const handleLike = async (topicId) => {
-        if (!isLoggedIn) {
-            showAlert('Giriş Yapın', 'Beğenmek için giriş yapmalısınız.', [{ text: 'Tamam' }], 'warning');
-            return;
-        }
+const handleCategoryChange = (categorySlug) => {
+    setSelectedCategory(categorySlug);
+};
 
-        const result = await forumService.likeTopic(topicId);
-        if (result.success) {
-            setTopics(prevTopics =>
-                prevTopics.map(topic =>
-                    topic.id === topicId
-                        ? { ...topic, likeCount: result.data.liked ? topic.likeCount + 1 : topic.likeCount - 1 }
-                        : topic
-                )
-            );
-
-            setLikedTopics(prev => {
-                const newSet = new Set(prev);
-                if (result.data.liked) {
-                    newSet.add(topicId);
-                } else {
-                    newSet.delete(topicId);
-                }
-                return newSet;
-            });
-        }
-    };
-
-    const handleCreateTopic = async () => {
-        if (!newTopicForm.title.trim() || !newTopicForm.content.trim()) {
-            showAlert('Hata', 'Başlık ve içerik alanları zorunludur.', [{ text: 'Tamam' }], 'error');
-            return;
-        }
-
-        setSubmitting(true);
-
-        let mediaUrl = null;
-        let thumbnailUrl = null;
-        let mediaType = null;
-
-        // Upload media if selected
-        if (selectedMedia) {
-            setUploading(true);
-            const uploadResult = await forumService.uploadMedia(selectedMedia.uri, selectedMedia.type);
-            setUploading(false);
-
-            if (uploadResult.success) {
-                mediaUrl = uploadResult.data.url;
-                thumbnailUrl = uploadResult.data.thumbnailUrl || (selectedMedia.type === 'image' ? uploadResult.data.url : null);
-                mediaType = selectedMedia.type;
-            } else {
-                showAlert('Hata', uploadResult.error || 'Medya yüklenemedi', [{ text: 'Tamam' }], 'error');
-                setSubmitting(false);
-                return;
-            }
-        }
-
-        const result = await forumService.createTopic(
-            newTopicForm.title,
-            newTopicForm.content,
-            'default-category',
-            mediaUrl,
-            thumbnailUrl,
-            mediaType
-        );
-
-        if (result.success) {
-            setShowNewTopicModal(false);
-            setNewTopicForm({ title: '', content: '' });
-            setSelectedMedia(null);
-            loadData();
-        } else {
-            showAlert('Hata', result.error, [{ text: 'Tamam' }], 'error');
-        }
-        setSubmitting(false);
-    };
-
-    const formatTimeAgo = (dateString) => {
-        const date = new Date(dateString);
-        const now = new Date();
-        const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-        if (diffInSeconds < 60) return 'Az önce';
-        if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} dk önce`;
-        if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} saat önce`;
-        if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)} gün önce`;
-
-        return date.toLocaleDateString('tr-TR');
-    };
-
-    const renderCategoryItem = ({ item }) => (
-        <TouchableOpacity
-            style={[
-                styles.categoryChip,
-                selectedCategory === item.slug && styles.categoryChipActive,
-            ]}
-            onPress={() => handleCategoryChange(item.slug)}
-        >
-            <Text
-                style={[
-                    styles.categoryChipText,
-                    selectedCategory === item.slug && styles.categoryChipTextActive,
-                ]}
-            >
-                {item.name}
-            </Text>
-            <View style={styles.categoryCount}>
-                <Text style={styles.categoryCountText}>{item._count?.topics || 0}</Text>
-            </View>
-        </TouchableOpacity>
-    );
-
-    const renderTopicItem = ({ item }) => (
-        <TouchableOpacity
-            style={styles.topicCard}
-            onPress={() => navigation.navigate('TopicDetail', { topicId: item.id })}
-            activeOpacity={0.7}
-        >
-            {/* Reddit-style Header: avatar + u/author • time • category */}
-            <View style={styles.topicHeader}>
-                {item.author?.image ? (
-                    <Image source={{ uri: item.author.image }} style={styles.authorAvatar} />
-                ) : (
-                    <View style={styles.authorAvatarPlaceholder}>
-                        <User size={14} color="#9ca3af" />
-                    </View>
-                )}
-                <Text style={styles.authorName}>u/{item.author?.name || 'anonim'}</Text>
-                <Text style={styles.dotSeparator}>•</Text>
-                <Text style={styles.timeText}>{formatTimeAgo(item.createdAt)}</Text>
-                <Text style={styles.dotSeparator}>•</Text>
-                <View
-                    style={[
-                        styles.categoryBadge,
-                        { backgroundColor: (item.category?.color || '#6b7280') + '20' },
-                    ]}
-                >
-                    <Text style={[styles.categoryBadgeText, { color: item.category?.color || '#6b7280' }]}>
-                        {item.category?.name || 'Genel'}
-                    </Text>
-                </View>
-            </View>
-
-            {/* Title */}
-            <Text style={styles.topicTitle} numberOfLines={2}>
-                {item.title}
-            </Text>
-
-            {/* Media Preview - Full Width */}
-            {item.mediaUrl && (item.mediaType === 'image' || item.mediaType === 'IMAGE') && (
-                <View style={styles.mediaContainer}>
-                    <Image
-                        source={{ uri: item.thumbnailUrl || item.mediaUrl }}
-                        style={styles.topicMediaImage}
-                        resizeMode="cover"
-                    />
-                </View>
-            )}
-            {item.mediaUrl && (item.mediaType === 'video' || item.mediaType === 'VIDEO') && (
-                <View style={styles.mediaContainer}>
-                    <Image
-                        source={{ uri: item.thumbnailUrl || 'https://via.placeholder.com/400x240?text=Video' }}
-                        style={styles.topicMediaImage}
-                        resizeMode="cover"
-                    />
-                    <View style={styles.videoPlayOverlay}>
-                        <View style={styles.playButton}>
-                            <Film size={24} color="#fff" />
-                        </View>
-                    </View>
-                    <View style={styles.videoBadge}>
-                        <Clock size={10} color="#fff" />
-                        <Text style={styles.videoBadgeText}>Video</Text>
-                    </View>
-                </View>
-            )}
-
-            {/* Text Content Preview (only if no media) */}
-            {!item.mediaUrl && (
-                <Text style={styles.topicContent} numberOfLines={3}>
-                    {item.content}
-                </Text>
-            )}
-
-            {/* Action Bar - Reddit Style */}
-            <View style={styles.actionBar}>
-                <TouchableOpacity
-                    style={[
-                        styles.actionButton,
-                        likedTopics.has(item.id) && styles.actionButtonActive,
-                    ]}
-                    onPress={() => handleLike(item.id)}
-                >
-                    <ThumbsUp
-                        size={16}
-                        color={likedTopics.has(item.id) ? '#ea580c' : '#6b7280'}
-                        fill={likedTopics.has(item.id) ? '#ea580c' : 'transparent'}
-                    />
-                    <Text style={[styles.actionButtonText, likedTopics.has(item.id) && styles.actionButtonTextActive]}>
-                        {item.likeCount || 0}
-                    </Text>
-                </TouchableOpacity>
-
-                <View style={styles.actionButton}>
-                    <MessageCircle size={16} color="#6b7280" />
-                    <Text style={styles.actionButtonText}>{item._count?.posts || 0}</Text>
-                    <Text style={styles.actionButtonLabel}>Yorum</Text>
-                </View>
-            </View>
-        </TouchableOpacity>
-    );
-
-    if (loading) {
-        return (
-            <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#ea580c" />
-            </View>
-        );
+const handleLike = async (topicId) => {
+    if (!isLoggedIn) {
+        showAlert('Giriş Yapın', 'Beğenmek için giriş yapmalısınız.', [{ text: 'Tamam' }], 'warning');
+        return;
     }
 
-    return (
-        <View style={styles.container}>
-            {/* Header */}
-            <View style={styles.header}>
-                <View>
-                    <Text style={styles.headerTitle}>Chef Sosyal</Text>
-                    <Text style={styles.headerSubtitle}>Gastronomi tutkunlarının buluşma noktası</Text>
+    const result = await forumService.likeTopic(topicId);
+    if (result.success) {
+        setTopics(prevTopics =>
+            prevTopics.map(topic =>
+                topic.id === topicId
+                    ? { ...topic, likeCount: result.data.liked ? topic.likeCount + 1 : topic.likeCount - 1 }
+                    : topic
+            )
+        );
+
+        setLikedTopics(prev => {
+            const newSet = new Set(prev);
+            if (result.data.liked) {
+                newSet.add(topicId);
+            } else {
+                newSet.delete(topicId);
+            }
+            return newSet;
+        });
+    }
+};
+
+const handleCreateTopic = async () => {
+    if (!newTopicForm.title.trim() || !newTopicForm.content.trim()) {
+        showAlert('Hata', 'Başlık ve içerik alanları zorunludur.', [{ text: 'Tamam' }], 'error');
+        return;
+    }
+
+    setSubmitting(true);
+
+    let mediaUrl = null;
+    let thumbnailUrl = null;
+    let mediaType = null;
+
+    // Upload media if selected
+    if (selectedMedia) {
+        setUploading(true);
+        const uploadResult = await forumService.uploadMedia(selectedMedia.uri, selectedMedia.type);
+        setUploading(false);
+
+        if (uploadResult.success) {
+            mediaUrl = uploadResult.data.url;
+            thumbnailUrl = uploadResult.data.thumbnailUrl || (selectedMedia.type === 'image' ? uploadResult.data.url : null);
+            mediaType = selectedMedia.type;
+        } else {
+            showAlert('Hata', uploadResult.error || 'Medya yüklenemedi', [{ text: 'Tamam' }], 'error');
+            setSubmitting(false);
+            return;
+        }
+    }
+
+    const result = await forumService.createTopic(
+        newTopicForm.title,
+        newTopicForm.content,
+        'default-category',
+        mediaUrl,
+        thumbnailUrl,
+        mediaType
+    );
+
+    if (result.success) {
+        setShowNewTopicModal(false);
+        setNewTopicForm({ title: '', content: '' });
+        setSelectedMedia(null);
+        loadData();
+    } else {
+        showAlert('Hata', result.error, [{ text: 'Tamam' }], 'error');
+    }
+    setSubmitting(false);
+};
+
+const formatTimeAgo = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (diffInSeconds < 60) return 'Az önce';
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} dk önce`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} saat önce`;
+    if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)} gün önce`;
+
+    return date.toLocaleDateString('tr-TR');
+};
+
+const renderCategoryItem = ({ item }) => (
+    <TouchableOpacity
+        style={[
+            styles.categoryChip,
+            selectedCategory === item.slug && styles.categoryChipActive,
+        ]}
+        onPress={() => handleCategoryChange(item.slug)}
+    >
+        <Text
+            style={[
+                styles.categoryChipText,
+                selectedCategory === item.slug && styles.categoryChipTextActive,
+            ]}
+        >
+            {item.name}
+        </Text>
+        <View style={styles.categoryCount}>
+            <Text style={styles.categoryCountText}>{item._count?.topics || 0}</Text>
+        </View>
+    </TouchableOpacity>
+);
+
+const renderTopicItem = ({ item }) => (
+    <TouchableOpacity
+        style={styles.topicCard}
+        onPress={() => navigation.navigate('TopicDetail', { topicId: item.id })}
+        activeOpacity={0.7}
+    >
+        {/* Reddit-style Header: avatar + u/author • time • category */}
+        <View style={styles.topicHeader}>
+            {item.author?.image ? (
+                <Image source={{ uri: item.author.image }} style={styles.authorAvatar} />
+            ) : (
+                <View style={styles.authorAvatarPlaceholder}>
+                    <User size={14} color="#9ca3af" />
+                </View>
+            )}
+            <Text style={styles.authorName}>u/{item.author?.name || 'anonim'}</Text>
+            <Text style={styles.dotSeparator}>•</Text>
+            <Text style={styles.timeText}>{formatTimeAgo(item.createdAt)}</Text>
+            <Text style={styles.dotSeparator}>•</Text>
+            <View
+                style={[
+                    styles.categoryBadge,
+                    { backgroundColor: (item.category?.color || '#6b7280') + '20' },
+                ]}
+            >
+                <Text style={[styles.categoryBadgeText, { color: item.category?.color || '#6b7280' }]}>
+                    {item.category?.name || 'Genel'}
+                </Text>
+            </View>
+        </View>
+
+        {/* Title */}
+        <Text style={styles.topicTitle} numberOfLines={2}>
+            {item.title}
+        </Text>
+
+        {/* Media Preview - Full Width */}
+        {item.mediaUrl && (item.mediaType === 'image' || item.mediaType === 'IMAGE') && (
+            <View style={styles.mediaContainer}>
+                <Image
+                    source={{ uri: item.thumbnailUrl || item.mediaUrl }}
+                    style={styles.topicMediaImage}
+                    resizeMode="cover"
+                />
+            </View>
+        )}
+        {item.mediaUrl && (item.mediaType === 'video' || item.mediaType === 'VIDEO') && (
+            <View style={styles.mediaContainer}>
+                <Image
+                    source={{ uri: item.thumbnailUrl || 'https://via.placeholder.com/400x240?text=Video' }}
+                    style={styles.topicMediaImage}
+                    resizeMode="cover"
+                />
+                <View style={styles.videoPlayOverlay}>
+                    <View style={styles.playButton}>
+                        <Film size={24} color="#fff" />
+                    </View>
+                </View>
+                <View style={styles.videoBadge}>
+                    <Clock size={10} color="#fff" />
+                    <Text style={styles.videoBadgeText}>Video</Text>
                 </View>
             </View>
+        )}
 
-            {/* Filter Tabs (like web) */}
-            <View style={styles.filterTabsContainer}>
-                <TouchableOpacity
-                    style={[styles.filterTab, sortBy === 'newest' && styles.filterTabActive]}
-                    onPress={() => setSortBy('newest')}
-                >
-                    <Clock size={14} color={sortBy === 'newest' ? '#fff' : '#6b7280'} />
-                    <Text style={[styles.filterTabText, sortBy === 'newest' && styles.filterTabTextActive]}>Yeni</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={[styles.filterTab, sortBy === 'popular' && styles.filterTabActive]}
-                    onPress={() => setSortBy('popular')}
-                >
-                    <Text style={[styles.filterTabText, sortBy === 'popular' && styles.filterTabTextActive]}>Popüler</Text>
-                </TouchableOpacity>
-            </View>
+        {/* Text Content Preview (only if no media) */}
+        {!item.mediaUrl && (
+            <Text style={styles.topicContent} numberOfLines={3}>
+                {item.content}
+            </Text>
+        )}
 
-            {/* Topics List */}
-            <FlatList
-                data={topics}
-                renderItem={renderTopicItem}
-                keyExtractor={(item) => item.id}
-                contentContainerStyle={styles.topicsList}
-                refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ea580c" />
-                }
-                ListEmptyComponent={
-                    <View style={styles.emptyContainer}>
-                        <Users size={64} color="#374151" />
-                        <Text style={styles.emptyText}>Henüz tartışma yok</Text>
-                    </View>
-                }
-            />
-
-            {/* FAB - New Topic */}
-            {isLoggedIn && (
-                <TouchableOpacity
-                    style={styles.fab}
-                    onPress={() => setShowNewTopicModal(true)}
-                >
-                    <Plus size={24} color="#fff" />
-                </TouchableOpacity>
-            )}
-
-            {/* New Topic Modal */}
-            {/* Premium Create Topic Modal */}
-            <Modal
-                visible={showNewTopicModal}
-                animationType="slide"
-                transparent={true}
-                onRequestClose={() => setShowNewTopicModal(false)}
+        {/* Action Bar - Reddit Style */}
+        <View style={styles.actionBar}>
+            <TouchableOpacity
+                style={[
+                    styles.actionButton,
+                    likedTopics.has(item.id) && styles.actionButtonActive,
+                ]}
+                onPress={() => handleLike(item.id)}
             >
-                <KeyboardAvoidingView
-                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                    style={styles.modalContainer}
-                >
-                    <View style={styles.modalContent}>
-                        {/* Header */}
-                        <View style={styles.modalHeader}>
-                            <TouchableOpacity
-                                onPress={() => { setShowNewTopicModal(false); setSelectedMedia(null); }}
-                                style={styles.closeButton}
-                            >
-                                <X size={24} color="#fff" />
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={[styles.headerPostButton, (submitting || uploading || !newTopicForm.title.trim()) && styles.headerPostButtonDisabled]}
-                                onPress={handleCreateTopic}
-                                disabled={submitting || uploading || !newTopicForm.title.trim()}
-                            >
-                                {submitting ? (
-                                    <ActivityIndicator size="small" color="#fff" />
-                                ) : (
-                                    <Text style={styles.headerPostButtonText}>Paylaş</Text>
-                                )}
-                            </TouchableOpacity>
-                        </View>
+                <ThumbsUp
+                    size={16}
+                    color={likedTopics.has(item.id) ? '#ea580c' : '#6b7280'}
+                    fill={likedTopics.has(item.id) ? '#ea580c' : 'transparent'}
+                />
+                <Text style={[styles.actionButtonText, likedTopics.has(item.id) && styles.actionButtonTextActive]}>
+                    {item.likeCount || 0}
+                </Text>
+            </TouchableOpacity>
 
-                        <ScrollView style={styles.modalBody}>
-                            <View style={styles.userInfoRow}>
-                                <View style={styles.modalUserAvatar}>
-                                    <User size={20} color="#fff" />
-                                </View>
-                                <View style={styles.categorySelector}>
-                                    <Text style={styles.categorySelectorText}>Genel</Text>
-                                </View>
-                            </View>
+            <View style={styles.actionButton}>
+                <MessageCircle size={16} color="#6b7280" />
+                <Text style={styles.actionButtonText}>{item._count?.posts || 0}</Text>
+                <Text style={styles.actionButtonLabel}>Yorum</Text>
+            </View>
+        </View>
+    </TouchableOpacity>
+);
 
-                            <TextInput
-                                style={styles.modalTitleInput}
-                                placeholder="Başlık"
-                                placeholderTextColor="#6b7280"
-                                value={newTopicForm.title}
-                                onChangeText={(text) => setNewTopicForm({ ...newTopicForm, title: text })}
-                                maxLength={100}
-                            />
-
-                            <TextInput
-                                style={styles.modalContentInput}
-                                placeholder="Neler oluyor? Bir şeyler paylaş..."
-                                placeholderTextColor="#6b7280"
-                                value={newTopicForm.content}
-                                onChangeText={(text) => setNewTopicForm({ ...newTopicForm, content: text })}
-                                multiline
-                                textAlignVertical="top"
-                            />
-
-                            {/* Selected Media Preview */}
-                            {selectedMedia && (
-                                <View style={styles.modalMediaPreviewContainer}>
-                                    {selectedMedia.type === 'image' ? (
-                                        <Image source={{ uri: selectedMedia.uri }} style={styles.modalMediaPreview} resizeMode="cover" />
-                                    ) : (
-                                        <Video
-                                            source={{ uri: selectedMedia.uri }}
-                                            style={styles.modalMediaPreview}
-                                            resizeMode={ResizeMode.COVER}
-                                            shouldPlay={false}
-                                            useNativeControls={false}
-                                        />
-                                    )}
-                                    <TouchableOpacity
-                                        style={styles.removeMediaButton}
-                                        onPress={() => setSelectedMedia(null)}
-                                    >
-                                        <X size={16} color="#fff" />
-                                    </TouchableOpacity>
-                                </View>
-                            )}
-                        </ScrollView>
-
-                        {/* Bottom Toolbar */}
-                        <View style={styles.modalToolbar}>
-                            <TouchableOpacity
-                                style={styles.toolbarButton}
-                                onPress={pickImage}
-                            >
-                                <ImageIcon size={24} color="#ea580c" />
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={styles.toolbarButton}
-                                onPress={pickImageFromCamera}
-                            >
-                                <Camera size={24} color="#ea580c" />
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={styles.toolbarButton}
-                                onPress={pickVideo}
-                            >
-                                <Film size={24} color="#ea580c" />
-                            </TouchableOpacity>
-                        </View>
-
-                        {uploading && (
-                            <View style={styles.uploadingOverlay}>
-                                <ActivityIndicator size="large" color="#ea580c" />
-                                <Text style={styles.uploadingText}>Medya yükleniyor...</Text>
-                            </View>
-                        )}
-                    </View>
-                </KeyboardAvoidingView>
-            </Modal>
-
-            {/* Custom Alert */}
-            <CustomAlert
-                visible={alertVisible}
-                title={alertConfig.title}
-                message={alertConfig.message}
-                buttons={alertConfig.buttons}
-                type={alertConfig.type}
-                onClose={() => setAlertVisible(false)}
-            />
+if (loading) {
+    return (
+        <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#ea580c" />
         </View>
     );
+}
+
+return (
+    <View style={styles.container}>
+        {/* Header */}
+        <View style={styles.header}>
+            <View>
+                <Text style={styles.headerTitle}>Chef Sosyal</Text>
+                <Text style={styles.headerSubtitle}>Gastronomi tutkunlarının buluşma noktası</Text>
+            </View>
+        </View>
+
+        {/* Filter Tabs (like web) */}
+        <View style={styles.filterTabsContainer}>
+            <TouchableOpacity
+                style={[styles.filterTab, sortBy === 'newest' && styles.filterTabActive]}
+                onPress={() => setSortBy('newest')}
+            >
+                <Clock size={14} color={sortBy === 'newest' ? '#fff' : '#6b7280'} />
+                <Text style={[styles.filterTabText, sortBy === 'newest' && styles.filterTabTextActive]}>Yeni</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+                style={[styles.filterTab, sortBy === 'popular' && styles.filterTabActive]}
+                onPress={() => setSortBy('popular')}
+            >
+                <Text style={[styles.filterTabText, sortBy === 'popular' && styles.filterTabTextActive]}>Popüler</Text>
+            </TouchableOpacity>
+        </View>
+
+        {/* Topics List */}
+        <FlatList
+            data={topics}
+            renderItem={renderTopicItem}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.topicsList}
+            refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ea580c" />
+            }
+            ListEmptyComponent={
+                <View style={styles.emptyContainer}>
+                    <Users size={64} color="#374151" />
+                    <Text style={styles.emptyText}>Henüz tartışma yok</Text>
+                </View>
+            }
+        />
+
+        {/* FAB - New Topic */}
+        {isLoggedIn && (
+            <TouchableOpacity
+                style={styles.fab}
+                onPress={() => setShowNewTopicModal(true)}
+            >
+                <Plus size={24} color="#fff" />
+            </TouchableOpacity>
+        )}
+
+        {/* New Topic Modal */}
+        {/* Premium Create Topic Modal */}
+        <Modal
+            visible={showNewTopicModal}
+            animationType="slide"
+            transparent={true}
+            onRequestClose={() => setShowNewTopicModal(false)}
+        >
+            <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                style={styles.modalContainer}
+            >
+                <View style={styles.modalContent}>
+                    {/* Header */}
+                    <View style={styles.modalHeader}>
+                        <TouchableOpacity
+                            onPress={() => { setShowNewTopicModal(false); setSelectedMedia(null); }}
+                            style={styles.closeButton}
+                        >
+                            <X size={24} color="#fff" />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[styles.headerPostButton, (submitting || uploading || !newTopicForm.title.trim()) && styles.headerPostButtonDisabled]}
+                            onPress={handleCreateTopic}
+                            disabled={submitting || uploading || !newTopicForm.title.trim()}
+                        >
+                            {submitting ? (
+                                <ActivityIndicator size="small" color="#fff" />
+                            ) : (
+                                <Text style={styles.headerPostButtonText}>Paylaş</Text>
+                            )}
+                        </TouchableOpacity>
+                    </View>
+
+                    <ScrollView style={styles.modalBody}>
+                        <View style={styles.userInfoRow}>
+                            <View style={styles.modalUserAvatar}>
+                                <User size={20} color="#fff" />
+                            </View>
+                            <View style={styles.categorySelector}>
+                                <Text style={styles.categorySelectorText}>Genel</Text>
+                            </View>
+                        </View>
+
+                        <TextInput
+                            style={styles.modalTitleInput}
+                            placeholder="Başlık"
+                            placeholderTextColor="#6b7280"
+                            value={newTopicForm.title}
+                            onChangeText={(text) => setNewTopicForm({ ...newTopicForm, title: text })}
+                            maxLength={100}
+                        />
+
+                        <TextInput
+                            style={styles.modalContentInput}
+                            placeholder="Neler oluyor? Bir şeyler paylaş..."
+                            placeholderTextColor="#6b7280"
+                            value={newTopicForm.content}
+                            onChangeText={(text) => setNewTopicForm({ ...newTopicForm, content: text })}
+                            multiline
+                            textAlignVertical="top"
+                        />
+
+                        {/* Selected Media Preview */}
+                        {selectedMedia && (
+                            <View style={styles.modalMediaPreviewContainer}>
+                                {selectedMedia.type === 'image' ? (
+                                    <Image source={{ uri: selectedMedia.uri }} style={styles.modalMediaPreview} resizeMode="cover" />
+                                ) : (
+                                    <Video
+                                        source={{ uri: selectedMedia.uri }}
+                                        style={styles.modalMediaPreview}
+                                        resizeMode={ResizeMode.COVER}
+                                        shouldPlay={false}
+                                        useNativeControls={false}
+                                    />
+                                )}
+                                <TouchableOpacity
+                                    style={styles.removeMediaButton}
+                                    onPress={() => setSelectedMedia(null)}
+                                >
+                                    <X size={16} color="#fff" />
+                                </TouchableOpacity>
+                            </View>
+                        )}
+                    </ScrollView>
+
+                    {/* Bottom Toolbar */}
+                    <View style={styles.modalToolbar}>
+                        <TouchableOpacity
+                            style={styles.toolbarButton}
+                            onPress={pickImage}
+                        >
+                            <ImageIcon size={24} color="#ea580c" />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.toolbarButton}
+                            onPress={pickImageFromCamera}
+                        >
+                            <Camera size={24} color="#ea580c" />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.toolbarButton}
+                            onPress={pickVideo}
+                        >
+                            <Film size={24} color="#ea580c" />
+                        </TouchableOpacity>
+                    </View>
+
+                    {uploading && (
+                        <View style={styles.uploadingOverlay}>
+                            <ActivityIndicator size="large" color="#ea580c" />
+                            <Text style={styles.uploadingText}>Medya yükleniyor...</Text>
+                        </View>
+                    )}
+                </View>
+            </KeyboardAvoidingView>
+        </Modal>
+
+        {/* Custom Alert */}
+        <CustomAlert
+            visible={alertVisible}
+            title={alertConfig.title}
+            message={alertConfig.message}
+            buttons={alertConfig.buttons}
+            type={alertConfig.type}
+            onClose={() => setAlertVisible(false)}
+        />
+    </View>
+);
 }
 
 const styles = StyleSheet.create({
