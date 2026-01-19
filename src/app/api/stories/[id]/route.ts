@@ -30,18 +30,14 @@ export async function DELETE(
             where: { id },
         });
 
-        // Try deleting file from filesystem
-        // Assuming mediaUrl starts with /stories/
-        if (story.mediaUrl && story.mediaUrl.startsWith('/stories/')) {
-            const fileName = story.mediaUrl.replace('/stories/', '');
-            const filePath = path.join(process.cwd(), "public", "stories", fileName);
-            try {
-                await unlink(filePath);
-            } catch (e) {
-                console.error("Error deleting file:", e);
-                // We don't fail the request if file delete fails, as DB record is gone.
-            }
-        }
+        /* 
+           Cloudinary File Deletion:
+           Ideally, we should also delete the file from Cloudinary to save space.
+           However, this requires a signed API call (using api_secret), which differs from the unsigned upload flow.
+           Given the current context and "stories" being ephemeral/expiring content, 
+           we can either set up an auto-delete policy on Cloudinary or implement signed delete later.
+           For now, just deleting the database record is sufficient for the UI.
+        */
 
         return NextResponse.json({ success: true });
 

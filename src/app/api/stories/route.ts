@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAuthUser } from "@/lib/mobileAuth";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
+import { v2 as cloudinary } from 'cloudinary';
 
 // GET: Fetch all active stories
 export async function GET(request: NextRequest) {
@@ -32,10 +31,6 @@ export async function GET(request: NextRequest) {
             },
         });
 
-        // Group stories by creator to match frontend structure logic
-        // For now, if mostly admin creates, they might be same user.
-        // We will group them by creatorId on the frontend or backend.
-
         return NextResponse.json({ success: true, stories });
     } catch (error) {
         console.error("Error fetching stories:", error);
@@ -51,28 +46,7 @@ export async function POST(request: NextRequest) {
     try {
         // Auth Check
         const user = await getAuthUser(request);
-        // You might need a more robust check here depending on your auth strategy (session vs token)
-        // For now assuming getAuthUser handles it or we might need NextAuth session check
-        // If getAuthUser returns null, we might try session.
 
-        // NOTE: If getAuthUser relies on Authorization header, ensure your client sends it.
-        // If this is from Admin Panel (web), we usually use current session.
-        // Let's assume for admin panel we use session for now, fallback to token.
-
-        /* 
-           For simplicity in this task scope, let's assume we proceed if we can identify an admin/instructor. 
-           Adjust this auth logic to match your project's `api/upload-video` pattern.
-        */
-
-        if (!user || (user.role !== 'ADMIN' && user.role !== 'INSTRUCTOR')) {
-            // Fallback: Check if it is a NextAuth session request (from Web Admin)
-            // But `getAuthUser` effectively checks headers. 
-            // For web admin form submissions, typically we rely on cookie session.
-            // Let's assume for moment we are using the same auth or trust it if testing locally.
-            // If strictly needed: import { getServerSession } from "next-auth"; ...
-        }
-
-        // Since `api/upload-video` uses `getAuthUser`, we follow that pattern.
         if (!user || (user.role !== 'ADMIN' && user.role !== 'INSTRUCTOR')) {
             return NextResponse.json({ error: 'Yetkilendirme gerekli' }, { status: 401 });
         }
@@ -87,25 +61,45 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "Medya dosyası bulunamadı" }, { status: 400 });
         }
 
-        // Save File Locally (public/stories)
-        const storiesDir = path.join(process.cwd(), "public", "stories");
-        try {
-            await mkdir(storiesDir, { recursive: true });
-        } catch {
-            // dir exists
+        // Cloudinary Upload Logic
+        const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+        const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET || 'chef-courses-unsigned';
+        const folder = 'stories'; // Separate folder for stories
+
+        if (!cloudName) {
+            return NextResponse.json({ error: "Server konfigürasyon hatası (Cloudinary)" }, { status: 500 });
         }
 
-        const bytes = await file.arrayBuffer();
-        const buffer = Buffer.from(bytes);
+        // Determine resource type based on input
+        // Note: 'video' resource type covers videos, 'image' covers images.
+        // If coming from our admin panel, type might be 'VIDEO' or 'IMAGE'.
+        // Cloudinary expects lowercase 'video' or 'image' typically for the API URL, 
+        // OR 'auto' if using the unsigned upload correctly.
 
-        const timestamp = Date.now();
-        const originalName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-        const fileName = `${timestamp}_${originalName}`;
-        const filePath = path.join(storiesDir, fileName);
+        const resourceType = type === 'VIDEO' ? 'video' : 'image';
+        const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`;
 
-        await writeFile(filePath, buffer);
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', file);
+        if (uploadPreset) {
+            uploadFormData.append('upload_preset', uploadPreset);
+        }
+        uploadFormData.append('folder', folder);
+        uploadFormData.append('public_id', `story_${Date.now()}`);
 
-        const mediaUrl = `/stories/${fileName}`;
+        const cloudRes = await fetch(cloudinaryUrl, {
+            method: 'POST',
+            body: uploadFormData
+        });
+
+        if (!cloudRes.ok) {
+            const errData = await cloudRes.json();
+            console.error('Cloudinary upload error:', errData);
+            throw new Error(errData.error?.message || 'Cloudinary upload failed');
+        }
+
+        const cloudData = await cloudRes.json();
+        const mediaUrl = cloudData.secure_url;
 
         // Expiry: 24 hours from now
         const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -126,7 +120,7 @@ export async function POST(request: NextRequest) {
     } catch (error) {
         console.error("Story creation error:", error);
         return NextResponse.json(
-            { error: "Hikaye oluşturulurken hata oluştu" },
+            { error: "Hikaye oluşturulurken hata oluştu: " + (error instanceof Error ? error.message : "Bilinmeyen hata") },
             { status: 500 }
         );
     }
