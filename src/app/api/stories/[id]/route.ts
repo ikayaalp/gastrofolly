@@ -6,8 +6,9 @@ import path from "path";
 
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    props: { params: Promise<{ id: string }> }
 ) {
+    const params = await props.params;
     try {
         const user = await getAuthUser(request);
         if (!user || (user.role !== 'ADMIN' && user.role !== 'INSTRUCTOR')) {
