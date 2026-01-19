@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
-import { ChefHat, Search, Bell, Plus, MessageCircle, ThumbsUp, Clock, User, Home, BookOpen, Users, Image as ImageIcon, Play, Menu, X, Filter, Type } from "lucide-react"
+import { ChefHat, Search, Bell, Plus, MessageCircle, ThumbsUp, Clock, User, Home, BookOpen, Users, Image as ImageIcon, Play, Menu, X, Filter, Type, ArrowDown, Camera, Film } from "lucide-react"
 import UserDropdown from "@/components/ui/UserDropdown"
 import NotificationDropdown from "@/components/ui/NotificationDropdown"
 import MediaUploader from "@/components/forum/MediaUploader"
@@ -472,8 +472,8 @@ export default function ChefSosyalClient({
                 onClick={handleCreateTopic}
                 disabled={submitting || (!newTopicForm.title.trim() && !newTopicForm.content.trim() && !topicMedia)}
                 className={`px-5 py-1.5 rounded-full font-bold text-sm transition-all ${submitting || (!newTopicForm.title.trim() && !newTopicForm.content.trim() && !topicMedia)
-                    ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
-                    : 'bg-[#ea580c] text-white hover:bg-[#c2410c]'
+                  ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                  : 'bg-[#ea580c] text-white hover:bg-[#c2410c]'
                   }`}
               >
                 {submitting ? 'Paylaşılıyor...' : 'Paylaş'}
