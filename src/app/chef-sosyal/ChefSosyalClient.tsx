@@ -2,9 +2,10 @@
 
 import Link from "next/link"
 import { useState, useEffect } from "react"
-import { ChefHat, Search, Bell, Plus, MessageCircle, ThumbsUp, Clock, User, Home, BookOpen, Users } from "lucide-react"
+import { ChefHat, Search, Bell, Plus, MessageCircle, ThumbsUp, Clock, User, Home, BookOpen, Users, Image as ImageIcon, Play } from "lucide-react"
 import UserDropdown from "@/components/ui/UserDropdown"
 import NotificationDropdown from "@/components/ui/NotificationDropdown"
+import MediaUploader from "@/components/forum/MediaUploader"
 
 interface Category {
   id: string
@@ -25,6 +26,9 @@ interface Topic {
   createdAt: Date | string
   likeCount: number
   viewCount: number
+  mediaUrl?: string | null
+  mediaType?: 'IMAGE' | 'VIDEO' | null
+  thumbnailUrl?: string | null
   author: {
     id: string
     name: string | null
@@ -73,6 +77,11 @@ export default function ChefSosyalClient({
     content: '',
     categoryId: 'default-category' // Varsayılan kategori ID'si
   })
+  const [topicMedia, setTopicMedia] = useState<{
+    mediaUrl: string
+    mediaType: 'IMAGE' | 'VIDEO'
+    thumbnailUrl?: string
+  } | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [likedTopics, setLikedTopics] = useState<Set<string>>(new Set())
 
@@ -199,13 +208,19 @@ export default function ChefSosyalClient({
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(newTopicForm)
+        body: JSON.stringify({
+          ...newTopicForm,
+          mediaUrl: topicMedia?.mediaUrl || null,
+          mediaType: topicMedia?.mediaType || null,
+          thumbnailUrl: topicMedia?.thumbnailUrl || null
+        })
       })
 
       if (response.ok) {
         // Başarılı olursa modal'ı kapat ve başlıkları yenile
         setShowNewTopicModal(false)
         setNewTopicForm({ title: '', content: '', categoryId: 'default-category' })
+        setTopicMedia(null) // Medyayı sıfırla
         loadTopics() // Başlıkları yenile
       } else {
         const error = await response.json()
@@ -474,6 +489,37 @@ export default function ChefSosyalClient({
                               )}
                             </div>
                           </div>
+
+                          {/* Medya Önizleme - Reddit tarzı sağ tarafta */}
+                          {topic.mediaUrl && (
+                            <div className="flex-shrink-0 relative">
+                              {topic.mediaType === 'VIDEO' ? (
+                                <div className="relative w-24 h-20 md:w-32 md:h-24 rounded-lg overflow-hidden bg-gray-800">
+                                  <img
+                                    src={topic.thumbnailUrl || topic.mediaUrl.replace(/\.[^.]+$/, '.jpg')}
+                                    alt="Video önizleme"
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      (e.target as HTMLImageElement).src = topic.mediaUrl || ''
+                                    }}
+                                  />
+                                  <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                                    <div className="bg-orange-500 rounded-full p-1.5">
+                                      <Play className="h-4 w-4 text-white fill-white" />
+                                    </div>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="w-24 h-20 md:w-32 md:h-24 rounded-lg overflow-hidden bg-gray-800">
+                                  <img
+                                    src={topic.mediaUrl}
+                                    alt="Gönderi görseli"
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
                       <div className="h-1 bg-gradient-to-r from-orange-600 to-orange-400 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
@@ -554,6 +600,18 @@ export default function ChefSosyalClient({
                   className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:border-orange-500 focus:outline-none resize-none"
                   placeholder="Tartışmanızı detaylandırın..."
                   required
+                />
+              </div>
+
+              {/* Medya Yükleme Alanı */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Fotoğraf veya Video (Opsiyonel)
+                </label>
+                <MediaUploader
+                  currentMedia={topicMedia}
+                  onUploadComplete={(mediaData) => setTopicMedia(mediaData)}
+                  onRemove={() => setTopicMedia(null)}
                 />
               </div>
 

@@ -1,27 +1,24 @@
 import React from 'react';
-import { StyleSheet, View, Image, Dimensions } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
-// Static background image is now used
+// Using gradient background instead of image to avoid build issues
 
 
 export default function AuthBackground() {
     return (
         <View style={styles.container}>
-            {/* Static Background Image */}
-            <Image
-                source={require('../../assets/auth-background.png')}
-                style={styles.backgroundImage}
-                resizeMode="cover"
-            />
+            {/* Base Dark Background */}
+            <View style={styles.baseBackground} />
 
-            {/* Gradient Overlay */}
+            {/* Gradient Overlay with warm tones */}
             <LinearGradient
-                colors={['rgba(0,0,0,0.4)', 'rgba(0,0,0,0.6)', 'rgba(0,0,0,0.8)']}
+                colors={['#1a1a1a', '#2d1810', '#1a1a1a', '#0a0a0a']}
+                locations={[0, 0.3, 0.7, 1]}
                 style={styles.gradient}
             />
 
-            {/* Blur Effect Overlay - Reduced opacity for more brightness */}
+            {/* Subtle overlay for depth */}
             <View style={styles.blurOverlay} />
         </View>
     );
@@ -36,9 +33,13 @@ const styles = StyleSheet.create({
         bottom: 0,
         zIndex: -1,
     },
-    backgroundImage: {
-        width: '100%',
-        height: '100%',
+    baseBackground: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: '#0a0a0a',
     },
     gradient: {
         position: 'absolute',
@@ -53,6 +54,6 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(0,0,0,0.15)',
+        backgroundColor: 'rgba(255, 107, 0, 0.05)',
     },
 });

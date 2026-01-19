@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { title, content, categoryId } = await request.json()
+    const { title, content, categoryId, mediaUrl, mediaType, thumbnailUrl } = await request.json()
 
     if (!title || !content || !categoryId) {
       return NextResponse.json(
@@ -157,7 +157,10 @@ export async function POST(request: NextRequest) {
         content,
         slug: uniqueSlug,
         authorId: user.id,
-        categoryId: finalCategoryId
+        categoryId: finalCategoryId,
+        mediaUrl: mediaUrl || null,
+        mediaType: mediaType || null,
+        thumbnailUrl: thumbnailUrl || null
       },
       include: {
         author: {
