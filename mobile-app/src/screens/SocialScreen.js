@@ -69,7 +69,7 @@ export default function SocialScreen({ navigation }) {
             return;
         }
         const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            mediaTypes: ['images'],
             allowsEditing: true,
             aspect: [1, 1], // Instagram-style square crop
             quality: 0.8,
@@ -87,7 +87,7 @@ export default function SocialScreen({ navigation }) {
             return;
         }
         const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+            mediaTypes: ['videos'],
             allowsEditing: true,
             quality: 0.7,
             videoMaxDuration: 60, // 60 seconds max
