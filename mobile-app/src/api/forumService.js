@@ -225,46 +225,7 @@ const forumService = {
         }
     },
 
-    // Upload media (image or video) to Cloudinary via backend
-    uploadMedia: async (uri, type) => {
-        try {
-            const formData = new FormData();
-            const filename = uri.split('/').pop();
-            const match = /\.(\w+)$/.exec(filename);
-            const ext = match ? match[1] : type === 'video' ? 'mp4' : 'jpg';
-            const mimeType = type === 'video' ? `video/${ext}` : `image/${ext}`;
 
-            formData.append('file', {
-                uri,
-                name: filename,
-                type: mimeType,
-            });
-
-            const token = await AsyncStorage.getItem('authToken');
-            const response = await fetch(`${config.API_BASE_URL}/api/forum/upload-media`, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'Accept': 'application/json',
-                    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-                },
-            });
-
-            const result = await response.json();
-
-            if (!response.ok) {
-                return { success: false, error: result.error || 'Yükleme hatası' };
-            }
-
-            return { success: true, data: result };
-        } catch (error) {
-            console.error('Upload media error:', error);
-            return {
-                success: false,
-                error: 'Medya yüklenirken bir hata oluştu',
-            };
-        }
-    },
 
     // Delete a topic (discussion) - only own topics
     deleteTopic: async (topicId) => {
