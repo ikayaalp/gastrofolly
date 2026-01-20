@@ -80,7 +80,7 @@ export default function AIAssistantWidget() {
         <>
             {/* Chat Window */}
             {isOpen && (
-                <div className="fixed bottom-36 md:bottom-28 right-6 w-[350px] md:w-[450px] h-[450px] md:h-[600px] bg-[#0a0a0a] border border-gray-800 rounded-2xl shadow-2xl flex flex-col z-[9999] overflow-hidden animate-in slide-in-from-bottom-5 duration-300">
+                <div className="fixed bottom-36 md:bottom-28 right-6 w-[350px] md:w-[400px] h-[450px] md:h-[550px] bg-[#0a0a0a] border border-gray-800 rounded-2xl shadow-2xl flex flex-col z-[9999] overflow-hidden animate-in slide-in-from-bottom-5 duration-300">
                     {/* Header */}
                     <div className="bg-gradient-to-r from-orange-600 to-orange-500 px-4 py-3 flex items-center justify-between">
                         <div className="flex items-center gap-3">
