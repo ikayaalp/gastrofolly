@@ -25,8 +25,9 @@ import InstructorProfileScreen from '../screens/InstructorProfileScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
 import IntroScreen from '../screens/IntroScreen';
 import OnboardingScreen from '../screens/OnboardingScreen';
+import ChefAIScreen from '../screens/ChefAIScreen';
 
-import { Home, BookOpen, Users, MessageCircle, User } from 'lucide-react-native';
+import { Home, BookOpen, Users, MessageCircle, User, Bot } from 'lucide-react-native';
 
 import SearchScreen from '../screens/SearchScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
@@ -125,6 +126,16 @@ function TabNavigator() {
                     tabBarLabel: 'Kurslarım',
                     tabBarIcon: ({ color, size }) => (
                         <BookOpen size={24} color={color} />
+                    ),
+                }}
+            />
+            <Tab.Screen
+                name="ChefAI"
+                component={ChefAIScreen}
+                options={{
+                    tabBarLabel: 'Chef AI',
+                    tabBarIcon: ({ color, size }) => (
+                        <Bot size={24} color={color} />
                     ),
                 }}
             />

@@ -4,7 +4,7 @@ import "./globals.css";
 import AuthSessionProvider from "@/components/providers/SessionProvider";
 import { CartProvider } from "@/contexts/CartContext";
 import { FavoritesProvider } from "@/contexts/FavoritesContext";
-import AIAssistantWidget from "@/components/ai/AIAssistantWidget";
+import { FavoritesProvider } from "@/contexts/FavoritesContext";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -29,7 +29,6 @@ export default function RootLayout({
           <CartProvider>
             <FavoritesProvider>
               {children}
-              <AIAssistantWidget />
             </FavoritesProvider>
           </CartProvider>
         </AuthSessionProvider>

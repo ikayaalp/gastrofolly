@@ -23,6 +23,7 @@ import CommentsSection from "@/components/course/CommentsSection"
 import UserDropdown from "@/components/ui/UserDropdown"
 import NotificationDropdown from "@/components/ui/NotificationDropdown"
 import FreeLessonModal from "@/components/course/FreeLessonModal"
+import AIAssistantWidget from "@/components/ai/AIAssistantWidget"
 
 interface CoursePageProps {
   params: Promise<{
@@ -604,6 +605,8 @@ export default async function CoursePage({ params }: CoursePageProps) {
           </Link>
         </div>
       </div>
+
+      <AIAssistantWidget />
     </div >
   )
 }

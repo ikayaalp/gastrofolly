@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import HomePageClient from "./HomePageClient"
+import AIAssistantWidget from "@/components/ai/AIAssistantWidget"
 
 async function getHomeData(userId?: string) {
   // Kullanıcı bilgilerini ve ödemelerini al (Erişim kontrolü için)
@@ -132,13 +133,16 @@ export default async function HomePage() {
   } = await getHomeData(session.user.id)
 
   return (
-    <HomePageClient
-      featuredCourses={featuredCourses}
-      popularCourses={popularCourses}
-      recentCourses={recentCourses}
-      categories={categories}
-      userEnrollments={userEnrollments}
-      session={session}
-    />
+    <>
+      <HomePageClient
+        featuredCourses={featuredCourses}
+        popularCourses={popularCourses}
+        recentCourses={recentCourses}
+        categories={categories}
+        userEnrollments={userEnrollments}
+        session={session}
+      />
+      <AIAssistantWidget />
+    </>
   )
 }
