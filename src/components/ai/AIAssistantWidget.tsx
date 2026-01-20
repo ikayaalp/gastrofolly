@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { MessageCircle, X, Send, Bot, User, Loader2 } from 'lucide-react'
+import { MessageCircle, X, Send, Bot, User, Loader2, ChefHat } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 
@@ -30,9 +30,9 @@ export default function AIAssistantWidget() {
     // Visibility Logic
     if (status !== 'authenticated') return null
 
-    // Sadece Home (/) ve Kurs Detay (/courses/[slug]) sayfalarında göster
+    // Sadece Home (/, /home) ve Kurs Detay (/courses/[slug]) sayfalarında göster
     // /learn sayfalarında veya diğerlerinde gösterme
-    const isHomePage = pathname === '/'
+    const isHomePage = pathname === '/' || pathname === '/home'
     // Kurs detay sayfası kontrolü: /courses/ veya /course/ ile başlıyorsa ve devamı varsa
     const isCourseDetailPage = (pathname?.startsWith('/courses/') || pathname?.startsWith('/course/')) && pathname.split('/').length > 2
 
@@ -80,12 +80,12 @@ export default function AIAssistantWidget() {
         <>
             {/* Chat Window */}
             {isOpen && (
-                <div className="fixed bottom-36 md:bottom-24 right-6 w-[350px] md:w-[450px] h-[450px] md:h-[600px] bg-[#0a0a0a] border border-gray-800 rounded-2xl shadow-2xl flex flex-col z-[9999] overflow-hidden animate-in slide-in-from-bottom-5 duration-300">
+                <div className="fixed bottom-36 md:bottom-28 right-6 w-[350px] md:w-[450px] h-[450px] md:h-[600px] bg-[#0a0a0a] border border-gray-800 rounded-2xl shadow-2xl flex flex-col z-[9999] overflow-hidden animate-in slide-in-from-bottom-5 duration-300">
                     {/* Header */}
                     <div className="bg-gradient-to-r from-orange-600 to-orange-500 px-4 py-3 flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                                <Bot className="w-6 h-6 text-white" />
+                                <ChefHat className="w-6 h-6 text-white" />
                             </div>
                             <div>
                                 <h3 className="text-white font-bold text-sm">Chef AI</h3>
@@ -104,7 +104,7 @@ export default function AIAssistantWidget() {
                     <div className="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
                         {messages.length === 0 && (
                             <div className="text-center py-8">
-                                <Bot className="w-12 h-12 text-orange-500 mx-auto mb-3" />
+                                <ChefHat className="w-16 h-16 text-orange-500 mx-auto mb-3" />
                                 <p className="text-gray-400 text-sm">Merhaba! 👋</p>
                                 <p className="text-gray-500 text-xs mt-1">Gastronomi hakkında soru sorabilirsiniz.</p>
                             </div>
@@ -164,15 +164,15 @@ export default function AIAssistantWidget() {
             {/* Toggle Button */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className={`fixed bottom-24 md:bottom-6 right-6 w-14 h-14 rounded-full shadow-lg flex items-center justify-center z-[9999] transition-all duration-300 ${isOpen
+                className={`fixed bottom-24 md:bottom-8 right-6 w-14 h-14 md:w-16 md:h-16 rounded-full shadow-lg flex items-center justify-center z-[9999] transition-all duration-300 ${isOpen
                     ? 'bg-gray-800 hover:bg-gray-700'
-                    : 'bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600'
+                    : 'bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 animate-bounce'
                     }`}
             >
                 {isOpen ? (
-                    <X className="w-6 h-6 text-white" />
+                    <X className="w-6 h-6 md:w-8 md:h-8 text-white" />
                 ) : (
-                    <Bot className="w-7 h-7 text-white" />
+                    <ChefHat className="w-7 h-7 md:w-9 md:h-9 text-white" />
                 )}
             </button>
         </>
