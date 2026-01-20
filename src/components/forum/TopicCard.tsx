@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ThumbsUp, MessageCircle, Share2, MoreHorizontal, User, Play, Clock, Bookmark } from 'lucide-react'
+import { ThumbsUp, MessageCircle, MoreHorizontal, User, Play, Clock, Bookmark } from 'lucide-react'
 
 interface TopicCardProps {
     topic: {
@@ -158,11 +158,6 @@ export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave }: T
                             <MessageCircle className="h-4 w-4" />
                             <span className="text-sm">{topic._count.posts}</span>
                             <span className="hidden sm:inline">Yorum</span>
-                        </div>
-
-                        <div className="flex items-center space-x-1.5 px-3 py-2 hover:bg-gray-800 rounded-full transition-colors group cursor-pointer text-gray-400 hover:text-white">
-                            <Share2 className="h-4 w-4" />
-                            <span className="hidden sm:inline">Paylaş</span>
                         </div>
 
                         {/* Save Button */}
