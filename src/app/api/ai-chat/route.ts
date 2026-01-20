@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
 
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-})
-
 const SYSTEM_PROMPT = `Sen Gastrofolly platformunun AI asistanısın. Adın "Chef AI".
 Gastronomi, yemek tarifleri, pişirme teknikleri, mutfak ekipmanları ve aşçılık konularında uzmansın.
 
@@ -40,12 +36,17 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        if (!process.env.OPENAI_API_KEY) {
+        const apiKey = process.env.OPENAI_API_KEY
+        if (!apiKey) {
             return NextResponse.json(
                 { error: 'OpenAI API key is not configured' },
                 { status: 500 }
             )
         }
+
+        const openai = new OpenAI({
+            apiKey: apiKey,
+        })
 
         const completion = await openai.chat.completions.create({
             model: 'gpt-4o-mini',
