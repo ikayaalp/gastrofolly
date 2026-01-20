@@ -165,7 +165,7 @@ export default function AIAssistantWidget() {
             {/* Toggle Button */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className={`fixed bottom-24 md:bottom-8 right-6 w-14 h-14 md:w-16 md:h-16 rounded-full shadow-lg flex items-center justify-center z-[9999] transition-all duration-300 ${isOpen
+                className={`fixed bottom-24 md:bottom-8 right-6 w-14 h-14 md:w-16 md:h-16 rounded-full shadow-lg flex items-center justify-center z-[9999] transition-colors duration-300 ${isOpen
                     ? 'bg-gray-800 hover:bg-gray-700'
                     : 'bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 animate-bounce'
                     }`}
