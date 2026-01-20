@@ -82,6 +82,9 @@ export default async function ChefSosyalPage({ searchParams }: PageProps) {
     }
   })
 
+  // Üye sayısını çek
+  const memberCount = await prisma.user.count()
+
   // Topic tipinde dönüştür
   const topics = topicsData.map((topic: any) => ({
     ...topic,
@@ -93,6 +96,7 @@ export default async function ChefSosyalPage({ searchParams }: PageProps) {
       session={session}
       initialCategories={categories}
       initialTopics={topics as any}
+      memberCount={memberCount}
     />
   )
 }

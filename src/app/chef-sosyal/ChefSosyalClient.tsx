@@ -63,12 +63,14 @@ interface ChefSosyalClientProps {
   session: Session | null
   initialCategories: Category[]
   initialTopics: Topic[]
+  memberCount: number
 }
 
 export default function ChefSosyalClient({
   session,
   initialCategories,
-  initialTopics
+  initialTopics,
+  memberCount
 }: ChefSosyalClientProps) {
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -516,7 +518,7 @@ export default function ChefSosyalClient({
           </div>
         </div>
 
-        <RightSidebar />
+        <RightSidebar memberCount={memberCount} />
 
       </div>
 

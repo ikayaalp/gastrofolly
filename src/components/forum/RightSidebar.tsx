@@ -1,8 +1,17 @@
+'use client'
+
 interface RightSidebarProps {
-    // Gelecekte prop eklenebilir
+    memberCount?: number
 }
 
-export default function RightSidebar({ }: RightSidebarProps) {
+const formatNumber = (num: number): string => {
+    if (num >= 1000) {
+        return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'k'
+    }
+    return num.toString()
+}
+
+export default function RightSidebar({ memberCount = 0 }: RightSidebarProps) {
     return (
         <div className="hidden lg:flex flex-col w-[300px] flex-shrink-0 h-[calc(100vh-80px)] sticky top-24 space-y-4">
 
@@ -19,12 +28,8 @@ export default function RightSidebar({ }: RightSidebarProps) {
 
                     <div className="flex items-center justify-between text-sm text-gray-500 mb-4 pb-4 border-b border-gray-800">
                         <div>
-                            <div className="font-bold text-white">1.2k</div>
+                            <div className="font-bold text-white">{formatNumber(memberCount)}</div>
                             <div>Üye</div>
-                        </div>
-                        <div>
-                            <div className="font-bold text-white">150</div>
-                            <div>Çevrimiçi</div>
                         </div>
                     </div>
 
