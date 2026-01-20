@@ -264,10 +264,12 @@ export default function ChefSosyalClient({
       setSortBy('saved')
       return
     }
+    setSortBy(sort)
     // URL güncelle ve SSR tetikle
     const params = new URLSearchParams(searchParams.toString())
     params.set('sort', sort)
     router.push(`/chef-sosyal?${params.toString()}`)
+    router.refresh()
   }
 
   // Yeni başlık oluştur
