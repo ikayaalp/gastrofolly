@@ -28,7 +28,8 @@ export default function AIAssistantWidget() {
     }, [messages])
 
     // Visibility Logic
-    if (status !== 'authenticated') return null
+    // Kesinlikle giriş yapılmamışsa gösterme (Loading durumunda da gösterme)
+    if (status === 'loading' || status === 'unauthenticated' || !session) return null
 
     // Sadece Home (/, /home) ve Kurs Detay (/courses/[slug]) sayfalarında göster
     // /learn sayfalarında veya diğerlerinde gösterme
