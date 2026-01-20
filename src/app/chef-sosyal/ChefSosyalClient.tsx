@@ -259,6 +259,11 @@ export default function ChefSosyalClient({
 
   // Sıralama değiştiğinde
   const handleSortChange = (sort: string) => {
+    // 'saved' is client-side only filter, don't update URL
+    if (sort === 'saved') {
+      setSortBy('saved')
+      return
+    }
     // URL güncelle ve SSR tetikle
     const params = new URLSearchParams(searchParams.toString())
     params.set('sort', sort)
