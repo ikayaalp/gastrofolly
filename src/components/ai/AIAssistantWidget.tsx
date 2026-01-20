@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { MessageCircle, X, Send, Bot, User, Loader2 } from 'lucide-react'
+import { usePathname } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 
 interface Message {
     role: 'user' | 'assistant'
@@ -9,6 +11,8 @@ interface Message {
 }
 
 export default function AIAssistantWidget() {
+    const { data: session, status } = useSession()
+    const pathname = usePathname()
     const [isOpen, setIsOpen] = useState(false)
     const [messages, setMessages] = useState<Message[]>([])
     const [input, setInput] = useState('')
@@ -22,6 +26,18 @@ export default function AIAssistantWidget() {
     useEffect(() => {
         scrollToBottom()
     }, [messages])
+
+    // Visibility Logic
+    if (status !== 'authenticated') return null
+
+    // Sadece Home (/) ve Kurs Detay (/courses/[slug]) sayfalarında göster
+    // /learn sayfalarında veya diğerlerinde gösterme
+    const isHomePage = pathname === '/'
+    // Kurs detay sayfası kontrolü: /courses/ veya /course/ ile başlıyorsa ve devamı varsa
+    const isCourseDetailPage = (pathname?.startsWith('/courses/') || pathname?.startsWith('/course/')) && pathname.split('/').length > 2
+
+    // Eğer izin verilen sayfalarda değilse null döndür
+    if (!isHomePage && !isCourseDetailPage) return null
 
     const sendMessage = async () => {
         if (!input.trim() || isLoading) return
@@ -64,7 +80,7 @@ export default function AIAssistantWidget() {
         <>
             {/* Chat Window */}
             {isOpen && (
-                <div className="fixed bottom-24 right-6 w-[380px] h-[500px] bg-[#0a0a0a] border border-gray-800 rounded-2xl shadow-2xl flex flex-col z-[9999] overflow-hidden animate-in slide-in-from-bottom-5 duration-300">
+                <div className="fixed bottom-36 md:bottom-24 right-6 w-[350px] md:w-[450px] h-[450px] md:h-[600px] bg-[#0a0a0a] border border-gray-800 rounded-2xl shadow-2xl flex flex-col z-[9999] overflow-hidden animate-in slide-in-from-bottom-5 duration-300">
                     {/* Header */}
                     <div className="bg-gradient-to-r from-orange-600 to-orange-500 px-4 py-3 flex items-center justify-between">
                         <div className="flex items-center gap-3">
@@ -101,8 +117,8 @@ export default function AIAssistantWidget() {
                             >
                                 <div
                                     className={`max-w-[80%] px-4 py-2.5 rounded-2xl text-sm ${msg.role === 'user'
-                                            ? 'bg-orange-600 text-white rounded-br-sm'
-                                            : 'bg-gray-800 text-gray-200 rounded-bl-sm'
+                                        ? 'bg-orange-600 text-white rounded-br-sm'
+                                        : 'bg-gray-800 text-gray-200 rounded-bl-sm'
                                         }`}
                                 >
                                     {msg.content}
@@ -148,9 +164,9 @@ export default function AIAssistantWidget() {
             {/* Toggle Button */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className={`fixed bottom-6 right-6 w-14 h-14 rounded-full shadow-lg flex items-center justify-center z-[9999] transition-all duration-300 ${isOpen
-                        ? 'bg-gray-800 hover:bg-gray-700'
-                        : 'bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600'
+                className={`fixed bottom-24 md:bottom-6 right-6 w-14 h-14 rounded-full shadow-lg flex items-center justify-center z-[9999] transition-all duration-300 ${isOpen
+                    ? 'bg-gray-800 hover:bg-gray-700'
+                    : 'bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600'
                     }`}
             >
                 {isOpen ? (
