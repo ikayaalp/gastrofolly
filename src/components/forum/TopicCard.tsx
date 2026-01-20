@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ThumbsUp, MessageCircle, Share2, MoreHorizontal, User, Play, Clock } from 'lucide-react'
+import { ThumbsUp, MessageCircle, Share2, MoreHorizontal, User, Play, Clock, Bookmark } from 'lucide-react'
 
 interface TopicCardProps {
     topic: {
@@ -33,9 +33,11 @@ interface TopicCardProps {
     }
     isLiked?: boolean
     onLike?: (id: string) => void
+    isSaved?: boolean
+    onSave?: (id: string) => void
 }
 
-export default function TopicCard({ topic, isLiked, onLike }: TopicCardProps) {
+export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave }: TopicCardProps) {
     const [imageError, setImageError] = useState(false)
 
     const formatTimeAgo = (dateString: string) => {
@@ -54,6 +56,12 @@ export default function TopicCard({ topic, isLiked, onLike }: TopicCardProps) {
         e.preventDefault()
         e.stopPropagation()
         if (onLike) onLike(topic.id)
+    }
+
+    const handleSave = (e: React.MouseEvent) => {
+        e.preventDefault()
+        e.stopPropagation()
+        if (onSave) onSave(topic.id)
     }
 
     return (
@@ -138,8 +146,8 @@ export default function TopicCard({ topic, isLiked, onLike }: TopicCardProps) {
                         <button
                             onClick={handleLike}
                             className={`flex items-center space-x-1.5 px-3 py-2 rounded-full transition-all duration-200 ${isLiked
-                                    ? 'bg-orange-500/10 text-orange-500'
-                                    : 'hover:bg-gray-800 text-gray-400 hover:text-orange-500'
+                                ? 'bg-orange-500/10 text-orange-500'
+                                : 'hover:bg-gray-800 text-gray-400 hover:text-orange-500'
                                 }`}
                         >
                             <ThumbsUp className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
@@ -156,6 +164,18 @@ export default function TopicCard({ topic, isLiked, onLike }: TopicCardProps) {
                             <Share2 className="h-4 w-4" />
                             <span className="hidden sm:inline">Paylaş</span>
                         </div>
+
+                        {/* Save Button */}
+                        <button
+                            onClick={handleSave}
+                            className={`flex items-center space-x-1.5 px-3 py-2 rounded-full transition-all duration-200 ${isSaved
+                                ? 'bg-orange-500/10 text-orange-500'
+                                : 'hover:bg-gray-800 text-gray-400 hover:text-orange-500'
+                                }`}
+                        >
+                            <Bookmark className={`h-4 w-4 ${isSaved ? 'fill-current' : ''}`} />
+                            <span className="hidden sm:inline">{isSaved ? 'Kaydedildi' : 'Kaydet'}</span>
+                        </button>
                     </div>
                 </div>
             </div>

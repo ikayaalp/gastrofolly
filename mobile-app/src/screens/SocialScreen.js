@@ -29,6 +29,7 @@ import {
     Check,
     Camera,
     Film,
+    Bookmark,
 } from 'lucide-react-native';
 import { Video, ResizeMode } from 'expo-av';
 import * as ImagePicker from 'expo-image-picker';
@@ -54,6 +55,7 @@ export default function SocialScreen({ navigation }) {
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [sortBy, setSortBy] = useState('newest');
     const [likedTopics, setLikedTopics] = useState(new Set());
+    const [savedTopics, setSavedTopics] = useState(new Set());
     const [showNewTopicModal, setShowNewTopicModal] = useState(false);
     const [newTopicForm, setNewTopicForm] = useState({ title: '', content: '' });
     const [submitting, setSubmitting] = useState(false);
@@ -334,12 +336,26 @@ export default function SocialScreen({ navigation }) {
         </TouchableOpacity>
     );
 
+    const handleSave = (topicId) => {
+        setSavedTopics(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(topicId)) {
+                newSet.delete(topicId);
+            } else {
+                newSet.add(topicId);
+            }
+            return newSet;
+        });
+    };
+
     const renderTopicItem = useCallback(({ item }) => (
         <TopicCard
             item={item}
             onPress={() => navigation.navigate('TopicDetail', { topicId: item.id })}
             onLike={handleLike}
             isLiked={likedTopics.has(item.id)}
+            onSave={handleSave}
+            isSaved={savedTopics.has(item.id)}
             onMediaPress={(url, type) => {
                 if (type === 'image') setFullscreenImageUrl(url);
                 else setFullscreenVideoUrl(url);
@@ -351,7 +367,7 @@ export default function SocialScreen({ navigation }) {
             setVideoProgress={setVideoProgress}
             formatTimeAgo={formatTimeAgo}
         />
-    ), [playingVideoId, videoProgress, videoDurations, likedTopics, handleLike, formatTimeAgo, navigation]);
+    ), [playingVideoId, videoProgress, videoDurations, likedTopics, savedTopics, handleLike, formatTimeAgo, navigation]);
 
     if (loading) {
         return (
@@ -386,11 +402,19 @@ export default function SocialScreen({ navigation }) {
                 >
                     <Text style={[styles.filterTabText, sortBy === 'popular' && styles.filterTabTextActive]}>Popüler</Text>
                 </TouchableOpacity>
+                <TouchableOpacity
+                    style={[styles.filterTab, sortBy === 'saved' && styles.filterTabActive]}
+                    onPress={() => setSortBy('saved')}
+                >
+                    <Bookmark size={14} color={sortBy === 'saved' ? '#fff' : '#6b7280'} />
+                    <Text style={[styles.filterTabText, sortBy === 'saved' && styles.filterTabTextActive]}>Kaydedilenler</Text>
+                </TouchableOpacity>
             </View>
+
 
             {/* Topics List */}
             <FlatList
-                data={topics}
+                data={sortBy === 'saved' ? topics.filter(t => savedTopics.has(t.id)) : topics}
                 renderItem={renderTopicItem}
                 keyExtractor={(item) => item.id}
                 contentContainerStyle={styles.topicsList}
@@ -402,7 +426,7 @@ export default function SocialScreen({ navigation }) {
                 ListEmptyComponent={
                     <View style={styles.emptyContainer}>
                         <Users size={64} color="#374151" />
-                        <Text style={styles.emptyText}>Henüz tartışma yok</Text>
+                        <Text style={styles.emptyText}>{sortBy === 'saved' ? 'Henüz kaydedilen gönderi yok' : 'Henüz tartışma yok'}</Text>
                     </View>
                 }
             />

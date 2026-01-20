@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
-import { ChefHat, Search, Bell, Plus, MessageCircle, ThumbsUp, Clock, User, Home, BookOpen, Users, Image as ImageIcon, Play, Menu, X, Filter, Type, ArrowDown, Camera, Film } from "lucide-react"
+import { ChefHat, Search, Bell, Plus, MessageCircle, ThumbsUp, Clock, User, Home, BookOpen, Users, Image as ImageIcon, Play, Menu, X, Filter, Type, ArrowDown, Camera, Film, Bookmark } from "lucide-react"
 import UserDropdown from "@/components/ui/UserDropdown"
 import NotificationDropdown from "@/components/ui/NotificationDropdown"
 import MediaUploader from "@/components/forum/MediaUploader"
@@ -101,6 +101,7 @@ export default function ChefSosyalClient({
 
   const [submitting, setSubmitting] = useState(false)
   const [likedTopics, setLikedTopics] = useState<Set<string>>(new Set())
+  const [savedTopics, setSavedTopics] = useState<Set<string>>(new Set())
 
   // Props değiştiğinde (URL değişimi sonrası yeni veri geldiğinde) state'i güncelle
   useEffect(() => {
@@ -161,6 +162,19 @@ export default function ChefSosyalClient({
     }
   }
 
+  // Load saved topics from localStorage
+  useEffect(() => {
+    const storedSaved = localStorage.getItem('chef-saved-topics')
+    if (storedSaved) {
+      try {
+        const savedIds = JSON.parse(storedSaved)
+        setSavedTopics(new Set(savedIds))
+      } catch (e) {
+        console.error('Error parsing saved topics:', e)
+      }
+    }
+  }, [])
+
   // Kategorileri yeniden yükle
   const loadCategories = async () => {
     try {
@@ -211,6 +225,21 @@ export default function ChefSosyalClient({
     } catch (error) {
       console.error('Error liking topic:', error)
     }
+  }
+
+  // Save/Unsave topic
+  const handleSave = (topicId: string) => {
+    setSavedTopics(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(topicId)) {
+        newSet.delete(topicId)
+      } else {
+        newSet.add(topicId)
+      }
+      // Persist to localStorage
+      localStorage.setItem('chef-saved-topics', JSON.stringify([...newSet]))
+      return newSet
+    })
   }
 
   // Client side fetching logic (for actions that don't change URL like refresh button, though mostly we use URL now)
@@ -425,6 +454,13 @@ export default function ChefSosyalClient({
             >
               <span>Popüler</span>
             </button>
+            <button
+              onClick={() => handleSortChange('saved')}
+              className={`flex items-center space-x-2 px-3 py-1.5 rounded-full font-bold text-sm transition-colors ${sortBy === 'saved' ? 'bg-gray-800 text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}`}
+            >
+              <Bookmark className="h-4 w-4" />
+              <span>Kaydedilenler</span>
+            </button>
           </div>
 
           {/* Posts Feed */}
@@ -434,19 +470,40 @@ export default function ChefSosyalClient({
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
               </div>
             ) : (
-              topics.map(topic => (
-                <TopicCard
-                  key={topic.id}
-                  topic={topic}
-                  isLiked={likedTopics.has(topic.id)}
-                  onLike={handleLike}
-                />
-              ))
+              sortBy === 'saved' ? (
+                topics.filter(t => savedTopics.has(t.id)).map(topic => (
+                  <TopicCard
+                    key={topic.id}
+                    topic={topic}
+                    isLiked={likedTopics.has(topic.id)}
+                    onLike={handleLike}
+                    isSaved={savedTopics.has(topic.id)}
+                    onSave={handleSave}
+                  />
+                ))
+              ) : (
+                topics.map(topic => (
+                  <TopicCard
+                    key={topic.id}
+                    topic={topic}
+                    isLiked={likedTopics.has(topic.id)}
+                    onLike={handleLike}
+                    isSaved={savedTopics.has(topic.id)}
+                    onSave={handleSave}
+                  />
+                ))
+              )
             )}
 
-            {!loading && topics.length === 0 && (
+            {!loading && sortBy === 'saved' && topics.filter(t => savedTopics.has(t.id)).length === 0 && (
               <div className="text-center py-12 text-gray-500">
-                {searchTerm ? 'Aradığınız kriterlere uygun sonuç bulunamadı.' : 'Henüz hiç içerik yok. İlk paylaşımı sen yap!'}
+                Henüz kaydedilen paylasım yok.
+              </div>
+            )}
+
+            {!loading && sortBy !== 'saved' && topics.length === 0 && (
+              <div className="text-center py-12 text-gray-500">
+                {searchTerm ? 'Aradığınız kriterlere uygun sonuç bulunamadı.' : 'Henüz hiç içerik yok. İlk paylasımı sen yap!'}
               </div>
             )}
           </div>

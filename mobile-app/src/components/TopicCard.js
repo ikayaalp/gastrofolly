@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList, Dimensions } from 'react-native';
-import { ThumbsUp, MessageCircle, Share2, Clock, Film, Image as ImageIcon, User } from 'lucide-react-native';
+import { ThumbsUp, MessageCircle, Clock, Film, Image as ImageIcon, User, Bookmark } from 'lucide-react-native';
 import { Video, ResizeMode } from 'expo-av';
 
 const { width } = Dimensions.get('window');
@@ -19,6 +19,8 @@ export default function TopicCard({
     onPress,
     onLike,
     isLiked,
+    onSave,
+    isSaved,
     onMediaPress,
     playingVideoId,
     videoProgress,
@@ -193,23 +195,32 @@ export default function TopicCard({
                         }
                     }}
                 >
-                    <ThumbsUp size={16} color={isLiked ? '#ea580c' : '#6b7280'} />
+                    <ThumbsUp size={20} color={isLiked ? '#ea580c' : '#6b7280'} />
                     <Text style={[styles.actionButtonText, isLiked && styles.actionButtonTextActive]}>
                         {item.likeCount || 0}
                     </Text>
                 </TouchableOpacity>
 
                 <View style={styles.actionButton}>
-                    <MessageCircle size={16} color="#6b7280" />
+                    <MessageCircle size={20} color="#6b7280" />
                     <Text style={styles.actionButtonText}>
                         {item.repliesCount || item._count?.posts || 0}
                     </Text>
                 </View>
 
-                <View style={styles.actionButton}>
-                    <Share2 size={16} color="#6b7280" />
-                    <Text style={styles.actionButtonText}>Paylaş</Text>
-                </View>
+                <TouchableOpacity
+                    style={[styles.saveButton, isSaved && styles.actionButtonActive]}
+                    onPress={(e) => {
+                        e.stopPropagation();
+                        if (onSave) {
+                            onSave(item.id);
+                        }
+                    }}
+                >
+                    <Bookmark size={20} color={isSaved ? '#ea580c' : '#6b7280'} fill={isSaved ? '#ea580c' : 'none'} />
+                </TouchableOpacity>
+
+
             </View>
         </TouchableOpacity>
     );
@@ -341,5 +352,9 @@ const styles = StyleSheet.create({
     },
     actionButtonTextActive: {
         color: '#ea580c',
+    },
+    saveButton: {
+        marginLeft: 'auto',
+        padding: 8,
     }
 });
