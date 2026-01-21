@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import OpenAI from 'openai'
+import { GoogleGenerativeAI } from '@google/generative-ai'
 import { prisma } from '@/lib/prisma'
 
 const SYSTEM_PROMPT = `Sen Gastrofolly platformunun AI asistanısın. Adın "Chef AI".
@@ -32,10 +32,10 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        const apiKey = process.env.OPENAI_API_KEY
+        const apiKey = process.env.GEMINI_API_KEY
         if (!apiKey) {
             return NextResponse.json(
-                { error: 'OpenAI API key is not configured' },
+                { error: 'Gemini API key is not configured' },
                 { status: 500 }
             )
         }
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
                     select: { name: true }
                 }
             },
-            take: 20 // Limit context size for cost optimization
+            take: 20 // Limit context size
         });
 
         const coursesContext = courses.map(c =>
@@ -68,30 +68,39 @@ Aşağıdaki kurslar şu an platformda mevcuttur. Kullanıcının ihiyacına uyg
 ${coursesContext}
 `;
 
-        const openai = new OpenAI({
-            apiKey: apiKey,
-        })
+        // Initialize Gemini
+        const genAI = new GoogleGenerativeAI(apiKey)
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
 
-        const completion = await openai.chat.completions.create({
-            model: 'gpt-4o-mini',
-            messages: [
-                { role: 'system', content: dynamicSystemPrompt },
-                ...messages.map(m => ({
-                    role: m.role as 'user' | 'assistant',
-                    content: m.content
-                }))
+        // Build conversation history for Gemini
+        const history = messages.slice(0, -1).map(m => ({
+            role: m.role === 'user' ? 'user' : 'model',
+            parts: [{ text: m.content }]
+        }))
+
+        const lastMessage = messages[messages.length - 1]?.content || ''
+
+        // Start chat with system prompt embedded in history
+        const chat = model.startChat({
+            history: [
+                { role: 'user', parts: [{ text: 'Merhaba, sen kimsin?' }] },
+                { role: 'model', parts: [{ text: dynamicSystemPrompt + '\n\nMerhaba! Ben Chef AI, Gastrofolly\'nin yapay zeka destekli mutfak asistanıyım! 👨‍🍳 Size tarifler, pişirme teknikleri ve gastronomi dünyası hakkında yardımcı olabilirim. Bugün mutfakta ne yapmak istersiniz?' }] },
+                ...history
             ],
-            max_tokens: 500,
-            temperature: 0.7,
+            generationConfig: {
+                maxOutputTokens: 500,
+                temperature: 0.7,
+            }
         })
 
-        const reply = completion.choices[0]?.message?.content || 'Üzgünüm, şu an yanıt veremiyorum.'
+        const result = await chat.sendMessage(lastMessage)
+        const reply = result.response.text() || 'Üzgünüm, şu an yanıt veremiyorum.'
 
         return NextResponse.json({ reply })
     } catch (error: any) {
         console.error('AI Chat error:', error)
 
-        if (error?.status === 429) {
+        if (error?.status === 429 || error?.message?.includes('429')) {
             return NextResponse.json(
                 { error: 'Çok fazla istek gönderildi. Lütfen biraz bekleyin.' },
                 { status: 429 }
@@ -104,3 +113,4 @@ ${coursesContext}
         )
     }
 }
+
