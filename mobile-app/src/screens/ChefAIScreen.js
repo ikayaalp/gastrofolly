@@ -17,14 +17,12 @@ import {
     ScrollView
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Send, Bot, User, ChefHat, History, X, Clock, Trash2, AlertTriangle, Mic, Volume2 } from 'lucide-react-native';
-import { sendMessageToAI, transcribeAudio } from '../api/aiService';
+import { Send, Bot, User, ChefHat, History, X, Clock, Trash2, AlertTriangle } from 'lucide-react-native';
+import { sendMessageToAI } from '../api/aiService';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import Markdown from 'react-native-markdown-display';
-import * as Speech from 'expo-speech';
-import { Audio } from 'expo-av';
 
 const SUGGESTIONS = [
     { id: 1, text: "🍝 İtalyan Makarnası Tarifi", icon: "🍝" },
@@ -39,20 +37,15 @@ export default function ChefAIScreen() {
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [isRecording, setIsRecording] = useState(false); // New state for recording
     const [keyboardVisible, setKeyboardVisible] = useState(false);
     const [isMenuVisible, setIsMenuVisible] = useState(false);
     const [showClearConfirm, setShowClearConfirm] = useState(false);
     const [chatHistory, setChatHistory] = useState([]);
-
     const flatListRef = useRef(null);
-    const recordingRef = useRef(null); // Ref to hold recording instance
 
     // Initial load of history
     useEffect(() => {
         loadHistory();
-        // Request audio permissions on mount
-        Audio.requestPermissionsAsync();
 
         const keyboardWillShowListener = Keyboard.addListener(
             Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
@@ -66,55 +59,82 @@ export default function ChefAIScreen() {
         return () => {
             keyboardWillShowListener.remove();
             keyboardWillHideListener.remove();
-            Speech.stop(); // Stop speaking on unmount
-            if (recordingRef.current) recordingRef.current.stopAndUnloadAsync(); // Safety cleanup
         };
     }, []);
 
-    // ... (focus effect and history logic unchanged) ...
+    // Auto-archive on blur (tab switch)
     const messagesRef = useRef(messages);
-    useEffect(() => { messagesRef.current = messages; }, [messages]);
-    useFocusEffect(useCallback(() => {
-        return () => {
-            if (messagesRef.current.length > 0) saveCurrentChatToHistory(messagesRef.current);
-            Speech.stop(); // Stop speech when leaving screen
-        };
-    }, []));
+
+    // Keep ref in sync
+    useEffect(() => {
+        messagesRef.current = messages;
+    }, [messages]);
+
+    // Auto-archive on blur (tab switch)
+    useFocusEffect(
+        useCallback(() => {
+            // Screen focused
+            return () => {
+                // Screen blur - save and clear
+                // Use ref to access latest messages without triggering re-run on every message change
+                if (messagesRef.current.length > 0) {
+                    saveCurrentChatToHistory(messagesRef.current);
+                }
+            };
+        }, []) // Empty dependency array = only runs on focus/blur
+    );
 
     const loadHistory = async () => {
         try {
             const savedHistory = await AsyncStorage.getItem('chef_ai_history');
-            if (savedHistory) setChatHistory(JSON.parse(savedHistory));
-        } catch (error) { console.error('Error loading history:', error); }
+            if (savedHistory) {
+                setChatHistory(JSON.parse(savedHistory));
+            }
+        } catch (error) {
+            console.error('Error loading history:', error);
+        }
     };
 
     const saveCurrentChatToHistory = async (currentMessages) => {
-        const msgs = currentMessages || messages;
+        const msgs = currentMessages || messages; // Use arg or state
         if (!msgs || msgs.length === 0) return;
+
         const newHistoryItem = {
             id: Date.now().toString(),
             date: new Date().toISOString(),
             preview: msgs[msgs.length - 1]?.content.substring(0, 50) + '...',
             messages: msgs
         };
+
         try {
             const currentHistory = await AsyncStorage.getItem('chef_ai_history');
             let history = currentHistory ? JSON.parse(currentHistory) : [];
+
+            // Add new item to start
             history.unshift(newHistoryItem);
-            if (history.length > MAX_HISTORY_ITEMS) history = history.slice(0, MAX_HISTORY_ITEMS);
+
+            // Keep only max items
+            if (history.length > MAX_HISTORY_ITEMS) {
+                history = history.slice(0, MAX_HISTORY_ITEMS);
+            }
+
             await AsyncStorage.setItem('chef_ai_history', JSON.stringify(history));
             setChatHistory(history);
-            setMessages([]);
-        } catch (error) { console.error('Error saving history:', error); }
+            setMessages([]); // Clear current chat
+        } catch (error) {
+            console.error('Error saving history:', error);
+        }
     };
 
     const clearHistory = async () => {
         try {
             await AsyncStorage.removeItem('chef_ai_history');
             setChatHistory([]);
-            setShowClearConfirm(false);
-            setIsMenuVisible(false);
-        } catch (error) { console.error('Error clearing history:', error); }
+            setShowClearConfirm(false); // Close confirmation
+            setIsMenuVisible(false); // Close the history menu too
+        } catch (error) {
+            console.error('Error clearing history:', error);
+        }
     };
 
     const loadHistoryItem = (item) => {
@@ -125,77 +145,6 @@ export default function ChefAIScreen() {
     const formatDate = (isoString) => {
         const date = new Date(isoString);
         return date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
-    };
-
-    // --- Voice Logic ---
-    const startRecording = async () => {
-        try {
-            // Safety cleanup first
-            if (recordingRef.current) {
-                try { await recordingRef.current.stopAndUnloadAsync(); } catch (e) { }
-                recordingRef.current = null;
-            }
-
-            const permission = await Audio.requestPermissionsAsync();
-            if (permission.status === 'granted') {
-                await Audio.setAudioModeAsync({
-                    allowsRecordingIOS: true,
-                    playsInSilentModeIOS: true,
-                });
-
-                const { recording } = await Audio.Recording.createAsync(
-                    Audio.RecordingOptionsPresets.HIGH_QUALITY
-                );
-
-                recordingRef.current = recording;
-                setIsRecording(true);
-            } else {
-                Alert.alert('İzin Gerekli', 'Sesli komut için mikrofon izni vermelisiniz.');
-            }
-        } catch (err) {
-            console.error('Failed to start recording', err);
-            setIsRecording(false);
-        }
-    };
-
-    const stopRecording = async () => {
-        if (!recordingRef.current) return;
-
-        setIsRecording(false);
-        setIsLoading(true);
-
-        try {
-            await recordingRef.current.stopAndUnloadAsync();
-            const uri = recordingRef.current.getURI();
-            recordingRef.current = null;
-
-            if (uri) {
-                const text = await transcribeAudio(uri);
-                if (text) {
-                    setInput(text);
-                    sendMessage(text);
-                } else {
-                    Alert.alert('Hata', 'Ses anlaşılamadı (Boş yanıt).');
-                }
-            }
-        } catch (error) {
-            console.error('Transcribing failed', error);
-            // Don't show alert for user cancellation or minor interruptions
-            if (!error.message?.includes('User cancelled')) {
-                Alert.alert('Hata', 'Ses analizi yapılamadı: ' + error.message);
-            }
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const speakText = (text) => {
-        Speech.speak(text, {
-            language: 'tr-TR',
-            pitch: 1.0,
-            rate: 0.9, // Slightly slower for clearer recipe reading
-            onError: (e) => console.log('Speech error:', e),
-        });
     };
 
     const sendMessage = async (text) => {
@@ -210,21 +159,18 @@ export default function ChefAIScreen() {
 
         try {
             const data = await sendMessageToAI(newMessages);
-            const botReply = data.reply;
-            setMessages([...newMessages, { role: 'assistant', content: botReply }]);
-
-            // Auto-speak if it was a voice interaction? 
-            // Or just provide the button. Let's provide the button but maybe auto-speak shorter replies?
-            // For now, let's stick to manual button to avoid annoyance, user requested "Hands-free" but maybe confirm.
-            // Actually user said "Chef AI da size yanıtı sesli okur". Let's auto-speak if it was recorded?
-            // Since we don't track "wasRecorded" easily here without more state, let's just add the button for now.
-
+            setMessages([...newMessages, { role: 'assistant', content: data.reply }]);
         } catch (error) {
             let errorMessage = 'Bağlantı hatası. Lütfen tekrar deneyin.';
+
             if (error.message?.includes('Çok fazla istek') || error.message?.includes('429')) {
                 errorMessage = 'Üzgünüm, şu anda çok yoğunum. Lütfen biraz bekleyip tekrar deneyin. 👨‍🍳';
             }
-            setMessages([...newMessages, { role: 'assistant', content: errorMessage }]);
+
+            setMessages([...newMessages, {
+                role: 'assistant',
+                content: errorMessage
+            }]);
         } finally {
             setIsLoading(false);
         }
@@ -254,40 +200,31 @@ export default function ChefAIScreen() {
                     styles.messageBubble,
                     isUser ? styles.userBubble : styles.botBubble,
                     styles.shadow,
-                    !isUser && { width: '85%', maxWidth: '85%' }
+                    !isUser && { width: '85%', maxWidth: '85%' } // Bot messages slightly wider for markdown
                 ]}>
                     {isUser ? (
                         <Text style={[styles.messageText, styles.userText]}>{item.content}</Text>
                     ) : (
-                        <View>
-                            <Markdown
-                                style={{
-                                    body: { color: '#e4e4e7', fontSize: 15, lineHeight: 24 },
-                                    heading1: { color: '#fff', fontSize: 20, fontWeight: 'bold', marginVertical: 10 },
-                                    heading2: { color: '#fff', fontSize: 18, fontWeight: 'bold', marginVertical: 8 },
-                                    heading3: { color: '#fff', fontSize: 16, fontWeight: 'bold', marginVertical: 6 },
-                                    strong: { color: '#fff', fontWeight: 'bold' },
-                                    em: { fontStyle: 'italic', color: '#d4d4d8' },
-                                    bullet_list: { marginVertical: 8 },
-                                    ordered_list: { marginVertical: 8 },
-                                    bullet_list_icon: { color: '#ea580c', fontSize: 20, marginRight: 8 },
-                                    bullet_list_content: { fontSize: 15, lineHeight: 24, color: '#e4e4e7' },
-                                    ordered_list_content: { fontSize: 15, lineHeight: 24, color: '#e4e4e7' },
-                                    paragraph: { marginBottom: 12 },
-                                    link: { color: '#ea580c' },
-                                    list_item: { marginBottom: 6 },
-                                }}
-                            >
-                                {item.content}
-                            </Markdown>
-                            <TouchableOpacity
-                                style={styles.speakButton}
-                                onPress={() => speakText(item.content)}
-                            >
-                                <Volume2 size={16} color="#ea580c" />
-                                <Text style={styles.speakButtonText}>Oku</Text>
-                            </TouchableOpacity>
-                        </View>
+                        <Markdown
+                            style={{
+                                body: { color: '#e4e4e7', fontSize: 15, lineHeight: 24 },
+                                heading1: { color: '#fff', fontSize: 20, fontWeight: 'bold', marginVertical: 10 },
+                                heading2: { color: '#fff', fontSize: 18, fontWeight: 'bold', marginVertical: 8 },
+                                heading3: { color: '#fff', fontSize: 16, fontWeight: 'bold', marginVertical: 6 },
+                                strong: { color: '#fff', fontWeight: 'bold' },
+                                em: { fontStyle: 'italic', color: '#d4d4d8' },
+                                bullet_list: { marginVertical: 8 },
+                                ordered_list: { marginVertical: 8 },
+                                bullet_list_icon: { color: '#ea580c', fontSize: 20, marginRight: 8 }, // Orange bullets
+                                bullet_list_content: { fontSize: 15, lineHeight: 24, color: '#e4e4e7' },
+                                ordered_list_content: { fontSize: 15, lineHeight: 24, color: '#e4e4e7' },
+                                paragraph: { marginBottom: 12 },
+                                link: { color: '#ea580c' },
+                                list_item: { marginBottom: 6 },
+                            }}
+                        >
+                            {item.content}
+                        </Markdown>
                     )}
                 </View>
             </View>
@@ -296,12 +233,19 @@ export default function ChefAIScreen() {
 
     return (
         <View style={styles.container}>
-            <LinearGradient colors={['#18181b', '#000000']} style={StyleSheet.absoluteFill} />
+            <LinearGradient
+                colors={['#18181b', '#000000']}
+                style={StyleSheet.absoluteFill}
+            />
+
             <SafeAreaView edges={['top']} style={styles.safeArea}>
                 <View style={styles.header}>
                     <View style={styles.headerContent}>
                         <View style={styles.headerTitleContainer}>
-                            <LinearGradient colors={['#ea580c', '#f97316']} style={styles.headerIconBg}>
+                            <LinearGradient
+                                colors={['#ea580c', '#f97316']}
+                                style={styles.headerIconBg}
+                            >
                                 <ChefHat size={24} color="#fff" />
                             </LinearGradient>
                             <View>
@@ -309,7 +253,10 @@ export default function ChefAIScreen() {
                                 <Text style={styles.headerSubtitle}>Kişisel Mutfak Asistanın</Text>
                             </View>
                         </View>
-                        <TouchableOpacity style={styles.menuButton} onPress={() => setIsMenuVisible(true)}>
+                        <TouchableOpacity
+                            style={styles.menuButton}
+                            onPress={() => setIsMenuVisible(true)}
+                        >
                             <History size={24} color="#fff" />
                         </TouchableOpacity>
                     </View>
@@ -330,7 +277,9 @@ export default function ChefAIScreen() {
                                 <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
                                     <View style={styles.emptyState}>
                                         <Text style={styles.emptyStateTitle}>Merhaba Şef! 👋</Text>
-                                        <Text style={styles.emptyStateSubtitle}>Bugün mutfakta sana nasıl yardımcı olabilirim?</Text>
+                                        <Text style={styles.emptyStateSubtitle}>
+                                            Bugün mutfakta sana nasıl yardımcı olabilirim?
+                                        </Text>
                                         <View style={styles.suggestionsContainer}>
                                             <Text style={styles.suggestionsTitle}>Örnek Sorular</Text>
                                             <View style={styles.suggestionsGrid}>
@@ -379,33 +328,20 @@ export default function ChefAIScreen() {
                         { paddingBottom: keyboardVisible ? (Platform.OS === 'ios' ? 20 : 8) : (Platform.OS === 'ios' ? 110 : 120) }
                     ]}>
                         <View style={styles.inputContainer}>
-                            <TouchableOpacity
-                                style={[styles.micButton, isRecording && styles.micButtonActive]}
-                                onPressIn={startRecording}
-                                onPressOut={stopRecording}
-                                disabled={isLoading}
-                            >
-                                <LinearGradient
-                                    colors={isRecording ? ['#ef4444', '#dc2626'] : ['#27272a', '#3f3f46']}
-                                    style={styles.micButtonGradient}
-                                >
-                                    <Mic size={20} color="#fff" />
-                                </LinearGradient>
-                            </TouchableOpacity>
-
                             <TextInput
                                 style={styles.input}
                                 value={input}
                                 onChangeText={setInput}
-                                placeholder={isRecording ? "Dinliyorum..." : "Bir şeyler sor..."}
+                                placeholder="Bir şeyler sor (örn: Lazanya tarifi)..."
                                 placeholderTextColor="#71717a"
                                 multiline
                                 maxLength={500}
-                                editable={!isRecording}
                             />
-
                             <TouchableOpacity
-                                style={[styles.sendButton, (!input.trim() || isLoading) && styles.sendButtonDisabled]}
+                                style={[
+                                    styles.sendButton,
+                                    (!input.trim() || isLoading) && styles.sendButtonDisabled
+                                ]}
                                 onPress={handleSend}
                                 disabled={!input.trim() || isLoading}
                             >
@@ -421,7 +357,7 @@ export default function ChefAIScreen() {
                 </KeyboardAvoidingView>
             </SafeAreaView>
 
-            {/* History Modal & Confirmation Modal (unchanged or similar logic) */}
+            {/* History Modal */}
             <Modal
                 animationType="slide"
                 transparent={true}
@@ -717,28 +653,12 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#3f3f46',
     },
-    micButton: {
-        width: 44,
-        height: 44,
-        borderRadius: 22,
-        overflow: 'hidden',
-        marginRight: 4,
-    },
-    micButtonActive: {
-        transform: [{ scale: 1.1 }],
-    },
-    micButtonGradient: {
-        width: '100%',
-        height: '100%',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
     input: {
         flex: 1,
         color: '#fff',
         fontSize: 15, // Reduced font size slightly
         maxHeight: 100, // Reduced max height
-        paddingHorizontal: 12, // Reduced padding
+        paddingHorizontal: 16,
         paddingTop: 12,
         paddingBottom: 12,
     },
@@ -747,26 +667,6 @@ const styles = StyleSheet.create({
         height: 44,
         borderRadius: 22,
         overflow: 'hidden',
-        marginLeft: 4,
-    },
-    // ... existing styles ...
-    speakButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginTop: 12,
-        paddingVertical: 6,
-        paddingHorizontal: 10,
-        backgroundColor: '#18181b',
-        borderRadius: 12, // Changed from 16 to 12
-        alignSelf: 'flex-start',
-        borderWidth: 1,
-        borderColor: '#3f3f46',
-    },
-    speakButtonText: {
-        color: '#ea580c',
-        fontSize: 13,
-        fontWeight: '500', // Changed from 600
-        marginLeft: 6,
     },
     sendButtonGradient: {
         width: '100%',
