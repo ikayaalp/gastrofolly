@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { GoogleGenAI } from '@google/genai'
+import OpenAI from 'openai'
 import { prisma } from '@/lib/prisma'
 
 const SYSTEM_PROMPT = `Sen Gastrofolly platformunun AI asistanısın. Adın "Chef AI".
@@ -32,10 +32,10 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        const apiKey = process.env.GEMINI_API_KEY
+        const apiKey = process.env.OPENAI_API_KEY
         if (!apiKey) {
             return NextResponse.json(
-                { error: 'Gemini API key is not configured' },
+                { error: 'OpenAI API key is not configured' },
                 { status: 500 }
             )
         }
@@ -68,33 +68,30 @@ Aşağıdaki kurslar şu an platformda mevcuttur. Kullanıcının ihiyacına uyg
 ${coursesContext}
 `;
 
-        // Initialize new GenAI SDK
-        const ai = new GoogleGenAI({ apiKey })
-
-        // Build conversation for the model
-        const conversationHistory = messages.map(m =>
-            `${m.role === 'user' ? 'Kullanıcı' : 'Chef AI'}: ${m.content}`
-        ).join('\n\n')
-
-        const fullPrompt = `${dynamicSystemPrompt}
-
-## KONUŞMA GEÇMİŞİ:
-${conversationHistory}
-
-Chef AI:`
-
-        const response = await ai.models.generateContent({
-            model: 'gemini-1.5-flash',
-            contents: fullPrompt,
+        const openai = new OpenAI({
+            apiKey: apiKey,
         })
 
-        const reply = response.text || 'Üzgünüm, şu an yanıt veremiyorum.'
+        const completion = await openai.chat.completions.create({
+            model: 'gpt-4o-mini',
+            messages: [
+                { role: 'system', content: dynamicSystemPrompt },
+                ...messages.map(m => ({
+                    role: m.role as 'user' | 'assistant',
+                    content: m.content
+                }))
+            ],
+            max_tokens: 500,
+            temperature: 0.7,
+        })
+
+        const reply = completion.choices[0]?.message?.content || 'Üzgünüm, şu an yanıt veremiyorum.'
 
         return NextResponse.json({ reply })
     } catch (error: any) {
         console.error('AI Chat error:', error)
 
-        if (error?.status === 429 || error?.message?.includes('429')) {
+        if (error?.status === 429) {
             return NextResponse.json(
                 { error: 'Çok fazla istek gönderildi. Lütfen biraz bekleyin.' },
                 { status: 429 }
@@ -107,5 +104,3 @@ Chef AI:`
         )
     }
 }
-
-
