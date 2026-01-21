@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, Keyboa
 import { ChefHat, Mail, Lock } from 'lucide-react-native';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
+import { makeRedirectUri } from 'expo-auth-session';
 import authService from '../api/authService';
 import CustomAlert from '../components/CustomAlert';
 import AuthBackground from '../components/AuthBackground';
@@ -22,9 +23,13 @@ export default function LoginScreen({ navigation }) {
     });
 
     const [request, response, promptAsync] = Google.useAuthRequest({
+        expoClientId: '334630749775-jjq3dmppnftjm1h34qlobiql8p4a3tv7.apps.googleusercontent.com', // For Expo Go
         iosClientId: '334630749775-terb1dfppb1atgem3t1pc0o41chaj3r1.apps.googleusercontent.com',
-        androidClientId: '334630749775-terb1dfppb1atgem3t1pc0o41chaj3r1.apps.googleusercontent.com', // Using Native ID for APK
+        androidClientId: '334630749775-egnkr4i90r374isi6ep5iihjl0skqh19.apps.googleusercontent.com',
         webClientId: '334630749775-meelg2lgcapd5d64rmbm9gmm8h06im0e.apps.googleusercontent.com',
+        redirectUri: makeRedirectUri({
+            useProxy: true,
+        }),
         selectAccount: true,
     });
 
@@ -37,19 +42,21 @@ export default function LoginScreen({ navigation }) {
     React.useEffect(() => {
         if (response?.type === 'success') {
             const { authentication } = response;
-            handleGoogleLogin(authentication.idToken);
+            // Pass both accessToken (for userinfo) and idToken (for backend verification)
+            handleGoogleLogin(authentication.accessToken, authentication.idToken);
         }
     }, [response]);
 
-    const handleGoogleLogin = async (idToken) => {
+    const handleGoogleLogin = async (accessToken, idToken) => {
         setLoading(true);
-        // We need to fetch user info to get email/name/picture to send to backend
+        // Use accessToken to fetch user info from Google
         try {
             const userInfoResponse = await fetch('https://www.googleapis.com/userinfo/v2/me', {
-                headers: { Authorization: `Bearer ${idToken}` },
+                headers: { Authorization: `Bearer ${accessToken}` },
             });
             const user = await userInfoResponse.json();
 
+            // Send idToken to backend for verification
             const result = await authService.googleLogin(idToken, user.email, user.name, user.picture);
 
             if (result.success) {

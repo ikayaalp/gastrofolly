@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
     StyleSheet,
     Text,
@@ -32,6 +33,7 @@ import CustomAlert from '../components/CustomAlert';
 import ImageViewerModal from '../components/ImageViewerModal';
 
 export default function TopicDetailScreen({ route, navigation }) {
+    const insets = useSafeAreaInsets();
     const { topicId } = route.params;
     const [topic, setTopic] = useState(null);
     const [comments, setComments] = useState([]);
@@ -549,8 +551,8 @@ export default function TopicDetailScreen({ route, navigation }) {
     return (
         <KeyboardAvoidingView
             style={styles.container}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            keyboardVerticalOffset={0}
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
         >
             {/* Header */}
             <View style={styles.header}>
@@ -585,7 +587,10 @@ export default function TopicDetailScreen({ route, navigation }) {
             />
 
             {/* Main Reply Input (for new main comment) */}
-            <View style={[styles.replyInputContainer, { paddingBottom: keyboardVisible ? 16 : 90 }]}>
+            <View style={[
+                styles.replyInputContainer,
+                { paddingBottom: keyboardVisible ? (Platform.OS === 'ios' ? 16 : 10) : (insets.bottom + (Platform.OS === 'android' ? 90 : 60)) }
+            ]}>
                 {isLoggedIn ? (
                     <>
                         <TextInput

@@ -15,6 +15,7 @@ import {
     Platform,
     StatusBar,
     Dimensions,
+    TouchableWithoutFeedback,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import {
@@ -30,6 +31,10 @@ import {
     Camera,
     Film,
     Bookmark,
+    Play,
+    Pause,
+    ChevronsRight,
+    ChevronsLeft,
 } from 'lucide-react-native';
 import { Video, ResizeMode } from 'expo-av';
 import * as ImagePicker from 'expo-image-picker';
@@ -75,6 +80,15 @@ export default function SocialScreen({ navigation }) {
     const [playingVideoId, setPlayingVideoId] = useState(null);
     const [videoDurations, setVideoDurations] = useState({});
     const [videoProgress, setVideoProgress] = useState({});
+
+    // Custom Video Controls
+    const videoRef = useRef(null);
+    const [playbackStatus, setPlaybackStatus] = useState(null); // { positionMillis, durationMillis, isPlaying }
+    const [seekOverlay, setSeekOverlay] = useState(null); // 'forward' | 'backward'
+    const lastTap = useRef({ time: 0, x: 0 });
+    const singleTapTimeout = useRef(null);
+    const [isScrubbing, setIsScrubbing] = useState(false);
+    const [progressBarWidth, setProgressBarWidth] = useState(0);
 
     const viewabilityConfig = useRef({
         itemVisiblePercentThreshold: 80,
@@ -348,6 +362,57 @@ export default function SocialScreen({ navigation }) {
         });
     };
 
+    const togglePlayPause = async () => {
+        if (videoRef.current) {
+            if (playbackStatus?.isPlaying) {
+                await videoRef.current.pauseAsync();
+            } else {
+                await videoRef.current.playAsync();
+            }
+        }
+    };
+
+    const handleSeek = async (amount) => {
+        if (videoRef.current && playbackStatus) {
+            const newPos = playbackStatus.positionMillis + amount;
+            await videoRef.current.setPositionAsync(newPos);
+        }
+    };
+
+    const handleVideoTap = (event) => {
+        const { locationX } = event.nativeEvent;
+        const screenWidth = Dimensions.get('window').width;
+        const now = Date.now();
+        const DOUBLE_TAP_DELAY = 300;
+
+        if (now - lastTap.current.time < DOUBLE_TAP_DELAY) {
+            // Double tap detected
+            clearTimeout(singleTapTimeout.current);
+            const isRight = locationX > screenWidth / 2;
+            if (isRight) {
+                handleSeek(5000); // +5 sec
+                setSeekOverlay('forward');
+            } else {
+                handleSeek(-5000); // -5 sec
+                setSeekOverlay('backward');
+            }
+            setTimeout(() => setSeekOverlay(null), 600);
+            lastTap.current = { time: 0, x: 0 }; // Reset
+        } else {
+            // Single tap - do nothing as per request
+            lastTap.current = { time: now, x: locationX };
+        }
+    };
+
+    const handleProgressBarTap = async (event) => {
+        if (!playbackStatus?.durationMillis || !progressBarWidth || !videoRef.current) return;
+
+        const { locationX } = event.nativeEvent;
+        const ratio = Math.max(0, Math.min(1, locationX / progressBarWidth));
+        const newPos = ratio * playbackStatus.durationMillis;
+        await videoRef.current.setPositionAsync(newPos);
+    };
+
     const renderTopicItem = useCallback(({ item }) => (
         <TopicCard
             item={item}
@@ -540,7 +605,7 @@ export default function SocialScreen({ navigation }) {
                         </ScrollView>
 
                         {/* Bottom Toolbar */}
-                        <View style={styles.modalToolbar}>
+                        <View style={[styles.modalToolbar, { paddingBottom: Platform.OS === 'android' ? insets.bottom + 16 : 16 }]}>
                             <TouchableOpacity
                                 style={styles.toolbarButton}
                                 onPress={pickImage}
@@ -595,19 +660,76 @@ export default function SocialScreen({ navigation }) {
                 transparent={false}
                 onRequestClose={() => setFullscreenVideoUrl(null)}
             >
-                <View style={{ flex: 1, backgroundColor: '#000', justifyContent: 'center' }}>
-                    <Video
-                        source={{ uri: fullscreenVideoUrl }}
-                        style={{ width: '100%', height: '100%' }}
-                        resizeMode={ResizeMode.CONTAIN}
-                        useNativeControls
-                        shouldPlay
-                        isLooping
-                    />
+                <View style={{ flex: 1, backgroundColor: '#000', paddingBottom: Platform.OS === 'android' ? 20 : 0 }}>
+                    <TouchableWithoutFeedback onPress={handleVideoTap}>
+                        <View style={{ flex: 1, justifyContent: 'center' }}>
+                            <Video
+                                ref={videoRef}
+                                source={{ uri: fullscreenVideoUrl }}
+                                style={{ flex: 1, width: '100%' }}
+                                resizeMode={ResizeMode.CONTAIN}
+                                shouldPlay
+                                isLooping
+                                onPlaybackStatusUpdate={status => setPlaybackStatus(status)}
+                            />
+
+                            {/* Seek Backward Overlay (Minimal) */}
+                            {seekOverlay === 'backward' && (
+                                <View style={styles.seekOverlayLeft}>
+                                    <ChevronsLeft size={40} color="#fff" />
+                                    <Text style={styles.seekText}>5 sn</Text>
+                                </View>
+                            )}
+
+                            {/* Seek Forward Overlay (Minimal) */}
+                            {seekOverlay === 'forward' && (
+                                <View style={styles.seekOverlayRight}>
+                                    <ChevronsRight size={40} color="#fff" />
+                                    <Text style={styles.seekText}>5 sn</Text>
+                                </View>
+                            )}
+                        </View>
+                    </TouchableWithoutFeedback>
+
+                    {/* Bottom Control Bar */}
+                    <View style={styles.bottomControlBar}>
+                        <TouchableOpacity onPress={togglePlayPause} style={styles.playPauseButton}>
+                            {playbackStatus?.isPlaying ? (
+                                <Pause size={24} color="#ea580c" fill="#ea580c" />
+                            ) : (
+                                <Play size={24} color="#ea580c" fill="#ea580c" />
+                            )}
+                        </TouchableOpacity>
+
+                        <TouchableWithoutFeedback onPress={handleProgressBarTap}>
+                            <View
+                                style={styles.progressBarContainer}
+                                onLayout={e => setProgressBarWidth(e.nativeEvent.layout.width)}
+                            >
+                                {/* Track Background */}
+                                <View style={{
+                                    position: 'absolute',
+                                    left: 0,
+                                    right: 0,
+                                    height: 6,
+                                    backgroundColor: 'rgba(255,255,255,0.3)',
+                                    borderRadius: 3
+                                }} />
+                                {/* Progress Fill */}
+                                <View
+                                    style={[
+                                        styles.progressBarFill,
+                                        { width: `${(playbackStatus?.durationMillis ? (playbackStatus.positionMillis / playbackStatus.durationMillis) * 100 : 0)}%` }
+                                    ]}
+                                />
+                            </View>
+                        </TouchableWithoutFeedback>
+                    </View>
+
                     <TouchableOpacity
                         style={{
                             position: 'absolute',
-                            top: 50,
+                            top: Platform.OS === 'ios' ? 50 : 40,
                             left: 20,
                             padding: 8,
                             backgroundColor: 'rgba(0,0,0,0.5)',
@@ -1258,4 +1380,62 @@ const styles = StyleSheet.create({
         marginTop: 10,
         fontWeight: '500',
     },
+    seekOverlayLeft: {
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        left: 0,
+        width: '30%',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 5,
+    },
+    seekOverlayRight: {
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        right: 0,
+        width: '30%',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 5,
+    },
+    seekText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: 'bold',
+        marginTop: 8,
+        textShadowColor: 'rgba(0, 0, 0, 0.75)',
+        textShadowOffset: { width: -1, height: 1 },
+        textShadowRadius: 10
+    },
+    bottomControlBar: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingTop: 12,
+        paddingBottom: Platform.OS === 'android' ? 40 : 34,
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        zIndex: 20,
+    },
+    playPauseButton: {
+        padding: 4,
+        marginRight: 12,
+    },
+    progressBarContainer: {
+        flex: 1,
+        height: 30, // Tappable area
+        justifyContent: 'center',
+    },
+    progressBarFill: {
+        height: 6, // Visible height
+        backgroundColor: '#ea580c',
+        borderRadius: 3,
+    },
+    // Progress bar background (simulated by a View inside container if needed, or container background)
+    // Actually better to have a track background. Let's adjust progressBarContainer.
 });

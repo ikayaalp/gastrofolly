@@ -26,16 +26,7 @@ export default function RightSidebar({ memberCount = 0 }: RightSidebarProps) {
                         Profesyonel şefler ve gastronomi tutkunlarının buluşma noktası. Tariflerinizi paylaşın, sorular sorun ve network kurun.
                     </p>
 
-                    <div className="flex items-center justify-between text-sm text-gray-500 mb-4 pb-4 border-b border-gray-800">
-                        <div>
-                            <div className="font-bold text-white">{formatNumber(memberCount)}</div>
-                            <div>Üye</div>
-                        </div>
-                    </div>
-
-                    <button className="w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 rounded-full transition-colors">
-                        Konu Oluştur
-                    </button>
+                    {/* Member count and Create Topic button removed */}
                 </div>
             </div>
 
