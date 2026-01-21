@@ -1,0 +1,9 @@
+const { getDefaultConfig } = require('expo/metro-config');
+
+const config = getDefaultConfig(__dirname);
+
+// Ensure .json is included in sourceExts
+config.resolver.sourceExts.push('json');
+config.resolver.sourceExts.push('cjs');
+
+module.exports = config;
