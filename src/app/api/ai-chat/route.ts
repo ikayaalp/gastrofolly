@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import { GoogleGenAI } from '@google/genai'
 import { prisma } from '@/lib/prisma'
 
 const SYSTEM_PROMPT = `Sen Gastrofolly platformunun AI asistanısın. Adın "Chef AI".
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
                     select: { name: true }
                 }
             },
-            take: 20 // Limit context size
+            take: 20
         });
 
         const coursesContext = courses.map(c =>
@@ -68,33 +68,27 @@ Aşağıdaki kurslar şu an platformda mevcuttur. Kullanıcının ihiyacına uyg
 ${coursesContext}
 `;
 
-        // Initialize Gemini
-        const genAI = new GoogleGenerativeAI(apiKey)
-        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' })
+        // Initialize new GenAI SDK
+        const ai = new GoogleGenAI({ apiKey })
 
-        // Build conversation history for Gemini
-        const history = messages.slice(0, -1).map(m => ({
-            role: m.role === 'user' ? 'user' : 'model',
-            parts: [{ text: m.content }]
-        }))
+        // Build conversation for the model
+        const conversationHistory = messages.map(m =>
+            `${m.role === 'user' ? 'Kullanıcı' : 'Chef AI'}: ${m.content}`
+        ).join('\n\n')
 
-        const lastMessage = messages[messages.length - 1]?.content || ''
+        const fullPrompt = `${dynamicSystemPrompt}
 
-        // Start chat with system prompt embedded in history
-        const chat = model.startChat({
-            history: [
-                { role: 'user', parts: [{ text: 'Merhaba, sen kimsin?' }] },
-                { role: 'model', parts: [{ text: dynamicSystemPrompt + '\n\nMerhaba! Ben Chef AI, Gastrofolly\'nin yapay zeka destekli mutfak asistanıyım! 👨‍🍳 Size tarifler, pişirme teknikleri ve gastronomi dünyası hakkında yardımcı olabilirim. Bugün mutfakta ne yapmak istersiniz?' }] },
-                ...history
-            ],
-            generationConfig: {
-                maxOutputTokens: 500,
-                temperature: 0.7,
-            }
+## KONUŞMA GEÇMİŞİ:
+${conversationHistory}
+
+Chef AI:`
+
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.0-flash',
+            contents: fullPrompt,
         })
 
-        const result = await chat.sendMessage(lastMessage)
-        const reply = result.response.text() || 'Üzgünüm, şu an yanıt veremiyorum.'
+        const reply = response.text || 'Üzgünüm, şu an yanıt veremiyorum.'
 
         return NextResponse.json({ reply })
     } catch (error: any) {
@@ -113,4 +107,5 @@ ${coursesContext}
         )
     }
 }
+
 
