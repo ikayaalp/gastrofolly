@@ -38,7 +38,7 @@ const slides = [
         icon: Award,
         title: 'Size Özel\nAbonelik Paketleri',
         subtitle: 'İhtiyacınıza uygun planı seçin',
-        description: 'Commis, Chef de Partie veya Executive Chef paketleriyle sınırsız erişim',
+        description: 'Premium üyelik ile tüm kurslara ve şeflere sınırsız erişim',
         gradient: ['#0891b2', '#0e7490'],
     },
     {

@@ -62,12 +62,8 @@ export default function AccountScreen({ navigation }) {
     };
 
     const getPlanName = (plan) => {
-        switch (plan) {
-            case 'Commis': return 'Commis';
-            case 'Chef D party': return 'Chef de Partie';
-            case 'Executive': return 'Executive Chef';
-            default: return 'Ücretsiz Üyelik';
-        }
+        if (plan && plan !== 'FREE') return 'Premium Üyelik';
+        return 'Ücretsiz Üyelik';
     };
 
     const MenuItem = ({ icon: Icon, title, onPress, subtitle }) => (

@@ -32,28 +32,15 @@ export default function SubscriptionScreen({ navigation }) {
     };
 
     const getPlanName = (plan) => {
-        switch (plan) {
-            case 'Premium': return 'Premium Üyelik';
-            case 'Commis': return 'Commis (Başlangıç)';
-            case 'Chef D party': return 'Chef de Partie (Orta Seviye)';
-            case 'Executive': return 'Executive Chef (Profesyonel)';
-            default: return 'Ücretsiz Üyelik';
-        }
+        if (plan && plan !== 'FREE') return 'Premium Üyelik';
+        return 'Ücretsiz Üyelik';
     };
 
     const getPlanColor = (plan) => {
-        switch (plan) {
-            case 'Premium':
-                return ['#ea580c', '#c2410c']; // Orange
-            case 'Executive':
-                return ['#9333ea', '#7e22ce']; // Purple
-            case 'Chef D party':
-                return ['#ea580c', '#c2410c']; // Orange
-            case 'Commis':
-                return ['#6b7280', '#4b5563']; // Gray
-            default:
-                return ['#374151', '#1f2937']; // Dark Gray
+        if (plan && plan !== 'FREE') {
+            return ['#ea580c', '#c2410c']; // Orange (Premium)
         }
+        return ['#374151', '#1f2937']; // Dark Gray (Free)
     };
 
     const formatDate = (dateString) => {

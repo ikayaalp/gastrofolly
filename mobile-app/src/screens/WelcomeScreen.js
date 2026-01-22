@@ -69,38 +69,18 @@ export default function WelcomeScreen({ navigation }) {
                     </Text>
 
                     {/* Plans */}
+                    {/* Premium Plan Only */}
                     <View style={styles.plansGrid}>
-                        {/* Commis */}
-                        <View style={[styles.planCard, styles.planCardGray]}>
-                            <View style={styles.planIcon}>
-                                <BookOpen size={24} color="#fff" />
-                            </View>
-                            <Text style={styles.planName}>Commis</Text>
-                            <Text style={styles.planPrice}>199₺</Text>
-                            <Text style={styles.planPeriod}>/ Aylık</Text>
-                        </View>
-
-                        {/* Chef D party - Popular */}
-                        <View style={[styles.planCard, styles.planCardOrange, styles.planCardPopular]}>
-                            <View style={styles.popularBadge}>
-                                <Text style={styles.popularBadgeText}>EN POPÜLER</Text>
-                            </View>
+                        <View style={[styles.planCard, styles.planCardOrange, styles.planCardPopular, { width: '100%' }]}>
                             <View style={[styles.planIcon, styles.planIconOrange]}>
-                                <Crown size={24} color="#fff" />
+                                <Crown size={32} color="#fff" />
                             </View>
-                            <Text style={styles.planName}>Chef D party</Text>
-                            <Text style={styles.planPrice}>399₺</Text>
+                            <Text style={styles.planName}>PREMIUM</Text>
+                            <Text style={styles.planPrice}>299₺</Text>
                             <Text style={styles.planPeriod}>/ Aylık</Text>
-                        </View>
-
-                        {/* Executive */}
-                        <View style={[styles.planCard, styles.planCardPurple]}>
-                            <View style={[styles.planIcon, styles.planIconPurple]}>
-                                <Zap size={24} color="#fff" />
-                            </View>
-                            <Text style={styles.planName}>Executive</Text>
-                            <Text style={styles.planPrice}>599₺</Text>
-                            <Text style={styles.planPeriod}>/ Aylık</Text>
+                            <Text style={{ color: '#d1d5db', fontSize: 12, marginTop: 8, textAlign: 'center' }}>
+                                Tüm kurslara ve sertifikalara sınırsız erişim
+                            </Text>
                         </View>
                     </View>
 
