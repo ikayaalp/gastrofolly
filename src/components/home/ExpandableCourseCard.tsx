@@ -84,20 +84,7 @@ export default function ExpandableCourseCard({ course, showProgress, rank, large
 
     // Determine subscription package based on course level
     // Colors from subscription page: Commis=gray, Chef D party=orange, Executive=purple
-    const getSubscriptionPackage = (level: string) => {
-        switch (level) {
-            case "BEGINNER":
-                return { label: "Commis", className: "text-gray-400 border-gray-400" }
-            case "INTERMEDIATE":
-                return { label: "Chef D party", className: "text-orange-500 border-orange-500" }
-            case "ADVANCED":
-                return { label: "Executive", className: "text-purple-400 border-purple-400" }
-            default:
-                return { label: level, className: "text-zinc-400 border-zinc-400" }
-        }
-    }
 
-    const packageInfo = getSubscriptionPackage(course.level)
 
     const handleCardClick = () => {
         router.push(`/course/${course.id}`)
@@ -333,9 +320,7 @@ export default function ExpandableCourseCard({ course, showProgress, rank, large
                                         <Star className="w-3 h-3 fill-green-500 mr-1" />
                                         {averageRating.toFixed(1)} Puan
                                     </span>
-                                    <span className={`border px-1 text-[10px] uppercase ${packageInfo.className}`}>
-                                        {packageInfo.label}
-                                    </span>
+
                                     {course.duration && (
                                         <span className="text-zinc-400 text-sm">
                                             {Math.round(course.duration / 60)}s {course.duration % 60}dk
