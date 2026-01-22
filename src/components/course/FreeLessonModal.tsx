@@ -117,12 +117,13 @@ export default function FreeLessonModal({ lesson, courseTitle }: FreeLessonModal
                         {/* Footer */}
                         <div className="p-4 border-t border-gray-800 bg-gradient-to-r from-orange-500/10 to-transparent">
                             <p className="text-sm text-gray-300">
-                                🎓 <span className="text-orange-400 font-medium">Tüm derslere erişmek için</span> bir abonelik planı satın alın.
+                                🎓 <span className="text-orange-400 font-medium">Tüm derslere erişmek için</span> Premium üye olun.
                             </p>
                         </div>
                     </div>
-                </div>
-            )}
+                </div >
+            )
+            }
         </>
     )
 }

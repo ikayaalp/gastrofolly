@@ -463,50 +463,29 @@ export default async function CoursePage({ params }: CoursePageProps) {
                 <>
                   {/* Abonelik Mesajı */}
                   {/* Abonelik Mesajı */}
-                  <div className={`border rounded-xl p-6 mb-6 text-center ${course.level === 'BEGINNER' ? 'bg-gray-900/60 border-gray-700' :
-                    course.level === 'INTERMEDIATE' ? 'bg-orange-900/20 border-orange-500/30' :
-                      'bg-purple-900/20 border-purple-500/30'
-                    }`}>
-                    <div className={`rounded-full p-3 w-16 h-16 mx-auto mb-4 flex items-center justify-center ${course.level === 'BEGINNER' ? 'bg-gray-700' :
-                      course.level === 'INTERMEDIATE' ? 'bg-orange-600' :
-                        'bg-purple-600'
-                      }`}>
-                      {course.level === 'BEGINNER' ? <BookOpen className="h-8 w-8 text-white" /> :
-                        course.level === 'INTERMEDIATE' ? <Crown className="h-8 w-8 text-white" /> :
-                          <Zap className="h-8 w-8 text-white" />}
+                  <div className="border rounded-xl p-6 mb-6 text-center bg-orange-900/20 border-orange-500/30">
+                    <div className="rounded-full p-3 w-16 h-16 mx-auto mb-4 flex items-center justify-center bg-orange-600">
+                      <Crown className="h-8 w-8 text-white" />
                     </div>
                     <h3 className="text-xl font-bold text-white mb-2">
-                      {course.level === 'BEGINNER' ? 'Commis Paketi Gerekli' :
-                        course.level === 'INTERMEDIATE' ? 'Chef D party Paketi Gerekli' :
-                          'Executive Paketi Gerekli'}
+                      Premium Üyelik Gerekli
                     </h3>
                     <p className="text-gray-300 mb-4 text-sm">
-                      Bu kursa erişmek için {
-                        course.level === 'BEGINNER' ? 'Commis' :
-                          course.level === 'INTERMEDIATE' ? 'Chef D party' :
-                            'Executive'
-                      } veya üstü bir pakete sahip olmalısınız.
+                      Bu kursa erişmek için Premium üye olmalısınız.
                     </p>
                     <div className="text-3xl font-bold text-white mb-1">
-                      {course.level === 'BEGINNER' ? '199 ₺' :
-                        course.level === 'INTERMEDIATE' ? '399 ₺' :
-                          '599 ₺'}
+                      299 ₺
                       <span className="text-sm text-gray-400 ml-2 font-normal">/ Aylık</span>
                     </div>
                   </div>
 
                   {/* Abonelik Butonu */}
                   <Link
-                    href={`/subscription?courseId=${course.id}&plan=${course.level === 'BEGINNER' ? 'Commis' : course.level === 'INTERMEDIATE' ? 'Chef D party' : 'Executive'}`}
-                    className={`w-full text-white py-3 px-4 rounded-lg font-semibold transition-colors flex items-center justify-center mb-3 ${course.level === 'BEGINNER' ? 'bg-gray-600 hover:bg-gray-700' :
-                      course.level === 'INTERMEDIATE' ? 'bg-orange-600 hover:bg-orange-700' :
-                        'bg-purple-600 hover:bg-purple-700'
-                      }`}
+                    href={`/subscription?courseId=${course.id}&plan=Premium`}
+                    className="w-full text-white py-3 px-4 rounded-lg font-semibold transition-colors flex items-center justify-center mb-3 bg-orange-600 hover:bg-orange-700"
                   >
                     <CheckCircle className="h-5 w-5 mr-2" />
-                    {course.level === 'BEGINNER' ? 'Commis Ol' :
-                      course.level === 'INTERMEDIATE' ? 'Chef D party Ol' :
-                        'Executive Ol'}
+                    Premium Ol
                   </Link>
                 </>
               )}

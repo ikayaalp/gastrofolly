@@ -43,7 +43,7 @@ function SubscriptionContent() {
             color: "from-orange-600 to-red-600",
             borderColor: "border-orange-500/50",
             buttonColor: "bg-orange-600 hover:bg-orange-700",
-            popular: true,
+
             features: [
                 "Tüm kurslara sınırsız erişim",
                 "Yeni içeriklere anında erişim",
@@ -167,17 +167,9 @@ function SubscriptionContent() {
                             return (
                                 <div
                                     key={plan.name}
-                                    className={`relative w-full max-w-md bg-gradient-to-br ${plan.color.replace('from-', 'from-').replace('to-', 'to-')}/20 border-2 ${plan.borderColor} rounded-2xl p-8 ${plan.popular ? 'md:scale-110 md:shadow-2xl' : ''} transition-all duration-300 hover:scale-105`}
+                                    className={`relative w-full max-w-md bg-gradient-to-br ${plan.color.replace('from-', 'from-').replace('to-', 'to-')}/20 border-2 ${plan.borderColor} rounded-2xl p-8 transition-all duration-300 hover:scale-105`}
                                 >
-                                    {/* Popular Badge */}
-                                    {plan.popular && (
-                                        <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                                            <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-1 rounded-full text-sm font-bold flex items-center gap-1">
-                                                <Star className="h-4 w-4" />
-                                                EN POPÜLER
-                                            </div>
-                                        </div>
-                                    )}
+
 
                                     {/* Icon */}
                                     <div className="flex justify-center mb-6">

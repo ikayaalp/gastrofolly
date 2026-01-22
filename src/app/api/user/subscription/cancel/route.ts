@@ -70,8 +70,8 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
             success: true,
             message: endDate
-                ? `Abonelik iptal edildi. Premium erişiminiz ${endDate} tarihine kadar devam edecek.`
-                : 'Abonelik iptal edildi.',
+                ? `Premium üyelik iptal edildi. Premium erişiminiz ${endDate} tarihine kadar devam edecek.`
+                : 'Premium üyelik iptal edildi.',
             user: {
                 id: user.id,
                 name: user.name,

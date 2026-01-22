@@ -27,7 +27,7 @@ export default function CartPage() {
 
         {/* Message */}
         <h1 className="text-4xl font-bold text-white mb-4">
-          Artık Abonelik Sistemi Kullanıyoruz!
+          Artık Premium Üyelik Sistemi Kullanıyoruz!
         </h1>
         <p className="text-xl text-gray-300 mb-8">
           Kursları tek tek satın almak yerine, tüm kurslara sınırsız erişim için premium üye olun.

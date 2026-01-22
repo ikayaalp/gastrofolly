@@ -78,11 +78,11 @@ export default function SubscriptionScreen({ navigation }) {
             : null;
 
         const confirmMessage = endDate
-            ? `Aboneliğinizi iptal etmek istediğinize emin misiniz? Premium erişiminiz ${endDate} tarihine kadar devam edecek.`
-            : 'Aboneliğinizi iptal etmek istediğinize emin misiniz?';
+            ? `Premium üyeliğinizi iptal etmek istediğinize emin misiniz? Premium erişiminiz ${endDate} tarihine kadar devam edecek.`
+            : 'Premium üyeliğinizi iptal etmek istediğinize emin misiniz?';
 
         showAlert(
-            'Abonelik İptali',
+            'Premium İptali',
             confirmMessage,
             [
                 { text: 'Vazgeç', style: 'cancel' },
@@ -93,7 +93,7 @@ export default function SubscriptionScreen({ navigation }) {
                         setLoading(true);
                         const result = await authService.cancelSubscription();
                         if (result.success) {
-                            showAlert('Başarılı', result.message || 'Aboneliğiniz iptal edildi.', [{ text: 'Tamam' }], 'success');
+                            showAlert('Başarılı', result.message || 'Premium üyeliğiniz iptal edildi.', [{ text: 'Tamam' }], 'success');
                             loadUserData(); // Reload to show updated status
                         } else {
                             showAlert('Hata', result.error, [{ text: 'Tamam' }], 'error');
@@ -125,7 +125,7 @@ export default function SubscriptionScreen({ navigation }) {
                 >
                     <ArrowLeft size={24} color="white" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Abonelik Bilgileri</Text>
+                <Text style={styles.headerTitle}>Premium Bilgileri</Text>
                 <View style={{ width: 40 }} />
             </View>
 
@@ -144,7 +144,7 @@ export default function SubscriptionScreen({ navigation }) {
                             <Award size={32} color="white" />
                         </View>
                         <View>
-                            <Text style={styles.planLabel}>Paketiniz</Text>
+                            <Text style={styles.planLabel}>Üyelik Durumu</Text>
                             <Text style={styles.planName}>{getPlanName(userData?.subscriptionPlan)}</Text>
                         </View>
                     </View>
@@ -171,7 +171,7 @@ export default function SubscriptionScreen({ navigation }) {
                     <View style={[styles.statusBadge, userData?.subscriptionCancelled && styles.statusBadgeCancelled]}>
                         <Shield size={12} color="white" />
                         <Text style={styles.statusText}>
-                            {userData?.subscriptionCancelled ? 'İptal Edildi' : 'Aktif Abonelik'}
+                            {userData?.subscriptionCancelled ? 'İptal Edildi' : 'Aktif Premium'}
                         </Text>
                     </View>
 
@@ -185,7 +185,7 @@ export default function SubscriptionScreen({ navigation }) {
                 </LinearGradient>
 
                 <View style={styles.infoSection}>
-                    <Text style={styles.infoTitle}>Paket Özellikleri</Text>
+                    <Text style={styles.infoTitle}>Premium Ayrıcalıkları</Text>
                     <View style={styles.featuresList}>
                         <FeatureItem text="Tüm başlangıç seviye derslere erişim" />
                         <FeatureItem text="Reklamsız izleme deneyimi" />
@@ -200,12 +200,12 @@ export default function SubscriptionScreen({ navigation }) {
                         onPress={handleCancelSubscription}
                     >
                         <LogOut size={20} color="#ef4444" />
-                        <Text style={[styles.manageButtonText, styles.cancelButtonText]}>Aboneliği İptal Et</Text>
+                        <Text style={[styles.manageButtonText, styles.cancelButtonText]}>İptal Et</Text>
                     </TouchableOpacity>
                 )}
 
                 <Text style={styles.footerText}>
-                    Aboneliğinizi web sitemiz üzerinden (gastrofolly.com) yönetebilir veya iptal edebilirsiniz.
+                    Premium üyeliğinizi web sitemiz üzerinden (gastrofolly.com) yönetebilir veya iptal edebilirsiniz.
                 </Text>
 
             </ScrollView>

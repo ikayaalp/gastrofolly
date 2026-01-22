@@ -205,7 +205,7 @@ export default function SettingsClient({ user }: SettingsClientProps) {
 
   const tabs = [
     { id: "profile", name: "Profil Bilgileri", icon: User },
-    { id: "subscription", name: "Abonelik", icon: Crown },
+    { id: "subscription", name: "Premium", icon: Crown },
     { id: "password", name: "Şifre Değiştir", icon: Lock },
     { id: "account", name: "Hesap Bilgileri", icon: Award }
   ]
@@ -391,7 +391,7 @@ export default function SettingsClient({ user }: SettingsClientProps) {
 
       {activeTab === "subscription" && (
         <div className="bg-[#0a0a0a] border border-gray-800 rounded-xl p-6">
-          <h2 className="text-xl font-bold text-white mb-6">Abonelik Bilgileri</h2>
+          <h2 className="text-xl font-bold text-white mb-6">Premium Üyelik Bilgileri</h2>
 
           {user.subscriptionPlan ? (
             <div className="space-y-6">
@@ -403,12 +403,12 @@ export default function SettingsClient({ user }: SettingsClientProps) {
                     </div>
                     <div>
                       <h3 className="text-xl font-bold text-white">{user.subscriptionPlan}</h3>
-                      <p className="text-orange-400 text-sm font-medium">Aktif Abonelik</p>
+                      <p className="text-orange-400 text-sm font-medium">Aktif Premium</p>
                     </div>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-sm font-semibold ${user.subscriptionCancelled
-                      ? 'bg-yellow-500/20 text-yellow-400'
-                      : 'bg-green-500/20 text-green-400'
+                    ? 'bg-yellow-500/20 text-yellow-400'
+                    : 'bg-green-500/20 text-green-400'
                     }`}>
                     {user.subscriptionCancelled ? 'İptal Edildi' : 'Aktif'}
                   </span>
@@ -431,30 +431,30 @@ export default function SettingsClient({ user }: SettingsClientProps) {
               </div>
 
               <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
-                <h4 className="text-white font-semibold mb-2">Abonelik Yönetimi</h4>
+                <h4 className="text-white font-semibold mb-2">Premium Yönetimi</h4>
                 {user.subscriptionCancelled ? (
                   <>
                     <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 mb-4">
-                      <p className="text-yellow-400 text-sm font-medium mb-1">Aboneliğiniz iptal edildi</p>
+                      <p className="text-yellow-400 text-sm font-medium mb-1">Premium üyeliğiniz iptal edildi</p>
                       <p className="text-gray-400 text-sm">
                         Premium erişiminiz {user.subscriptionEndDate ? formatDate(user.subscriptionEndDate) : '-'} tarihine kadar devam edecektir.
                       </p>
                     </div>
                     <p className="text-gray-400 text-sm">
-                      Aboneliğinizi yenilemek isterseniz Planları İncele butonunu kullanabilirsiniz.
+                      Premium üyeliğinizi yenilemek isterseniz Premium Ol butonunu kullanabilirsiniz.
                     </p>
                   </>
                 ) : (
                   <>
                     <p className="text-gray-400 text-sm mb-4">
-                      Aboneliğinizi iptal ederseniz, mevcut dönem sonuna kadar erişiminiz devam edecektir.
+                      Premium üyeliğinizi iptal ederseniz, mevcut dönem sonuna kadar erişiminiz devam edecektir.
                     </p>
                     <button
                       onClick={handleCancelSubscription}
                       disabled={loading}
                       className="text-red-400 hover:text-red-300 text-sm font-medium transition-colors disabled:opacity-50"
                     >
-                      {loading ? "İşleniyor..." : "Aboneliği İptal Et"}
+                      {loading ? "İşleniyor..." : "İptal Et"}
                     </button>
                   </>
                 )}
@@ -465,15 +465,15 @@ export default function SettingsClient({ user }: SettingsClientProps) {
               <div className="bg-gray-800 rounded-full p-4 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
                 <Crown className="h-8 w-8 text-gray-500" />
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Aktif Abonelik Bulunamadı</h3>
+              <h3 className="text-lg font-semibold text-white mb-2">Premium Üyelik Bulunamadı</h3>
               <p className="text-gray-400 mb-6 max-w-md mx-auto">
-                Henüz bir aboneliğiniz bulunmuyor. Premium içeriklere erişmek için hemen abone olun.
+                Henüz Premium üye değilsiniz. Ayrıcalıklı içeriklere erişmek için hemen Premium olun.
               </p>
               <button
                 onClick={() => router.push('/subscription')}
                 className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
               >
-                Planları İncele
+                Premium Ol
               </button>
             </div>
           )}
