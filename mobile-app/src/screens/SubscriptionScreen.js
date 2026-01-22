@@ -33,6 +33,7 @@ export default function SubscriptionScreen({ navigation }) {
 
     const getPlanName = (plan) => {
         switch (plan) {
+            case 'Premium': return 'Premium Üyelik';
             case 'Commis': return 'Commis (Başlangıç)';
             case 'Chef D party': return 'Chef de Partie (Orta Seviye)';
             case 'Executive': return 'Executive Chef (Profesyonel)';
@@ -42,6 +43,8 @@ export default function SubscriptionScreen({ navigation }) {
 
     const getPlanColor = (plan) => {
         switch (plan) {
+            case 'Premium':
+                return ['#ea580c', '#c2410c']; // Orange
             case 'Executive':
                 return ['#9333ea', '#7e22ce']; // Purple
             case 'Chef D party':

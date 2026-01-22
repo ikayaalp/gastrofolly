@@ -23,9 +23,7 @@ function CheckoutContent() {
 
   // Plan bilgileri
   const plans: Record<string, { price: number, icon: LucideIcon, color: string }> = {
-    "Commis": { price: 199, icon: BookOpen, color: "from-gray-600 to-gray-700" },
-    "Chef D party": { price: 399, icon: Crown, color: "from-orange-600 to-red-600" },
-    "Executive": { price: 599, icon: Zap, color: "from-purple-600 to-pink-600" }
+    "Premium": { price: 299, icon: Crown, color: "from-orange-600 to-red-600" }
   }
 
   const selectedPlan = planName && plans[planName] ? plans[planName] : null

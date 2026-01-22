@@ -36,23 +36,8 @@ function SubscriptionContent() {
 
     const plans = [
         {
-            name: "Commis",
-            price: "199",
-            period: "Aylık",
-            icon: BookOpen,
-            color: "from-gray-600 to-gray-700",
-            borderColor: "border-gray-500/50",
-            buttonColor: "bg-gray-600 hover:bg-gray-700",
-            features: [
-                "Temel içerikler",
-                "Sertifika desteği",
-                "Topluluk erişimi",
-                "Mobil erişim"
-            ]
-        },
-        {
-            name: "Chef D party",
-            price: "399",
+            name: "Premium",
+            price: "299",
             period: "Aylık",
             icon: Crown,
             color: "from-orange-600 to-red-600",
@@ -65,25 +50,9 @@ function SubscriptionContent() {
                 "Premium topluluk erişimi",
                 "Eğitmenlerle doğrudan iletişim",
                 "Mobil ve masaüstü erişim",
-                "Öncelikli destek"
-            ]
-        },
-        {
-            name: "Executive",
-            price: "599",
-            period: "Aylık",
-            icon: Zap,
-            color: "from-purple-600 to-pink-600",
-            borderColor: "border-purple-500/50",
-            buttonColor: "bg-purple-600 hover:bg-purple-700",
-            features: [
-                "Premium'daki tüm özellikler",
+                "Öncelikli destek",
                 "1-1 mentorluk seansları",
-                "Özel proje incelemeleri",
-                "Kariyer danışmanlığı",
-                "Sınırsız canlı workshop",
-                "VIP topluluk erişimi",
-                "7/24 öncelikli destek"
+                "Sertifika desteği"
             ]
         }
     ]
@@ -191,14 +160,14 @@ function SubscriptionContent() {
                     </div>
 
                     {/* Pricing Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+                    <div className="flex justify-center mb-16">
                         {plans.map((plan) => {
                             const Icon = plan.icon
                             const isLoading = loading === plan.name
                             return (
                                 <div
                                     key={plan.name}
-                                    className={`relative bg-gradient-to-br ${plan.color.replace('from-', 'from-').replace('to-', 'to-')}/20 border-2 ${plan.borderColor} rounded-2xl p-8 ${plan.popular ? 'md:scale-110 md:shadow-2xl' : ''} transition-all duration-300 hover:scale-105`}
+                                    className={`relative w-full max-w-md bg-gradient-to-br ${plan.color.replace('from-', 'from-').replace('to-', 'to-')}/20 border-2 ${plan.borderColor} rounded-2xl p-8 ${plan.popular ? 'md:scale-110 md:shadow-2xl' : ''} transition-all duration-300 hover:scale-105`}
                                 >
                                     {/* Popular Badge */}
                                     {plan.popular && (
