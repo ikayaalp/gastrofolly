@@ -1,10 +1,37 @@
 "use client";
 import Link from "next/link";
-import { ChefHat, Play, Star, Users, Crown, BookOpen, Zap, ArrowRight, Check } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ChefHat, Play, Star, Users, Crown, BookOpen, Zap, ArrowRight, Check, Search, ChevronDown, X } from "lucide-react";
+import { useEffect, useState, useRef } from "react";
 import AutoScrollCourses from "@/components/home/AutoScrollCourses";
 import HomeStories from "@/components/home/HomeStories";
 import { useRouter } from "next/navigation";
+
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  imageUrl?: string;
+  courseCount: number;
+}
+
+interface CategoryCourse {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  imageUrl?: string;
+  level: string;
+  duration?: number;
+  instructor: {
+    id: string;
+    name: string;
+    image?: string;
+  };
+  lessonCount: number;
+  enrollmentCount: number;
+  averageRating: number;
+  reviewCount: number;
+}
 
 export default function Home() {
   const router = useRouter();
@@ -20,9 +47,51 @@ export default function Home() {
 
   const [featured, setFeatured] = useState<FeaturedCourse[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showBrowseMenu, setShowBrowseMenu] = useState(false);
+  // Default categories for fallback
+  const defaultCategories: Category[] = [
+    { id: "cat-1", name: "Türk Mutfağı", slug: "turk-mutfagi", courseCount: 12 },
+    { id: "cat-2", name: "Pastacılık & Ekmekçilik", slug: "pastacilik", courseCount: 8 },
+    { id: "cat-3", name: "İtalyan Mutfağı", slug: "italyan-mutfagi", courseCount: 10 },
+    { id: "cat-4", name: "Asya Mutfağı", slug: "asya-mutfagi", courseCount: 6 },
+    { id: "cat-5", name: "Kahvaltı & Brunch", slug: "kahvalti", courseCount: 5 },
+    { id: "cat-6", name: "Sağlıklı Yaşam", slug: "saglikli-yasam", courseCount: 4 }
+  ];
+
+  const [categories, setCategories] = useState<Category[]>(defaultCategories);
+  const browseRef = useRef<HTMLDivElement>(null);
+
+  // Fetch categories from database
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch("/api/categories");
+        if (response.ok) {
+          const data = await response.json();
+          if (data.categories && data.categories.length > 0) {
+            setCategories(data.categories);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading categories:", error);
+        // Keep default categories if fetch fails
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  // Close browse menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (browseRef.current && !browseRef.current.contains(event.target as Node)) {
+        setShowBrowseMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
-    // Sayfa yüklenince hemen fetch başlat
     const fetchCourses = async () => {
       try {
         const response = await fetch("/api/courses/featured");
@@ -44,40 +113,100 @@ export default function Home() {
     router.push("/auth/signup");
   };
 
+
   return (
     <div className="min-h-screen bg-black">
-      {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-black md:bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-2">
-              <ChefHat className="h-8 w-8 text-orange-500" />
-              <span className="text-2xl font-bold text-white">Chef2.0</span>
+      {/* Header - MasterClass Style */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-[#0f0f0f] border-b border-gray-800/50">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
+          <div className="flex items-center justify-between h-16">
+            {/* Left Side - Logo & Browse & Search */}
+            <div className="flex items-center gap-3">
+              {/* Logo */}
+              <Link href="/" className="flex items-center gap-2 mr-2">
+                <ChefHat className="h-7 w-7 text-orange-500" />
+                <span className="text-xl font-bold text-white hidden sm:block">Chef2.0</span>
+              </Link>
+
+              {/* Browse Button with Dropdown */}
+              <div className="relative" ref={browseRef}>
+                <button
+                  onClick={() => setShowBrowseMenu(!showBrowseMenu)}
+                  className="hidden md:flex items-center gap-1.5 bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white text-sm font-medium px-4 py-2 rounded-md transition-colors"
+                >
+                  Gözat
+                  <ChevronDown className={`w-4 h-4 transition-transform ${showBrowseMenu ? 'rotate-180' : ''}`} />
+                </button>
+
+                {/* Dropdown Menu */}
+                {showBrowseMenu && (
+                  <div className="absolute top-full left-0 mt-2 w-64 bg-[#1a1a1a] border border-gray-800 rounded-xl shadow-2xl py-2 z-50">
+                    <div className="px-4 py-2 border-b border-gray-800">
+                      <span className="text-xs text-gray-500 uppercase tracking-wider">Kategoriler</span>
+                    </div>
+                    {categories.map((cat) => (
+                      <Link
+                        key={cat.id}
+                        href={`/category/${cat.id}`}
+                        onClick={() => setShowBrowseMenu(false)}
+                        className="w-full flex items-center justify-between px-4 py-3 hover:bg-[#2a2a2a] transition-colors text-left"
+                      >
+                        <span className="text-white text-sm">{cat.name}</span>
+                        <span className="text-gray-500 text-xs">{cat.courseCount} kurs</span>
+                      </Link>
+                    ))}
+                    <div className="border-t border-gray-800 mt-2 pt-2">
+                      <Link
+                        href="/courses"
+                        onClick={() => setShowBrowseMenu(false)}
+                        className="flex items-center justify-center gap-2 px-4 py-3 text-orange-500 hover:bg-[#2a2a2a] transition-colors text-sm font-medium"
+                      >
+                        Tüm Kursları Gör
+                        <ArrowRight className="w-4 h-4" />
+                      </Link>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Search Bar */}
+              <div className="hidden md:flex items-center bg-[#2a2a2a] rounded-md px-3 py-2 min-w-[280px] lg:min-w-[340px]">
+                <Search className="w-4 h-4 text-gray-500 mr-2" />
+                <input
+                  type="text"
+                  placeholder="Bugün ne öğrenmek istiyorsunuz..."
+                  className="bg-transparent text-sm text-white placeholder-gray-500 outline-none w-full"
+                />
+              </div>
             </div>
-            <nav className="hidden md:flex space-x-8">
-              <Link href="/" className="text-orange-500">
-                Ana Sayfa
-              </Link>
-              <Link href="/about" className="text-gray-300 hover:text-orange-500">
-                Hakkımızda
-              </Link>
-              <Link href="/contact" className="text-gray-300 hover:text-orange-500">
-                İletişim
-              </Link>
-            </nav>
-            <div className="flex items-center space-x-4">
-              <Link
-                href="/auth/signin"
-                className="text-gray-300 hover:text-orange-500"
-              >
-                Giriş Yap
-              </Link>
-              <Link
-                href="/auth/signup"
-                className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors"
-              >
-                Kayıt Ol
-              </Link>
+
+            {/* Right Side - Links & CTA */}
+            <div className="flex items-center">
+              {/* Nav Links with more spacing */}
+              <nav className="hidden lg:flex items-center gap-8 mr-8">
+                <Link href="/subscription" className="text-gray-400 hover:text-white text-sm transition-colors">
+                  Planlar
+                </Link>
+                <Link href="/about" className="text-gray-400 hover:text-white text-sm transition-colors">
+                  Hakkımızda
+                </Link>
+              </nav>
+
+              {/* Divider */}
+              <div className="hidden lg:block w-px h-5 bg-gray-700 mr-6"></div>
+
+              {/* Auth Links */}
+              <div className="flex items-center gap-4">
+                <Link href="/auth/signin" className="text-gray-400 hover:text-white text-sm transition-colors">
+                  Giriş yap
+                </Link>
+                <Link
+                  href="/auth/signup"
+                  className="bg-orange-600 hover:bg-orange-500 text-white text-sm font-semibold px-5 py-2.5 rounded transition-colors"
+                >
+                  Kayıt Ol
+                </Link>
+              </div>
             </div>
           </div>
         </div>
@@ -139,6 +268,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+
 
       {/* Subscription Banner */}
       <section className="py-8 bg-gradient-to-br from-orange-900/20 via-black to-purple-900/20 border-y border-orange-500/20 mb-8">
