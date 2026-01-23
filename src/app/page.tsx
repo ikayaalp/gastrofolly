@@ -159,9 +159,7 @@ export default function Home() {
           {/* Single Premium Plan - Gastrofolly Native Style */}
           <div className="flex justify-center mb-12">
             <div className="w-full max-w-6xl px-4 md:px-0">
-              <h2 className="text-xl md:text-2xl text-white text-center mb-6 font-medium">
-                Seni Bekleyen Eşsiz Deneyime Hemen Başla!
-              </h2>
+
 
               <div className="relative bg-black/40 backdrop-blur-md border border-orange-500/30 rounded-2xl overflow-hidden shadow-2xl shadow-orange-900/20 group">
                 <div className="flex flex-col md:flex-row items-center justify-between p-8 md:px-12 md:py-10 relative z-10">
