@@ -199,65 +199,65 @@ export default function MyCoursesPage() {
                   href={`/learn/${course.id}`}
                   className="group block"
                 >
-                  <div className="bg-[#1a1a1a] rounded-lg overflow-hidden border-b-4 border-orange-500 hover:border-orange-400 transition-all hover:scale-105">
-                    {/* Course Image */}
-                    <div className="relative h-40 overflow-hidden">
+                  <div className="relative rounded-2xl overflow-hidden bg-gray-900 border border-gray-800 group-hover:border-orange-500/30 transition-all duration-500 shadow-xl">
+                    {/* Aspect Ratio Container */}
+                    <div className="aspect-[1.618/1] relative w-full">
                       {course.imageUrl ? (
                         <Image
                           src={course.imageUrl}
                           alt={course.title}
-                          width={400}
-                          height={160}
-                          className="w-full h-full object-cover"
+                          fill
+                          className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
                         />
                       ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center">
-                          <ChefHat className="h-12 w-12 text-white" />
+                        <div className="w-full h-full bg-gray-800 flex items-center justify-center">
+                          <ChefHat className="h-12 w-12 text-gray-600" />
                         </div>
                       )}
 
-                      {/* Progress Overlay for video-style cards */}
-                      <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <div className="text-center">
-                          <Play className="h-12 w-12 text-white mx-auto mb-2" />
-                          <p className="text-white text-sm font-medium">
-                            Kursa Devam Et
-                          </p>
+                      {/* Gradient Overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-90" />
+
+                      {/* Content Overlay */}
+                      <div className="absolute inset-x-0 bottom-0 p-5 flex flex-col justify-end h-full">
+                        <div className="transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
+                          {/* Play Icon on Hover */}
+                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                            <div className="w-12 h-12 rounded-full bg-orange-600/90 flex items-center justify-center backdrop-blur-sm shadow-lg">
+                              <Play className="w-5 h-5 text-white ml-0.5" fill="currentColor" />
+                            </div>
+                          </div>
+
+                          <h3 className="text-white font-bold text-lg leading-tight mb-2 group-hover:text-orange-50 transition-colors line-clamp-2">
+                            {course.title}
+                          </h3>
+
+                          <div className="flex items-center space-x-2 mb-3">
+                            <div className="w-5 h-5 rounded-full bg-orange-500 flex items-center justify-center flex-shrink-0">
+                              <ChefHat className="h-3 w-3 text-white" />
+                            </div>
+                            <p className="text-gray-300 text-xs font-medium">{course.instructor.name}</p>
+                          </div>
+
+                          {/* Progress Bar */}
+                          {enrollment.hasProgress && progressPercentage > 0 ? (
+                            <div className="w-full bg-gray-700/50 rounded-full h-1 backdrop-blur-sm overflow-hidden">
+                              <div
+                                className="bg-orange-500 h-1 rounded-full transition-all duration-300"
+                                style={{ width: `${progressPercentage}%` }}
+                              ></div>
+                            </div>
+                          ) : (
+                            <div className="w-full h-1"></div> /* Spacer to keep height consistent */
+                          )}
+
+                          {enrollment.hasProgress && progressPercentage > 0 && (
+                            <p className="text-[10px] text-gray-400 mt-1 text-right">
+                              %{Math.round(progressPercentage)} tamamlandı
+                            </p>
+                          )}
                         </div>
                       </div>
-                    </div>
-
-                    {/* Course Info */}
-                    <div className="p-4">
-                      <h3 className="text-white font-semibold text-base mb-2 line-clamp-1">
-                        {course.title}
-                      </h3>
-
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center">
-                            <ChefHat className="h-3 w-3 text-white" />
-                          </div>
-                          <span className="text-gray-400 text-sm">{course.instructor.name}</span>
-                        </div>
-
-
-                      </div>
-
-                      {/* Progress Bar */}
-                      {enrollment.hasProgress && progressPercentage > 0 && (
-                        <div className="mt-3">
-                          <div className="w-full bg-gray-800 rounded-full h-1.5">
-                            <div
-                              className="bg-orange-500 h-1.5 rounded-full transition-all duration-300"
-                              style={{ width: `${progressPercentage}%` }}
-                            ></div>
-                          </div>
-                          <p className="text-xs text-gray-500 mt-1">
-                            %{Math.round(progressPercentage)} tamamlandı
-                          </p>
-                        </div>
-                      )}
                     </div>
                   </div>
                 </Link>
