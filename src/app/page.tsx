@@ -156,64 +156,56 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Single Premium Plan - Horizontal Redesign */}
+          {/* Single Premium Plan - Gastrofolly Native Style */}
           <div className="flex justify-center mb-12">
-            <div className="relative w-full max-w-5xl bg-black/60 backdrop-blur-md border-2 border-orange-500 rounded-2xl overflow-hidden transition-all duration-300 shadow-2xl shadow-orange-500/20 group hover:shadow-orange-500/30">
+            <div className="w-full max-w-6xl px-4 md:px-0">
+              <h2 className="text-xl md:text-2xl text-white text-center mb-6 font-medium">
+                Seni Bekleyen Eşsiz Deneyime Hemen Başla!
+              </h2>
 
-              <div className="flex flex-col md:flex-row">
-                {/* Left Side: Brand & Price */}
-                <div className="w-full md:w-2/5 md:border-r border-orange-500/30 bg-gradient-to-br from-orange-900/40 via-black to-black p-8 flex flex-col items-center justify-center relative relative">
-                  <div className="absolute top-4 left-1/2 md:left-auto md:right-4 transform -translate-x-1/2 md:translate-x-0">
-                    <div className="bg-gradient-to-r from-orange-600 to-red-600 text-white px-4 py-1 rounded-full text-xs font-bold shadow-lg shadow-orange-600/30 animate-pulse">
-                      EN POPÜLER
-                    </div>
-                  </div>
+              <div className="relative bg-black/40 backdrop-blur-md border border-orange-500/30 rounded-2xl overflow-hidden shadow-2xl shadow-orange-900/20 group">
+                <div className="flex flex-col md:flex-row items-center justify-between p-8 md:px-12 md:py-10 relative z-10">
 
-                  <div className="mb-6 mt-6 md:mt-0">
-                    <div className="bg-gradient-to-br from-orange-600 to-red-600 rounded-full p-4 shadow-lg shadow-orange-600/30 inline-block">
-                      <Crown className="h-10 w-10 text-white" />
-                    </div>
-                  </div>
-
-                  <h3 className="text-3xl font-bold text-white text-center mb-2">Premium</h3>
-                  <div className="text-center">
-                    <div className="flex items-center justify-center gap-1">
-                      <span className="text-5xl font-bold text-white">299₺</span>
-                    </div>
-                    <p className="text-gray-400 font-medium">/ Aylık</p>
-                  </div>
-                </div>
-
-                {/* Right Side: Features & CTA */}
-                <div className="w-full md:w-3/5 p-8 flex flex-col justify-between bg-black/40">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-                    {[
-                      "Tüm kurslara sınırsız erişim",
-                      "Yeni içeriklere anında erişim",
-                      "Premium topluluk erişimi",
-                      "Eğitmenlerle doğrudan iletişim",
-                      "Sertifika desteği",
-                      "Mobil ve masaüstü erişim"
-                    ].map((feature, i) => (
-                      <div key={i} className="flex items-start gap-3">
-                        <div className="bg-green-500/20 rounded-full p-1 flex-shrink-0 mt-0.5">
-                          <Check className="h-4 w-4 text-green-500" />
-                        </div>
-                        <span className="text-gray-200 text-sm md:text-base">{feature}</span>
+                  {/* Left Side: Title & Subtitle */}
+                  <div className="text-center md:text-left mb-8 md:mb-0">
+                    <div className="flex items-center justify-center md:justify-start gap-4 mb-3">
+                      <div className="bg-orange-600/20 p-2 rounded-lg">
+                        <Crown className="w-10 h-10 text-orange-500" />
                       </div>
-                    ))}
+                      <h3 className="text-4xl md:text-5xl font-bold text-white tracking-wide uppercase">
+                        PREMIUM
+                      </h3>
+                    </div>
+                    <p className="text-gray-300 font-light text-xl pl-1">
+                      Gastrofolly'deki Tüm Eğitimler!
+                    </p>
                   </div>
 
-                  <div className="flex justify-end">
-                    <Link
-                      href="/subscription"
-                      className="w-full md:w-auto bg-orange-600 hover:bg-orange-700 text-white text-lg font-bold py-3 px-8 rounded-xl transition-all duration-300 shadow-lg hover:shadow-orange-500/50 flex items-center justify-center gap-2 group"
-                    >
-                      Hemen Başla
-                      <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                    </Link>
+                  {/* Right Side: Price & Action */}
+                  <div className="flex flex-col items-center md:items-end gap-6">
+                    <div className="flex items-baseline gap-3 text-white">
+                      <span className="text-gray-500 text-lg line-through decoration-orange-600 decoration-2">399 ₺</span>
+                      <span className="text-gray-400 text-lg">yerine</span>
+                      <span className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-600">299 ₺</span>
+                      <span className="text-gray-400 text-lg font-light">/ Aylık</span>
+                    </div>
+
+                    <div>
+                      <Link
+                        href="/subscription"
+                        className="inline-flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white text-lg font-bold py-3 px-10 rounded-xl transition-all transform hover:scale-105 shadow-xl shadow-orange-900/20"
+                      >
+                        Üyeliğini Başlat
+                        <ArrowRight className="w-5 h-5" />
+                      </Link>
+                    </div>
                   </div>
+
                 </div>
+
+                {/* Visual Effects */}
+                <div className="absolute -top-24 -right-24 w-64 h-64 bg-orange-600/10 blur-3xl rounded-full pointer-events-none"></div>
+                <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-orange-600/10 blur-3xl rounded-full pointer-events-none"></div>
               </div>
             </div>
           </div>
