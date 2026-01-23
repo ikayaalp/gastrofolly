@@ -78,22 +78,8 @@ export default function AutoScrollCourses({ courses, speed = 1, intervalMs = 16 
                   <h3 className="text-white font-semibold text-base md:text-lg leading-snug line-clamp-2 mb-2">{course.title}</h3>
 
                   {/* Level Badge */}
+                  {/* Level Badge Removed */}
                   <div>
-                    {course.level === 'BEGINNER' && (
-                      <span className="inline-block px-2 py-1 text-xs font-medium bg-gray-800 text-gray-300 border border-gray-700 rounded">
-                        Commis
-                      </span>
-                    )}
-                    {course.level === 'INTERMEDIATE' && (
-                      <span className="inline-block px-2 py-1 text-xs font-medium bg-orange-900/40 text-orange-400 border border-orange-500/30 rounded">
-                        Chef D party
-                      </span>
-                    )}
-                    {course.level === 'ADVANCED' && (
-                      <span className="inline-block px-2 py-1 text-xs font-medium bg-purple-900/40 text-purple-400 border border-purple-500/30 rounded">
-                        Executive
-                      </span>
-                    )}
                   </div>
                 </div>
               </div>
