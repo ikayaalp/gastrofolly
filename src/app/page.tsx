@@ -117,7 +117,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-black">
       {/* Header - MasterClass Style */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-[#0f0f0f] border-b border-gray-800/50">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-black border-b border-gray-800/50">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-16">
             {/* Left Side - Logo & Browse & Search */}
@@ -170,12 +170,20 @@ export default function Home() {
               </div>
 
               {/* Search Bar */}
-              <div className="hidden md:flex items-center bg-[#2a2a2a] rounded-md px-3 py-2 min-w-[280px] lg:min-w-[340px]">
+              <div className="hidden md:flex items-center bg-[#2a2a2a] rounded-md px-3 py-2 w-80">
                 <Search className="w-4 h-4 text-gray-500 mr-2" />
                 <input
                   type="text"
-                  placeholder="Bugün ne öğrenmek istiyorsunuz..."
+                  placeholder="Hangi lezzette ustalaşmak istersin?"
                   className="bg-transparent text-sm text-white placeholder-gray-500 outline-none w-full"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      const value = e.currentTarget.value;
+                      if (value.trim()) {
+                        router.push(`/courses?search=${encodeURIComponent(value)}`);
+                      }
+                    }
+                  }}
                 />
               </div>
             </div>

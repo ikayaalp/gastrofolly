@@ -103,15 +103,7 @@ export default function CategoryPage() {
                             <span className="text-lg font-extrabold text-white tracking-tight">Chef2.0</span>
                         </Link>
 
-                        {/* Search on Header like NeoSkola */}
-                        <div className="hidden md:flex flex-1 max-w-xl mx-8 relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                            <input
-                                type="text"
-                                placeholder="Eğitim, eğitmen veya kategori ara..."
-                                className="w-full bg-[#161616] border border-gray-700 text-gray-300 text-sm rounded-full pl-10 pr-4 py-2 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all placeholder-gray-500"
-                            />
-                        </div>
+
 
                         <div className="flex items-center gap-4">
                             <Link href="/auth/signin" className="text-gray-400 hover:text-white text-xs font-medium uppercase tracking-wide transition-colors">
@@ -129,17 +121,17 @@ export default function CategoryPage() {
             </header>
 
             {/* Main Content */}
-            <div className="pt-24 pb-16">
+            <div className="pt-20 pb-12">
                 <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
 
                     {/* Compact Breadcrumb/Back */}
-                    <Link href="/" className="inline-flex items-center gap-1 text-gray-500 hover:text-white text-xs font-medium mb-6 transition-colors">
+                    <Link href="/" className="inline-flex items-center gap-1 text-gray-500 hover:text-white text-xs font-medium mb-4 transition-colors">
                         <ArrowLeft className="w-3 h-3" />
                         Ana Sayfa
                     </Link>
 
                     {/* Category Title - Cleaner */}
-                    <div className="mb-10 border-b border-gray-800 pb-6">
+                    <div className="mb-6 border-b border-gray-800 pb-4">
                         <h1 className="text-3xl font-light text-white mb-2">
                             {category?.name || "Kategori"} <span className="font-bold text-orange-500">Eğitimleri</span>
                         </h1>
@@ -234,7 +226,7 @@ export default function CategoryPage() {
                                                     {course.title}
                                                 </h3>
 
-                                                {/* Rating & Level */}
+                                                {/* Rating */}
                                                 <div className="flex items-center gap-3 text-xs text-gray-500">
                                                     {course.averageRating > 0 && (
                                                         <div className="flex items-center gap-1 text-orange-400">
@@ -242,11 +234,6 @@ export default function CategoryPage() {
                                                             <span>{course.averageRating.toFixed(1)}</span>
                                                         </div>
                                                     )}
-                                                    <span className="w-1 h-1 bg-gray-700 rounded-full"></span>
-                                                    <span>
-                                                        {course.level === 'BEGINNER' ? 'Başlangıç' :
-                                                            course.level === 'INTERMEDIATE' ? 'Orta Seviye' : 'İleri Seviye'}
-                                                    </span>
                                                 </div>
                                             </div>
                                         </Link>
