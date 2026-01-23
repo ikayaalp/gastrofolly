@@ -241,12 +241,7 @@ export default function MyCoursesPage() {
                           <span className="text-gray-400 text-sm">{course.instructor.name}</span>
                         </div>
 
-                        <div className="flex items-center space-x-1">
-                          <Star className="h-4 w-4 text-orange-500 fill-orange-500" />
-                          <span className="text-white text-sm font-medium">
-                            {averageRating > 0 ? averageRating.toFixed(1) : '0.0'}
-                          </span>
-                        </div>
+
                       </div>
 
                       {/* Progress Bar */}

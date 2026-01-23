@@ -316,10 +316,7 @@ export default function ExpandableCourseCard({ course, showProgress, rank, large
 
                                 {/* Metadata Row */}
                                 <div className="flex items-center space-x-3 text-sm font-semibold mb-3">
-                                    <span className="text-green-500 flex items-center">
-                                        <Star className="w-3 h-3 fill-green-500 mr-1" />
-                                        {averageRating.toFixed(1)} Puan
-                                    </span>
+
 
                                     {course.duration && (
                                         <span className="text-zinc-400 text-sm">
