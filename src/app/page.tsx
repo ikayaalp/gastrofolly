@@ -4,6 +4,8 @@ import { ChefHat, Play, Star, Users, Crown, BookOpen, Zap, ArrowRight, Check, Se
 import { useEffect, useState, useRef } from "react";
 import AutoScrollCourses from "@/components/home/AutoScrollCourses";
 import HomeStories from "@/components/home/HomeStories";
+import FAQSection from "@/components/home/FAQSection";
+import HeaderSearch from "@/components/layout/HeaderSearch";
 import { useRouter } from "next/navigation";
 
 interface Category {
@@ -174,22 +176,7 @@ export default function Home() {
               </div>
 
               {/* Search Bar */}
-              <div className="hidden md:flex items-center bg-[#2a2a2a] rounded-md px-3 py-2 w-80">
-                <Search className="w-4 h-4 text-gray-500 mr-2" />
-                <input
-                  type="text"
-                  placeholder="Hangi lezzette ustalaşmak istersin?"
-                  className="bg-transparent text-sm text-white placeholder-gray-500 outline-none w-full"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      const value = e.currentTarget.value;
-                      if (value.trim()) {
-                        router.push(`/courses?search=${encodeURIComponent(value)}`);
-                      }
-                    }
-                  }}
-                />
-              </div>
+              <HeaderSearch />
             </div>
 
             {/* Right Side - Links & CTA */}
@@ -356,6 +343,9 @@ export default function Home() {
       {featured.length > 0 && (
         <AutoScrollCourses courses={featured} />
       )}
+
+      {/* FAQ Section */}
+      <FAQSection />
 
 
 
