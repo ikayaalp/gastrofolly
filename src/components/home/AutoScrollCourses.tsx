@@ -46,11 +46,12 @@ export default function AutoScrollCourses({ courses, speed = 1, intervalMs = 16 
   if (!courses || courses.length === 0) return null
 
   return (
-    <div className="bg-black w-full">
+    <div className="bg-black w-full py-12 border-t border-gray-900">
       {/* Başlık satırı */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-0 pb-1">
-        <div className="text-center">
-          <h2 className="text-2xl md:text-3xl font-bold text-white">Öne Çıkan Kurslar</h2>
+      <div className="max-w-[1400px] mx-auto px-6 mb-8 flex items-end justify-between">
+        <div>
+          <span className="text-orange-500 font-medium tracking-wider text-xs uppercase mb-2 block">Keşfet</span>
+          <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight">Öne Çıkan Eğitimler</h2>
         </div>
       </div>
 
@@ -59,26 +60,47 @@ export default function AutoScrollCourses({ courses, speed = 1, intervalMs = 16 
         ref={containerRef}
         onMouseEnter={() => setIsHover(true)}
         onMouseLeave={() => setIsHover(false)}
-        className="flex overflow-x-auto scrollbar-hide space-x-4 py-1 px-4 sm:px-6 lg:px-8 w-full mb-6"
+        className="flex overflow-x-auto scrollbar-hide space-x-6 md:space-x-8 py-4 px-6 w-full"
       >
         {courses.map((course) => (
-          <Link key={course.id} href={`/course/${course.id}`}>
-            <div className="min-w-[300px] w-[300px] md:min-w-[400px] md:w-[400px] flex-shrink-0 bg-black border border-gray-800 rounded-2xl overflow-hidden hover:border-orange-500/50 transition-all duration-300 group shadow-xl">
-              <div className="relative aspect-square bg-black overflow-hidden">
+          <Link key={course.id} href={`/course/${course.id}`} className="block group">
+            <div className="min-w-[280px] w-[280px] md:min-w-[420px] md:w-[420px] relative rounded-2xl md:rounded-[2rem] overflow-hidden bg-gray-900 border border-gray-800 group-hover:border-orange-500/30 transition-all duration-500 shadow-2xl shadow-black/50 group-hover:shadow-orange-900/10">
+
+              {/* Golden Ratio Aspect Container */}
+              <div className="aspect-[1.618/1] relative overflow-hidden">
                 {course.imageUrl ? (
-                  <img src={course.imageUrl} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <img
+                    src={course.imageUrl}
+                    alt={course.title}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                  />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Play className="h-16 w-16 text-gray-600" />
+                  <div className="w-full h-full flex items-center justify-center bg-gray-800">
+                    <Play className="h-12 w-12 text-gray-600" />
                   </div>
                 )}
 
-                {/* Overlay: Sadece başlık ve level */}
-                <div className="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-black via-black/70 to-transparent">
-                  <h3 className="text-white font-bold text-xl md:text-2xl leading-tight mb-1">{course.title}</h3>
-                  {course.instructor?.name && (
-                    <p className="text-gray-400 text-sm font-medium uppercase tracking-wide">{course.instructor.name}</p>
-                  )}
+                {/* Modern Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-90" />
+
+                {/* Content */}
+                <div className="absolute inset-0 p-5 md:p-8 flex flex-col justify-end">
+                  <div className="transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
+                    {course.instructor?.name && (
+                      <div className="flex items-center gap-2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">
+                        <span className="w-6 h-[1px] bg-orange-500"></span>
+                        <p className="text-orange-400 text-xs font-semibold uppercase tracking-widest">{course.instructor.name}</p>
+                      </div>
+                    )}
+                    <h3 className="text-white font-bold text-xl md:text-2xl leading-tight mb-2 md:mb-3 group-hover:text-orange-50 transition-colors">
+                      {course.title}
+                    </h3>
+                    <div className="flex items-center gap-3">
+                      <span className="px-2 py-1 bg-white/10 backdrop-blur-md rounded text-[10px] md:text-xs font-medium text-white border border-white/10">
+                        {course.level === 'BEGINNER' ? 'Başlangıç' : course.level === 'INTERMEDIATE' ? 'Orta Seviye' : 'İleri Seviye'}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
