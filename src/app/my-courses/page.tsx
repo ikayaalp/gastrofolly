@@ -181,7 +181,7 @@ export default function MyCoursesPage() {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {enrollments.map((enrollment) => {
               const course = enrollment.course
               const totalLessons = course._count.lessons
@@ -221,10 +221,10 @@ export default function MyCoursesPage() {
                       {/* Content Overlay */}
                       <div className="absolute inset-x-0 bottom-0 p-5 flex flex-col justify-end h-full">
                         <div className="transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
-                          {/* Play Icon on Hover */}
-                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                            <div className="w-12 h-12 rounded-full bg-orange-600/90 flex items-center justify-center backdrop-blur-sm shadow-lg">
-                              <Play className="w-5 h-5 text-white ml-0.5" fill="currentColor" />
+                          {/* Play Icon - Always Visible & Centered */}
+                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-16 z-20">
+                            <div className="w-16 h-16 rounded-full bg-orange-600/90 flex items-center justify-center backdrop-blur-sm shadow-lg shadow-orange-900/40 group-hover:scale-110 transition-transform duration-300">
+                              <Play className="w-8 h-8 text-white ml-1" fill="currentColor" />
                             </div>
                           </div>
 
