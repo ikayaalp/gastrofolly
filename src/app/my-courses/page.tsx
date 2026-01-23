@@ -181,7 +181,7 @@ export default function MyCoursesPage() {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             {enrollments.map((enrollment) => {
               const course = enrollment.course
               const totalLessons = course._count.lessons
@@ -218,17 +218,17 @@ export default function MyCoursesPage() {
                       {/* Gradient Overlay */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-90" />
 
-                      {/* Content Overlay */}
-                      <div className="absolute inset-x-0 bottom-0 p-5 flex flex-col justify-end h-full">
-                        <div className="transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
-                          {/* Play Icon - Always Visible & Centered */}
-                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-16 z-20">
-                            <div className="w-16 h-16 rounded-full bg-orange-600/90 flex items-center justify-center backdrop-blur-sm shadow-lg shadow-orange-900/40 group-hover:scale-110 transition-transform duration-300">
-                              <Play className="w-8 h-8 text-white ml-1" fill="currentColor" />
-                            </div>
-                          </div>
+                      {/* Play Icon - Visible ON HOVER & Centered */}
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 z-20 pointer-events-none">
+                        <div className="w-16 h-16 rounded-full bg-orange-600 flex items-center justify-center shadow-lg shadow-orange-900/40 group-hover:scale-110 transition-transform duration-300">
+                          <Play className="w-8 h-8 text-white ml-1" fill="currentColor" />
+                        </div>
+                      </div>
 
-                          <h3 className="text-white font-bold text-lg leading-tight mb-2 group-hover:text-orange-50 transition-colors line-clamp-2">
+                      {/* Content Overlay - Hidden ON HOVER */}
+                      <div className="absolute inset-x-0 bottom-0 p-5 flex flex-col justify-end h-full group-hover:opacity-0 transition-opacity duration-300">
+                        <div className="transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
+                          <h3 className="text-white font-bold text-xl leading-tight mb-2 group-hover:text-orange-50 transition-colors line-clamp-2">
                             {course.title}
                           </h3>
 
