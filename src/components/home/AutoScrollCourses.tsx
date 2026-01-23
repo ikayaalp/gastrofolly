@@ -50,7 +50,6 @@ export default function AutoScrollCourses({ courses, speed = 1, intervalMs = 16 
       {/* Başlık satırı */}
       <div className="max-w-[1400px] mx-auto px-6 mb-8 flex items-end justify-between">
         <div>
-          <span className="text-orange-500 font-medium tracking-wider text-xs uppercase mb-2 block">Keşfet</span>
           <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight">Öne Çıkan Eğitimler</h2>
         </div>
       </div>
@@ -64,7 +63,7 @@ export default function AutoScrollCourses({ courses, speed = 1, intervalMs = 16 
       >
         {courses.map((course) => (
           <Link key={course.id} href={`/course/${course.id}`} className="block group">
-            <div className="min-w-[280px] w-[280px] md:min-w-[420px] md:w-[420px] relative rounded-2xl md:rounded-[2rem] overflow-hidden bg-gray-900 border border-gray-800 group-hover:border-orange-500/30 transition-all duration-500 shadow-2xl shadow-black/50 group-hover:shadow-orange-900/10">
+            <div className="min-w-[310px] w-[310px] md:min-w-[460px] md:w-[460px] relative rounded-2xl md:rounded-[2rem] overflow-hidden bg-gray-900 border border-gray-800 group-hover:border-orange-500/30 transition-all duration-500 shadow-2xl shadow-black/50 group-hover:shadow-orange-900/10">
 
               {/* Golden Ratio Aspect Container */}
               <div className="aspect-[1.618/1] relative overflow-hidden">
@@ -95,11 +94,6 @@ export default function AutoScrollCourses({ courses, speed = 1, intervalMs = 16 
                     <h3 className="text-white font-bold text-xl md:text-2xl leading-tight mb-2 md:mb-3 group-hover:text-orange-50 transition-colors">
                       {course.title}
                     </h3>
-                    <div className="flex items-center gap-3">
-                      <span className="px-2 py-1 bg-white/10 backdrop-blur-md rounded text-[10px] md:text-xs font-medium text-white border border-white/10">
-                        {course.level === 'BEGINNER' ? 'Başlangıç' : course.level === 'INTERMEDIATE' ? 'Orta Seviye' : 'İleri Seviye'}
-                      </span>
-                    </div>
                   </div>
                 </div>
               </div>
