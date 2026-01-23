@@ -141,69 +141,65 @@ export default function Home() {
       </section>
 
       {/* Subscription Banner */}
-      <section className="py-16 bg-gradient-to-br from-orange-900/20 via-black to-purple-900/20 border-y border-orange-500/20 mb-12">
+      <section className="py-8 bg-gradient-to-br from-orange-900/20 via-black to-purple-900/20 border-y border-orange-500/20 mb-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
-          <div className="text-center mb-10">
-            <h2 className="text-3xl md:text-5xl font-bold text-white mb-3">
+          <div className="text-center mb-5">
+            <h2 className="text-2xl md:text-4xl font-bold text-white mb-2">
               Tüm Kurslara
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-500">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-500 ml-2">
                 Sınırsız Erişim!
               </span>
             </h2>
-            <p className="text-gray-300 max-w-2xl mx-auto text-lg">
+            <p className="text-gray-400 max-w-2xl mx-auto text-sm md:text-base">
               Tek bir üyelikle mutfakta ustalığa giden yolda sınır tanımayın.
             </p>
           </div>
 
-          {/* Single Premium Plan - Gastrofolly Native Style */}
-          <div className="flex justify-center mb-12">
-            <div className="w-full max-w-6xl px-4 md:px-0">
-
-
-              <div className="relative bg-black/40 backdrop-blur-md border border-orange-500/30 rounded-2xl overflow-hidden shadow-2xl shadow-orange-900/20 group">
-                <div className="flex flex-col md:flex-row items-center justify-between p-8 md:px-12 md:py-10 relative z-10">
+          {/* Single Premium Plan - Compact Style */}
+          <div className="flex justify-center">
+            <div className="w-full max-w-5xl px-4 md:px-0">
+              <div className="relative bg-black/40 backdrop-blur-md border border-orange-500/30 rounded-xl overflow-hidden shadow-lg shadow-orange-900/20">
+                <div className="flex flex-col md:flex-row items-center justify-between p-5 md:px-10 md:py-6 relative z-10">
 
                   {/* Left Side: Title & Subtitle */}
-                  <div className="text-center md:text-left mb-8 md:mb-0">
-                    <div className="flex items-center justify-center md:justify-start gap-4 mb-3">
+                  <div className="text-center md:text-left mb-5 md:mb-0">
+                    <div className="flex items-center justify-center md:justify-start gap-3 mb-2">
                       <div className="bg-orange-600/20 p-2 rounded-lg">
-                        <Crown className="w-10 h-10 text-orange-500" />
+                        <Crown className="w-8 h-8 text-orange-500" />
                       </div>
-                      <h3 className="text-4xl md:text-5xl font-bold text-white tracking-wide uppercase">
+                      <h3 className="text-3xl md:text-4xl font-bold text-white tracking-wide uppercase">
                         PREMIUM
                       </h3>
                     </div>
-                    <p className="text-gray-300 font-light text-xl pl-1">
+                    <p className="text-gray-400 font-light text-base pl-0.5">
                       Gastrofolly'deki Tüm Eğitimler!
                     </p>
                   </div>
 
                   {/* Right Side: Price & Action */}
-                  <div className="flex flex-col items-center md:items-end gap-6">
-                    <div className="flex items-baseline gap-3 text-white">
-                      <span className="text-gray-500 text-lg line-through decoration-orange-600 decoration-2">399 ₺</span>
-                      <span className="text-gray-400 text-lg">yerine</span>
-                      <span className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-600">299 ₺</span>
-                      <span className="text-gray-400 text-lg font-light">/ Aylık</span>
+                  <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
+                    <div className="flex items-baseline gap-2 text-white">
+                      <span className="text-gray-500 text-sm line-through decoration-orange-600">399 ₺</span>
+                      <span className="text-gray-400 text-sm">yerine</span>
+                      <span className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-600">299 ₺</span>
+                      <span className="text-gray-400 text-sm font-light">/ Aylık</span>
                     </div>
 
-                    <div>
-                      <Link
-                        href="/subscription"
-                        className="inline-flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white text-lg font-bold py-3 px-10 rounded-xl transition-all transform hover:scale-105 shadow-xl shadow-orange-900/20"
-                      >
-                        Üyeliğini Başlat
-                        <ArrowRight className="w-5 h-5" />
-                      </Link>
-                    </div>
+                    <Link
+                      href="/subscription"
+                      className="inline-flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white text-base font-bold py-2.5 px-8 rounded-lg transition-all transform hover:scale-105 shadow-md"
+                    >
+                      Üyeliğini Başlat
+                      <ArrowRight className="w-5 h-5" />
+                    </Link>
                   </div>
 
                 </div>
 
                 {/* Visual Effects */}
-                <div className="absolute -top-24 -right-24 w-64 h-64 bg-orange-600/10 blur-3xl rounded-full pointer-events-none"></div>
-                <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-orange-600/10 blur-3xl rounded-full pointer-events-none"></div>
+                <div className="absolute -top-20 -right-20 w-48 h-48 bg-orange-600/10 blur-3xl rounded-full pointer-events-none"></div>
+                <div className="absolute -bottom-20 -left-20 w-48 h-48 bg-orange-600/10 blur-3xl rounded-full pointer-events-none"></div>
               </div>
             </div>
           </div>
