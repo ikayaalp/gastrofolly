@@ -380,19 +380,6 @@ export default function ChefSosyalClient({
 
           {/* Orta: Arama Çubuğu (Reddit Style) */}
           <div className="hidden md:flex flex-1 max-w-xl px-4">
-            <div className="relative w-full">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-5 w-5 text-gray-500" />
-              </div>
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onKeyDown={handleSearch}
-                className="block w-full pl-10 pr-3 py-2 border border-gray-800 rounded-full leading-5 bg-[#1a1a1a] text-gray-300 placeholder-gray-500 focus:outline-none focus:bg-black focus:border-orange-500 sm:text-sm transition-colors"
-                placeholder="Chef Sosyal'de ara..."
-              />
-            </div>
           </div>
 
           {/* Sağ: İkonlar ve Profil */}

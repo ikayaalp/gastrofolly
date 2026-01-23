@@ -13,10 +13,14 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit
 
     // Sıralama seçenekleri
-    let orderBy: Record<string, 'asc' | 'desc'> | { posts: { _count: 'desc' } } = {}
+    let orderBy: any = {}
     switch (sort) {
       case 'popular':
-        orderBy = { likeCount: 'desc' }
+        orderBy = [
+          { likeCount: 'desc' },
+          { viewCount: 'desc' },
+          { createdAt: 'desc' }
+        ]
         break
       case 'mostReplies':
         orderBy = { posts: { _count: 'desc' } }
