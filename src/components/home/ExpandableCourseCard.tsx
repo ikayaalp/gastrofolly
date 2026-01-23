@@ -189,7 +189,7 @@ export default function ExpandableCourseCard({ course, showProgress, rank, large
                 )}
                 <div
                     ref={cardRef}
-                    className={`relative bg-black border border-gray-800 rounded-xl overflow-hidden hover:border-orange-500/50 transition-all duration-300 group cursor-pointer flex-shrink-0 z-10 ${large ? 'min-w-[220px] w-[220px] h-[330px]' : 'min-w-[320px] w-[320px] aspect-[1.618/1]'}`}
+                    className={`relative bg-black border border-gray-800 rounded-xl overflow-hidden hover:border-orange-500/50 transition-all duration-300 group cursor-pointer flex-shrink-0 z-10 ${large ? 'min-w-[266px] w-[266px] h-[400px]' : 'min-w-[352px] w-[352px] aspect-[1.618/1]'}`}
                     onMouseEnter={handleMouseEnter}
                     onMouseLeave={handleMouseLeave}
                 >
