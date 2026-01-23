@@ -62,25 +62,23 @@ export default function AutoScrollCourses({ courses, speed = 1, intervalMs = 16 
         className="flex overflow-x-auto scrollbar-hide space-x-4 py-1 px-4 sm:px-6 lg:px-8 w-full mb-6"
       >
         {courses.map((course) => (
-          <Link key={course.id} href={`/auth/signin?redirect=/course/${course.id}`}>
-            <div className="min-w-[280px] w-[280px] md:min-w-[320px] md:w-[320px] flex-shrink-0 bg-black border border-gray-800 rounded-xl overflow-hidden hover:border-orange-500/50 transition-all duration-300 group">
-              <div className="relative h-56 md:h-64 bg-black overflow-hidden">
+          <Link key={course.id} href={`/course/${course.id}`}>
+            <div className="min-w-[300px] w-[300px] md:min-w-[400px] md:w-[400px] flex-shrink-0 bg-black border border-gray-800 rounded-2xl overflow-hidden hover:border-orange-500/50 transition-all duration-300 group shadow-xl">
+              <div className="relative aspect-square bg-black overflow-hidden">
                 {course.imageUrl ? (
-                  <img src={course.imageUrl} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                  <img src={course.imageUrl} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <Play className="h-10 w-10 text-gray-500" />
+                    <Play className="h-16 w-16 text-gray-600" />
                   </div>
                 )}
 
                 {/* Overlay: Sadece başlık ve level */}
-                <div className="absolute inset-x-0 bottom-0 p-3 md:p-4 bg-gradient-to-t from-black/90 via-black/60 to-transparent">
-                  <h3 className="text-white font-semibold text-base md:text-lg leading-snug line-clamp-2 mb-2">{course.title}</h3>
-
-                  {/* Level Badge */}
-                  {/* Level Badge Removed */}
-                  <div>
-                  </div>
+                <div className="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-black via-black/70 to-transparent">
+                  <h3 className="text-white font-bold text-xl md:text-2xl leading-tight mb-1">{course.title}</h3>
+                  {course.instructor?.name && (
+                    <p className="text-gray-400 text-sm font-medium uppercase tracking-wide">{course.instructor.name}</p>
+                  )}
                 </div>
               </div>
             </div>

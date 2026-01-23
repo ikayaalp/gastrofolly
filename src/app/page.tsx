@@ -357,66 +357,7 @@ export default function Home() {
         <AutoScrollCourses courses={featured} />
       )}
 
-      {/* Popular Courses Section (Replaces Stats) */}
-      <section className="mt-6 py-12 bg-transparent">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl md:text-3xl font-bold text-white mb-8 flex items-center gap-3">
-            <span className="w-1.5 h-8 bg-orange-600 rounded-full"></span>
-            Gastrofolly'de En Popüler
-          </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {featured.length > 0 ? featured.slice(0, 3).map((course, index) => (
-              <Link href={`/course/${course.id}`} key={course.id} className="group relative aspect-square bg-[#111] rounded-2xl overflow-hidden border border-gray-800 hover:border-orange-500/50 transition-all duration-300 shadow-2xl">
-                {/* Giant Rank Number */}
-                <div className="absolute -left-2 -top-6 text-[180px] font-black text-white/5 select-none leading-none z-0 group-hover:text-orange-600/10 transition-colors">
-                  {index + 1}
-                </div>
-
-                {/* Image */}
-                <div className="absolute inset-0 z-10">
-                  <img
-                    src={course.imageUrl || 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&q=80'}
-                    alt={course.title}
-                    className="w-full h-full object-cover opacity-60 group-hover:opacity-80 group-hover:scale-105 transition-all duration-700"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
-                </div>
-
-                {/* Visible Rank Badge */}
-                <div className="absolute top-6 right-6 z-20 w-12 h-12 bg-orange-600 rounded-xl flex items-center justify-center font-bold text-2xl text-white shadow-lg border border-orange-400 rotate-3 group-hover:rotate-6 transition-transform">
-                  {index + 1}
-                </div>
-
-                {/* Content */}
-                <div className="absolute bottom-0 left-0 right-0 p-8 z-20">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="bg-white/10 backdrop-blur-md text-white border border-white/20 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                      Popüler
-                    </span>
-                  </div>
-                  <h3 className="text-2xl font-bold text-white mb-2 leading-tight group-hover:text-orange-500 transition-colors">
-                    {course.title}
-                  </h3>
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-gray-700 overflow-hidden">
-                      <img src={course.instructor.image || 'https://randomuser.me/api/portraits/men/1.jpg'} alt="" className="w-full h-full object-cover" />
-                    </div>
-                    <p className="text-gray-300 text-sm font-medium">
-                      {course.instructor.name}
-                    </p>
-                  </div>
-                </div>
-              </Link>
-            )) : (
-              // Fallback skeletons if no data
-              [1, 2, 3].map((i) => (
-                <div key={i} className="aspect-square bg-[#1a1a1a] rounded-2xl animate-pulse"></div>
-              ))
-            )}
-          </div>
-        </div>
-      </section>
 
 
 
