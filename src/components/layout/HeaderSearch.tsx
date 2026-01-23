@@ -45,7 +45,7 @@ export default function HeaderSearch() {
                 const res = await fetch(`/api/courses?search=${encodeURIComponent(query)}&limit=5`);
                 if (res.ok) {
                     const data = await res.json();
-                    setResults(data.courses || []);
+                    setResults(Array.isArray(data) ? data : data.courses || []);
                 }
             } catch (error) {
                 console.error("Search error", error);

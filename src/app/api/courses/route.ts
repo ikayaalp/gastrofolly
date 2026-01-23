@@ -5,6 +5,8 @@ export async function GET(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url);
         const instructorId = searchParams.get('instructorId');
+        const searchQuery = searchParams.get('search');
+        const limit = searchParams.get('limit');
 
         const where: any = {
             isPublished: true,
@@ -14,8 +16,16 @@ export async function GET(request: NextRequest) {
             where.instructorId = instructorId;
         }
 
+        if (searchQuery) {
+            where.OR = [
+                { title: { contains: searchQuery, mode: 'insensitive' } },
+                { description: { contains: searchQuery, mode: 'insensitive' } },
+            ];
+        }
+
         const courses = await prisma.course.findMany({
             where,
+            take: limit ? parseInt(limit) : undefined,
             include: {
                 instructor: {
                     select: {
