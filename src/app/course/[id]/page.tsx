@@ -283,17 +283,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
                     </div>
                   </div>
 
-                  {averageRating > 0 && (
-                    <div className="flex items-center">
-                      <Star className="h-5 w-5 text-yellow-400 fill-current mr-1" />
-                      <span className="font-semibold text-white">
-                        {averageRating.toFixed(1)}
-                      </span>
-                      <span className="text-gray-400 ml-1">
-                        ({course._count.reviews} değerlendirme)
-                      </span>
-                    </div>
-                  )}
+
                 </div>
 
                 <div className="grid grid-cols-3 gap-4 text-center border-t pt-6">
@@ -418,13 +408,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
               </div>
             </div>
 
-            {/* Yorumlar Bölümü */}
-            <CommentsSection
-              reviews={course.reviews}
-              courseId={course.id}
-              canComment={false}
-              userId={session?.user?.id}
-            />
+            {/* Yorumlar Bölümü Kaldırıldı */}
           </div>
 
           {/* Sidebar */}

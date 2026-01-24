@@ -100,8 +100,9 @@ export default function CourseDetailScreen({ route, navigation }) {
     };
 
     const getLevelInfo = (level) => {
-        // Unified Premium branding for all levels
-        return { name: 'Premium', color: '#ea580c', price: '299 ₺', slug: 'premium' };
+        // dynamic pricing check or fallback
+        const price = course?.price ? `${course.price} ₺` : '299 ₺';
+        return { name: 'Premium', color: '#ea580c', price: price, slug: 'premium' };
     };
 
     // Open website payment page - uses plan name for redirect
@@ -138,8 +139,18 @@ export default function CourseDetailScreen({ route, navigation }) {
     }
 
     const checkAccess = () => {
+        // Enrolled users
         if (course?.isEnrolled) return true;
-        // Premium members have access to all courses
+
+        // Valid Premium Subscription
+        if (userData?.subscriptionPlan && userData.subscriptionPlan !== 'FREE') {
+            // Check expiry if available
+            if (userData.subscriptionEndDate) {
+                return new Date(userData.subscriptionEndDate) > new Date();
+            }
+            return true; // Assume valid if no date (infinite or lifetime?)
+        }
+
         if (userData?.isSubscriptionValid) return true;
         return false;
     };
@@ -245,13 +256,7 @@ export default function CourseDetailScreen({ route, navigation }) {
                                 <Text style={styles.instructorName}>{course.instructor.name}</Text>
                                 <Text style={styles.instructorLabel}>Eğitmen Profili • İncele</Text>
                             </View>
-                            {avgRating > 0 && (
-                                <View style={styles.ratingContainer}>
-                                    <Star size={16} color="#fbbf24" fill="#fbbf24" />
-                                    <Text style={styles.ratingText}>{avgRating}</Text>
-                                    <Text style={styles.ratingCount}>({course._count?.reviews || 0})</Text>
-                                </View>
-                            )}
+
                         </TouchableOpacity>
                     )}
 

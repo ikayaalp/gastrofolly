@@ -25,8 +25,8 @@ export default function VideoUpload({ onVideoUploaded, lessonId }: VideoUploadPr
     }
 
     // Dosya boyutu kontrolü (500MB limit)
-    if (file.size > 500 * 1024 * 1024) {
-      setError("Video dosyası 500MB'dan küçük olmalıdır")
+    if (file.size > 1000 * 1024 * 1024) {
+      setError("Video dosyası 1MB'dan küçük olmalıdır")
       return
     }
 

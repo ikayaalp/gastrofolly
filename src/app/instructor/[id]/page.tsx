@@ -211,17 +211,7 @@ export default async function InstructorPage({ params }: InstructorPageProps) {
 
                   <p className="text-orange-500 text-sm font-medium mb-4">Profesyonel Eğitmen</p>
 
-                  {averageRating > 0 && (
-                    <div className="flex items-center justify-center mb-6 bg-gray-900/50 py-2 rounded-lg border border-gray-800">
-                      <Star className="h-4 w-4 text-yellow-500 fill-yellow-500 mr-1.5" />
-                      <span className="font-bold text-white mr-1">
-                        {averageRating.toFixed(1)}
-                      </span>
-                      <span className="text-gray-500 text-sm">
-                        ({totalReviews} değerlendirme)
-                      </span>
-                    </div>
-                  )}
+
 
                   <div className="grid grid-cols-2 gap-4 text-center mb-6">
                     <div className="bg-gray-900/30 p-3 rounded-lg border border-gray-800">

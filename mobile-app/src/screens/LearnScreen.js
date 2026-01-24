@@ -44,7 +44,8 @@ import {
     X,
     Mail,
     User,
-    BookOpen
+    BookOpen,
+    Lock
 } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Clipboard from 'expo-clipboard';
@@ -626,14 +627,7 @@ export default function LearnScreen({ route, navigation }) {
                         Dersler
                     </Text>
                 </TouchableOpacity>
-                <TouchableOpacity
-                    style={[styles.tab, activeTab === 'reviews' && styles.tabActive]}
-                    onPress={() => setActiveTab('reviews')}
-                >
-                    <Text style={[styles.tabText, activeTab === 'reviews' && styles.tabTextActive]}>
-                        Yorumlar
-                    </Text>
-                </TouchableOpacity>
+
                 <TouchableOpacity
                     style={[styles.tab, activeTab === 'chef' && styles.tabActive]}
                     onPress={() => setActiveTab('chef')}
@@ -655,18 +649,18 @@ export default function LearnScreen({ route, navigation }) {
                 {/* DERSLER TAB */}
                 {activeTab === 'lessons' && (
                     <View>
-                        {/* Progress Overview */}
-                        <View style={styles.progressOverview}>
-                            <View style={styles.progressHeader}>
-                                <Text style={styles.progressLabel}>Kurs İlerlemesi</Text>
-                                <Text style={styles.progressValue}>
-                                    %{Math.round((getCompletedCount() / (lessons.length || 1)) * 100)} Tamamlandı
-                                </Text>
+                        {/* Progress Overview - Web Style */}
+                        <View style={styles.webProgressContainer}>
+                            <View style={styles.webProgressHeader}>
+                                <Text style={styles.webProgressTitle}>{course.title}</Text>
+                                <View style={styles.webProgressBadge}>
+                                    <Text style={styles.webProgressText}>%{Math.round((getCompletedCount() / (lessons.length || 1)) * 100)} Tamamlandı</Text>
+                                </View>
                             </View>
-                            <View style={styles.progressBarModern}>
+                            <View style={styles.progressBarModernBg}>
                                 <View
                                     style={[
-                                        styles.progressFillModern,
+                                        styles.progressBarModernFill,
                                         { width: `${(getCompletedCount() / lessons.length) * 100}%` }
                                     ]}
                                 />
@@ -675,7 +669,7 @@ export default function LearnScreen({ route, navigation }) {
 
                         {/* Divisor */}
                         <View style={styles.lessonListHeader}>
-                            <Text style={styles.lessonListTitle}>Ders İçeriği</Text>
+                            <Text style={styles.lessonListTitle}>Ders İçeriği ({lessons.length} Ders)</Text>
                         </View>
 
                         {/* Lesson List */}
@@ -688,11 +682,11 @@ export default function LearnScreen({ route, navigation }) {
                                 ]}
                                 onPress={() => selectLesson(lesson)}
                             >
-                                <View style={styles.lessonNumber}>
+                                <View style={[styles.lessonNumber, currentLesson.id === lesson.id && styles.lessonNumberActive]}>
                                     {progress[lesson.id]?.isCompleted ? (
-                                        <CheckCircle size={20} color="#10b981" />
+                                        <CheckCircle size={18} color={currentLesson.id === lesson.id ? "#fff" : "#10b981"} />
                                     ) : currentLesson.id === lesson.id ? (
-                                        <Play size={16} color="#ea580c" fill="#ea580c" />
+                                        <Play size={16} color="#ffffff" fill="#ffffff" />
                                     ) : (
                                         <Text style={styles.lessonNumberText}>{index + 1}</Text>
                                     )}
@@ -704,18 +698,18 @@ export default function LearnScreen({ route, navigation }) {
                                     ]} numberOfLines={2}>
                                         {lesson.title}
                                     </Text>
-                                    <Text style={styles.lessonMeta}>
-                                        Video • {lesson.duration || 0} dakika
-                                    </Text>
+                                    <View style={styles.lessonMetaContainer}>
+                                        <Clock size={12} color={currentLesson.id === lesson.id ? "#fda4af" : "#6b7280"} />
+                                        <Text style={[styles.lessonMeta, currentLesson.id === lesson.id && styles.lessonMetaActive]}>
+                                            {lesson.duration || 0} dk
+                                        </Text>
+                                    </View>
                                 </View>
                                 {!(checkAccess(lesson, index)) && (
                                     <View style={{ marginRight: 8 }}>
                                         <Lock size={16} color="#6b7280" />
                                     </View>
                                 )}
-                                <TouchableOpacity style={styles.downloadButton}>
-                                    <Circle size={20} color="#6b7280" />
-                                </TouchableOpacity>
                             </TouchableOpacity>
                         ))}
                     </View>
@@ -724,74 +718,10 @@ export default function LearnScreen({ route, navigation }) {
                 {/* YORUMLAR TAB - Reviews List + FAB */}
                 {activeTab === 'reviews' && (
                     <View style={styles.reviewSectionMinimal}>
-                        {/* Reviews Summary */}
-                        {reviews.length > 0 && (
-                            <View style={styles.reviewsSummary}>
-                                <View style={styles.summaryHeader}>
-                                    <Star size={20} color="#ea580c" fill="#ea580c" />
-                                    <Text style={styles.summaryRating}>{averageRating.toFixed(1)}</Text>
-                                    <Text style={styles.summaryCount}>({reviews.length} değerlendirme)</Text>
-                                </View>
-                            </View>
-                        )}
-
-                        {/* Loading Reviews */}
-                        {loadingReviews && (
-                            <ActivityIndicator size="small" color="#ea580c" style={{ marginTop: 20 }} />
-                        )}
-
-                        {/* Reviews List */}
-                        {reviews.map((review) => (
-                            <View key={review.id} style={styles.reviewCard}>
-                                <View style={styles.reviewCardHeader}>
-                                    <View style={styles.reviewUserInfo}>
-                                        <View style={styles.reviewAvatar}>
-                                            <Text style={styles.reviewAvatarText}>
-                                                {review.user?.name?.charAt(0).toUpperCase() || '?'}
-                                            </Text>
-                                        </View>
-                                        <View style={{ flex: 1 }}>
-                                            <Text style={styles.reviewUserName}>
-                                                {review.user?.name || 'Anonim'}
-                                            </Text>
-                                            <View style={styles.reviewStars}>
-                                                {[1, 2, 3, 4, 5].map((s) => (
-                                                    <Star
-                                                        key={s}
-                                                        size={12}
-                                                        color={s <= review.rating ? '#ea580c' : '#374151'}
-                                                        fill={s <= review.rating ? '#ea580c' : 'transparent'}
-                                                    />
-                                                ))}
-                                            </View>
-                                        </View>
-                                        {/* Delete button - only for own reviews */}
-                                        {review.user?.id === currentUserId && (
-                                            <TouchableOpacity
-                                                style={styles.deleteReviewButton}
-                                                onPress={() => deleteReview(review.id)}
-                                            >
-                                                <Trash2 size={18} color="#ef4444" />
-                                            </TouchableOpacity>
-                                        )}
-                                    </View>
-                                </View>
-                                {review.comment && (
-                                    <Text style={styles.reviewComment}>{review.comment}</Text>
-                                )}
-                            </View>
-                        ))}
-
-                        {!loadingReviews && reviews.length === 0 && (
-                            <View style={styles.emptyReviews}>
-                                <MessageSquarePlus size={48} color="#4b5563" />
-                                <Text style={styles.noReviewsText}>Henüz değerlendirme yok</Text>
-                                <Text style={styles.noReviewsSubtext}>İlk yorumu siz yapın!</Text>
-                            </View>
-                        )}
-
-                        {/* Bottom padding for FAB */}
-                        <View style={{ height: 80 }} />
+                        {/* Empty View - Reviews Removed */}
+                        <View style={styles.emptyReviews}>
+                            <Text style={styles.noReviewsText}>Yorumlar bu kursta kapalıdır.</Text>
+                        </View>
                     </View>
                 )}
 
@@ -1379,25 +1309,10 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     reviewInputMinimal: {
-        width: '100%',
-        backgroundColor: '#111',
-        borderWidth: 1,
-        borderColor: '#1f2937',
-        borderRadius: 12,
-        padding: 14,
-        color: 'white',
-        fontSize: 14,
-        minHeight: 80,
-        textAlignVertical: 'top',
-        marginBottom: 16,
+        display: 'none',
     },
     submitButtonMinimal: {
-        flex: 1,
-        backgroundColor: '#ea580c',
-        paddingVertical: 14,
-        paddingHorizontal: 32,
-        borderRadius: 10,
-        alignItems: 'center',
+        display: 'none',
     },
     submitButtonDisabledMinimal: {
         backgroundColor: '#374151',
@@ -1910,5 +1825,123 @@ const styles = StyleSheet.create({
         color: 'white',
         fontWeight: '600',
         fontSize: 14,
+    },
+
+    // Web Style Progress & Lessons
+    webProgressContainer: {
+        backgroundColor: '#111',
+        padding: 20,
+        marginBottom: 24,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: '#1f2937',
+    },
+    webProgressHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        marginBottom: 16,
+    },
+    webProgressTitle: {
+        flex: 1,
+        color: 'white',
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginRight: 12,
+    },
+    webProgressBadge: {
+        backgroundColor: 'rgba(234, 88, 12, 0.15)',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: 'rgba(234, 88, 12, 0.3)',
+    },
+    webProgressText: {
+        color: '#ea580c',
+        fontSize: 12,
+        fontWeight: '700',
+    },
+    progressBarModernBg: {
+        height: 8,
+        backgroundColor: '#1f2937',
+        borderRadius: 4,
+        overflow: 'hidden',
+    },
+    progressBarModernFill: {
+        height: '100%',
+        backgroundColor: '#ea580c',
+        borderRadius: 4,
+    },
+    lessonListHeader: {
+        marginBottom: 16,
+        paddingHorizontal: 4,
+    },
+    lessonListTitle: {
+        color: 'white',
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    lessonRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 16,
+        backgroundColor: '#111',
+        marginBottom: 10,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: '#1f2937',
+    },
+    lessonRowActive: {
+        backgroundColor: '#1c1917',
+        borderColor: '#ea580c',
+        borderWidth: 1,
+    },
+    lessonNumber: {
+        width: 32,
+        height: 32,
+        borderRadius: 12,
+        backgroundColor: '#1f2937',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 16,
+    },
+    lessonNumberActive: {
+        backgroundColor: '#ea580c',
+    },
+    lessonNumberText: {
+        color: '#9ca3af',
+        fontSize: 14,
+        fontWeight: '600',
+    },
+    lessonInfo: {
+        flex: 1,
+        marginRight: 12,
+    },
+    lessonRowTitle: {
+        color: '#e5e5e5',
+        fontSize: 15,
+        fontWeight: '500',
+        marginBottom: 6,
+        lineHeight: 20,
+    },
+    lessonRowTitleActive: {
+        color: 'white',
+        fontWeight: '700',
+    },
+    lessonMetaContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+    },
+    lessonMeta: {
+        color: '#6b7280',
+        fontSize: 13,
+    },
+    lessonMetaActive: {
+        color: '#fda4af',
+    },
+    downloadButton: {
+        padding: 8,
     },
 });
