@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { X, Save, Check, Plus, Edit, Trash2, Upload, Play, Clock, Layout, List, Settings } from "lucide-react"
+import { X, Save, Check, Plus, Edit, Trash2, Upload, Play, Clock, Layout, List, Settings, Eye } from "lucide-react"
 import ImageUpload from "@/components/admin/ImageUpload"
 import VideoUpload from "@/components/admin/VideoUpload"
 
@@ -358,6 +358,16 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
                         )}
                     </div>
                     <div className="flex items-center space-x-3">
+                        {currentCourseId && (
+                            <button
+                                onClick={() => window.open(`/course/${currentCourseId}`, '_blank')}
+                                className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors flex items-center space-x-2"
+                                title="Öğrenci Gözüyle Önizle"
+                            >
+                                <Eye className="h-5 w-5" />
+                                <span className="hidden sm:inline text-sm font-medium">Önizle</span>
+                            </button>
+                        )}
                         <button
                             onClick={() => {
                                 saveGeneralInfo().then(success => {
