@@ -6,8 +6,6 @@ import InstructorDashboardClient from "./InstructorDashboardClient"
 
 async function getInstructorData(userId: string) {
   // 1. Toplam Havuz Parası (Tüm enrollment gelirleri)
-  // Not: Payment tablosu yerine şimdilik Enrollment tablosu üzerinden gidiyoruz
-  // çünkü Enrollment tablosunda Course -> Price ilişkisi var.
   const allEnrollments = await prisma.enrollment.findMany({
     include: {
       course: {
@@ -16,26 +14,10 @@ async function getInstructorData(userId: string) {
     }
   })
 
+  // Toplam havuz miktarı
   const totalPool = allEnrollments.reduce((acc, curr) => acc + curr.course.price, 0)
 
-  // 2. Katsayıları Belirle (Admin mantığına göre)
-  // Commis: 1, Chef D party: 2, Executive: 3
-  const getCoefficient = (plan: string | null) => {
-    if (!plan) return 1
-    const lowerPlan = plan.toLowerCase()
-    if (lowerPlan.includes('executive')) return 3
-    if (lowerPlan.includes('chef d')) return 2 // 'chef d party' coverage
-    return 1
-  }
-
-  // Mevcut eğitmenin bilgilerini çek (Katsayısı için)
-  const currentUser = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { subscriptionPlan: true }
-  })
-  const instructorCoefficient = getCoefficient(currentUser?.subscriptionPlan || null)
-
-  // 3. Eğitmenin İzlenme ve Puan Detayları
+  // 2. Eğitmenin İzlenme Detayları (Katsayı Sistemi Kaldırıldı: 1 Dk = 1 Puan)
   const instructorProgress = await prisma.progress.findMany({
     where: {
       lesson: {
@@ -70,37 +52,21 @@ async function getInstructorData(userId: string) {
   });
 
   const instructorWatchMinutes = Array.from(courseStatsMap.values()).reduce((a, b) => a + b, 0);
-  const instructorTotalPoints = instructorWatchMinutes * instructorCoefficient
+  const instructorTotalPoints = instructorWatchMinutes // 1 Dk = 1 Puan
 
   const courseStats = Array.from(courseStatsMap.entries()).map(([title, minutes]) => ({
     title,
     minutes,
-    points: minutes * instructorCoefficient // Course specific points
+    points: minutes // 1 Dk = 1 Puan
   })).sort((a, b) => b.points - a.points);
 
-  // 4. Sistem Toplam Puanı Hesaplama (Havuz Payı için gerekli)
-  // Tüm eğitmenlerin katsayılarını almamız gerek
-  const allInstructors = await prisma.user.findMany({
-    where: { role: 'INSTRUCTOR' },
-    select: { id: true, subscriptionPlan: true }
-  })
-
-  // Instructor ID -> Coefficient Map
-  const instructorCoeffMap = new Map<string, number>()
-  allInstructors.forEach(i => {
-    instructorCoeffMap.set(i.id, getCoefficient(i.subscriptionPlan))
-  })
-
-  // Sistemin tamamındaki izlenmeleri çek
+  // 3. Sistem Toplam Puanı Hesaplama
   const systemProgress = await prisma.progress.findMany({
     where: { isCompleted: true },
     include: {
       lesson: {
         select: {
-          duration: true,
-          course: {
-            select: { instructorId: true }
-          }
+          duration: true
         }
       }
     }
@@ -111,15 +77,11 @@ async function getInstructorData(userId: string) {
 
   systemProgress.forEach(p => {
     const duration = p.lesson.duration || 0
-    const iId = p.lesson.course.instructorId
-    const coeff = instructorCoeffMap.get(iId) || 1 // Varsayılan 1
-
     systemWatchMinutes += duration
-    systemTotalPoints += (duration * coeff)
+    systemTotalPoints += duration // 1 Dk = 1 Puan
   })
 
-  // 5. Pay Hesaplama (Puan üzerinden)
-  // Pay Oranı = (Eğitmen Puanı / Sistem Toplam Puanı)
+  // 4. Pay Hesaplama
   let shareAmount = 0
   let sharePercentage = 0
 
@@ -137,7 +99,7 @@ async function getInstructorData(userId: string) {
     shareAmount,
     sharePercentage,
     courseStats,
-    instructorCoefficient // Katsayıyı da döndürelim, belki UI'da gösteririz
+    instructorCoefficient: 1 // Artık her zaman 1
   }
 }
 

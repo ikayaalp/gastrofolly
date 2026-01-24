@@ -3,16 +3,16 @@ import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { Users, Wallet, TrendingUp, Clock, Award, Info } from "lucide-react"
+import { Users, Wallet, TrendingUp, Clock, Info } from "lucide-react"
 
 // Havuz toplam (örnek)
 const POOL_TOTAL = 50000 // ₺50,000
 
 function calculatePoolShare(instructors: any[]) {
-    // Her eğitmen için puan hesapla
+    // Her eğitmen için puan hesapla (1 Dakika = 1 Puan)
     const instructorsWithPoints = instructors.map(instructor => ({
         ...instructor,
-        points: instructor.minutes * instructor.coefficient
+        points: instructor.minutes // Katsayı kalktı, direkt dakika = puan
     }))
 
     // Toplam puan
@@ -51,7 +51,6 @@ export default async function PoolManagementPage() {
         select: {
             id: true,
             name: true,
-            subscriptionPlan: true, // Seviye belirlemek için kullanabiliriz veya varsayılan atarız
             image: true
         }
     })
@@ -60,32 +59,20 @@ export default async function PoolManagementPage() {
     // Not: Gerçek hayatta burası veri tabanından (LessonProgress) hesaplanmalı
     const instructorsWithData = instructorUsers.map((user, index) => {
         // Rastgele veya sabit değerler (Tutarlılık için id'ye göre hash bazlı yapılabilir ama şimdilik statik/random)
-        // Kullanıcıların sıralaması her yenilemede değişmesin diye index kullanıyorum basitçe
-        const limits = [120, 90, 60, 150, 100, 80]
-        const minutes = limits[index % limits.length] || 100
+        const limits = [1200, 950, 600, 1500, 1000, 800] // Dakikalar biraz daha gerçekçi duralım
+        const minutes = limits[index % limits.length] || 1000
 
-        let level = "Commis"
-        let coefficient = 1
-        let color = "#f97316" // orange-500
-
-        // Basit simülasyon: Kullanıcıya göre değişen seviyeler
-        if (user.subscriptionPlan === "Executive" || index % 3 === 2) {
-            level = "Executive"
-            coefficient = 3
-            color = "#a855f7" // purple-500
-        } else if (user.subscriptionPlan === "Chef D party" || index % 3 === 1) {
-            level = "Chef de Partie"
-            coefficient = 2
-            color = "#3b82f6" // blue-500
-        }
+        // Renk ataması (Rastgele)
+        const colors = ["#f97316", "#3b82f6", "#a855f7", "#22c55e", "#ef4444", "#eab308"]
+        const color = colors[index % colors.length]
 
         return {
             id: user.id,
             name: user.name || "İsimsiz Şef",
-            courseName: "Genel Performans", // Kurs bazlı değil toplam performans diye varsayıyoruz şimdilik
-            level,
+            courseName: "Genel Performans",
+            level: "Eğitmen", // Tek tip
             minutes,
-            coefficient,
+            coefficient: 1, // Sabit
             color
         }
     })
@@ -94,7 +81,7 @@ export default async function PoolManagementPage() {
     const totalMinutes = instructorsWithData.reduce((sum, i) => sum + i.minutes, 0)
     const totalPoints = poolData.reduce((sum: number, i: any) => sum + i.points, 0)
 
-    // Pasta grafik (Sadece Admin veya toplamı görmek için - Eğitmene gizleyip gizlememe kararı aşağıda)
+    // Pasta grafik (Sadece Admin veya toplamı görmek için)
     let gradientAngle = 0
     const conicGradient = poolData.map((instructor: any) => {
         const startAngle = gradientAngle
@@ -116,7 +103,7 @@ export default async function PoolManagementPage() {
     return (
         <div className="space-y-8">
             {/* Stats Cards - HERKES GÖRÜR */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="bg-black border border-gray-800 rounded-xl p-6 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-green-500/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
                     <div className="flex items-center space-x-4 relative z-10">
@@ -144,19 +131,6 @@ export default async function PoolManagementPage() {
                 </div>
 
                 <div className="bg-black border border-gray-800 rounded-xl p-6 relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
-                    <div className="flex items-center space-x-4 relative z-10">
-                        <div className="bg-orange-500/20 p-3 rounded-xl">
-                            <TrendingUp className="h-6 w-6 text-orange-400" />
-                        </div>
-                        <div>
-                            <p className="text-3xl font-bold text-white">{totalPoints}</p>
-                            <p className="text-gray-400 text-sm font-medium">Toplam Etkileşim</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="bg-black border border-gray-800 rounded-xl p-6 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
                     <div className="flex items-center space-x-4 relative z-10">
                         <div className="bg-purple-500/20 p-3 rounded-xl">
@@ -171,7 +145,7 @@ export default async function PoolManagementPage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Gelir Dağılımı (Pie Chart) - EĞİTMENDEN GİZLE (Diğerlerini görmemesi için) */}
+                {/* Gelir Dağılımı (Pie Chart) - EĞİTMENDEN GİZLE */}
                 {!isInstructor && (
                     <div className="lg:col-span-1 bg-black border border-gray-800 rounded-xl p-6">
                         <h2 className="text-xl font-bold text-white mb-6">Gelir Dağılımı</h2>
@@ -210,52 +184,16 @@ export default async function PoolManagementPage() {
                     </div>
                 )}
 
-                {/* Detaylar ve Katsayılar - Admin tam ekran, Eğitmen tam ekran */}
-                <div className={`${isInstructor ? 'lg:col-span-3' : 'lg:col-span-2'} space-y-8`}>
-                    {/* Katsayı Bilgisi */}
-                    <div className="bg-gradient-to-r from-neutral-900 to-black border border-gray-800 rounded-xl p-6">
-                        <div className="flex items-center mb-6 gap-2">
-                            <Award className="h-5 w-5 text-orange-500" />
-                            <h3 className="text-lg font-semibold text-white">Katsayı Sistemi</h3>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="bg-black/40 rounded-xl p-4 border border-white/5 hover:border-orange-500/30 transition-colors">
-                                <div className="flex justify-between items-start mb-2">
-                                    <span className="text-gray-400 text-sm">Başlangıç</span>
-                                    <span className="text-orange-500 font-bold bg-orange-500/10 px-2 py-0.5 rounded text-xs">1×</span>
-                                </div>
-                                <h4 className="text-white font-medium mb-1">Commis</h4>
-                                <p className="text-xs text-gray-500">Dakika başına 1 puan kazandırır.</p>
-                            </div>
-                            <div className="bg-black/40 rounded-xl p-4 border border-white/5 hover:border-blue-500/30 transition-colors">
-                                <div className="flex justify-between items-start mb-2">
-                                    <span className="text-gray-400 text-sm">Orta Seviye</span>
-                                    <span className="text-blue-500 font-bold bg-blue-500/10 px-2 py-0.5 rounded text-xs">2×</span>
-                                </div>
-                                <h4 className="text-white font-medium mb-1">Chef de Partie</h4>
-                                <p className="text-xs text-gray-500">Dakika başına 2 puan kazandırır.</p>
-                            </div>
-                            <div className="bg-black/40 rounded-xl p-4 border border-white/5 hover:border-purple-500/30 transition-colors">
-                                <div className="flex justify-between items-start mb-2">
-                                    <span className="text-gray-400 text-sm">Usta</span>
-                                    <span className="text-purple-500 font-bold bg-purple-500/10 px-2 py-0.5 rounded text-xs">3×</span>
-                                </div>
-                                <h4 className="text-white font-medium mb-1">Executive</h4>
-                                <p className="text-xs text-gray-500">Dakika başına 3 puan kazandırır.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Detay Tablosu */}
+                {/* Detay Tablosu */}
+                <div className={`${isInstructor ? 'lg:col-span-3' : 'lg:col-span-2'} space-y-0`}>
                     <div className="bg-black border border-gray-800 rounded-xl overflow-hidden">
                         <div className="px-6 py-4 border-b border-gray-800 flex justify-between items-center">
                             <h2 className="text-lg font-bold text-white">
-                                {isInstructor ? "Sizin Performansınız" : "Hesaplama Detayları"}
+                                {isInstructor ? "Sizin Performansınız" : "Detaylı Rapor"}
                             </h2>
                             <div className="flex items-center text-xs text-gray-500 bg-gray-900 px-3 py-1 rounded-full">
                                 <Info className="w-3 h-3 mr-1.5" />
-                                {isInstructor ? "Kişisel verileriniz" : "Canlı veriler ile otomatik güncellenir"}
+                                {isInstructor ? "Kişisel verileriniz" : "Otomatik hesaplanan veriler"}
                             </div>
                         </div>
                         <div className="overflow-x-auto">
@@ -263,10 +201,9 @@ export default async function PoolManagementPage() {
                                 <thead className="bg-neutral-900/50">
                                     <tr>
                                         <th className="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Eğitmen</th>
-                                        <th className="px-6 py-3 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">Süre</th>
-                                        <th className="px-6 py-3 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">Katsayı</th>
-                                        <th className="px-6 py-3 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">Puan</th>
-                                        <th className="px-6 py-3 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">Hakediş</th>
+                                        <th className="px-6 py-3 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">İzlenme Süresi</th>
+                                        <th className="px-6 py-3 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">Havuz Payı</th>
+                                        <th className="px-6 py-3 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">Hakediş Tutarı</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-800">
@@ -286,27 +223,21 @@ export default async function PoolManagementPage() {
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-300">
-                                                    <span className="bg-gray-800 px-2 py-1 rounded text-xs font-mono">{instructor.minutes} dk</span>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                                                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${instructor.level === 'Executive' ? 'text-purple-400 bg-purple-400/10' :
-                                                        instructor.level === 'Chef de Partie' ? 'text-blue-400 bg-blue-400/10' :
-                                                            'text-orange-400 bg-orange-400/10'
-                                                        }`}>
-                                                        ×{instructor.coefficient} ({instructor.level})
-                                                    </span>
+                                                    <div className="flex flex-col items-center">
+                                                        <span className="bg-gray-800 px-2 py-1 rounded text-xs font-mono mb-1">{instructor.minutes} dk</span>
+                                                    </div>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-center">
-                                                    <span className="text-sm font-bold text-white">{instructor.points}</span>
+                                                    <span className="text-sm font-bold text-white">%{instructor.percentage}</span>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-right">
-                                                    <div className="text-sm font-bold text-green-400">₺{instructor.poolShare.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</div>
+                                                    <div className="text-xl font-bold text-green-400">₺{instructor.poolShare.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</div>
                                                 </td>
                                             </tr>
                                         ))
                                     ) : (
                                         <tr>
-                                            <td colSpan={5} className="px-6 py-4 text-center text-gray-500 text-sm">
+                                            <td colSpan={4} className="px-6 py-4 text-center text-gray-500 text-sm">
                                                 Veri bulunamadı veya yetkiniz yok.
                                             </td>
                                         </tr>
