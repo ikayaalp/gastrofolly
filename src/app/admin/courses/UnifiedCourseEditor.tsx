@@ -250,6 +250,61 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
         } catch (e) { console.error(e) }
     }
 
+    const [uploadingVideo, setUploadingVideo] = useState(false)
+
+    // Video upload handler for inline form
+    const handleVideoUploadInForm = async (file: File) => {
+        setUploadingVideo(true)
+        try {
+            // Firebase Storage'a yükle (Dynamic import to avoid SSR issues if any)
+            const { storage } = await import('@/lib/firebase')
+            const { ref, uploadBytesResumable, getDownloadURL } = await import('firebase/storage')
+
+            const timestamp = Date.now()
+            const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+            const path = `videos/form/${timestamp}_${safeFileName}`
+            const storageRef = ref(storage, path)
+
+            await new Promise<void>((resolve, reject) => {
+                const uploadTask = uploadBytesResumable(storageRef, file, { contentType: file.type || 'video/mp4' })
+
+                uploadTask.on('state_changed',
+                    (snapshot) => {
+                        // Progress monitoring if needed
+                    },
+                    (error) => {
+                        console.error('Upload failed:', error)
+                        reject(error)
+                    },
+                    async () => {
+                        try {
+                            const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref)
+                            // URL'i forma yaz
+                            setLessonForm(prev => ({ ...prev, videoUrl: downloadUrl }))
+
+                            // Süreyi hesapla
+                            const video = document.createElement('video')
+                            video.src = downloadUrl
+                            video.onloadedmetadata = () => {
+                                const durationInMinutes = Math.round(video.duration / 60)
+                                setLessonForm(prev => ({ ...prev, duration: durationInMinutes }))
+                                resolve()
+                            }
+                            video.onerror = () => resolve() // süre alınamazsa devam et
+                        } catch (e) {
+                            reject(e)
+                        }
+                    }
+                )
+            })
+        } catch (error) {
+            console.error('Video upload error:', error)
+            alert('Video yüklenirken hata oluştu: ' + (error as any).message)
+        } finally {
+            setUploadingVideo(false)
+        }
+    }
+
     const handleVideoUploadedForLesson = async (videoUrl: string) => {
         // Just save this URL to the lesson directly
         if (!showVideoUploadForLessonId) return
@@ -378,19 +433,7 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
                                                 {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                                             </select>
                                         </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-300 mb-2">Zorluk Seviyesi</label>
-                                            <select
-                                                name="level"
-                                                value={formData.level}
-                                                onChange={handleInputChange}
-                                                className="w-full px-4 py-3 bg-black border border-gray-800 rounded-xl text-white focus:border-orange-500 focus:outline-none"
-                                            >
-                                                <option value="BEGINNER">Kolay</option>
-                                                <option value="INTERMEDIATE">Orta</option>
-                                                <option value="ADVANCED">Zor</option>
-                                            </select>
-                                        </div>
+
                                     </div>
 
                                     <div className="space-y-6">
@@ -474,6 +517,58 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
                                                     <span className="text-gray-400 text-sm">Ücretsiz</span>
                                                 </div>
                                             </div>
+
+                                            {/* Video Upload Area for Inline Form */}
+                                            <div className="col-span-1 md:col-span-2">
+                                                <label className="block text-xs font-medium text-gray-500 mb-2 uppercase">Ders Videosu</label>
+                                                {lessonForm.videoUrl ? (
+                                                    <div className="flex items-center justify-between bg-green-500/10 border border-green-500/20 rounded-lg p-3">
+                                                        <div className="flex items-center space-x-3">
+                                                            <Play className="h-4 w-4 text-green-400" />
+                                                            <div className="overflow-hidden">
+                                                                <p className="text-green-400 text-sm font-medium">Video Hazır</p>
+                                                                <p className="text-gray-500 text-xs truncate max-w-[200px]">{lessonForm.videoUrl}</p>
+                                                            </div>
+                                                        </div>
+                                                        <button
+                                                            onClick={() => setLessonForm(prev => ({ ...prev, videoUrl: "" }))}
+                                                            className="p-1 hover:bg-green-500/20 rounded text-green-400"
+                                                            title="Videoyu Kaldır"
+                                                        >
+                                                            <X className="h-4 w-4" />
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <div className="border border-dashed border-gray-700 bg-gray-900/50 rounded-lg p-4 text-center hover:border-orange-500/50 transition-colors">
+                                                        <input
+                                                            type="file"
+                                                            accept="video/*"
+                                                            onChange={(e) => {
+                                                                const file = e.target.files?.[0]
+                                                                if (file) handleVideoUploadInForm(file)
+                                                            }}
+                                                            disabled={uploadingVideo}
+                                                            id="inline-video-upload"
+                                                            className="hidden"
+                                                        />
+                                                        <label htmlFor="inline-video-upload" className="cursor-pointer flex flex-col items-center justify-center gap-2">
+                                                            {uploadingVideo ? (
+                                                                <>
+                                                                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-orange-500"></div>
+                                                                    <span className="text-xs text-gray-400">Yükleniyor...</span>
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <Upload className="h-5 w-5 text-gray-400" />
+                                                                    <span className="text-sm text-gray-300">Video Yüklemek İçin Tıklayın</span>
+                                                                    <span className="text-[10px] text-gray-500">MP4, MOV (Max 500MB)</span>
+                                                                </>
+                                                            )}
+                                                        </label>
+                                                    </div>
+                                                )}
+                                            </div>
+
                                             <textarea placeholder="Açıklama (Opsiyonel)" className="col-span-2 px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white h-20"
                                                 value={lessonForm.description} onChange={e => setLessonForm({ ...lessonForm, description: e.target.value })} />
                                         </div>
@@ -539,38 +634,6 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
                         {/* TAB: SETTINGS & PUBLISH */}
                         {activeTab === 'SETTINGS' && (
                             <div className="max-w-2xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                                <div className="bg-black border border-gray-800 rounded-xl p-6">
-                                    <h3 className="text-lg font-bold text-white mb-4">Erişim Yetkileri</h3>
-                                    <div className="space-y-3">
-                                        {SUBSCRIPTION_PLANS.map((plan) => (
-                                            <label
-                                                key={plan.id}
-                                                className={`flex items-center justify-between p-4 rounded-xl cursor-pointer border transition-all ${formData.accessibleByPlans.includes(plan.id)
-                                                    ? 'bg-orange-500/10 border-orange-500' // Selected
-                                                    : 'bg-transparent border-gray-800 hover:bg-gray-900' // Unselected
-                                                    }`}
-                                            >
-                                                <div className="flex items-center space-x-3">
-                                                    <span className={`w-3 h-3 rounded-full ${plan.color}`}></span>
-                                                    <span className={`text-sm font-medium ${formData.accessibleByPlans.includes(plan.id) ? 'text-orange-500' : 'text-gray-400'}`}>{plan.label}</span>
-                                                </div>
-                                                <div className={`w-6 h-6 rounded-full border flex items-center justify-center transition-colors ${formData.accessibleByPlans.includes(plan.id)
-                                                    ? 'bg-orange-500 border-orange-500 text-white'
-                                                    : 'border-gray-600 bg-transparent'
-                                                    }`}>
-                                                    {formData.accessibleByPlans.includes(plan.id) && <Check className="h-4 w-4" />}
-                                                </div>
-                                                <input
-                                                    type="checkbox"
-                                                    className="hidden"
-                                                    checked={formData.accessibleByPlans.includes(plan.id)}
-                                                    onChange={() => togglePlanAccess(plan.id)}
-                                                />
-                                            </label>
-                                        ))}
-                                    </div>
-                                </div>
-
                                 <div className="bg-black border border-gray-800 rounded-xl p-6">
                                     <h3 className="text-lg font-bold text-white mb-4">Yayın Durumu</h3>
                                     <div className="flex items-center justify-between">

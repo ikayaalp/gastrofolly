@@ -192,7 +192,6 @@ export default function CourseManagement({ initialCourses, categories, instructo
               <tr className="border-b border-white/10 text-left bg-black/20">
                 <th className="py-4 px-6 font-semibold text-gray-400 text-sm">Kurs Bilgisi</th>
                 <th className="py-4 px-6 font-semibold text-gray-400 text-sm">Eğitmen</th>
-                <th className="py-4 px-6 font-semibold text-gray-400 text-sm">Abonelik Erişimi</th>
                 <th className="py-4 px-6 font-semibold text-gray-400 text-sm">İstatistikler</th>
                 <th className="py-4 px-6 font-semibold text-gray-400 text-sm">Durum</th>
                 <th className="py-4 px-6 font-semibold text-gray-400 text-sm text-right">İşlemler</th>
@@ -242,22 +241,7 @@ export default function CourseManagement({ initialCourses, categories, instructo
                       </div>
                     </td>
 
-                    <td className="py-4 px-6">
-                      <div className="flex flex-wrap gap-1">
-                        {course.accessibleByPlans && course.accessibleByPlans.length > 0 ? (
-                          course.accessibleByPlans.map(plan => (
-                            <span
-                              key={plan}
-                              className={`text-[10px] px-2 py-0.5 rounded border ${SUBSCRIPTION_PLANS[plan]?.color || 'bg-gray-800 text-gray-400'}`}
-                            >
-                              {SUBSCRIPTION_PLANS[plan]?.label || plan}
-                            </span>
-                          ))
-                        ) : (
-                          <span className="text-xs text-red-400">Erişim Yok</span>
-                        )}
-                      </div>
-                    </td>
+
 
                     <td className="py-4 px-6">
                       <div className="flex items-center space-x-4 text-sm text-gray-400">

@@ -9,7 +9,7 @@ import {
     BookOpen,
     Users,
     CreditCard,
-    Video,
+
     Bell,
     ChefHat,
     LogOut,
@@ -28,11 +28,7 @@ const sidebarItems = [
         href: "/admin/courses",
         icon: BookOpen
     },
-    {
-        title: "Video Yönetimi",
-        href: "/admin/videos",
-        icon: Video
-    },
+
     {
         title: "Hikayeler",
         href: "/admin/stories",
