@@ -144,17 +144,8 @@ export default function CommentsSection({
 
   return (
     <div className="space-y-6">
-      {/* Yorumlar Başlık */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-0">
-        <div className="flex items-center space-x-3">
-          <div className="bg-orange-500/10 p-2 rounded-lg">
-            <MessageCircle className="h-5 w-5 md:h-6 md:w-6 text-orange-500" />
-          </div>
-          <h2 className="text-xl md:text-2xl font-bold text-white">
-            Yorumlar {reviews.length > 0 && `(${reviews.length})`}
-          </h2>
-        </div>
-
+      {/* Yorumlar Başlık ve Listesi Kaldırıldı, Sadece Chef Butonu */}
+      <div className="flex justify-end">
         <div className="flex items-center space-x-2 md:space-x-3">
           {/* Chef'e Sor Butonu */}
           {canComment && instructor && (
@@ -168,75 +159,6 @@ export default function CommentsSection({
             </button>
           )}
         </div>
-      </div>
-
-      {/* Yorumlar Listesi */}
-      <div className="space-y-4">
-        {reviews.length === 0 ? (
-          <div className="bg-[#0a0a0a] border border-gray-800 rounded-xl p-12 text-center">
-            <div className="bg-gray-900/50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <MessageCircle className="h-10 w-10 text-gray-600" />
-            </div>
-            <h3 className="text-lg font-semibold text-white mb-2">Henüz yorum yapılmamış</h3>
-          </div>
-        ) : (
-          reviews.map((review) => (
-            <div key={review.id} className="bg-[#0a0a0a] border border-gray-800 rounded-xl p-6 hover:border-gray-700 transition-all">
-              <div className="flex items-start space-x-4">
-                {/* Avatar */}
-                <div className="flex-shrink-0">
-                  {review.user.image ? (
-                    <Image
-                      src={review.user.image}
-                      alt={review.user.name || 'Kullanıcı'}
-                      width={48}
-                      height={48}
-                      className="rounded-full"
-                    />
-                  ) : (
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-600 to-orange-400 flex items-center justify-center">
-                      <User className="h-6 w-6 text-white" />
-                    </div>
-                  )}
-                </div>
-
-                {/* Yorum İçeriği */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <h4 className="font-semibold text-white text-lg">
-                        {review.user.name || 'Anonim Kullanıcı'}
-                      </h4>
-                      <p className="text-sm text-gray-500 mt-1">
-                        {formatDate(review.createdAt)}
-                      </p>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      {renderStars(review.rating)}
-                      {/* Silme Butonu */}
-                      {userId && review.userId === userId && (
-                        <button
-                          onClick={() => handleDeleteComment(review.id)}
-                          disabled={deletingReviewId === review.id}
-                          className="text-gray-500 hover:text-red-500 hover:bg-red-500/10 transition-all p-2 rounded-lg"
-                          title="Yorumu sil"
-                        >
-                          <Trash2 className={`h-4 w-4 ${deletingReviewId === review.id ? 'animate-spin' : ''}`} />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  {review.comment && (
-                    <p className="text-gray-300 leading-relaxed">
-                      {review.comment}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))
-        )}
       </div>
 
       {/* Chef'e Sor Modal */}
