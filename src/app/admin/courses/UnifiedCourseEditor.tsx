@@ -603,10 +603,15 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
 
                                             <div className="flex items-center space-x-3">
                                                 {lesson.videoUrl ? (
-                                                    <div className="flex items-center space-x-2 bg-green-500/10 text-green-400 px-3 py-1.5 rounded-lg text-xs font-mono border border-green-500/20">
+                                                    <button
+                                                        onClick={() => setShowVideoUploadForLessonId(lesson.id)}
+                                                        className="flex items-center space-x-2 bg-green-500/10 text-green-400 px-3 py-1.5 rounded-lg text-xs font-mono border border-green-500/20 hover:bg-green-500/20 cursor-pointer transition-colors"
+                                                        title="Videoyu Güncelle"
+                                                    >
                                                         <Play className="h-3 w-3" />
                                                         <span>Video Yüklü</span>
-                                                    </div>
+                                                        <span className="opacity-0 group-hover:opacity-100 transition-opacity ml-1 bg-green-500 text-white text-[10px] px-1 rounded absolute -top-2 right-0">Güncelle</span>
+                                                    </button>
                                                 ) : (
                                                     <button
                                                         onClick={() => setShowVideoUploadForLessonId(lesson.id)}
