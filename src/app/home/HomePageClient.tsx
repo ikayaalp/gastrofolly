@@ -113,15 +113,21 @@ export default function HomePageClient({
                     </Link>
                     {session?.user?.role === 'INSTRUCTOR' && (
                       <Link href="/instructor-dashboard" className="text-gray-300 hover:text-white transition-colors">
-                        Havuz Paneli
+                        Panelim
                       </Link>
                     )}
                     <Link href="/chef-sosyal" className="text-gray-300 hover:text-white transition-colors">
                       Chef Sosyal
                     </Link>
-                    <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
-                      İletişim
-                    </Link>
+                    {session?.user?.role === 'INSTRUCTOR' ? (
+                      <Link href="/admin/pool" className="text-gray-300 hover:text-white transition-colors">
+                        Havuz Yönetimi
+                      </Link>
+                    ) : (
+                      <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
+                        İletişim
+                      </Link>
+                    )}
                   </>
                 )}
               </nav>
