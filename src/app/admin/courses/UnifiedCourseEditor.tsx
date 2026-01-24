@@ -598,7 +598,7 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
                                                 <div>
                                                     <h4 className="text-white font-medium">{lesson.title}</h4>
                                                     <div className="flex items-center gap-3 text-xs text-gray-500 mt-1">
-                                                        <span className="flex items-center"><Clock className="h-3 w-3 mr-1" /> {lesson.duration} dk</span>
+                                                        <span className="flex items-center"><Clock className="h-3 w-3 mr-1" /> {lesson.duration || 0} dk</span>
                                                         {lesson.isFree && <span className="text-green-400">Ücretsiz (Önizleme)</span>}
                                                     </div>
                                                 </div>

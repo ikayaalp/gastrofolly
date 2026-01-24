@@ -202,7 +202,7 @@ export default function CourseSidebar({ course, progress, currentLessonId, hasFu
                           <div className="flex items-center space-x-1">
                             <Clock className="h-3 w-3 text-gray-500" />
                             <span className="text-xs text-gray-400">
-                              {lesson.duration} dk
+                              {lesson.duration || 0} dk
                             </span>
                           </div>
                         )}
