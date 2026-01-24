@@ -156,7 +156,7 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
                     setActiveTab('CURRICULUM')
                 } else {
                     // Just notify success implicitly or via toast (using alert for now)
-                    // alert('Bilgiler güncellendi')
+                    alert('Kurs bilgileri güncellendi')
                 }
                 return true
             } else {
@@ -252,51 +252,53 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
 
     const [uploadingVideo, setUploadingVideo] = useState(false)
 
-    // Video upload handler for inline form
+    // Video upload handler for inline form (CLOUDINARY)
     const handleVideoUploadInForm = async (file: File) => {
         setUploadingVideo(true)
         try {
-            // Firebase Storage'a yükle (Dynamic import to avoid SSR issues if any)
-            const { storage } = await import('@/lib/firebase')
-            const { ref, uploadBytesResumable, getDownloadURL } = await import('firebase/storage')
+            // 1. Get Cloudinary Config
+            const configRes = await fetch('/api/admin/cloudinary-config')
+            if (!configRes.ok) throw new Error('Cloudinary konfigürasyonu alınamadı')
+            const { cloudName, uploadPreset } = await configRes.json()
 
-            const timestamp = Date.now()
-            const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
-            const path = `videos/form/${timestamp}_${safeFileName}`
-            const storageRef = ref(storage, path)
+            // 2. Prepare Upload
+            const url = `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`
+            const formData = new FormData()
+            formData.append('file', file)
+            formData.append('upload_preset', uploadPreset)
+            formData.append('folder', 'chef-courses/lessons') // Organize in folders
 
+            // 3. Upload with XHR for progress
             await new Promise<void>((resolve, reject) => {
-                const uploadTask = uploadBytesResumable(storageRef, file, { contentType: file.type || 'video/mp4' })
+                const xhr = new XMLHttpRequest()
+                xhr.open('POST', url)
 
-                uploadTask.on('state_changed',
-                    (snapshot) => {
-                        // Progress monitoring if needed
-                    },
-                    (error) => {
-                        console.error('Upload failed:', error)
-                        reject(error)
-                    },
-                    async () => {
-                        try {
-                            const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref)
-                            // URL'i forma yaz
-                            setLessonForm(prev => ({ ...prev, videoUrl: downloadUrl }))
-
-                            // Süreyi hesapla
-                            const video = document.createElement('video')
-                            video.src = downloadUrl
-                            video.onloadedmetadata = () => {
-                                const durationInMinutes = Math.round(video.duration / 60)
-                                setLessonForm(prev => ({ ...prev, duration: durationInMinutes }))
-                                resolve()
-                            }
-                            video.onerror = () => resolve() // süre alınamazsa devam et
-                        } catch (e) {
-                            reject(e)
-                        }
+                xhr.upload.onprogress = (e) => {
+                    if (e.lengthComputable) {
+                        // Optional: update progress state if we want to show percentage
+                        // const percentComplete = (e.loaded / e.total) * 100
+                        // console.log(percentComplete)
                     }
-                )
+                }
+
+                xhr.onload = () => {
+                    if (xhr.status === 200) {
+                        const data = JSON.parse(xhr.responseText)
+                        setLessonForm(prev => ({
+                            ...prev,
+                            videoUrl: data.secure_url,
+                            duration: data.duration ? Math.round(data.duration / 60) : prev.duration // Cloudinary returns seconds
+                        }))
+                        resolve()
+                    } else {
+                        reject(new Error('Upload failed'))
+                    }
+                }
+
+                xhr.onerror = () => reject(new Error('Network error'))
+                xhr.send(formData)
             })
+
         } catch (error) {
             console.error('Video upload error:', error)
             alert('Video yüklenirken hata oluştu: ' + (error as any).message)

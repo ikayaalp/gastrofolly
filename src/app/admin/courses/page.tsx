@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma"
 import CourseManagement from "./CourseManagement"
 
+export const dynamic = 'force-dynamic'
+
 async function getAllCourses() {
   const courses = await prisma.course.findMany({
     include: {
