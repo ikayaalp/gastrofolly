@@ -385,15 +385,7 @@ export default function LearnPageLayout({
                                 >
                                     Dersler ({totalLessons})
                                 </button>
-                                <button
-                                    onClick={() => setActiveTab('comments')}
-                                    className={`px-6 py-4 font-medium text-sm whitespace-nowrap transition-all ${activeTab === 'comments'
-                                        ? 'text-orange-500 border-b-2 border-orange-500'
-                                        : 'text-gray-400 hover:text-white'
-                                        }`}
-                                >
-                                    Yorumlar ({course.reviews.length})
-                                </button>
+
                                 <button
                                     onClick={() => setActiveTab('recommended')}
                                     className={`px-6 py-4 font-medium text-sm whitespace-nowrap transition-all ${activeTab === 'recommended'
@@ -517,15 +509,7 @@ export default function LearnPageLayout({
                                 </div>
                             )}
 
-                            {activeTab === 'comments' && (
-                                <CommentsSection
-                                    reviews={course.reviews}
-                                    courseId={course.id}
-                                    canComment={true}
-                                    userId={session.user.id}
-                                    instructor={course.instructor}
-                                />
-                            )}
+
 
                             {activeTab === 'recommended' && (
                                 <RecommendedCourses
