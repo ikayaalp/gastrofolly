@@ -240,7 +240,7 @@ export default function LearnScreen({ route, navigation }) {
                     useNativeDriver: true,
                 }).start(() => setShowControls(false));
             }
-        }, 3000);
+        }, 2000); // Reduced from 3000 to 2000
     }, [isPlaying, controlsOpacity]);
 
     const showControlsTemporarily = useCallback(() => {
@@ -261,6 +261,7 @@ export default function LearnScreen({ route, navigation }) {
         } else {
             await videoRef.current.playAsync();
         }
+        hideControlsWithDelay(); // Reset timer on interaction
     };
 
     const handleSeek = async (direction) => {
@@ -573,9 +574,9 @@ export default function LearnScreen({ route, navigation }) {
                                         >
                                             <View style={styles.playButtonInner}>
                                                 {isPlaying ? (
-                                                    <Pause size={42} color="white" fill="white" />
+                                                    <Pause size={34} color="white" fill="white" />
                                                 ) : (
-                                                    <Play size={42} color="white" fill="white" style={{ marginLeft: 4 }} />
+                                                    <Play size={34} color="white" fill="white" style={{ marginLeft: 3 }} />
                                                 )}
                                             </View>
                                         </TouchableOpacity>
@@ -964,9 +965,9 @@ const styles = StyleSheet.create({
     // Video Section
     videoContainer: {
         width: width,
-        height: height * 0.35,
+        height: height * 0.4, // Increased from 0.35
         backgroundColor: '#0a0a0a',
-        minHeight: 220,
+        minHeight: 280, // Increased from 220
     },
     videoContainerFullscreen: {
         position: 'absolute',
@@ -1008,7 +1009,7 @@ const styles = StyleSheet.create({
     topGradient: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingTop: 44,
+        paddingTop: 60, // Increased from 44 to push header down
         paddingHorizontal: 16,
         paddingBottom: 20,
     },
@@ -1263,9 +1264,9 @@ const styles = StyleSheet.create({
         backdropFilter: 'blur(10px)', // For platforms that support it
     },
     mainPlayButton: {
-        width: 84,
-        height: 84,
-        borderRadius: 42,
+        width: 70,
+        height: 70,
+        borderRadius: 35,
         backgroundColor: 'rgba(234, 88, 12, 0.95)',
         justifyContent: 'center',
         alignItems: 'center',
