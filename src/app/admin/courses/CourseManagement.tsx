@@ -1,10 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { Plus, Edit2, ListVideo, Trash2, Search, Filter, Play, Users, Eye, EyeOff } from "lucide-react"
+import { Plus, Edit2, ListVideo, Trash2, Search, Filter, Play, Users, Eye, EyeOff, Settings } from "lucide-react"
 import Image from "next/image"
-import CourseEditModal from "./CourseEditModal"
-import LessonManageModal from "./LessonManageModal"
+import UnifiedCourseEditor from "./UnifiedCourseEditor"
 
 interface Course {
   id: string
@@ -32,6 +31,7 @@ interface Course {
     videoUrl: string | null
     duration: number | null
     order: number
+    isFree: boolean
   }>
   reviews: Array<{
     rating: number
@@ -77,9 +77,9 @@ export default function CourseManagement({ initialCourses, categories, instructo
   const [loading, setLoading] = useState<string | null>(null)
 
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
-  const [showEditModal, setShowEditModal] = useState(false)
-  const [showLessonModal, setShowLessonModal] = useState(false)
-  const [showCreateModal, setShowCreateModal] = useState(false)
+
+  // New Unified Editor State
+  const [showUnifiedEditor, setShowUnifiedEditor] = useState(false)
 
   const filteredCourses = courses.filter(course => {
     const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -140,19 +140,14 @@ export default function CourseManagement({ initialCourses, categories, instructo
     }
   }
 
-  const handleEditCourse = (course: Course) => {
-    setSelectedCourse(course)
-    setShowEditModal(true)
-  }
-
-  const handleManageLessons = (course: Course) => {
-    setSelectedCourse(course)
-    setShowLessonModal(true)
-  }
-
   const handleCreateCourse = () => {
     setSelectedCourse(null)
-    setShowCreateModal(true)
+    setShowUnifiedEditor(true)
+  }
+
+  const handleManageCourse = (course: Course) => {
+    setSelectedCourse(course)
+    setShowUnifiedEditor(true)
   }
 
   return (
@@ -292,26 +287,18 @@ export default function CourseManagement({ initialCourses, categories, instructo
                     </td>
 
                     <td className="py-4 px-6 text-right">
-                      <div className="flex items-center justify-end space-x-1 opacity-100 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center justify-end space-x-2 opacity-100 group-hover:opacity-100 transition-opacity">
                         <button
-                          onClick={() => handleEditCourse(course)}
-                          className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
-                          title="Düzenle"
+                          onClick={() => handleManageCourse(course)}
+                          className="bg-white/5 hover:bg-white/10 text-white px-3 py-1.5 rounded-lg text-xs font-medium border border-white/10 transition-colors flex items-center gap-2"
                         >
-                          <Edit2 className="h-4 w-4" />
-                        </button>
-
-                        <button
-                          onClick={() => handleManageLessons(course)}
-                          className="p-2 text-gray-400 hover:text-purple-400 hover:bg-purple-500/10 rounded-lg transition-colors"
-                          title="Dersleri Yönet"
-                        >
-                          <ListVideo className="h-4 w-4" />
+                          <Settings className="h-3 w-3" />
+                          Yönet
                         </button>
 
                         <button
                           onClick={() => deleteCourse(course.id)}
-                          className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                          className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
                           title="Sil"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -326,25 +313,15 @@ export default function CourseManagement({ initialCourses, categories, instructo
         </div>
       </div>
 
-      {(showEditModal || showCreateModal) && (
-        <CourseEditModal
+      {showUnifiedEditor && (
+        <UnifiedCourseEditor
           course={selectedCourse}
           categories={categories}
           instructors={instructors}
-          onClose={() => {
-            setShowEditModal(false)
-            setShowCreateModal(false)
-            setSelectedCourse(null)
-          }}
-        />
-      )}
-
-      {showLessonModal && selectedCourse && (
-        <LessonManageModal
-          course={selectedCourse as any}
-          onClose={() => {
-            setShowLessonModal(false)
-            setSelectedCourse(null)
+          onClose={() => setShowUnifiedEditor(false)}
+          onSaveSuccess={() => {
+            setShowUnifiedEditor(false)
+            if (typeof window !== 'undefined') window.location.reload()
           }}
         />
       )}
