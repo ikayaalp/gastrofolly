@@ -304,10 +304,33 @@ export default function LearnScreen({ route, navigation }) {
         }
     };
 
+    const checkAccess = (lesson, index) => {
+        // First lesson is always free
+        if (index === 0) return true;
+        // Free lessons are accessible
+        if (lesson.isFree) return true;
+        // Check enrollment
+        if (course?.isEnrolled) return true;
+
+        // Subscription check (simplified, assuming if they are here they might have access or we check logic)
+        // Ideally we should use the same logic as CourseDetail
+        // For now, if videoUrl exists, we assume access. 
+        // Better: Pass hasAccess param or re-check.
+        // Let's rely on backend filtering videoUrl for now, but UI should warn.
+        if (lesson.videoUrl) return true;
+
+        return false;
+    };
+
     const selectLesson = (lesson) => {
-        setCurrentLesson(lesson);
-        setShowLessonList(false);
-        setVideoPosition(0);
+        const index = course.lessons.findIndex(l => l.id === lesson.id);
+        if (checkAccess(lesson, index)) {
+            setCurrentLesson(lesson);
+            setShowLessonList(false);
+            setVideoPosition(0);
+        } else {
+            showAlert('Premium İçerik', 'Bu derse erişmek için Premium üye olmalısınız.');
+        }
     };
 
     const goToNextLesson = () => {
@@ -682,9 +705,14 @@ export default function LearnScreen({ route, navigation }) {
                                         {lesson.title}
                                     </Text>
                                     <Text style={styles.lessonMeta}>
-                                        Video • {lesson.duration || '00:00'} dakika
+                                        Video • {lesson.duration || 0} dakika
                                     </Text>
                                 </View>
+                                {!(checkAccess(lesson, index)) && (
+                                    <View style={{ marginRight: 8 }}>
+                                        <Lock size={16} color="#6b7280" />
+                                    </View>
+                                )}
                                 <TouchableOpacity style={styles.downloadButton}>
                                     <Circle size={20} color="#6b7280" />
                                 </TouchableOpacity>

@@ -278,42 +278,62 @@ export default function CourseDetailScreen({ route, navigation }) {
                     {course.lessons && course.lessons.length > 0 && (
                         <View style={styles.lessonsContainer}>
                             <Text style={styles.sectionTitle}>Kurs İçeriği</Text>
-                            {course.lessons.map((lesson, index) => (
-                                <View key={lesson.id} style={styles.lessonItem}>
-                                    <View style={styles.lessonLeft}>
-                                        <View style={styles.lessonNumber}>
-                                            <Text style={styles.lessonNumberText}>{index + 1}</Text>
+                            {course.lessons.map((lesson, index) => {
+                                const isFirstLesson = index === 0;
+                                const isAccessAllowed = hasAccess || lesson.isFree || isFirstLesson;
+
+                                return (
+                                    <TouchableOpacity
+                                        key={lesson.id}
+                                        style={styles.lessonItem}
+                                        onPress={() => {
+                                            if (isAccessAllowed) {
+                                                navigation.navigate('Learn', { courseId: course.id, lessonId: lesson.id });
+                                            } else {
+                                                showAlert('Premium İçerik', 'Bu derse erişmek için Premium üye olmalısınız.');
+                                            }
+                                        }}
+                                    >
+                                        <View style={styles.lessonLeft}>
+                                            <View style={styles.lessonNumber}>
+                                                <Text style={styles.lessonNumberText}>{index + 1}</Text>
+                                            </View>
+                                            <View style={styles.lessonIcon}>
+                                                {isAccessAllowed ? (
+                                                    <Play size={16} color="#10b981" />
+                                                ) : (
+                                                    <Lock size={16} color="#ea580c" />
+                                                )}
+                                            </View>
+                                            <View style={styles.lessonInfo}>
+                                                <Text style={[styles.lessonTitle, !isAccessAllowed && { color: '#6b7280' }]}>
+                                                    {lesson.title}
+                                                </Text>
+                                                {lesson.description && (
+                                                    <Text style={styles.lessonDescription}>{lesson.description}</Text>
+                                                )}
+                                            </View>
                                         </View>
-                                        <View style={styles.lessonIcon}>
-                                            {lesson.isFree ? (
-                                                <Play size={16} color="#10b981" />
+                                        <View style={styles.lessonRight}>
+                                            <Text style={styles.lessonDuration}>{lesson.duration || 0} dk</Text>
+
+                                            {isFirstLesson ? (
+                                                <View style={styles.freeBadge}>
+                                                    <Text style={styles.freeBadgeText}>Önizleme</Text>
+                                                </View>
+                                            ) : lesson.isFree ? (
+                                                <View style={styles.freeBadge}>
+                                                    <Text style={styles.freeBadgeText}>Ücretsiz</Text>
+                                                </View>
                                             ) : (
-                                                <Lock size={16} color="#ea580c" />
+                                                <View style={styles.premiumBadge}>
+                                                    <Text style={styles.premiumBadgeText}>Premium</Text>
+                                                </View>
                                             )}
                                         </View>
-                                        <View style={styles.lessonInfo}>
-                                            <Text style={styles.lessonTitle}>{lesson.title}</Text>
-                                            {lesson.description && (
-                                                <Text style={styles.lessonDescription}>{lesson.description}</Text>
-                                            )}
-                                        </View>
-                                    </View>
-                                    <View style={styles.lessonRight}>
-                                        {lesson.duration && (
-                                            <Text style={styles.lessonDuration}>{lesson.duration} dk</Text>
-                                        )}
-                                        {lesson.isFree ? (
-                                            <View style={styles.freeBadge}>
-                                                <Text style={styles.freeBadgeText}>Ücretsiz</Text>
-                                            </View>
-                                        ) : (
-                                            <View style={styles.premiumBadge}>
-                                                <Text style={styles.premiumBadgeText}>Premium</Text>
-                                            </View>
-                                        )}
-                                    </View>
-                                </View>
-                            ))}
+                                    </TouchableOpacity>
+                                );
+                            })}
                         </View>
                     )}
 
