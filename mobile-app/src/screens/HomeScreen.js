@@ -130,6 +130,27 @@ export default function HomeScreen({ navigation }) {
         setLoading(false);
     };
 
+    const handleEnroll = async (courseId) => {
+        try {
+            const result = await courseService.enrollCourse(courseId);
+            if (result.success) {
+                // Refresh data to show in "My Courses"
+                loadData();
+                showAlert('Başarılı', 'Kurs listenize eklendi!', [{ text: 'Tamam' }], 'success');
+            } else {
+                showAlert('Hata', result.error || 'Kursa kayıt olunamadı.', [{ text: 'Tamam' }], 'error');
+            }
+        } catch (error) {
+            console.error('Enrollment error:', error);
+            showAlert('Hata', 'Kursa kayıt sırasında bir sorun oluştu.', [{ text: 'Tamam' }], 'error');
+        }
+    };
+
+    const showAlert = (title, message, buttons = [{ text: 'Tamam' }], type = 'info') => {
+        // Simple alert for now, can be replaced with CustomAlert if needed
+        alert(`${title}: ${message}`);
+    };
+
     const calculateAverageRating = (reviews) => {
         if (!reviews || reviews.length === 0) return 0;
         const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
@@ -324,9 +345,6 @@ export default function HomeScreen({ navigation }) {
                                         style={styles.carouselGradient}
                                     >
                                         <View style={styles.carouselContent}>
-                                            <View style={styles.categoryTag}>
-                                                <Text style={styles.categoryText}>ÖNE ÇIKAN</Text>
-                                            </View>
 
                                             <Text style={styles.carouselTitle} numberOfLines={2}>
                                                 {course.title}
@@ -334,22 +352,15 @@ export default function HomeScreen({ navigation }) {
 
                                             <View style={styles.metaContainer}>
                                                 <Text style={styles.metaText}>Eğitmen: {course.instructor?.name || 'Şef'}</Text>
-                                                <View style={styles.dotSeparator} />
-                                                <View style={styles.ratingContainer}>
-                                                    <Star size={14} color="#fbbf24" fill="#fbbf24" />
-                                                    <Text style={styles.ratingText}>{calculateAverageRating(course.reviews)}</Text>
-                                                </View>
                                             </View>
 
                                             <View style={styles.actionButtons}>
-                                                <TouchableOpacity style={styles.playButton}>
+                                                <TouchableOpacity
+                                                    style={styles.playButton}
+                                                    onPress={() => navigation.navigate('Learn', { courseId: course.id })}
+                                                >
                                                     <Play size={20} color="white" fill="white" />
                                                     <Text style={styles.playButtonText}>İzle</Text>
-                                                </TouchableOpacity>
-
-                                                <TouchableOpacity style={styles.listButton}>
-                                                    <Plus size={24} color="white" />
-                                                    <Text style={styles.listButtonText}>Listem</Text>
                                                 </TouchableOpacity>
                                             </View>
                                         </View>

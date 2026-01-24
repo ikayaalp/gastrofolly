@@ -83,6 +83,7 @@ export default function LearnScreen({ route, navigation }) {
     const [showReviewModal, setShowReviewModal] = useState(false);
     const [currentUserId, setCurrentUserId] = useState(null);
     const [alertVisible, setAlertVisible] = useState(false);
+    const [authToken, setAuthToken] = useState(null);
     const [alertConfig, setAlertConfig] = useState({
         title: '',
         message: '',
@@ -130,9 +131,13 @@ export default function LearnScreen({ route, navigation }) {
                 setCurrentUserId(userData.id || userData.userId);
             }
 
+            setAuthToken(token);
+
             // Fetch course details
+            const headers = token ? { Authorization: `Bearer ${token}` } : {};
             const courseResponse = await axios.get(
-                `${config.API_BASE_URL}/api/courses/${courseId}`
+                `${config.API_BASE_URL}/api/courses/${courseId}`,
+                { headers }
             );
             setCourse(courseResponse.data);
 
@@ -425,6 +430,19 @@ export default function LearnScreen({ route, navigation }) {
         }
     };
 
+    // Helper to get full video URL
+    const getVideoUrl = (url) => {
+        if (!url) return null;
+        if (url.startsWith('http')) return url;
+        // Prepend API_BASE_URL if relative
+        const cleanUrl = url.startsWith('/') ? url.substring(1) : url;
+        const baseUrl = config.API_BASE_URL.endsWith('/') ? config.API_BASE_URL : `${config.API_BASE_URL}/`;
+        const fullUrl = `${baseUrl}${cleanUrl}`;
+        // Debug log
+        console.log('Final Video URL:', fullUrl);
+        return fullUrl;
+    };
+
     if (loading) {
         return (
             <View style={styles.loadingContainer}>
@@ -464,31 +482,61 @@ export default function LearnScreen({ route, navigation }) {
                     {currentLesson.videoUrl ? (
                         <Video
                             ref={videoRef}
-                            source={{ uri: currentLesson.videoUrl }}
+                            source={{
+                                uri: getVideoUrl(currentLesson.videoUrl),
+                                headers: authToken ? { Authorization: `Bearer ${authToken}` } : {}
+                            }}
                             style={styles.video}
                             resizeMode={ResizeMode.CONTAIN}
-                            shouldPlay={false}
+                            shouldPlay={isPlaying}
                             isMuted={isMuted}
                             onPlaybackStatusUpdate={handleVideoStatusUpdate}
-                            onLoad={() => setIsBuffering(false)}
+                            onLoad={() => {
+                                console.log('Video loaded successfully');
+                                setIsBuffering(false);
+                            }}
                             onLoadStart={() => setIsBuffering(true)}
+                            onError={(error) => {
+                                console.error('Video Playback Error:', error);
+                                showAlert('Video Hatası', 'Video yüklenirken bir sorun oluştu. Lütfen bağlantınızı kontrol edin.', [{ text: 'Tekrar Dene', onPress: () => loadCourseData() }], 'error');
+                            }}
                         />
                     ) : (
-                        <View style={[styles.noVideoContainer, { backgroundColor: '#000' }]} />
+                        <View style={styles.noVideoContainer}>
+                            <LinearGradient
+                                colors={['#1a1a1a', '#000']}
+                                style={styles.noVideoGradient}
+                            >
+                                <Lock size={48} color="#4b5563" />
+                                <Text style={styles.noVideoText}>Bu derse erişiminiz yok</Text>
+                            </LinearGradient>
+                        </View>
+                    )}
+
+                    {/* Buffering Indicator */}
+                    {isBuffering && (
+                        <View style={styles.bufferOverlay}>
+                            <ActivityIndicator size="large" color="#ea580c" />
+                        </View>
                     )}
 
                     {/* Video Overlay Controls */}
-                    <TouchableOpacity
-                        style={styles.videoOverlay}
-                        activeOpacity={1}
-                        onPress={showControlsTemporarily}
-                    >
+                    <View style={styles.videoOverlay} pointerEvents="box-none">
+                        <TouchableOpacity
+                            style={StyleSheet.absoluteFill}
+                            activeOpacity={1}
+                            onPress={showControlsTemporarily}
+                        />
                         {(showControls || !isPlaying) && (
-                            <Animated.View style={[styles.controlsOverlay, { opacity: controlsOpacity }]}>
+                            <Animated.View
+                                style={[styles.controlsOverlay, { opacity: controlsOpacity }]}
+                                pointerEvents="box-none"
+                            >
                                 {/* Top Bar */}
                                 <LinearGradient
-                                    colors={['rgba(0,0,0,0.7)', 'transparent']}
+                                    colors={['rgba(0,0,0,0.8)', 'transparent']}
                                     style={styles.topGradient}
+                                    pointerEvents="box-none"
                                 >
                                     <TouchableOpacity
                                         style={styles.headerButton}
@@ -496,7 +544,7 @@ export default function LearnScreen({ route, navigation }) {
                                     >
                                         <ArrowLeft size={24} color="white" />
                                     </TouchableOpacity>
-                                    <View style={styles.headerTitleContainer}>
+                                    <View style={styles.headerTitleContainer} pointerEvents="none">
                                         <Text style={styles.headerTitle} numberOfLines={1}>
                                             {currentLesson.title}
                                         </Text>
@@ -506,269 +554,272 @@ export default function LearnScreen({ route, navigation }) {
                                     </View>
                                 </LinearGradient>
 
-                                {/* Center Controls */}
-                                <View style={styles.centerControls}>
-                                    <TouchableOpacity
-                                        style={styles.seekButton}
-                                        onPress={() => handleSeek(-1)}
-                                        disabled={!currentLesson.videoUrl}
-                                    >
-                                        <View style={styles.seekButtonInner}>
+                                {/* Center Controls - Only show if video is available */}
+                                {currentLesson.videoUrl && (
+                                    <View style={styles.centerControls} pointerEvents="box-none">
+                                        <TouchableOpacity
+                                            style={styles.glassSeekButton}
+                                            onPress={() => handleSeek(-1)}
+                                            disabled={!currentLesson.videoUrl}
+                                        >
                                             <RotateCcw size={28} color="white" />
                                             <Text style={styles.seekText}>10</Text>
-                                        </View>
-                                    </TouchableOpacity>
-
-                                    <TouchableOpacity
-                                        style={styles.playButton}
-                                        onPress={handlePlayPause}
-                                        disabled={!currentLesson.videoUrl}
-                                    >
-                                        {isBuffering ? (
-                                            <ActivityIndicator size="large" color="white" />
-                                        ) : isPlaying ? (
-                                            <Pause size={40} color="white" fill="white" />
-                                        ) : (
-                                            <Play size={40} color="white" fill="white" />
-                                        )}
-                                    </TouchableOpacity>
-
-                                    <TouchableOpacity
-                                        style={styles.seekButton}
-                                        onPress={() => handleSeek(1)}
-                                        disabled={!currentLesson.videoUrl}
-                                    >
-                                        <View style={styles.seekButtonInner}>
-                                            <RotateCw size={28} color="white" />
-                                            <Text style={styles.seekText}>10</Text>
-                                        </View>
-                                    </TouchableOpacity>
-                                </View>
-
-                                {/* Bottom Bar */}
-                                <LinearGradient
-                                    colors={['transparent', 'rgba(0,0,0,0.8)']}
-                                    style={styles.bottomGradient}
-                                >
-                                    {/* Progress Bar */}
-                                    <View style={styles.progressContainer}>
-                                        <Text style={styles.timeText}>{formatTime(videoPosition)}</Text>
-                                        <View style={styles.progressBarContainer}>
-                                            <View style={styles.progressBar}>
-                                                <View
-                                                    style={[
-                                                        styles.progressFill,
-                                                        { width: `${(videoPosition / videoDuration) * 100 || 0}%` }
-                                                    ]}
-                                                />
-                                            </View>
-                                        </View>
-                                        <Text style={styles.timeText}>{formatTime(videoDuration)}</Text>
-                                    </View>
-
-                                    {/* Bottom Controls */}
-                                    <View style={styles.bottomControls}>
-                                        <TouchableOpacity
-                                            style={styles.controlButton}
-                                            onPress={() => setIsMuted(!isMuted)}
-                                        >
-                                            {isMuted ? (
-                                                <VolumeX size={22} color="white" />
-                                            ) : (
-                                                <Volume2 size={22} color="white" />
-                                            )}
                                         </TouchableOpacity>
 
-                                        <View style={styles.navigationButtons}>
-                                            <TouchableOpacity
-                                                style={[styles.navButton, !hasPrev && styles.navButtonDisabled]}
-                                                onPress={goToPrevLesson}
-                                                disabled={!hasPrev}
-                                            >
-                                                <SkipBack size={20} color={hasPrev ? "white" : "#666"} />
-                                            </TouchableOpacity>
-                                            <TouchableOpacity
-                                                style={[styles.navButton, !hasNext && styles.navButtonDisabled]}
-                                                onPress={goToNextLesson}
-                                                disabled={!hasNext}
-                                            >
-                                                <SkipForward size={20} color={hasNext ? "white" : "#666"} />
-                                            </TouchableOpacity>
+                                        <TouchableOpacity
+                                            style={styles.mainPlayButton}
+                                            onPress={handlePlayPause}
+                                            disabled={!currentLesson.videoUrl}
+                                        >
+                                            <View style={styles.playButtonInner}>
+                                                {isPlaying ? (
+                                                    <Pause size={42} color="white" fill="white" />
+                                                ) : (
+                                                    <Play size={42} color="white" fill="white" style={{ marginLeft: 4 }} />
+                                                )}
+                                            </View>
+                                        </TouchableOpacity>
+
+                                        <TouchableOpacity
+                                            style={styles.glassSeekButton}
+                                            onPress={() => handleSeek(1)}
+                                            disabled={!currentLesson.videoUrl}
+                                        >
+                                            <RotateCw size={28} color="white" />
+                                            <Text style={styles.seekText}>10</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                )}
+
+                                {/* Bottom Bar - Only show if video is available */}
+                                {currentLesson.videoUrl && (
+                                    <LinearGradient
+                                        colors={['transparent', 'rgba(0,0,0,0.9)']}
+                                        style={styles.bottomGradient}
+                                        pointerEvents="box-none"
+                                    >
+                                        {/* Progress Bar Container */}
+                                        <View style={styles.progressSection} pointerEvents="box-none">
+                                            <View style={styles.progressBarWrapper}>
+                                                <View style={styles.modernProgressBarBackground}>
+                                                    <View
+                                                        style={[
+                                                            styles.modernProgressFill,
+                                                            { width: `${(videoPosition / videoDuration) * 100 || 0}%` }
+                                                        ]}
+                                                    />
+                                                </View>
+                                            </View>
+                                            <View style={styles.timeRow} pointerEvents="none">
+                                                <Text style={styles.modernTimeText}>{formatTime(videoPosition)}</Text>
+                                                <Text style={styles.modernTimeText}>{formatTime(videoDuration)}</Text>
+                                            </View>
                                         </View>
 
-                                        <View style={styles.rightControls}>
+                                        {/* Bottom Icons Row */}
+                                        <View style={styles.bottomIconsRow} pointerEvents="box-none">
                                             <TouchableOpacity
-                                                style={styles.controlButton}
-                                                onPress={() => setIsFullscreen(!isFullscreen)}
+                                                style={styles.iconControl}
+                                                onPress={() => setIsMuted(!isMuted)}
+                                            >
+                                                {isMuted ? (
+                                                    <VolumeX size={22} color="white" />
+                                                ) : (
+                                                    <Volume2 size={22} color="white" />
+                                                )}
+                                            </TouchableOpacity>
+
+                                            <View style={styles.centerNavRow} pointerEvents="box-none">
+                                                <TouchableOpacity
+                                                    style={[styles.navIcon, !hasPrev && styles.navIconDisabled]}
+                                                    onPress={goToPrevLesson}
+                                                    disabled={!hasPrev}
+                                                >
+                                                    <SkipBack size={20} color={hasPrev ? "white" : "#444"} />
+                                                </TouchableOpacity>
+                                                <TouchableOpacity
+                                                    style={[styles.navIcon, !hasNext && styles.navIconDisabled]}
+                                                    onPress={goToNextLesson}
+                                                    disabled={!hasNext}
+                                                >
+                                                    <SkipForward size={20} color={hasNext ? "white" : "#444"} />
+                                                </TouchableOpacity>
+                                            </View>
+
+                                            <TouchableOpacity
+                                                style={styles.iconControl}
+                                                onPress={async () => {
+                                                    if (videoRef.current) {
+                                                        try {
+                                                            await videoRef.current.presentFullscreenPlayer();
+                                                        } catch (e) {
+                                                            console.error('Fullscreen error:', e);
+                                                            setIsFullscreen(!isFullscreen);
+                                                        }
+                                                    }
+                                                }}
                                             >
                                                 <Maximize2 size={22} color="white" />
                                             </TouchableOpacity>
                                         </View>
-                                    </View>
-                                </LinearGradient>
+                                    </LinearGradient>
+                                )}
                             </Animated.View>
                         )}
-                    </TouchableOpacity>
+                    </View>
                 </View>
             )}
 
-            {/* Course Info Header */}
-            <View style={styles.courseHeader}>
-                <Text style={styles.courseTitle} numberOfLines={2}>{course.title}</Text>
-            </View>
-
-            {/* Tab Navigation */}
-            <View style={styles.tabContainer}>
-                <TouchableOpacity
-                    style={[styles.tab, activeTab === 'lessons' && styles.tabActive]}
-                    onPress={() => setActiveTab('lessons')}
-                >
-                    <Text style={[styles.tabText, activeTab === 'lessons' && styles.tabTextActive]}>
-                        Dersler
-                    </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                    style={[styles.tab, activeTab === 'chef' && styles.tabActive]}
-                    onPress={() => setActiveTab('chef')}
-                >
-                    <Text style={[styles.tabText, activeTab === 'chef' && styles.tabTextActive]}>
-                        Chef'e Sor
-                    </Text>
-                </TouchableOpacity>
-            </View>
-
-            {/* Tab Content */}
-            <ScrollView
-                ref={scrollViewRef}
-                style={styles.tabContent}
-                contentContainerStyle={styles.tabContentContainer}
-                keyboardShouldPersistTaps="handled"
-            >
-
-                {/* DERSLER TAB */}
-                {activeTab === 'lessons' && (
-                    <View>
-                        {/* Progress Overview - Web Style */}
-                        <View style={styles.webProgressContainer}>
-                            <View style={styles.webProgressHeader}>
-                                <Text style={styles.webProgressTitle}>{course.title}</Text>
-                                <View style={styles.webProgressBadge}>
-                                    <Text style={styles.webProgressText}>%{Math.round((getCompletedCount() / (lessons.length || 1)) * 100)} Tamamlandı</Text>
-                                </View>
-                            </View>
-                            <View style={styles.progressBarModernBg}>
-                                <View
-                                    style={[
-                                        styles.progressBarModernFill,
-                                        { width: `${(getCompletedCount() / lessons.length) * 100}%` }
-                                    ]}
-                                />
-                            </View>
-                        </View>
-
-                        {/* Divisor */}
-                        <View style={styles.lessonListHeader}>
-                            <Text style={styles.lessonListTitle}>Ders İçeriği ({lessons.length} Ders)</Text>
-                        </View>
-
-                        {/* Lesson List */}
-                        {lessons.map((lesson, index) => (
-                            <TouchableOpacity
-                                key={lesson.id}
-                                style={[
-                                    styles.lessonRow,
-                                    currentLesson.id === lesson.id && styles.lessonRowActive
-                                ]}
-                                onPress={() => selectLesson(lesson)}
-                            >
-                                <View style={[styles.lessonNumber, currentLesson.id === lesson.id && styles.lessonNumberActive]}>
-                                    {progress[lesson.id]?.isCompleted ? (
-                                        <CheckCircle size={18} color={currentLesson.id === lesson.id ? "#fff" : "#10b981"} />
-                                    ) : currentLesson.id === lesson.id ? (
-                                        <Play size={16} color="#ffffff" fill="#ffffff" />
-                                    ) : (
-                                        <Text style={styles.lessonNumberText}>{index + 1}</Text>
-                                    )}
-                                </View>
-                                <View style={styles.lessonInfo}>
-                                    <Text style={[
-                                        styles.lessonRowTitle,
-                                        currentLesson.id === lesson.id && styles.lessonRowTitleActive
-                                    ]} numberOfLines={2}>
-                                        {lesson.title}
-                                    </Text>
-                                    <View style={styles.lessonMetaContainer}>
-                                        <Clock size={12} color={currentLesson.id === lesson.id ? "#fda4af" : "#6b7280"} />
-                                        <Text style={[styles.lessonMeta, currentLesson.id === lesson.id && styles.lessonMetaActive]}>
-                                            {lesson.duration || 0} dk
-                                        </Text>
-                                    </View>
-                                </View>
-                                {!(checkAccess(lesson, index)) && (
-                                    <View style={{ marginRight: 8 }}>
-                                        <Lock size={16} color="#6b7280" />
-                                    </View>
-                                )}
-                            </TouchableOpacity>
-                        ))}
+            {!isFullscreen && (
+                <>
+                    {/* Course Info Header */}
+                    <View style={styles.courseHeader}>
+                        <Text style={styles.courseTitle} numberOfLines={2}>{course.title}</Text>
                     </View>
-                )}
 
-                {/* YORUMLAR TAB - Reviews List + FAB */}
-                {activeTab === 'reviews' && (
-                    <View style={styles.reviewSectionMinimal}>
-                        {/* Empty View - Reviews Removed */}
-                        <View style={styles.emptyReviews}>
-                            <Text style={styles.noReviewsText}>Yorumlar bu kursta kapalıdır.</Text>
-                        </View>
+                    {/* Tab Navigation */}
+                    <View style={styles.tabContainer}>
+                        <TouchableOpacity
+                            style={[styles.tab, activeTab === 'lessons' && styles.tabActive]}
+                            onPress={() => setActiveTab('lessons')}
+                        >
+                            <Text style={[styles.tabText, activeTab === 'lessons' && styles.tabTextActive]}>
+                                Dersler
+                            </Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={[styles.tab, activeTab === 'chef' && styles.tabActive]}
+                            onPress={() => setActiveTab('chef')}
+                        >
+                            <Text style={[styles.tabText, activeTab === 'chef' && styles.tabTextActive]}>
+                                Chef'e Sor
+                            </Text>
+                        </TouchableOpacity>
                     </View>
-                )}
 
-                {/* CHEF'E SOR TAB */}
-                {activeTab === 'chef' && (
-                    <View style={styles.tabContentContainer}>
-                        <View style={styles.instructorCard}>
-                            <View style={styles.instructorHeader}>
-                                <View style={styles.avatarContainer}>
-                                    {course.instructor?.image ? (
-                                        <Image source={{ uri: course.instructor.image }} style={styles.avatar} />
-                                    ) : (
-                                        <View style={styles.avatarPlaceholder}>
-                                            <User size={32} color="#fff" />
+                    {/* Tab Content */}
+                    <ScrollView
+                        ref={scrollViewRef}
+                        style={styles.tabContent}
+                        contentContainerStyle={styles.tabContentContainer}
+                        keyboardShouldPersistTaps="handled"
+                    >
+                        {/* Content... */}
+                        {activeTab === 'lessons' && (
+                            <View>
+                                {/* Progress Overview... */}
+                                <View style={styles.webProgressContainer}>
+                                    <View style={styles.webProgressHeader}>
+                                        <Text style={styles.webProgressTitle}>{course.title}</Text>
+                                        <View style={styles.webProgressBadge}>
+                                            <Text style={styles.webProgressText}>%{Math.round((getCompletedCount() / (lessons.length || 1)) * 100)} Tamamlandı</Text>
                                         </View>
-                                    )}
+                                    </View>
+                                    <View style={styles.progressBarModernBg}>
+                                        <View
+                                            style={[
+                                                styles.progressBarModernFill,
+                                                { width: `${(getCompletedCount() / lessons.length) * 100}%` }
+                                            ]}
+                                        />
+                                    </View>
                                 </View>
 
-                                <View style={styles.instructorInfo}>
-                                    <Text style={styles.instructorName}>{course.instructor?.name || 'İsimsiz Eğitmen'}</Text>
-                                    <Text style={{ color: '#9ca3af', fontSize: 13, marginTop: 4 }}>
-                                        {course.instructor?.email}
-                                    </Text>
+                                {/* Lesson Content... */}
+                                <View style={styles.lessonListHeader}>
+                                    <Text style={styles.lessonListTitle}>Ders İçeriği ({lessons.length} Ders)</Text>
+                                </View>
+
+                                {lessons.map((lesson, index) => (
+                                    <TouchableOpacity
+                                        key={lesson.id}
+                                        style={[
+                                            styles.modernLessonCard,
+                                            currentLesson.id === lesson.id && styles.modernLessonCardActive
+                                        ]}
+                                        onPress={() => selectLesson(lesson)}
+                                        activeOpacity={0.7}
+                                    >
+                                        <View style={styles.modernLessonStatus}>
+                                            {progress[lesson.id]?.isCompleted ? (
+                                                <View style={styles.statusBadgeCompleted}>
+                                                    <CheckCircle size={14} color="#10b981" />
+                                                </View>
+                                            ) : !(checkAccess(lesson, index)) ? (
+                                                <Lock size={16} color="#4b5563" />
+                                            ) : (
+                                                <View style={[styles.statusBadgePending, currentLesson.id === lesson.id && styles.statusBadgeActive]}>
+                                                    <Play size={12} color={currentLesson.id === lesson.id ? "#fff" : "#9ca3af"} fill={currentLesson.id === lesson.id ? "#fff" : "transparent"} />
+                                                </View>
+                                            )}
+                                        </View>
+                                        <View style={styles.modernLessonInfo}>
+                                            <Text style={[
+                                                styles.modernLessonTitle,
+                                                currentLesson.id === lesson.id && styles.modernLessonTitleActive
+                                            ]} numberOfLines={2}>
+                                                {lesson.title}
+                                            </Text>
+                                            <View style={styles.modernLessonMeta}>
+                                                <Clock size={12} color="#6b7280" />
+                                                <Text style={styles.modernLessonTime}>
+                                                    {lesson.duration || 0} dakika
+                                                </Text>
+                                            </View>
+                                        </View>
+                                        {currentLesson.id === lesson.id && (
+                                            <View style={styles.activeIndicatorIcon}>
+                                                <View style={styles.pulseDot} />
+                                            </View>
+                                        )}
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+                        )}
+                        {/* Other tabs... */}
+                        {activeTab === 'chef' && (
+                            <View style={styles.tabContentContainer}>
+                                <View style={styles.instructorCard}>
+                                    <View style={styles.instructorHeader}>
+                                        <View style={styles.avatarContainer}>
+                                            {course.instructor?.image ? (
+                                                <Image source={{ uri: course.instructor.image }} style={styles.avatar} />
+                                            ) : (
+                                                <View style={styles.avatarPlaceholder}>
+                                                    <User size={32} color="#fff" />
+                                                </View>
+                                            )}
+                                        </View>
+                                        <View style={styles.instructorInfo}>
+                                            <Text style={styles.instructorName}>{course.instructor?.name || 'İsimsiz Eğitmen'}</Text>
+                                            <Text style={{ color: '#9ca3af', fontSize: 13, marginTop: 4 }}>
+                                                {course.instructor?.email}
+                                            </Text>
+                                        </View>
+                                    </View>
+                                    <View style={styles.emailContainer}>
+                                        <TouchableOpacity
+                                            style={styles.copyButton}
+                                            onPress={() => handleCopyEmail(course.instructor?.email)}
+                                        >
+                                            <Copy size={20} color="#ea580c" />
+                                            <Text style={styles.copyButtonText}>Kopyala</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity
+                                            style={styles.gmailButton}
+                                            onPress={() => handleSendEmail(course.instructor?.email, course.instructor?.name)}
+                                        >
+                                            <Mail size={20} color="white" />
+                                            <Text style={styles.gmailButtonText}>Mail Gönder</Text>
+                                        </TouchableOpacity>
+                                    </View>
                                 </View>
                             </View>
-
-                            <View style={styles.emailContainer}>
-                                <TouchableOpacity
-                                    style={styles.copyButton}
-                                    onPress={() => handleCopyEmail(course.instructor?.email)}
-                                >
-                                    <Copy size={20} color="#ea580c" />
-                                    <Text style={styles.copyButtonText}>Kopyala</Text>
-                                </TouchableOpacity>
-
-                                <TouchableOpacity
-                                    style={styles.gmailButton}
-                                    onPress={() => handleSendEmail(course.instructor?.email, course.instructor?.name)}
-                                >
-                                    <Mail size={20} color="white" />
-                                    <Text style={styles.gmailButtonText}>Mail Gönder</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                    </View>
-                )}
-            </ScrollView>
+                        )}
+                    </ScrollView>
+                </>
+            )}
 
             {/* FAB Button - Fixed position outside ScrollView */}
             {activeTab === 'reviews' && (
@@ -923,8 +974,10 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         bottom: 0,
+        width: width,
         height: height,
         zIndex: 999,
+        backgroundColor: '#000', // Ensure dark background
     },
     video: {
         width: '100%',
@@ -1180,239 +1233,185 @@ const styles = StyleSheet.create({
     },
 
     // Lesson Row
-    lessonRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingVertical: 16,
-        paddingHorizontal: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: '#1f2937',
-    },
-    lessonRowActive: {
-        backgroundColor: 'rgba(234, 88, 12, 0.1)',
-    },
-    lessonNumber: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        backgroundColor: '#1f2937',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: 12,
-    },
-    lessonNumberText: {
-        color: '#9ca3af',
-        fontSize: 14,
-        fontWeight: '600',
-    },
-    lessonInfo: {
-        flex: 1,
-    },
-    lessonRowTitle: {
-        color: 'white',
-        fontSize: 15,
-        fontWeight: '500',
-        marginBottom: 4,
-    },
-    lessonRowTitleActive: {
-        color: '#ea580c',
-    },
-    lessonMeta: {
-        color: '#6b7280',
-        fontSize: 13,
-    },
-    downloadButton: {
-        padding: 8,
-    },
-
-    // More Section
-    moreSection: {
-        padding: 16,
-    },
-    moreItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#111',
-        padding: 16,
-        borderRadius: 12,
-        marginBottom: 12,
-        borderWidth: 1,
-        borderColor: '#1f2937',
-    },
-    moreItemIcon: {
-        width: 44,
-        height: 44,
-        borderRadius: 22,
-        backgroundColor: 'rgba(234, 88, 12, 0.2)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: 12,
-    },
-    moreItemContent: {
-        flex: 1,
-    },
-    moreItemTitle: {
-        color: '#9ca3af',
-        fontSize: 13,
-        marginBottom: 2,
-    },
-    moreItemValue: {
-        color: 'white',
-        fontSize: 16,
-        fontWeight: '600',
-    },
-    descriptionSection: {
-        marginTop: 8,
-        padding: 16,
-        backgroundColor: '#111',
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: '#1f2937',
-    },
-    descriptionTitle: {
-        color: 'white',
-        fontSize: 16,
-        fontWeight: '600',
-        marginBottom: 12,
-    },
-    descriptionText: {
-        color: '#9ca3af',
-        fontSize: 14,
-        lineHeight: 22,
-    },
-
-    // Minimalist Review Section
-    reviewSectionMinimal: {
-        padding: 24,
-        alignItems: 'center',
-    },
-    reviewTitleMinimal: {
-        color: 'white',
-        fontSize: 18,
-        fontWeight: '600',
-        marginBottom: 20,
-        textAlign: 'center',
-    },
-    starsContainerMinimal: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        gap: 12,
-        marginBottom: 8,
-    },
-    starButtonMinimal: {
-        padding: 4,
-    },
-    ratingHintMinimal: {
-        color: '#ea580c',
-        fontSize: 14,
-        fontWeight: '500',
-        marginBottom: 20,
-    },
-    reviewInputMinimal: {
-        display: 'none',
-    },
-    submitButtonMinimal: {
-        display: 'none',
-    },
-    submitButtonDisabledMinimal: {
-        backgroundColor: '#374151',
-    },
-    submitButtonTextMinimal: {
-        color: 'white',
-        fontSize: 16,
-        fontWeight: '600',
-    },
-
-    // Reviews Summary
-    reviewsSummary: {
-        width: '100%',
-        marginBottom: 16,
-    },
-    summaryHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 8,
-    },
-    summaryRating: {
-        color: 'white',
-        fontSize: 20,
-        fontWeight: 'bold',
-    },
-    summaryCount: {
-        color: '#9ca3af',
-        fontSize: 14,
-    },
-
-    // Review Card
-    reviewCard: {
-        width: '100%',
-        backgroundColor: '#111',
-        borderRadius: 12,
-        padding: 16,
-        marginTop: 16,
-        borderWidth: 1,
-        borderColor: '#1f2937',
-    },
-    reviewCardHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-    },
-    reviewUserInfo: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 12,
-    },
-    reviewAvatar: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: '#ea580c',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    reviewAvatarText: {
-        color: 'white',
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    reviewUserName: {
-        color: 'white',
-        fontSize: 14,
-        fontWeight: '600',
-        marginBottom: 4,
-    },
-    reviewStars: {
-        flexDirection: 'row',
-        gap: 2,
-    },
-    reviewComment: {
-        color: '#9ca3af',
-        fontSize: 14,
-        marginTop: 12,
-        lineHeight: 20,
-    },
-    deleteReviewButton: {
-        padding: 8,
-        marginLeft: 8,
-    },
-    noReviewsText: {
-        color: '#6b7280',
-        fontSize: 16,
-        textAlign: 'center',
-        marginTop: 12,
-    },
-    noReviewsSubtext: {
-        color: '#4b5563',
-        fontSize: 14,
-        textAlign: 'center',
-        marginTop: 4,
-    },
     emptyReviews: {
         alignItems: 'center',
         justifyContent: 'center',
         paddingVertical: 60,
+    },
+
+    // --- NEW MODERN STYLES ---
+
+    // Buffering & Error
+    bufferOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(0,0,0,0.4)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 10,
+    },
+
+    // Glass Buttons
+    glassSeekButton: {
+        width: 54,
+        height: 54,
+        borderRadius: 27,
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.15)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backdropFilter: 'blur(10px)', // For platforms that support it
+    },
+    mainPlayButton: {
+        width: 84,
+        height: 84,
+        borderRadius: 42,
+        backgroundColor: 'rgba(234, 88, 12, 0.95)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowColor: '#ea580c',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.6,
+        shadowRadius: 15,
+        elevation: 12,
+    },
+    playButtonInner: {
+        width: '100%',
+        height: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+
+    // Modern Progress Section
+    progressSection: {
+        width: '100%',
+        paddingHorizontal: 8,
+        marginBottom: 20,
+    },
+    progressBarWrapper: {
+        height: 20,
+        justifyContent: 'center',
+    },
+    modernProgressBarBackground: {
+        height: 6,
+        width: '100%',
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        borderRadius: 3,
+        overflow: 'hidden',
+    },
+    modernProgressFill: {
+        height: '100%',
+        backgroundColor: '#ea580c',
+        borderRadius: 3,
+    },
+    timeRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 4,
+    },
+    modernTimeText: {
+        color: 'rgba(255, 255, 255, 0.7)',
+        fontSize: 11,
+        fontWeight: '600',
+        fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    },
+
+    // Bottom Icons
+    bottomIconsRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 4,
+    },
+    iconControl: {
+        padding: 10,
+        borderRadius: 20,
+        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    },
+    centerNavRow: {
+        flexDirection: 'row',
+        gap: 32,
+    },
+    navIcon: {
+        padding: 8,
+    },
+    navIconDisabled: {
+        opacity: 0.3,
+    },
+
+    // Modern Lesson Cards
+    modernLessonCard: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#121212',
+        marginHorizontal: 16,
+        marginVertical: 6,
+        padding: 16,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.05)',
+    },
+    modernLessonCardActive: {
+        backgroundColor: '#1a1a1a',
+        borderColor: 'rgba(234, 88, 12, 0.3)',
+        borderWidth: 1.5,
+    },
+    modernLessonStatus: {
+        marginRight: 16,
+    },
+    statusBadgeCompleted: {
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    statusBadgePending: {
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    statusBadgeActive: {
+        backgroundColor: '#ea580c',
+    },
+    modernLessonInfo: {
+        flex: 1,
+    },
+    modernLessonTitle: {
+        color: 'rgba(255, 255, 255, 0.9)',
+        fontSize: 15,
+        fontWeight: '600',
+        marginBottom: 4,
+    },
+    modernLessonTitleActive: {
+        color: '#fff',
+    },
+    modernLessonMeta: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+    },
+    modernLessonTime: {
+        color: '#6b7280',
+        fontSize: 12,
+        fontWeight: '500',
+    },
+    activeIndicatorIcon: {
+        marginLeft: 8,
+    },
+    pulseDot: {
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        backgroundColor: '#ea580c',
+        shadowColor: '#ea580c',
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 1,
+        shadowRadius: 4,
     },
     reviewFab: {
         position: 'absolute',
