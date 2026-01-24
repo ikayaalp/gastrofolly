@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { signOut } from "next-auth/react"
+import { signOut, useSession } from "next-auth/react"
 import { cn } from "@/lib/utils"
 import {
     LayoutDashboard,
@@ -62,6 +62,7 @@ interface AdminSidebarProps {
 
 export default function AdminSidebar({ className, onClose }: AdminSidebarProps) {
     const pathname = usePathname()
+    const { data: session } = useSession()
 
     return (
         <div className={cn("flex flex-col h-full bg-black border-r border-gray-800 w-64", className)}>
@@ -76,28 +77,36 @@ export default function AdminSidebar({ className, onClose }: AdminSidebarProps) 
             </div>
 
             <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-                {sidebarItems.map((item) => {
-                    const isActive = item.exact
-                        ? pathname === item.href
-                        : pathname.startsWith(item.href)
+                <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+                    {sidebarItems.filter(item => {
+                        // @ts-ignore - session type extension might be missing in some setups, safe to ignore for now
+                        if (session?.user?.role === 'INSTRUCTOR') {
+                            return item.href === '/admin/pool'
+                        }
+                        return true
+                    }).map((item) => {
+                        const isActive = item.exact
+                            ? pathname === item.href
+                            : pathname.startsWith(item.href)
 
-                    return (
-                        <Link
-                            key={item.href}
-                            href={item.href}
-                            onClick={onClose}
-                            className={cn(
-                                "flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group",
-                                isActive
-                                    ? "bg-orange-600 text-white shadow-lg shadow-orange-900/20"
-                                    : "text-gray-400 hover:text-white hover:bg-white/5"
-                            )}
-                        >
-                            <item.icon className={cn("h-5 w-5", isActive ? "text-white" : "text-gray-400 group-hover:text-white")} />
-                            <span className="font-medium">{item.title}</span>
-                        </Link>
-                    )
-                })}
+                        return (
+                            <Link
+                                key={item.href}
+                                href={item.href}
+                                onClick={onClose}
+                                className={cn(
+                                    "flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group",
+                                    isActive
+                                        ? "bg-orange-600 text-white shadow-lg shadow-orange-900/20"
+                                        : "text-gray-400 hover:text-white hover:bg-white/5"
+                                )}
+                            >
+                                <item.icon className={cn("h-5 w-5", isActive ? "text-white" : "text-gray-400 group-hover:text-white")} />
+                                <span className="font-medium">{item.title}</span>
+                            </Link>
+                        )
+                    })}
+                </nav>
             </nav>
 
             <div className="p-4 border-t border-gray-800">
