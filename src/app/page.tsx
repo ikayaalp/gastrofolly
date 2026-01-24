@@ -270,73 +270,69 @@ export default function Home() {
 
 
 
-      {/* Subscription Banner - Premium Ultra */}
-      <section className="py-12 relative">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6">
+      {/* Subscription Banner */}
+      <section className="py-8 bg-gradient-to-br from-orange-900/20 via-black to-purple-900/20 border-y border-orange-500/20 mb-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Header */}
+          <div className="text-center mb-5">
+            <h2 className="text-2xl md:text-4xl font-bold text-white mb-2">
+              Tüm Kurslara
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-500 ml-2">
+                Sınırsız Erişim!
+              </span>
+            </h2>
+            <p className="text-gray-400 max-w-2xl mx-auto text-sm md:text-base">
+              Tek bir üyelikle mutfakta ustalığa giden yolda sınır tanımayın.
+            </p>
+          </div>
 
-          <div className="relative group">
-            {/* Glow Effects */}
-            <div className="absolute -inset-1 bg-gradient-to-r from-orange-600 via-amber-500 to-purple-600 rounded-2xl opacity-30 blur-xl group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
-            <div className="absolute -inset-[1px] bg-gradient-to-r from-orange-500/50 via-amber-500/50 to-purple-500/50 rounded-2xl opacity-100"></div>
+          {/* Single Premium Plan - Compact Style */}
+          <div className="flex justify-center">
+            <div className="w-full max-w-5xl px-4 md:px-0">
+              <div className="relative bg-black/40 backdrop-blur-md border border-orange-500/30 rounded-xl overflow-hidden shadow-lg shadow-orange-900/20">
+                <div className="flex flex-col md:flex-row items-center justify-between p-5 md:px-10 md:py-6 relative z-10">
 
-            {/* Card Content */}
-            <div className="relative bg-black rounded-2xl overflow-hidden">
-              {/* Background Texture */}
-              <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
-              <div className="absolute inset-0 bg-gradient-to-br from-gray-900/90 via-black to-gray-900/90"></div>
-
-              {/* Decorative Orbs */}
-              <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-              <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
-
-              <div className="relative z-10 p-6 md:p-10 flex flex-col md:flex-row items-center justify-between gap-8">
-
-                {/* Left Side */}
-                <div className="flex items-center gap-6 text-center md:text-left">
-                  <div className="relative shrink-0">
-                    <div className="absolute inset-0 bg-orange-500 blur-lg opacity-40 animate-pulse"></div>
-                    <div className="relative bg-gradient-to-br from-gray-800 to-black border border-gray-700 p-4 rounded-xl shadow-2xl">
-                      <Crown className="w-10 h-10 text-amber-400" />
+                  {/* Left Side: Title & Subtitle */}
+                  <div className="text-center md:text-left mb-5 md:mb-0">
+                    <div className="flex items-center justify-center md:justify-start gap-3 mb-2">
+                      <div className="bg-orange-600/20 p-2 rounded-lg">
+                        <Crown className="w-8 h-8 text-orange-500" />
+                      </div>
+                      <h3 className="text-3xl md:text-4xl font-bold text-white tracking-wide uppercase">
+                        PREMIUM
+                      </h3>
                     </div>
-                  </div>
-
-                  <div>
-                    <h3 className="text-3xl md:text-5xl font-black italic tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-orange-400 to-amber-200 mb-1">
-                      PREMIUM
-                    </h3>
-                    <p className="text-gray-400 font-medium text-sm md:text-base flex items-center justify-center md:justify-start gap-2">
-                      <Star className="w-4 h-4 text-orange-500 fill-orange-500" />
-                      Sınırsız Erişim. Sınırsız Lezzet.
+                    <p className="text-gray-400 font-light text-base pl-0.5">
+                      Gastrofolly'deki Tüm Eğitimler!
                     </p>
                   </div>
-                </div>
 
-                {/* Right Side - Price & CTA */}
-                <div className="flex flex-col items-center md:items-end gap-1">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-gray-500 line-through text-sm decoration-red-500/50">399 ₺</span>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-4xl md:text-5xl font-bold text-white tracking-tight">299</span>
-                      <div className="flex flex-col items-start leading-none">
-                        <span className="text-xl font-bold text-orange-500">₺</span>
-                        <span className="text-[10px] text-gray-500 uppercase tracking-widest">/AYLIK</span>
-                      </div>
+                  {/* Right Side: Price & Action */}
+                  <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
+                    <div className="flex items-baseline gap-2 text-white">
+                      <span className="text-gray-500 text-sm line-through decoration-orange-600">399 ₺</span>
+                      <span className="text-gray-400 text-sm">yerine</span>
+                      <span className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-600">299 ₺</span>
+                      <span className="text-gray-400 text-sm font-light">/ Aylık</span>
                     </div>
+
+                    <Link
+                      href="/subscription"
+                      className="inline-flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white text-base font-bold py-2.5 px-8 rounded-lg transition-all transform hover:scale-105 shadow-md"
+                    >
+                      Üyeliğini Başlat
+                      <ArrowRight className="w-5 h-5" />
+                    </Link>
                   </div>
 
-                  <Link
-                    href="/subscription"
-                    className="group/btn relative inline-flex items-center justify-center gap-2 bg-white text-black px-8 py-3.5 rounded-xl font-bold text-lg hover:bg-gray-100 transition-all active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5)] mt-3"
-                  >
-                    <span>Hemen Başla</span>
-                    <ArrowRight className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
-                  </Link>
-                  <p className="text-xs text-gray-500 mt-2">İstediğin zaman iptal et.</p>
                 </div>
+
+                {/* Visual Effects */}
+                <div className="absolute -top-20 -right-20 w-48 h-48 bg-orange-600/10 blur-3xl rounded-full pointer-events-none"></div>
+                <div className="absolute -bottom-20 -left-20 w-48 h-48 bg-orange-600/10 blur-3xl rounded-full pointer-events-none"></div>
               </div>
             </div>
           </div>
-
         </div>
       </section>
 
