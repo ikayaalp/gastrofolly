@@ -232,11 +232,12 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
                 }
                 setIsLessonFormOpen(false)
             } else {
-                alert('Ders kaydedilemedi')
+                const errorData = await response.json()
+                alert(`Ders kaydedilemedi: ${errorData.error || 'Bilinmeyen hata'}`)
             }
         } catch (error) {
             console.error(error)
-            alert('Ders kaydedilirken hata')
+            alert('Ders kaydedilirken bağlantı hatası oluştu')
         }
     }
 
@@ -473,8 +474,12 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
 
                                 {!currentCourseId && (
                                     <div className="flex justify-end">
-                                        <button onClick={() => saveGeneralInfo()} className="bg-orange-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-orange-700 transition">
-                                            Kursu Oluştur ve İlerle &rarr;
+                                        <button
+                                            onClick={() => saveGeneralInfo()}
+                                            disabled={loading}
+                                            className="bg-orange-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-orange-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            {loading ? 'Oluşturuluyor...' : 'Kursu Oluştur ve İlerle \u2192'}
                                         </button>
                                     </div>
                                 )}
