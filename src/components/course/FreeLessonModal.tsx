@@ -52,7 +52,7 @@ export default function FreeLessonModal({ lesson, courseTitle }: FreeLessonModal
                     <div className="flex items-center space-x-4">
                         {lesson.duration && (
                             <span className="text-sm text-gray-400">
-                                {lesson.duration} dk
+                                {lesson.duration || 0} dk
                             </span>
                         )}
                         <span className="bg-green-500/20 text-green-500 px-2 py-1 rounded text-xs font-semibold">

@@ -320,7 +320,7 @@ export default function ExpandableCourseCard({ course, showProgress, rank, large
 
                                     {course.duration && (
                                         <span className="text-zinc-400 text-sm">
-                                            {Math.round(course.duration / 60)}s {course.duration % 60}dk
+                                            {Math.round((course.duration || 0) / 60)}s {(course.duration || 0) % 60}dk
                                         </span>
                                     )}
                                 </div>
