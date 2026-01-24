@@ -151,7 +151,7 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
             if (response.ok) {
                 const data = await response.json()
                 if (!currentCourseId) {
-                    setCurrentCourseId(data.id) // If created new, set ID so we can add lessons
+                    setCurrentCourseId(data.course.id) // If created new, set ID so we can add lessons
                     // Move to curriculum tab after creation
                     setActiveTab('CURRICULUM')
                 } else {
@@ -224,7 +224,8 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
             })
 
             if (response.ok) {
-                const savedLesson = await response.json()
+                const data = await response.json()
+                const savedLesson = data.lesson
                 if (editingLesson) {
                     setLessons(prev => prev.map(l => l.id === savedLesson.id ? savedLesson : l))
                 } else {

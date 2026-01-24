@@ -1,8 +1,7 @@
 "use client"
 
 import { useState, useRef, useCallback } from "react"
-import { storage } from "@/lib/firebase"
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage"
+// Firebase removed in favor of Cloudinary
 import { Upload, X, CheckCircle, AlertCircle, FileVideo } from "lucide-react"
 
 interface VideoUploadProps {
@@ -37,38 +36,48 @@ export default function VideoUpload({ onVideoUploaded, lessonId }: VideoUploadPr
     setUploadProgress(0)
 
     try {
-      const timestamp = Date.now()
-      const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_")
-      const path = `videos/${lessonId || "general"}/${timestamp}_${safeFileName}`
-      const storageRef = ref(storage, path)
+      // 1. Get Cloudinary Config
+      const configRes = await fetch('/api/admin/cloudinary-config')
+      if (!configRes.ok) throw new Error('Cloudinary konfigürasyonu alınamadı')
+      const { cloudName, uploadPreset } = await configRes.json()
 
-      const uploadTask = uploadBytesResumable(storageRef, file, {
-        contentType: file.type || "video/mp4",
-      })
+      // 2. Prepare Upload
+      const url = `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('upload_preset', uploadPreset)
+      // Eğer lessonId varsa o klasöre, yoksa genel klasöre
+      const folder = lessonId ? `chef-courses/lessons` : 'chef-courses/general'
+      formData.append('folder', folder)
 
+      // 3. Upload with XHR for progress
       await new Promise<void>((resolve, reject) => {
-        uploadTask.on(
-          "state_changed",
-          (snapshot) => {
-            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-            setUploadProgress(Math.round(progress))
-          },
-          (err) => {
-            reject(err)
-          },
-          async () => {
-            try {
-              const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref)
-              setSuccess(`Video başarıyla yüklendi: ${file.name}`)
-              setUploadProgress(100)
-              onVideoUploaded(downloadUrl)
-              resolve()
-            } catch (e) {
-              reject(e)
-            }
+        const xhr = new XMLHttpRequest()
+        xhr.open('POST', url)
+
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) {
+            const percentComplete = Math.round((e.loaded / e.total) * 100)
+            setUploadProgress(percentComplete)
           }
-        )
+        }
+
+        xhr.onload = () => {
+          if (xhr.status === 200) {
+            const data = JSON.parse(xhr.responseText)
+            setSuccess(`Video başarıyla yüklendi: ${file.name}`)
+            setUploadProgress(100)
+            onVideoUploaded(data.secure_url)
+            resolve()
+          } else {
+            reject(new Error('Cloudinary upload failed'))
+          }
+        }
+
+        xhr.onerror = () => reject(new Error('Network error during upload'))
+        xhr.send(formData)
       })
+
     } catch (error) {
       console.error("Upload error:", error)
       const errorMessage = error instanceof Error ? error.message : "Video yüklenirken hata oluştu"
@@ -109,7 +118,7 @@ export default function VideoUpload({ onVideoUploaded, lessonId }: VideoUploadPr
     e.preventDefault()
     e.stopPropagation()
     setDragActive(false)
-    
+
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const file = e.dataTransfer.files[0]
       await uploadFile(file)
@@ -124,19 +133,18 @@ export default function VideoUpload({ onVideoUploaded, lessonId }: VideoUploadPr
   return (
     <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
       <h3 className="text-lg font-semibold text-white mb-4">Video Yükle</h3>
-      
+
       {/* Upload Area */}
-      <div 
+      <div
         onClick={triggerFileSelect}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
-        className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-all duration-200 ${
-          dragActive 
-            ? 'border-orange-500 bg-orange-500/10 scale-105' 
-            : 'border-gray-600 hover:border-orange-500 hover:bg-gray-700/50'
-        }`}
+        className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-all duration-200 ${dragActive
+          ? 'border-orange-500 bg-orange-500/10 scale-105'
+          : 'border-gray-600 hover:border-orange-500 hover:bg-gray-700/50'
+          }`}
       >
         <input
           ref={fileInputRef}
@@ -146,13 +154,13 @@ export default function VideoUpload({ onVideoUploaded, lessonId }: VideoUploadPr
           className="hidden"
           disabled={uploading}
         />
-        
+
         {uploading ? (
           <div className="space-y-4">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
             <p className="text-white">Video yükleniyor...</p>
             <div className="w-full bg-gray-700 rounded-full h-2">
-              <div 
+              <div
                 className="bg-orange-500 h-2 rounded-full transition-all duration-300"
                 style={{ width: `${uploadProgress}%` }}
               ></div>
