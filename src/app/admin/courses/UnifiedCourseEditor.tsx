@@ -289,7 +289,7 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
                         setLessonForm(prev => ({
                             ...prev,
                             videoUrl: data.secure_url,
-                            duration: data.duration ? Math.round(data.duration / 60) : prev.duration // Cloudinary returns seconds
+                            duration: data.duration ? Math.ceil(data.duration / 60) : prev.duration // Cloudinary returns seconds
                         }))
                         resolve()
                     } else {
@@ -309,12 +309,15 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
         }
     }
 
-    const handleVideoUploadedForLesson = async (videoUrl: string) => {
+    const handleVideoUploadedForLesson = async (videoUrl: string, duration?: number) => {
         // Just save this URL to the lesson directly
         if (!showVideoUploadForLessonId) return
 
         const lesson = lessons.find(l => l.id === showVideoUploadForLessonId)
         if (!lesson) return
+
+        // Convert seconds to minutes (round up usually or round)
+        const durationInMinutes = duration ? Math.ceil(duration / 60) : lesson.duration
 
         try {
             const response = await fetch(`/api/admin/lessons/${lesson.id}`, {
@@ -324,14 +327,14 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
                     title: lesson.title,
                     description: lesson.description,
                     videoUrl: videoUrl,
-                    duration: lesson.duration, // Ideally update duration from video metadata if possible, skipping for simplicity here
+                    duration: durationInMinutes,
                     order: lesson.order,
                     isFree: lesson.isFree
                 })
             })
 
             if (response.ok) {
-                setLessons(prev => prev.map(l => l.id === lesson.id ? { ...l, videoUrl } : l))
+                setLessons(prev => prev.map(l => l.id === lesson.id ? { ...l, videoUrl, duration: durationInMinutes } : l))
                 setShowVideoUploadForLessonId(null)
             }
         } catch (e) { console.error(e) }
