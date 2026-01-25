@@ -385,7 +385,7 @@ export default async function ContactPage() {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-500 text-sm">&copy; 2024 Culinora Eğitim Teknolojileri A.Ş. Tüm hakları saklıdır.</p>
+            <p className="text-gray-500 text-sm">&copy; 2026 Culinora Eğitim Teknolojileri A.Ş. Tüm hakları saklıdır.</p>
             <p className="text-gray-600 text-sm mt-4 md:mt-0">Made with ❤️ in İstanbul</p>
           </div>
         </div>

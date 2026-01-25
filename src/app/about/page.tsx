@@ -299,7 +299,7 @@ export default async function AboutPage() {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 Culinora. Tüm hakları saklıdır.</p>
+            <p>&copy; 2026 Culinora. Tüm hakları saklıdır.</p>
           </div>
         </div>
       </footer>
