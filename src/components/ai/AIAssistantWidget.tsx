@@ -89,7 +89,7 @@ export default function AIAssistantWidget() {
                                 <ChefHat className="w-6 h-6 text-white" />
                             </div>
                             <div>
-                                <h3 className="text-white font-bold text-sm">Chef AI</h3>
+                                <h3 className="text-white font-bold text-sm">Culi</h3>
                                 <p className="text-white/80 text-xs">Gastronomi Asistanınız</p>
                             </div>
                         </div>

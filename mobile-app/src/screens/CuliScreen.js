@@ -33,7 +33,7 @@ const SUGGESTIONS = [
 
 const MAX_HISTORY_ITEMS = 10;
 
-export default function ChefAIScreen() {
+export default function CuliScreen() {
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -249,7 +249,7 @@ export default function ChefAIScreen() {
                                 <ChefHat size={24} color="#fff" />
                             </LinearGradient>
                             <View>
-                                <Text style={styles.headerTitle}>Chef AI</Text>
+                                <Text style={styles.headerTitle}>Culi</Text>
                                 <Text style={styles.headerSubtitle}>Kişisel Mutfak Asistanın</Text>
                             </View>
                         </View>

@@ -25,7 +25,7 @@ import InstructorProfileScreen from '../screens/InstructorProfileScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
 import IntroScreen from '../screens/IntroScreen';
 import OnboardingScreen from '../screens/OnboardingScreen';
-import ChefAIScreen from '../screens/ChefAIScreen';
+import CuliScreen from '../screens/CuliScreen';
 
 import { Home, BookOpen, Users, MessageCircle, User, Bot } from 'lucide-react-native';
 
@@ -130,10 +130,10 @@ function TabNavigator() {
                 }}
             />
             <Tab.Screen
-                name="ChefAI"
-                component={ChefAIScreen}
+                name="Culi"
+                component={CuliScreen}
                 options={{
-                    tabBarLabel: 'Chef AI',
+                    tabBarLabel: 'Culi',
                     tabBarIcon: ({ color, size }) => (
                         <Bot size={24} color={color} />
                     ),

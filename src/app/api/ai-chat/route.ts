@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
 import { prisma } from '@/lib/prisma'
 
-const SYSTEM_PROMPT = `Sen Culinora platformunun AI asistanısın. Adın "Chef AI".
+const SYSTEM_PROMPT = `Sen Culinora platformunun AI asistanısın. Adın "Culi".
 Sadece ve sadece gastronomi, yemek tarifleri, pişirme teknikleri, mutfak ekipmanları, gıda bilimi ve aşçılık konularında yanıt verirsin.
 
 Kurallar:
