@@ -80,7 +80,7 @@ export default async function DashboardPage() {
             <div className="flex items-center space-x-8">
               <Link href="/home" className="flex items-center space-x-2">
                 <ChefHat className="h-8 w-8 text-orange-500" />
-                <span className="text-2xl font-bold text-white">Chef2.0</span>
+                <span className="text-2xl font-bold text-white">Culinora</span>
                 {session?.user?.role === 'ADMIN' && (
                   <span className="bg-orange-600 text-white px-2 py-1 rounded text-sm font-medium">Admin</span>
                 )}
@@ -122,7 +122,7 @@ export default async function DashboardPage() {
         <div className="flex justify-between items-center py-3 px-4">
           <Link href="/home" className="flex items-center space-x-2">
             <ChefHat className="h-6 w-6 text-orange-500" />
-            <span className="text-lg font-bold text-white">Chef2.0</span>
+            <span className="text-lg font-bold text-white">Culinora</span>
             {session?.user?.role === 'ADMIN' && (
               <span className="bg-orange-600 text-white px-2 py-1 rounded text-xs font-medium">Admin</span>
             )}

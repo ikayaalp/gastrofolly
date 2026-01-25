@@ -37,9 +37,9 @@ export async function sendVerificationEmail(
     const transporter = createTransporter()
 
     const mailOptions = {
-      from: `"Chef2.0 Platform" <${process.env.EMAIL_USER}>`,
+      from: `"Culinora Platform" <${process.env.EMAIL_USER}>`,
       to: to,
-      subject: '🔐 Chef2.0 - Email Doğrulama Kodunuz',
+      subject: '🔐 Culinora - Email Doğrulama Kodunuz',
       html: `
         <!DOCTYPE html>
         <html>
@@ -147,14 +147,14 @@ export async function sendVerificationEmail(
         <body>
           <div class="container">
             <div class="header">
-              <h1>🍳 Chef2.0</h1>
+              <h1>🍳 Culinora</h1>
             </div>
             <div class="content">
               <div class="greeting">
                 Merhaba ${name || 'Chef'}! 👋
               </div>
               <div class="message">
-                Chef2.0 platformuna hoş geldiniz! Hesabınızı aktif etmek için aşağıdaki 6 haneli doğrulama kodunu kullanın:
+                Culinora platformuna hoş geldiniz! Hesabınızı aktif etmek için aşağıdaki 6 haneli doğrulama kodunu kullanın:
               </div>
               
               <div class="code-container">
@@ -181,13 +181,13 @@ export async function sendVerificationEmail(
             </div>
             <div class="footer">
               <p class="footer-text">
-                <strong>Chef2.0 Gastronomi Platformu</strong>
+                <strong>Culinora Gastronomi Platformu</strong>
               </p>
               <p class="footer-text">
                 Profesyonel şeflerden gastronomi öğrenin
               </p>
               <p class="footer-text" style="margin-top: 15px; font-size: 12px;">
-                © ${new Date().getFullYear()} Chef2.0. Tüm hakları saklıdır.
+                © ${new Date().getFullYear()} Culinora. Tüm hakları saklıdır.
               </p>
             </div>
           </div>
@@ -217,9 +217,9 @@ export async function sendPasswordResetEmail(
     const transporter = createTransporter()
 
     const mailOptions = {
-      from: `"Chef2.0 Platform" <${process.env.EMAIL_USER}>`,
+      from: `"Culinora Platform" <${process.env.EMAIL_USER}>`,
       to: to,
-      subject: '🔑 Chef2.0 - Şifre Sıfırlama',
+      subject: '🔑 Culinora - Şifre Sıfırlama',
       html: `
         <!DOCTYPE html>
         <html>
@@ -240,7 +240,7 @@ export async function sendPasswordResetEmail(
         <body>
           <div class="container">
             <div class="header">
-              <h1>🍳 Chef2.0</h1>
+              <h1>🍳 Culinora</h1>
             </div>
             <div class="content">
               <h2>Merhaba ${name || 'Chef'}! 👋</h2>
@@ -261,8 +261,8 @@ export async function sendPasswordResetEmail(
               </div>
             </div>
             <div class="footer">
-              <p><strong>Chef2.0 Gastronomi Platformu</strong></p>
-              <p>© ${new Date().getFullYear()} Chef2.0. Tüm hakları saklıdır.</p>
+              <p><strong>Culinora Gastronomi Platformu</strong></p>
+              <p>© ${new Date().getFullYear()} Culinora. Tüm hakları saklıdır.</p>
             </div>
           </div>
         </body>

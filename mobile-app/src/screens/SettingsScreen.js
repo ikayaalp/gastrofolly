@@ -185,7 +185,7 @@ export default function SettingsScreen({ navigation }) {
                         />
                     </View>
 
-                    <Text style={styles.versionText}>GastroFolly Mobile v1.0.2</Text>
+                    <Text style={styles.versionText}>Culinora Mobile v1.0.2</Text>
 
                 </ScrollView>
             </View>

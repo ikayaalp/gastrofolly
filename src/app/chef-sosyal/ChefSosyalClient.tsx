@@ -374,7 +374,7 @@ export default function ChefSosyalClient({
           <div className="flex items-center space-x-12">
             <Link href="/home" className="flex items-center space-x-2">
               <ChefHat className="h-8 w-8 text-orange-500" />
-              <span className="text-xl font-bold hidden sm:block">Chef2.0</span>
+              <span className="text-xl font-bold hidden sm:block">Culinora</span>
             </Link>
           </div>
 

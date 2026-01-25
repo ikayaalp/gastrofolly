@@ -18,6 +18,7 @@ import {
     TouchableWithoutFeedback,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
     Users,
     ThumbsUp,
@@ -53,6 +54,7 @@ const formatDuration = (millis) => {
 };
 
 export default function SocialScreen({ navigation }) {
+    const insets = useSafeAreaInsets();
     const [categories, setCategories] = useState([]);
     const [topics, setTopics] = useState([]);
     const [loading, setLoading] = useState(true);

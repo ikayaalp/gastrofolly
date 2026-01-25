@@ -57,11 +57,11 @@ export async function POST(request: NextRequest) {
     })
 
     const instructor2 = await prisma.user.upsert({
-      where: { email: 'chef2@example.com' },
+      where: { email: 'culinora@example.com' },
       update: {},
       create: {
         name: 'Şef Ayşe Kaya',
-        email: 'chef2@example.com',
+        email: 'culinora@example.com',
         role: 'INSTRUCTOR',
         image: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=200'
       }

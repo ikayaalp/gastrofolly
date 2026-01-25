@@ -82,7 +82,7 @@ function SocialStackNavigator() {
 
 function TabNavigator() {
     const insets = useSafeAreaInsets();
-    const bottomPadding = Platform.OS === 'android' ? Math.max(insets.bottom, 20) : insets.bottom;
+    const bottomPadding = Platform.OS === 'android' ? Math.max(insets.bottom, 36) : insets.bottom;
 
     return (
         <Tab.Navigator

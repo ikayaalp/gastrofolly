@@ -11,7 +11,7 @@ const faqs = [
     },
     {
         question: "Bireysel kurs satın alabilir miyim, yoksa üyelik mi gerekli?",
-        answer: "Chef2.0'da sadece avantajlı abonelik sistemi geçerlidir. Tek bir üyelik ile platformdaki tüm eğitimlere sınırsız erişim sağlayabilirsiniz."
+        answer: "Culinora'da sadece avantajlı abonelik sistemi geçerlidir. Tek bir üyelik ile platformdaki tüm eğitimlere sınırsız erişim sağlayabilirsiniz."
     },
     {
         question: "Eğitimlere ne kadar süreyle erişebilirim?",
@@ -19,7 +19,7 @@ const faqs = [
     },
     {
         question: "Mobil cihazlardan izleyebilir miyim?",
-        answer: "Elbette! Chef2.0 platformu tüm cihazlarla uyumludur. Bilgisayar, tablet veya telefonunuzdan eğitimlere kaldığınız yerden devam edebilirsiniz."
+        answer: "Elbette! Culinora platformu tüm cihazlarla uyumludur. Bilgisayar, tablet veya telefonunuzdan eğitimlere kaldığınız yerden devam edebilirsiniz."
     },
     {
         question: "Şeflerle iletişim kurabilir miyim?",
@@ -45,7 +45,7 @@ export default function FAQSection() {
                         Sıkça Sorulan <span className="text-orange-500">Sorular</span>
                     </h2>
                     <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-                        Chef2.0 deneyimi hakkında aklınıza takılan tüm soruların cevapları burada.
+                        Culinora deneyimi hakkında aklınıza takılan tüm soruların cevapları burada.
                     </p>
                 </div>
 

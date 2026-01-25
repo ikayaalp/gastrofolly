@@ -311,7 +311,7 @@ export default async function LearnPage({ params, searchParams }: LearnPageProps
         <div className="flex justify-between items-center py-3 px-4">
           <Link href="/home" className="flex items-center space-x-2">
             <ChefHat className="h-6 w-6 text-orange-500" />
-            <span className="text-lg font-bold text-white">Chef2.0</span>
+            <span className="text-lg font-bold text-white">Culinora</span>
           </Link>
           <UserDropdown />
         </div>

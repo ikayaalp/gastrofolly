@@ -12,7 +12,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Chef2.0 - Gastronomi Kursları",
+  title: "Culinora - Gastronomi Kursları",
   description: "Profesyonel şeflerden gastronomi öğrenin. Video dersler, uygulamalı projeler ve sertifikalar.",
   keywords: ["gastronomi", "yemek", "kurs", "şef", "mutfak", "online eğitim"],
 };

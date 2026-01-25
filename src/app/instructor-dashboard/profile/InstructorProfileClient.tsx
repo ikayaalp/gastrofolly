@@ -150,7 +150,7 @@ export default function InstructorProfileClient({ instructorData, session }: Pro
             <div className="flex items-center space-x-8">
               <Link href="/home" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
                 <ChefHat className="h-8 w-8 text-orange-500" />
-                <span className="text-2xl font-bold text-white">Chef2.0</span>
+                <span className="text-2xl font-bold text-white">Culinora</span>
               </Link>
               <div className="h-6 w-px bg-gray-600"></div>
               <div className="flex items-center space-x-2">

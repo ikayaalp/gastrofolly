@@ -17,7 +17,7 @@ export default function ShareButton({ courseId, courseTitle }: ShareButtonProps)
     setCourseUrl(`${window.location.origin}/course/${courseId}`)
   }, [courseId])
 
-  const shareText = `${courseTitle} kursunu Chef2.0'da keşfet!`
+  const shareText = `${courseTitle} kursunu Culinora'da keşfet!`
 
   const handleCopyLink = async () => {
     try {

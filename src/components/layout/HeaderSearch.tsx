@@ -114,7 +114,7 @@ export default function HeaderSearch() {
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <h4 className="text-white text-sm font-medium truncate group-hover:text-orange-500 transition-colors">{course.title}</h4>
-                                        <p className="text-gray-500 text-xs truncate">{course.instructor?.name || 'Gastrofolly Eğitmeni'}</p>
+                                        <p className="text-gray-500 text-xs truncate">{course.instructor?.name || 'Culinora Eğitmeni'}</p>
                                     </div>
                                 </Link>
                             ))}

@@ -72,7 +72,7 @@ export default function RegisterScreen({ navigation }) {
                 {/* Header */}
                 <View style={styles.header}>
                     <ChefHat color="#f97316" size={48} />
-                    <Text style={styles.title}>Chef2.0</Text>
+                    <Text style={styles.title}>Culinora</Text>
                     <Text style={styles.subtitle}>Gastronomi yolculuğunuza başlayın</Text>
                 </View>
 

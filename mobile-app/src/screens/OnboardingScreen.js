@@ -20,7 +20,7 @@ const slides = [
     {
         id: '1',
         icon: ChefHat,
-        title: 'GastroFolly Dünyasına\nHoş Geldiniz',
+        title: 'Culinora Dünyasına\nHoş Geldiniz',
         subtitle: 'Gastronomi yolculuğunuzda size rehberlik ediyoruz',
         description: 'Profesyonel şeflerden öğrenin, mutfak becerilerinizi geliştirin',
         gradient: ['#ea580c', '#c2410c'],

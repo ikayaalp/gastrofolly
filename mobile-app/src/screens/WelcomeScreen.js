@@ -26,7 +26,7 @@ export default function WelcomeScreen({ navigation }) {
                 {/* Header */}
                 <View style={styles.header}>
                     <ChefHat size={32} color="#ea580c" />
-                    <Text style={styles.headerTitle}>Chef2.0</Text>
+                    <Text style={styles.headerTitle}>Culinora</Text>
                 </View>
 
                 {/* Hero Section */}

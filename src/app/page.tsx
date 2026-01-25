@@ -131,7 +131,7 @@ export default function Home() {
               {/* Logo */}
               <Link href="/" className="flex items-center gap-2 mr-2">
                 <ChefHat className="h-7 w-7 text-orange-500" />
-                <span className="text-xl font-bold text-white">Chef2.0</span>
+                <span className="text-xl font-bold text-white">Culinora</span>
               </Link>
 
               {/* Browse Button with Dropdown */}
@@ -303,7 +303,7 @@ export default function Home() {
                       </h3>
                     </div>
                     <p className="text-gray-400 font-light text-base pl-0.5">
-                      Gastrofolly'deki Tüm Eğitimler!
+                      Culinora'deki Tüm Eğitimler!
                     </p>
                   </div>
 
@@ -358,7 +358,7 @@ export default function Home() {
             <div>
               <div className="flex items-center space-x-2 mb-4">
                 <ChefHat className="h-8 w-8 text-orange-500" />
-                <span className="text-2xl font-bold text-white">Chef2.0</span>
+                <span className="text-2xl font-bold text-white">Culinora</span>
               </div>
               <p className="text-gray-400">
                 Gastronomi dünyasında kendinizi geliştirin ve profesyonel bir şef olun.

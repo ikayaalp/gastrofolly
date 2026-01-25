@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
 import { prisma } from '@/lib/prisma'
 
-const SYSTEM_PROMPT = `Sen Gastrofolly platformunun AI asistanısın. Adın "Chef AI".
+const SYSTEM_PROMPT = `Sen Culinora platformunun AI asistanısın. Adın "Chef AI".
 Sadece ve sadece gastronomi, yemek tarifleri, pişirme teknikleri, mutfak ekipmanları, gıda bilimi ve aşçılık konularında yanıt verirsin.
 
 Kurallar:
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
 
         const dynamicSystemPrompt = `${SYSTEM_PROMPT}
 
-## GASTROFOLLY PLATFORMUNDAKİ GÜNCEL KURSLAR:
+## Culinora PLATFORMUNDAKİ GÜNCEL KURSLAR:
 Aşağıdaki kurslar şu an platformda mevcuttur. Kullanıcının ihiyacına uygun bir kurs varsa MUTLAKA öner.
 
 ${coursesContext}

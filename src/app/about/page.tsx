@@ -14,7 +14,7 @@ export default async function AboutPage() {
           <div className="flex justify-between items-center py-4">
             <Link href={session?.user ? "/home" : "/"} className="flex items-center space-x-2">
               <ChefHat className="h-8 w-8 text-orange-500" />
-              <span className="text-2xl font-bold text-white">Chef2.0</span>
+              <span className="text-2xl font-bold text-white">Culinora</span>
               {session?.user?.role === 'ADMIN' && (
                 <span className="bg-orange-600 text-white px-2 py-1 rounded text-sm font-medium">Admin</span>
               )}
@@ -82,7 +82,7 @@ export default async function AboutPage() {
               Hakkımızda
             </h1>
             <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
-              Chef2.0 olarak gastronomi dünyasında yeni nesil eğitim deneyimi sunuyoruz.
+              Culinora olarak gastronomi dünyasında yeni nesil eğitim deneyimi sunuyoruz.
               Amacımız, mutfak sanatını herkes için erişilebilir kılmak.
             </p>
           </div>
@@ -135,7 +135,7 @@ export default async function AboutPage() {
               Kurucu Ortaklarımız
             </h2>
             <p className="text-gray-400">
-              Chef2.0&apos;ı hayata geçiren vizyoner ekibimizle tanışın
+              Culinora&apos;ı hayata geçiren vizyoner ekibimizle tanışın
             </p>
           </div>
 
@@ -264,7 +264,7 @@ export default async function AboutPage() {
             <div>
               <div className="flex items-center space-x-2 mb-4">
                 <ChefHat className="h-8 w-8 text-orange-500" />
-                <span className="text-2xl font-bold">Chef2.0</span>
+                <span className="text-2xl font-bold">Culinora</span>
               </div>
               <p className="text-gray-400">
                 Gastronomi dünyasında kendinizi geliştirin ve profesyonel bir şef olun.
@@ -299,7 +299,7 @@ export default async function AboutPage() {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 Chef2.0. Tüm hakları saklıdır.</p>
+            <p>&copy; 2024 Culinora. Tüm hakları saklıdır.</p>
           </div>
         </div>
       </footer>

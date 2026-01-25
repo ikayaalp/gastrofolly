@@ -51,11 +51,11 @@ async function main() {
 
   // Daha fazla eğitmen oluştur
   const instructor2 = await prisma.user.upsert({
-    where: { email: 'chef2@example.com' },
+    where: { email: 'culinora@example.com' },
     update: {},
     create: {
       name: 'Şef Ayşe Kaya',
-      email: 'chef2@example.com',
+      email: 'culinora@example.com',
       role: 'INSTRUCTOR',
       image: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=200'
     }
@@ -74,22 +74,22 @@ async function main() {
 
   // Admin kullanıcıları oluştur
   const admin = await prisma.user.upsert({
-    where: { email: 'admin@chef2.com' },
+    where: { email: 'admin@culinora.com' },
     update: {},
     create: {
       name: 'Admin Kullanıcı',
-      email: 'admin@chef2.com',
+      email: 'admin@culinora.com',
       role: 'ADMIN',
       image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200'
     }
   })
 
   const admin2 = await prisma.user.upsert({
-    where: { email: 'superadmin@chef2.com' },
+    where: { email: 'superadmin@culinora.com' },
     update: {},
     create: {
       name: 'Super Admin',
-      email: 'superadmin@chef2.com',
+      email: 'superadmin@culinora.com',
       role: 'ADMIN',
       image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200'
     }

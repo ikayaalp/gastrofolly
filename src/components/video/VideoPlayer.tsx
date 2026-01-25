@@ -441,7 +441,7 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
                   <p className="text-orange-500 mb-2">{course.title}</p>
                   <div className="flex items-center space-x-2 text-sm">
                     <span className="bg-orange-500/20 text-orange-500 px-2 py-1 rounded text-xs">
-                      Chef2.0
+                      Culinora
                     </span>
                     {isCompleted && (
                       <span className="bg-green-500/20 text-green-500 px-2 py-1 rounded text-xs">

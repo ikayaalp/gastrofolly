@@ -252,7 +252,7 @@ function VerifyEmailForm() {
         <div className="text-center">
           <Link href="/" className="flex items-center justify-center space-x-2 text-gray-400 hover:text-white">
             <ChefHat className="h-5 w-5" />
-            <span>Chef2.0&apos;a Dön</span>
+            <span>Culinora&apos;a Dön</span>
           </Link>
         </div>
       </div>

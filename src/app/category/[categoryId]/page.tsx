@@ -100,7 +100,7 @@ export default function CategoryPage() {
                     <div className="flex items-center justify-between h-16">
                         <Link href="/" className="flex items-center gap-2">
                             <ChefHat className="h-6 w-6 text-orange-500" />
-                            <span className="text-lg font-extrabold text-white tracking-tight">Chef2.0</span>
+                            <span className="text-lg font-extrabold text-white tracking-tight">Culinora</span>
                         </Link>
 
 
@@ -218,7 +218,7 @@ export default function CategoryPage() {
                                             <div>
                                                 {/* Instructor Name - Uppercase & Tracking */}
                                                 <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
-                                                    {course.instructor?.name || "Gastrofolly Eğitmeni"}
+                                                    {course.instructor?.name || "Culinora Eğitmeni"}
                                                 </h4>
 
                                                 {/* Title */}

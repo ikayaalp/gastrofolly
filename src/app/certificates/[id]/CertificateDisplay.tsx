@@ -104,11 +104,11 @@ export default function CertificateDisplay({ certificate }: CertificateDisplayPr
                     <div className="flex items-center justify-between pt-8 border-t border-gray-800">
                         <div className="text-center flex-1">
                             <div className="w-48 h-px bg-gray-700 mx-auto mb-2"></div>
-                            <p className="text-sm text-gray-500">Chef2.0 Platform</p>
+                            <p className="text-sm text-gray-500">Culinora Platform</p>
                         </div>
                         <div className="flex items-center space-x-2">
                             <ChefHat className="h-8 w-8 text-orange-500" />
-                            <span className="text-xl font-bold text-white">Chef2.0</span>
+                            <span className="text-xl font-bold text-white">Culinora</span>
                         </div>
                         <div className="text-center flex-1">
                             <div className="w-48 h-px bg-gray-700 mx-auto mb-2"></div>
@@ -122,7 +122,7 @@ export default function CertificateDisplay({ certificate }: CertificateDisplayPr
                 {/* Info Note */}
                 <div className="mt-8 text-center text-sm text-gray-500 no-print">
                     <p>
-                        Bu sertifika dijitaldir ve Chef2.0 platformu tarafından otomatik olarak oluşturulmuştur.
+                        Bu sertifika dijitaldir ve Culinora platformu tarafından otomatik olarak oluşturulmuştur.
                     </p>
                 </div>
             </main>

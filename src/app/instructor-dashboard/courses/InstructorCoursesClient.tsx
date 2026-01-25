@@ -165,7 +165,7 @@ export default function InstructorCoursesClient({ courses, categories, session }
             <div className="flex items-center space-x-8">
               <Link href="/home" className="flex items-center space-x-2">
                 <GraduationCap className="h-8 w-8 text-orange-500" />
-                <span className="text-2xl font-bold text-white">Chef2.0</span>
+                <span className="text-2xl font-bold text-white">Culinora</span>
                 <span className="bg-blue-600 text-white px-2 py-1 rounded text-sm font-medium">Eğitmen</span>
               </Link>
               <nav className="flex space-x-6">

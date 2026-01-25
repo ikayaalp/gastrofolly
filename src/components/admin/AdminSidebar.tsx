@@ -67,7 +67,7 @@ export default function AdminSidebar({ className, onClose }: AdminSidebarProps) 
                     <ChefHat className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                    <h1 className="text-lg font-bold text-white">Gastrofolly</h1>
+                    <h1 className="text-lg font-bold text-white">Culinora</h1>
                     <p className="text-xs text-gray-500">Yönetim Paneli</p>
                 </div>
             </div>

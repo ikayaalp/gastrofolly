@@ -14,8 +14,12 @@ import {
     Keyboard,
     Modal,
     Image,
+    useWindowDimensions,
 } from 'react-native';
+import * as ScreenOrientation from 'expo-screen-orientation';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Video, ResizeMode } from 'expo-av';
+import Slider from '@react-native-community/slider';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
     Play,
@@ -55,9 +59,12 @@ import config from '../api/config';
 import { TextInput } from 'react-native';
 import CustomAlert from '../components/CustomAlert';
 
-const { width, height } = Dimensions.get('window');
+// Removed static dimensions to use useWindowDimensions hook
+// const { width, height } = Dimensions.get('window');
 
 export default function LearnScreen({ route, navigation }) {
+    const { width, height } = useWindowDimensions();
+    const insets = useSafeAreaInsets();
     const { courseId, lessonId } = route.params;
     const videoRef = useRef(null);
     const [course, setCourse] = useState(null);
@@ -110,11 +117,56 @@ export default function LearnScreen({ route, navigation }) {
             () => setKeyboardVisible(false)
         );
 
+        // Cleanup orientation on unmount
         return () => {
             keyboardDidShowListener.remove();
             keyboardDidHideListener.remove();
+            ScreenOrientation.unlockAsync();
         };
     }, []);
+
+    // Toggle Tab Bar visibility based on fullscreen state
+    useEffect(() => {
+        const parent = navigation.getParent();
+        const bottomPadding = Platform.OS === 'android' ? Math.max(insets.bottom, 36) : insets.bottom;
+
+        if (parent) {
+            parent.setOptions({
+                tabBarStyle: {
+                    display: isFullscreen ? 'none' : 'flex',
+                    backgroundColor: '#000000',
+                    borderTopColor: '#1a1a1a',
+                    height: Platform.OS === 'android' ? 65 + bottomPadding : 85,
+                    paddingBottom: bottomPadding,
+                    paddingTop: 8,
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    elevation: 0,
+                }
+            });
+        }
+        return () => {
+            if (parent) {
+                parent.setOptions({
+                    tabBarStyle: {
+                        display: 'flex',
+                        backgroundColor: '#000000',
+                        borderTopColor: '#1a1a1a',
+                        height: Platform.OS === 'android' ? 65 + bottomPadding : 85,
+                        paddingBottom: bottomPadding,
+                        paddingTop: 8,
+                        position: 'absolute',
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        elevation: 0,
+                    }
+                });
+            }
+        };
+    }, [isFullscreen, navigation, insets]);
 
     // Load course and progress data
     useEffect(() => {
@@ -253,6 +305,13 @@ export default function LearnScreen({ route, navigation }) {
         hideControlsWithDelay();
     }, [controlsOpacity, hideControlsWithDelay]);
 
+    // Trigger auto-hide when video starts playing
+    useEffect(() => {
+        if (isPlaying) {
+            hideControlsWithDelay();
+        }
+    }, [isPlaying, hideControlsWithDelay]);
+
     // Video playback handlers
     const handlePlayPause = async () => {
         if (!videoRef.current) return;
@@ -273,16 +332,42 @@ export default function LearnScreen({ route, navigation }) {
 
     const handleVideoStatusUpdate = (status) => {
         if (status.isLoaded) {
-            setIsPlaying(status.isPlaying);
-            setVideoDuration(status.durationMillis || 0);
-            setVideoPosition(status.positionMillis || 0);
-            setIsBuffering(status.isBuffering);
-
+            // Only update if not currently seeking/dragging
+            if (!isDraggingSlider.current) {
+                setIsPlaying(status.isPlaying);
+                setVideoDuration(status.durationMillis || 0);
+                setVideoPosition(status.positionMillis || 0);
+                setIsBuffering(status.isBuffering);
+            }
             // Auto mark as completed when 90% watched
             if (status.durationMillis && status.positionMillis / status.durationMillis > 0.9) {
                 markLessonComplete();
             }
         }
+    };
+
+    const isDraggingSlider = useRef(false);
+    const wasPlayingBeforeDrag = useRef(false);
+
+    const handleSliderStart = () => {
+        isDraggingSlider.current = true;
+        wasPlayingBeforeDrag.current = isPlaying;
+        // Pause briefly while dragging to prevent fighting updates
+        // videoRef.current?.pauseAsync(); 
+    };
+
+    const handleSliderComplete = async (value) => {
+        if (videoRef.current) {
+            await videoRef.current.setPositionAsync(value);
+            if (wasPlayingBeforeDrag.current) {
+                await videoRef.current.playAsync();
+            }
+        }
+        isDraggingSlider.current = false;
+        // Small delay to prevent position jumping back
+        setTimeout(() => {
+            hideControlsWithDelay();
+        }, 500);
     };
 
     const markLessonComplete = async () => {
@@ -475,11 +560,15 @@ export default function LearnScreen({ route, navigation }) {
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             keyboardVerticalOffset={0}
         >
-            <StatusBar hidden />
+            <StatusBar hidden={isFullscreen} />
 
             {/* Video Player Section - Hide when keyboard is visible */}
             {!keyboardVisible && (
-                <View style={[styles.videoContainer, isFullscreen && styles.videoContainerFullscreen]}>
+                <View style={[
+                    styles.videoContainer,
+                    { width: width, height: isFullscreen ? height : height * 0.4 },
+                    isFullscreen && styles.videoContainerFullscreen
+                ]}>
                     {currentLesson.videoUrl ? (
                         <Video
                             ref={videoRef}
@@ -487,7 +576,7 @@ export default function LearnScreen({ route, navigation }) {
                                 uri: getVideoUrl(currentLesson.videoUrl),
                                 headers: authToken ? { Authorization: `Bearer ${authToken}` } : {}
                             }}
-                            style={styles.video}
+                            style={[styles.video, { backgroundColor: '#000' }]}
                             resizeMode={ResizeMode.CONTAIN}
                             shouldPlay={isPlaying}
                             isMuted={isMuted}
@@ -596,21 +685,22 @@ export default function LearnScreen({ route, navigation }) {
                                 {currentLesson.videoUrl && (
                                     <LinearGradient
                                         colors={['transparent', 'rgba(0,0,0,0.9)']}
-                                        style={styles.bottomGradient}
+                                        style={[styles.bottomGradient, { paddingBottom: isFullscreen ? Math.max(insets.bottom, 20) : 0 }]}
                                         pointerEvents="box-none"
                                     >
                                         {/* Progress Bar Container */}
                                         <View style={styles.progressSection} pointerEvents="box-none">
-                                            <View style={styles.progressBarWrapper}>
-                                                <View style={styles.modernProgressBarBackground}>
-                                                    <View
-                                                        style={[
-                                                            styles.modernProgressFill,
-                                                            { width: `${(videoPosition / videoDuration) * 100 || 0}%` }
-                                                        ]}
-                                                    />
-                                                </View>
-                                            </View>
+                                            <Slider
+                                                style={{ width: '100%', height: 40 }}
+                                                minimumValue={0}
+                                                maximumValue={videoDuration}
+                                                value={videoPosition}
+                                                minimumTrackTintColor="#ea580c"
+                                                maximumTrackTintColor="rgba(255, 255, 255, 0.3)"
+                                                thumbTintColor="#ea580c"
+                                                onSlidingStart={handleSliderStart}
+                                                onSlidingComplete={handleSliderComplete}
+                                            />
                                             <View style={styles.timeRow} pointerEvents="none">
                                                 <Text style={styles.modernTimeText}>{formatTime(videoPosition)}</Text>
                                                 <Text style={styles.modernTimeText}>{formatTime(videoDuration)}</Text>
@@ -650,13 +740,12 @@ export default function LearnScreen({ route, navigation }) {
                                             <TouchableOpacity
                                                 style={styles.iconControl}
                                                 onPress={async () => {
-                                                    if (videoRef.current) {
-                                                        try {
-                                                            await videoRef.current.presentFullscreenPlayer();
-                                                        } catch (e) {
-                                                            console.error('Fullscreen error:', e);
-                                                            setIsFullscreen(!isFullscreen);
-                                                        }
+                                                    if (isFullscreen) {
+                                                        await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
+                                                        setIsFullscreen(false);
+                                                    } else {
+                                                        await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
+                                                        setIsFullscreen(true);
                                                     }
                                                 }}
                                             >
@@ -964,21 +1053,15 @@ const styles = StyleSheet.create({
 
     // Video Section
     videoContainer: {
-        width: width,
-        height: height * 0.4, // Increased from 0.35
         backgroundColor: '#0a0a0a',
-        minHeight: 280, // Increased from 220
+        minHeight: 280,
     },
     videoContainerFullscreen: {
         position: 'absolute',
         top: 0,
         left: 0,
-        right: 0,
-        bottom: 0,
-        width: width,
-        height: height,
         zIndex: 999,
-        backgroundColor: '#000', // Ensure dark background
+        backgroundColor: '#000',
     },
     video: {
         width: '100%',
@@ -1296,7 +1379,7 @@ const styles = StyleSheet.create({
     modernProgressBarBackground: {
         height: 6,
         width: '100%',
-        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
         borderRadius: 3,
         overflow: 'hidden',
     },

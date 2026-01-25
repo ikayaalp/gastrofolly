@@ -16,7 +16,7 @@ export default async function ContactPage() {
               <div className="flex items-center space-x-8">
                 <Link href="/home" className="flex items-center space-x-2">
                   <ChefHat className="h-8 w-8 text-orange-500" />
-                  <span className="text-2xl font-bold text-white">Chef2.0</span>
+                  <span className="text-2xl font-bold text-white">Culinora</span>
                   {session.user.role === 'ADMIN' && (
                     <span className="bg-orange-600 text-white px-2 py-1 rounded text-sm font-medium">Admin</span>
                   )}
@@ -50,7 +50,7 @@ export default async function ContactPage() {
               <>
                 <Link href="/" className="flex items-center space-x-2">
                   <ChefHat className="h-8 w-8 text-orange-500" />
-                  <span className="text-2xl font-bold text-white">Chef2.0</span>
+                  <span className="text-2xl font-bold text-white">Culinora</span>
                 </Link>
                 <nav className="hidden md:flex space-x-8">
                   <Link href="/" className="text-gray-300 hover:text-orange-500">
@@ -95,7 +95,7 @@ export default async function ContactPage() {
         <div className="flex justify-between items-center py-3 px-4">
           <Link href="/home" className="flex items-center space-x-2">
             <ChefHat className="h-6 w-6 text-orange-500" />
-            <span className="text-lg font-bold text-white">Chef2.0</span>
+            <span className="text-lg font-bold text-white">Culinora</span>
           </Link>
           <UserDropdown />
         </div>
@@ -140,12 +140,12 @@ export default async function ContactPage() {
               </div>
               <h3 className="text-xl font-bold text-white mb-2">E-posta</h3>
               <p className="text-gray-400 text-sm mb-4">24 saat içinde yanıt</p>
-              <a href="mailto:info@chef2.com" className="text-orange-500 hover:text-orange-400 font-semibold">
-                info@chef2.com
+              <a href="mailto:info@culinora.com" className="text-orange-500 hover:text-orange-400 font-semibold">
+                info@culinora.com
               </a>
               <br />
-              <a href="mailto:destek@chef2.com" className="text-gray-400 hover:text-gray-300 text-sm">
-                destek@chef2.com
+              <a href="mailto:destek@culinora.com" className="text-gray-400 hover:text-gray-300 text-sm">
+                destek@culinora.com
               </a>
             </div>
 
@@ -349,7 +349,7 @@ export default async function ContactPage() {
             <div className="md:col-span-1">
               <div className="flex items-center space-x-2 mb-4">
                 <ChefHat className="h-8 w-8 text-orange-500" />
-                <span className="text-2xl font-bold">Chef2.0</span>
+                <span className="text-2xl font-bold">Culinora</span>
               </div>
               <p className="text-gray-400 text-sm leading-relaxed">
                 Türkiye&apos;nin lider online gastronomi eğitim platformu.
@@ -385,7 +385,7 @@ export default async function ContactPage() {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-500 text-sm">&copy; 2024 Chef2.0 Eğitim Teknolojileri A.Ş. Tüm hakları saklıdır.</p>
+            <p className="text-gray-500 text-sm">&copy; 2024 Culinora Eğitim Teknolojileri A.Ş. Tüm hakları saklıdır.</p>
             <p className="text-gray-600 text-sm mt-4 md:mt-0">Made with ❤️ in İstanbul</p>
           </div>
         </div>

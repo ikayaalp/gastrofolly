@@ -291,7 +291,7 @@ export default function HomeScreen({ navigation }) {
                 <View style={styles.headerContent}>
                     <View style={styles.logoContainer}>
                         <ChefHat color="#f97316" size={24} />
-                        <Text style={styles.logoText}>Chef2.0</Text>
+                        <Text style={styles.logoText}>Culinora</Text>
                     </View>
                     <View style={styles.headerActions}>
                         <TouchableOpacity

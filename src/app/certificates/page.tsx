@@ -44,7 +44,7 @@ export default async function CertificatesPage() {
                         <div className="flex items-center space-x-8">
                             <Link href="/home" className="flex items-center space-x-2">
                                 <ChefHat className="h-8 w-8 text-orange-500" />
-                                <span className="text-2xl font-bold">Chef2.0</span>
+                                <span className="text-2xl font-bold">Culinora</span>
                             </Link>
 
                             {/* Navigation */}

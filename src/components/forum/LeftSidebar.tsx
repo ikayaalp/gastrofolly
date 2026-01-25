@@ -72,7 +72,7 @@ export default function LeftSidebar({ categories, selectedCategory }: LeftSideba
 
 
             <div className="mt-auto pt-6 border-t border-gray-800 text-xs text-gray-600 px-2 pb-4">
-                <p>© 2026 Chef 2.0</p>
+                <p>© 2026 Culinora</p>
                 <div className="flex flex-wrap gap-2 mt-2">
                     <Link href="/privacy" className="hover:underline">Gizlilik</Link>
                     <Link href="/terms" className="hover:underline">Şartlar</Link>
