@@ -314,7 +314,7 @@ export default function CuliScreen() {
                                         <View style={styles.loadingContainer}>
                                             <View style={styles.loadingBubble}>
                                                 <ActivityIndicator size="small" color="#ea580c" />
-                                                <Text style={styles.loadingText}>Chef düşünüyor...</Text>
+                                                <Text style={styles.loadingText}>Culi düşünüyor...</Text>
                                             </View>
                                         </View>
                                     ) : null
