@@ -140,12 +140,12 @@ export default async function ContactPage() {
               </div>
               <h3 className="text-xl font-bold text-white mb-2">E-posta</h3>
               <p className="text-gray-400 text-sm mb-4">24 saat içinde yanıt</p>
-              <a href="mailto:info@culinora.com" className="text-orange-500 hover:text-orange-400 font-semibold">
-                info@culinora.com
+              <a href="mailto:info@gastrofolly.com" className="text-orange-500 hover:text-orange-400 font-semibold">
+                info@gastrofolly.com
               </a>
               <br />
-              <a href="mailto:destek@culinora.com" className="text-gray-400 hover:text-gray-300 text-sm">
-                destek@culinora.com
+              <a href="mailto:destek@gastrofolly.com" className="text-gray-400 hover:text-gray-300 text-sm">
+                destek@gastrofolly.com
               </a>
             </div>
 

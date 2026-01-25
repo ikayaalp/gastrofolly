@@ -5,15 +5,15 @@ import fs from 'fs';
 const googleServicesJson = {
     "project_info": {
         "project_number": "1099008075489",
-        "project_id": "Culinora-videos",
-        "storage_bucket": "Culinora-videos.firebasestorage.app"
+        "project_id": "gastrofolly-videos",
+        "storage_bucket": "gastrofolly-videos.firebasestorage.app"
     },
     "client": [
         {
             "client_info": {
                 "mobilesdk_app_id": "1:1099008075489:android:cab0e62599fc990ebaf9a0",
                 "android_client_info": {
-                    "package_name": "com.culinora.app"
+                    "package_name": "com.chef2.app"
                 }
             },
             "oauth_client": [],
@@ -45,9 +45,9 @@ if (!fs.existsSync('google-services.json')) {
 export default {
     "expo": {
         "name": "Culinora",
-        "slug": "culinora",
+        "slug": "chef-2-0",
         "owner": "ismailkayaalp",
-        "scheme": "culinora",
+        "scheme": "chef2",
         "version": "1.0.0",
         "orientation": "portrait",
         "icon": "./assets/icon.png",
@@ -59,10 +59,10 @@ export default {
         },
         "ios": {
             "supportsTablet": true,
-            "bundleIdentifier": "com.culinora.app"
+            "bundleIdentifier": "com.chef2.app"
         },
         "android": {
-            "package": "com.culinora.app",
+            "package": "com.chef2.app",
             "versionCode": 1,
             "adaptiveIcon": {
                 "foregroundImage": "./assets/adaptive-icon.png",

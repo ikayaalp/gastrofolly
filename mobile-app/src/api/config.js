@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://Culinora.vercel.app';
+const API_BASE_URL = 'https://gastrofolly.vercel.app';
 
 export default {
     API_BASE_URL,

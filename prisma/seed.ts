@@ -74,22 +74,22 @@ async function main() {
 
   // Admin kullanıcıları oluştur
   const admin = await prisma.user.upsert({
-    where: { email: 'admin@culinora.com' },
+    where: { email: 'admin@gastrofolly.com' },
     update: {},
     create: {
       name: 'Admin Kullanıcı',
-      email: 'admin@culinora.com',
+      email: 'admin@gastrofolly.com',
       role: 'ADMIN',
       image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200'
     }
   })
 
   const admin2 = await prisma.user.upsert({
-    where: { email: 'superadmin@culinora.com' },
+    where: { email: 'superadmin@gastrofolly.com' },
     update: {},
     create: {
       name: 'Super Admin',
-      email: 'superadmin@culinora.com',
+      email: 'superadmin@gastrofolly.com',
       role: 'ADMIN',
       image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200'
     }

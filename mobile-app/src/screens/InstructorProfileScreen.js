@@ -86,7 +86,7 @@ export default function InstructorProfileScreen({ navigation, route }) {
         try {
             await Share.share({
                 message: `${instructorName || instructor?.name || 'Eğitmen'} profilini incele!`,
-                // url: `https://Culinora.com/instructor/${instructorId}` // Web URL if available
+                // url: `https://gastrofolly.com/instructor/${instructorId}` // Web URL if available
             });
         } catch (error) {
             console.log(error.message);

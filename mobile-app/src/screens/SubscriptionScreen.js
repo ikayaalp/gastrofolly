@@ -192,7 +192,7 @@ export default function SubscriptionScreen({ navigation }) {
                 )}
 
                 <Text style={styles.footerText}>
-                    Premium üyeliğinizi web sitemiz üzerinden (Culinora.com) yönetebilir veya iptal edebilirsiniz.
+                    Premium üyeliğinizi web sitemiz üzerinden (gastrofolly.com) yönetebilir veya iptal edebilirsiniz.
                 </Text>
 
             </ScrollView>

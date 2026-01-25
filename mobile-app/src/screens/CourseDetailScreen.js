@@ -107,7 +107,7 @@ export default function CourseDetailScreen({ route, navigation }) {
 
     // Open website payment page - uses plan name for redirect
     const handleSubscribe = async (planName) => {
-        const paymentUrl = `https://Culinora.vercel.app/subscription?plan=${encodeURIComponent(planName)}&courseId=${courseId}`;
+        const paymentUrl = `https://gastrofolly.vercel.app/subscription?plan=${encodeURIComponent(planName)}&courseId=${courseId}`;
         try {
             await Linking.openURL(paymentUrl);
         } catch (error) {
