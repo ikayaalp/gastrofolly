@@ -67,9 +67,7 @@ export default function TopicCard({
             </View>
 
             {/* Title */}
-            <Text style={styles.topicTitle} numberOfLines={showFullContent ? undefined : 2}>
-                {item.title}
-            </Text>
+
 
             {/* Content */}
             {item.content ? (

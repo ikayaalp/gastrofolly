@@ -93,10 +93,11 @@ export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave }: T
                         </span>
                     </div>
 
-                    {/* Title */}
-                    <h3 className="text-lg font-medium text-gray-200 mb-2 leading-snug">
-                        {topic.title}
-                    </h3>
+                    {/* Content Preview */}
+                    <div
+                        className="text-sm text-gray-400 line-clamp-3 mb-3 font-normal"
+                        dangerouslySetInnerHTML={{ __html: topic.content.substring(0, 300) }}
+                    />
 
                     {/* Media Preview - Full Width */}
                     {topic.mediaUrl && (
@@ -132,13 +133,7 @@ export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave }: T
                         </div>
                     )}
 
-                    {/* Text Content Preview (if no media or short text) */}
-                    {!topic.mediaUrl && (
-                        <div
-                            className="text-sm text-gray-400 line-clamp-3 mb-3 font-normal"
-                            dangerouslySetInnerHTML={{ __html: topic.content.substring(0, 300) }}
-                        />
-                    )}
+
 
                     {/* Action Bar */}
                     <div className="flex items-center space-x-3 text-gray-500 text-xs font-bold pt-1">
