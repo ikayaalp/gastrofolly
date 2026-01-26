@@ -617,10 +617,13 @@ export default function TopicDetailScreen({ route, navigation }) {
                 }
             />
 
-            {/* Main Reply Input (for new main comment) */}
+            {/* Main Reply Input (for new main comment) moved above tab bar */}
             <View style={[
                 styles.replyInputContainer,
-                { paddingBottom: Platform.OS === 'ios' ? (keyboardVisible ? 16 : insets.bottom + 16) : (keyboardVisible ? 20 : 16) }
+                {
+                    bottom: keyboardVisible ? 0 : (Platform.OS === 'android' ? (65 + Math.max(insets.bottom, 36)) : 85),
+                    paddingBottom: keyboardVisible ? (Platform.OS === 'ios' ? 24 : 12) : 16
+                }
             ]}>
                 {isLoggedIn ? (
                     <>
@@ -717,7 +720,7 @@ const styles = StyleSheet.create({
         padding: 8,
     },
     listContent: {
-        paddingBottom: 120,
+        paddingBottom: 220,
     },
     topicContainer: {
         padding: 16,
