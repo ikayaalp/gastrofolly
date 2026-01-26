@@ -92,27 +92,33 @@ export default async function ChefSosyalPage({ searchParams }: PageProps) {
   const memberCount = await prisma.user.count()
 
   // Trend hashtagleri çek
-  const trendingHashtagsData = await (prisma as any).hashtag.findMany({
-    take: 5,
-    include: {
-      _count: {
-        select: {
-          topics: true
+  let trendingHashtags: any[] = []
+  try {
+    const trendingHashtagsData = await (prisma as any).hashtag.findMany({
+      take: 5,
+      include: {
+        _count: {
+          select: {
+            topics: true
+          }
+        }
+      },
+      orderBy: {
+        topics: {
+          _count: 'desc'
         }
       }
-    },
-    orderBy: {
-      topics: {
-        _count: 'desc'
-      }
-    }
-  })
+    })
 
-  const trendingHashtags = trendingHashtagsData.map((h: any) => ({
-    id: h.id,
-    name: h.name,
-    count: h._count.topics
-  }))
+    trendingHashtags = trendingHashtagsData.map((h: any) => ({
+      id: h.id,
+      name: h.name,
+      count: h._count.topics
+    }))
+  } catch (error) {
+    console.error('Hashtag table not ready yet:', error)
+    // Silently fail, just show no hashtags until DB is updated
+  }
 
   // Topic tipinde dönüştür
   const topics = topicsData.map((topic: any) => ({

@@ -169,41 +169,80 @@ export async function POST(request: NextRequest) {
     const hashtagsFound = Array.from(content.matchAll(hashtagRegex)).map(match => (match as string[])[1].toLowerCase())
     const uniqueHashtags = [...new Set(hashtagsFound)]
 
-    const topic = await prisma.topic.create({
-      data: {
-        title,
-        content,
-        slug: uniqueSlug,
-        authorId: user.id,
-        categoryId: finalCategoryId,
-        mediaUrl: mediaUrl || null,
-        mediaType: mediaType || null,
-        thumbnailUrl: thumbnailUrl || null,
-        hashtags: {
-          connectOrCreate: uniqueHashtags.map(name => ({
-            where: { name },
-            create: { name }
-          }))
-        }
-      } as any,
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            image: true
+    let topic;
+    try {
+      topic = await prisma.topic.create({
+        data: {
+          title,
+          content,
+          slug: uniqueSlug,
+          authorId: user.id,
+          categoryId: finalCategoryId,
+          mediaUrl: mediaUrl || null,
+          mediaType: mediaType || null,
+          thumbnailUrl: thumbnailUrl || null,
+          hashtags: {
+            connectOrCreate: uniqueHashtags.map(name => ({
+              where: { name },
+              create: { name }
+            }))
           }
-        },
-        category: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-            color: true
+        } as any,
+        include: {
+          author: {
+            select: {
+              id: true,
+              name: true,
+              image: true
+            }
+          },
+          category: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              color: true
+            }
           }
         }
+      })
+    } catch (createError: any) {
+      // P2021: Table does not exist (Hashtag table not ready yet)
+      if (createError.code === 'P2021') {
+        console.warn('Hashtag table not ready, creating topic without hashtags')
+        topic = await prisma.topic.create({
+          data: {
+            title,
+            content,
+            slug: uniqueSlug,
+            authorId: user.id,
+            categoryId: finalCategoryId,
+            mediaUrl: mediaUrl || null,
+            mediaType: mediaType || null,
+            thumbnailUrl: thumbnailUrl || null
+          },
+          include: {
+            author: {
+              select: {
+                id: true,
+                name: true,
+                image: true
+              }
+            },
+            category: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                color: true
+              }
+            }
+          }
+        })
+      } else {
+        throw createError
       }
-    })
+    }
 
     return NextResponse.json(topic, { status: 201 })
   } catch (error) {

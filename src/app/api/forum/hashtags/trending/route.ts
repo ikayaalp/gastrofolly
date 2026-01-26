@@ -27,8 +27,14 @@ export async function GET() {
                 count: h._count.topics
             }))
         })
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error fetching trending hashtags:', error)
+
+        // P2021: Table does not exist (expected until prisma db push is run on vercel)
+        if (error.code === 'P2021') {
+            return NextResponse.json({ hashtags: [] })
+        }
+
         return NextResponse.json(
             { error: 'Failed to fetch hashtags' },
             { status: 500 }
