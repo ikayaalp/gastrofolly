@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
-import { authOptions } from "@/lib/auth"
+import { getAuthUser } from "@/lib/mobileAuth"
 import { prisma } from "@/lib/prisma"
 
 export async function PUT(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    // Hem Mobile (JWT) hem Web (Session) desteği
+    const user = await getAuthUser(request)
 
-    if (!session?.user?.id) {
+    if (!user?.id) {
       return NextResponse.json({ error: "Giriş yapmanız gerekiyor" }, { status: 401 })
     }
 
@@ -15,7 +15,7 @@ export async function PUT(request: NextRequest) {
 
     // Email artık değiştirilemez, sadece name, phoneNumber ve image güncellenir
     const updatedUser = await prisma.user.update({
-      where: { id: session.user.id },
+      where: { id: user.id },
       data: {
         name: name || null,
         phoneNumber: phoneNumber || null,
