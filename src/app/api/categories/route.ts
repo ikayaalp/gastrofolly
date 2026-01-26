@@ -7,19 +7,22 @@ export async function GET() {
 
         // Simple fetch first to test connection
         const categories = await prisma.category.findMany({
+            include: {
+                _count: {
+                    select: { courses: true }
+                }
+            },
             orderBy: { name: 'asc' }
         });
 
         console.log(`API: Successfully fetched ${categories.length} categories`);
 
-        // Format manually for now, counting courses separately if needed or just skipping count to debug
-        // For debugging, let's just return categories without course count first
-        const formattedCategories = categories.map(cat => ({
+        const formattedCategories = categories.map((cat: any) => ({
             id: cat.id,
             name: cat.name,
             slug: cat.slug,
             imageUrl: cat.imageUrl,
-            courseCount: 0 // Temporary fix to isolate the issue
+            courseCount: cat._count?.courses || 0
         }));
 
         return NextResponse.json({ categories: formattedCategories });
