@@ -48,9 +48,15 @@ export default async function ChefSosyalPage({ searchParams }: PageProps) {
 
   let orderByClause: any = { createdAt: 'desc' }
   if (sort === 'popular') {
-    orderByClause = { likeCount: 'desc' }
+    orderByClause = [
+      { likeCount: 'desc' },
+      { createdAt: 'desc' }
+    ]
   } else if (sort === 'mostReplies') {
-    orderByClause = { posts: { _count: 'desc' } }
+    orderByClause = [
+      { posts: { _count: 'desc' } },
+      { createdAt: 'desc' }
+    ]
   }
 
   // Veritabanından başlıkları çek

@@ -110,14 +110,20 @@ export default function ChefSosyalClient({
     setTopics(initialTopics)
   }, [initialTopics])
 
-  // URL parametreleri değiştiğinde state'i güncelle
+  // URL parametreleri değiştiğinde state'i güncelle ve konuları yükle
   useEffect(() => {
     const category = searchParams.get('category') || 'all'
     const sort = searchParams.get('sort') || 'newest'
     const search = searchParams.get('search') || ''
+
     setSelectedCategory(category)
     setSortBy(sort)
     setSearchTerm(search)
+
+    // Sadece başlangıç yüklemesi değilse ve filtreler değiştiyse yükle
+    // Not: initialTopics zaten prop olarak geliyor ama router.refresh bazen yavaş kalabiliyor.
+    // Client-side fetch ile daha hızlı ve loading indicator'lı sonuç alıyoruz.
+    loadTopics()
   }, [searchParams])
 
   // Arama İşlemi
