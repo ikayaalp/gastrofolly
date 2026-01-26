@@ -5,6 +5,7 @@ import "./globals.css";
 import AuthSessionProvider from "@/components/providers/SessionProvider";
 import { CartProvider } from "@/contexts/CartContext";
 import { FavoritesProvider } from "@/contexts/FavoritesContext";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 
 const inter = Inter({
@@ -87,6 +88,7 @@ export default function RootLayout({
             </FavoritesProvider>
           </CartProvider>
         </AuthSessionProvider>
+        <SpeedInsights />
       </body>
     </html>
   );
