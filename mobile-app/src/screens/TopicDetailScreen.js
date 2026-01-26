@@ -575,8 +575,8 @@ export default function TopicDetailScreen({ route, navigation }) {
     return (
         <KeyboardAvoidingView
             style={styles.container}
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
         >
             {/* Header */}
             <View style={styles.header}>
@@ -613,7 +613,7 @@ export default function TopicDetailScreen({ route, navigation }) {
             {/* Main Reply Input (for new main comment) */}
             <View style={[
                 styles.replyInputContainer,
-                { paddingBottom: keyboardVisible ? (Platform.OS === 'ios' ? 16 : 10) : (insets.bottom + (Platform.OS === 'android' ? 90 : 60)) }
+                { paddingBottom: Platform.OS === 'ios' ? (keyboardVisible ? 16 : insets.bottom + 16) : (keyboardVisible ? 20 : 16) }
             ]}>
                 {isLoggedIn ? (
                     <>
