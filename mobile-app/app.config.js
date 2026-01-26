@@ -46,7 +46,7 @@ export default {
     "expo": {
         "name": "Culinora",
         "slug": "chef-2-0",
-        "owner": "ismailkayaalp",
+
         "scheme": "chef2",
         "version": "1.0.0",
         "orientation": "portrait",
@@ -86,7 +86,7 @@ export default {
         ],
         "extra": {
             "eas": {
-                "projectId": "63124923-17bd-4207-98cb-8913b8321006"
+                "projectId": "2c8e9c53-462a-426d-993b-42bce6d04342"
             }
         }
     }
