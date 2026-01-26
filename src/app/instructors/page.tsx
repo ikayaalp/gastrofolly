@@ -79,7 +79,7 @@ export default async function InstructorsPage() {
             {/* Hero */}
             <section className="pt-32 pb-20 bg-gradient-to-b from-gray-900 via-black to-black">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                    <h1 className="text-5xl md:text-7xl font-extrabold mb-6 italic uppercase tracking-tighter">
+                    <h1 className="text-5xl md:text-7xl font-extrabold mb-6 tracking-tighter">
                         Usta <span className="text-orange-500">Şeflerimiz</span>
                     </h1>
                     <p className="text-xl text-gray-400 max-w-3xl mx-auto font-light">
@@ -98,8 +98,8 @@ export default async function InstructorsPage() {
                                 <div className="w-32 h-32 bg-gradient-to-br from-orange-400 to-red-600 rounded-full flex items-center justify-center text-5xl mx-auto mb-8 shadow-2xl shadow-orange-500/20 group-hover:scale-110 transition-transform">
                                     {chef.image}
                                 </div>
-                                <h3 className="text-2xl font-bold text-center mb-2 uppercase italic tracking-wider">{chef.name}</h3>
-                                <p className="text-orange-500 text-center font-medium mb-4 italic">{chef.specialty}</p>
+                                <h3 className="text-2xl font-bold text-center mb-2 tracking-wider">{chef.name}</h3>
+                                <p className="text-orange-500 text-center font-medium mb-4">{chef.specialty}</p>
                                 <p className="text-gray-400 text-center text-sm leading-relaxed mb-8">
                                     {chef.description}
                                 </p>
@@ -131,7 +131,7 @@ export default async function InstructorsPage() {
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-orange-600 to-red-600 rounded-[3rem] p-12 text-center text-white relative overflow-hidden shadow-2xl shadow-orange-600/30">
                     <div className="relative z-10">
                         <Award className="w-16 h-16 mx-auto mb-6" />
-                        <h2 className="text-4xl font-extrabold mb-4 uppercase italic tracking-tighter">Eğitmenimiz Olun</h2>
+                        <h2 className="text-4xl font-extrabold mb-4 tracking-tighter">Eğitmenimiz Olun</h2>
                         <p className="text-xl mb-8 font-light max-w-2xl mx-auto">
                             Bilginizi paylaşın, topluluğumuza liderlik edin ve binlerce öğrencinin kariyerine yön verin.
                         </p>

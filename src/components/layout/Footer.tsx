@@ -52,7 +52,7 @@ export default function Footer() {
                         </p>
                     </div>
                     <div>
-                        <h4 className="text-lg font-semibold mb-4 uppercase italic text-orange-500">Kurslar</h4>
+                        <h4 className="text-lg font-semibold mb-4 text-orange-500">Kurslar</h4>
                         <ul className="space-y-2 text-gray-400">
                             {footerCategories.map((cat) => (
                                 <li key={cat.id}>
@@ -64,7 +64,7 @@ export default function Footer() {
                         </ul>
                     </div>
                     <div>
-                        <h4 className="text-lg font-semibold mb-4 uppercase italic text-orange-500">Şirket</h4>
+                        <h4 className="text-lg font-semibold mb-4 text-orange-500">Şirket</h4>
                         <ul className="space-y-2 text-gray-400">
                             <li><Link href="/about" className="hover:text-white transition-colors">Hakkımızda</Link></li>
                             <li><Link href="/instructors" className="hover:text-white transition-colors">Eğitmenler</Link></li>
@@ -72,7 +72,7 @@ export default function Footer() {
                         </ul>
                     </div>
                     <div>
-                        <h4 className="text-lg font-semibold mb-4 uppercase italic text-orange-500">Destek</h4>
+                        <h4 className="text-lg font-semibold mb-4 text-orange-500">Destek</h4>
                         <ul className="space-y-2 text-gray-400">
                             <li><Link href="/privacy" className="hover:text-white transition-colors">Gizlilik</Link></li>
                             <li><Link href="/terms" className="hover:text-white transition-colors">Şartlar</Link></li>
