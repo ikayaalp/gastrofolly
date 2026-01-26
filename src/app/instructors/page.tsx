@@ -4,36 +4,53 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import UserDropdown from "@/components/ui/UserDropdown";
 import Footer from "@/components/layout/Footer";
+import { prisma } from "@/lib/prisma";
 
 export default async function InstructorsPage() {
     const session = await getServerSession(authOptions);
 
-    const instructors = [
-        {
-            name: "Şef Mehmet Yılmaz",
-            specialty: "Türk ve Osmanlı Mutfağı",
-            description: "20 yıllık mutfak deneyimi ile geleneksel lezzetleri modern tekniklerle harmanlıyor.",
-            image: "👨‍🍳",
-            rating: 4.9,
-            students: "1,200+"
+    // Fetch real instructors from database with their course stats
+    const realInstructors = await prisma.user.findMany({
+        where: { role: "INSTRUCTOR" },
+        select: {
+            id: true,
+            name: true,
+            image: true,
+            createdCourses: {
+                select: {
+                    id: true,
+                    enrollments: { select: { id: true } },
+                    reviews: { select: { rating: true } },
+                },
+            },
         },
-        {
-            name: "Şef Elena Rossi",
-            specialty: "İtalyan Mutfağı & Pastacılık",
-            description: "Roma'dan İstanbul'a uzanan yolculuğunda gerçek İtalyan makarnasının ve tatlılarının sırlarını paylaşıyor.",
-            image: "👩‍🍳",
-            rating: 5.0,
-            students: "850+"
-        },
-        {
-            name: "Şef Can Demir",
-            specialty: "Modern Fusion & Moleküler Gastronomi",
-            description: "Mutfakta bilim ve sanatı birleştiren yenilikçi yaklaşımların öncüsü.",
-            image: "👨‍🍳",
-            rating: 4.8,
-            students: "2,100+"
-        }
-    ];
+    });
+
+    const instructors = realInstructors.map((chef: any) => {
+        let totalStudents = 0;
+        let totalRating = 0;
+        let reviewCount = 0;
+
+        chef.createdCourses.forEach((course: any) => {
+            totalStudents += course.enrollments.length;
+            course.reviews.forEach((review: any) => {
+                totalRating += review.rating;
+                reviewCount++;
+            });
+        });
+
+        const averageRating = reviewCount > 0 ? (totalRating / reviewCount).toFixed(1) : "0.0";
+
+        return {
+            id: chef.id,
+            name: chef.name || "İsimsiz Şef",
+            specialty: chef.createdCourses.length > 0 ? "Kıdemli Şef Eğitmeni" : "Eğitmen",
+            description: `${chef.name || "Şefimiz"}, gastronomi alanındaki tecrübelerini Culinora öğrencileri ile paylaşıyor.`,
+            image: chef.image || (chef.id.length % 2 === 0 ? "👨‍🍳" : "👩‍🍳"),
+            rating: averageRating,
+            students: totalStudents > 1000 ? `${(totalStudents / 1000).toFixed(1)}k+` : totalStudents.toString(),
+        };
+    });
 
     return (
         <div className="min-h-screen bg-black text-white">
