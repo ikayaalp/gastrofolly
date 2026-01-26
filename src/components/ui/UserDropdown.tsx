@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { User, Settings, BookOpen, LogOut, ChevronDown, Play, Heart, Award } from 'lucide-react'
 
 export default function UserDropdown() {
@@ -37,8 +38,18 @@ export default function UserDropdown() {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors focus:outline-none"
       >
-        <div className="w-8 h-8 rounded-full bg-orange-600 flex items-center justify-center border-2 border-gray-600 hover:border-orange-500 transition-colors">
-          <span className="text-lg">👨‍🍳</span>
+        <div className="w-8 h-8 rounded-full bg-orange-600 flex items-center justify-center border-2 border-gray-600 hover:border-orange-500 transition-colors overflow-hidden relative">
+          {session.user.image ? (
+            <Image
+              src={session.user.image}
+              alt={session.user.name || 'User'}
+              fill
+              sizes="32px"
+              className="object-cover"
+            />
+          ) : (
+            <span className="text-lg">👨‍🍳</span>
+          )}
         </div>
         <span className="hidden md:block text-sm font-medium">
           {session.user.name}
@@ -53,8 +64,18 @@ export default function UserDropdown() {
           {/* Kullanıcı Bilgileri */}
           <div className="px-4 py-3 border-b border-gray-800">
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 rounded-full bg-orange-600 flex items-center justify-center">
-                <span className="text-2xl">👨‍🍳</span>
+              <div className="w-12 h-12 rounded-full bg-orange-600 flex items-center justify-center overflow-hidden relative">
+                {session.user.image ? (
+                  <Image
+                    src={session.user.image}
+                    alt={session.user.name || 'User'}
+                    fill
+                    sizes="48px"
+                    className="object-cover"
+                  />
+                ) : (
+                  <span className="text-2xl">👨‍🍳</span>
+                )}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-white font-semibold truncate">

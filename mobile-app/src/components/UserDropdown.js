@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Modal, ScrollView, Alert } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Modal, ScrollView, Alert, Image } from 'react-native';
 import { User, Settings, LogOut, BookOpen, Heart, MessageCircle, ChevronDown, Award, Play, MessageSquare } from 'lucide-react-native';
 import authService from '../api/authService';
 
@@ -38,7 +38,14 @@ export default function UserDropdown({ navigation }) {
             <TouchableOpacity onPress={() => setVisible(true)} style={styles.trigger}>
                 <View style={styles.triggerContent}>
                     <View style={styles.avatarSmall}>
-                        <Text style={styles.avatarEmoji}>👨‍🍳</Text>
+                        {userData?.image ? (
+                            <Image
+                                source={{ uri: userData.image }}
+                                style={styles.avatarImageSmall}
+                            />
+                        ) : (
+                            <Text style={styles.avatarEmoji}>👨‍🍳</Text>
+                        )}
                     </View>
                     <ChevronDown size={16} color="#d1d5db" />
                 </View>
@@ -59,7 +66,14 @@ export default function UserDropdown({ navigation }) {
                         {/* User Info Header */}
                         <View style={styles.userInfo}>
                             <View style={styles.avatar}>
-                                <Text style={styles.avatarEmojiLarge}>👨‍🍳</Text>
+                                {userData?.image ? (
+                                    <Image
+                                        source={{ uri: userData.image }}
+                                        style={styles.avatarImageLarge}
+                                    />
+                                ) : (
+                                    <Text style={styles.avatarEmojiLarge}>👨‍🍳</Text>
+                                )}
                             </View>
                             <View style={styles.userDetails}>
                                 <Text style={styles.userName} numberOfLines={1}>
@@ -220,6 +234,11 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderWidth: 2,
         borderColor: '#374151',
+        overflow: 'hidden',
+    },
+    avatarImageSmall: {
+        width: '100%',
+        height: '100%',
     },
     avatarEmoji: {
         fontSize: 18,
@@ -260,6 +279,11 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: 12,
+        overflow: 'hidden',
+    },
+    avatarImageLarge: {
+        width: '100%',
+        height: '100%',
     },
     avatarEmojiLarge: {
         fontSize: 28,
