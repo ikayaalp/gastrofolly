@@ -68,14 +68,12 @@ export default function Footer() {
                         <ul className="space-y-2 text-gray-400">
                             <li><Link href="/about" className="hover:text-white transition-colors">Hakkımızda</Link></li>
                             <li><Link href="/instructors" className="hover:text-white transition-colors">Eğitmenler</Link></li>
-                            <li><Link href="/careers" className="hover:text-white transition-colors">Kariyer</Link></li>
                             <li><Link href="/contact" className="hover:text-white transition-colors">İletişim</Link></li>
                         </ul>
                     </div>
                     <div>
                         <h4 className="text-lg font-semibold mb-4 uppercase italic text-orange-500">Destek</h4>
                         <ul className="space-y-2 text-gray-400">
-                            <li><Link href="/help" className="hover:text-white transition-colors">Yardım Merkezi</Link></li>
                             <li><Link href="/privacy" className="hover:text-white transition-colors">Gizlilik</Link></li>
                             <li><Link href="/terms" className="hover:text-white transition-colors">Şartlar</Link></li>
                             <li><Link href="/faq" className="hover:text-white transition-colors">SSS</Link></li>
