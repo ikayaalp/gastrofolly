@@ -62,20 +62,8 @@ const courseService = {
             // If the API returns a filtered list directly or all courses
             // We'll let the component handle client-side filtering if needed, 
             // but ideally the API handles it. 
-            // If API returns all courses, we can filter here too just in case:
-            const courses = response.data;
-            if (query && Array.isArray(courses)) {
-                const lowerQuery = query.toLowerCase();
-                return {
-                    success: true,
-                    data: courses.filter(c =>
-                        c.title?.toLowerCase().includes(lowerQuery) ||
-                        c.description?.toLowerCase().includes(lowerQuery) ||
-                        c.instructor?.name?.toLowerCase().includes(lowerQuery)
-                    )
-                };
-            }
-            return { success: true, data: courses };
+            // Backend now handles search filtering including instructor names
+            return { success: true, data: response.data };
         } catch (error) {
             console.error('Search courses error:', error);
             return {

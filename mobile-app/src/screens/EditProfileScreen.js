@@ -13,8 +13,10 @@ import {
     Platform,
     ScrollView
 } from 'react-native';
-import { ArrowLeft, Save, User, Mail, Link as LinkIcon } from 'lucide-react-native';
+import { ArrowLeft, Save, User, Mail, Camera, ImageIcon } from 'lucide-react-native';
 import authService from '../api/authService';
+import forumService from '../api/forumService';
+import * as ImagePicker from 'expo-image-picker';
 import CustomAlert from '../components/CustomAlert';
 
 export default function EditProfileScreen({ navigation }) {
@@ -56,6 +58,25 @@ export default function EditProfileScreen({ navigation }) {
         }
     };
 
+    const pickImage = async () => {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+            showAlert('İzin Gerekli', 'Fotoğraf seçmek için galeri izni gerekiyor.', [{ text: 'Tamam' }], 'warning');
+            return;
+        }
+
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ['images'],
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.8,
+        });
+
+        if (!result.canceled && result.assets[0]) {
+            setImage(result.assets[0].uri);
+        }
+    };
+
     const handleSave = async () => {
         if (!name.trim()) {
             showAlert('Uyarı', 'Lütfen adınızı giriniz.', [{ text: 'Tamam' }], 'warning');
@@ -64,9 +85,23 @@ export default function EditProfileScreen({ navigation }) {
 
         setLoading(true);
         try {
+            let finalImageUrl = image;
+
+            // If image is a local URI (newly selected), upload it first
+            if (image && image.startsWith('file://')) {
+                // Determine type based on extension or just default to image
+                const uploadResult = await forumService.uploadMedia(image, 'image');
+
+                if (uploadResult.success) {
+                    finalImageUrl = uploadResult.data.mediaUrl;
+                } else {
+                    throw new Error(uploadResult.error || 'Resim yüklenemedi');
+                }
+            }
+
             const result = await authService.updateProfile({
                 name,
-                image: image.trim() || null // Send null if empty
+                image: finalImageUrl || null
             });
 
             if (result.success) {
@@ -80,7 +115,8 @@ export default function EditProfileScreen({ navigation }) {
                 showAlert('Hata', result.error || 'Profil güncellenemedi.', [{ text: 'Tamam' }], 'error');
             }
         } catch (error) {
-            showAlert('Hata', 'Bir sorun oluştu.', [{ text: 'Tamam' }], 'error');
+            console.error(error);
+            showAlert('Hata', error.message || 'Bir sorun oluştu.', [{ text: 'Tamam' }], 'error');
         } finally {
             setLoading(false);
         }
@@ -117,7 +153,7 @@ export default function EditProfileScreen({ navigation }) {
 
                     {/* Avatar Preview */}
                     <View style={styles.avatarSection}>
-                        <View style={styles.avatarContainer}>
+                        <TouchableOpacity onPress={pickImage} style={styles.avatarContainer}>
                             {image ? (
                                 <Image source={{ uri: image }} style={styles.avatar} />
                             ) : (
@@ -127,8 +163,11 @@ export default function EditProfileScreen({ navigation }) {
                                     </Text>
                                 </View>
                             )}
-                        </View>
-                        <Text style={styles.avatarHint}>Profil fotoğrafı URL'si ile değişir</Text>
+                            <View style={styles.editIconContainer}>
+                                <Camera size={20} color="white" />
+                            </View>
+                        </TouchableOpacity>
+                        <Text style={styles.avatarHint}>Fotoğrafı değiştirmek için dokunun</Text>
                     </View>
 
                     {/* Form Fields */}
@@ -162,20 +201,7 @@ export default function EditProfileScreen({ navigation }) {
                             <Text style={styles.helperText}>E-posta adresi değiştirilemez.</Text>
                         </View>
 
-                        <View style={styles.inputGroup}>
-                            <Text style={styles.label}>Profil Fotoğrafı (URL)</Text>
-                            <View style={styles.inputContainer}>
-                                <LinkIcon size={20} color="#9ca3af" style={styles.inputIcon} />
-                                <TextInput
-                                    style={styles.input}
-                                    value={image}
-                                    onChangeText={setImage}
-                                    placeholder="https://example.com/image.jpg"
-                                    placeholderTextColor="#4b5563"
-                                    autoCapitalize="none"
-                                />
-                            </View>
-                        </View>
+
                     </View>
 
                     {/* Save Button */}
@@ -285,6 +311,19 @@ const styles = StyleSheet.create({
     avatarHint: {
         color: '#6b7280',
         fontSize: 12,
+    },
+    editIconContainer: {
+        position: 'absolute',
+        bottom: 0,
+        right: 0,
+        backgroundColor: '#ea580c',
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 3,
+        borderColor: '#000',
     },
     form: {
         gap: 20,

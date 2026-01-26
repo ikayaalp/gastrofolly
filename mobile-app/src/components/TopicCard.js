@@ -195,7 +195,7 @@ export default function TopicCard({
                         }
                     }}
                 >
-                    <ThumbsUp size={20} color={isLiked ? '#ea580c' : '#6b7280'} />
+                    <ThumbsUp size={16} color={isLiked ? '#ea580c' : '#6b7280'} fill={isLiked ? '#ea580c' : 'transparent'} />
                     <Text style={[styles.actionButtonText, isLiked && styles.actionButtonTextActive]}>
                         {item.likeCount || 0}
                     </Text>

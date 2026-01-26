@@ -14,7 +14,6 @@ import {
     ArrowLeft,
     User,
     Bell,
-    Moon,
     Lock,
     HelpCircle,
     Info,
@@ -28,7 +27,13 @@ import CustomAlert from '../components/CustomAlert';
 
 export default function SettingsScreen({ navigation }) {
     const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-    const [darkModeEnabled, setDarkModeEnabled] = useState(true);
+    const [currentLanguage, setCurrentLanguage] = useState('tr');
+
+    // Modals
+    const [showLanguageModal, setShowLanguageModal] = useState(false);
+    const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+
+    // Alerts
     const [alertVisible, setAlertVisible] = useState(false);
     const [alertConfig, setAlertConfig] = useState({
         title: '',
@@ -61,6 +66,15 @@ export default function SettingsScreen({ navigation }) {
                 }
             ],
             'confirm'
+        );
+    };
+
+    const handleHelp = () => {
+        showAlert(
+            'Yardım Merkezi',
+            'Destek için bize e-posta gönderebilirsiniz:\n\nsupport@culinora.com',
+            [{ text: "Kopyala", onPress: () => { } }, { text: "Tamam" }],
+            'info'
         );
     };
 
@@ -134,7 +148,7 @@ export default function SettingsScreen({ navigation }) {
                         <SettingItem
                             icon={Shield}
                             title="Gizlilik ve Güvenlik"
-                            onPress={() => { }}
+                            onPress={() => setShowPrivacyModal(true)}
                         />
                     </SettingSection>
 
@@ -147,17 +161,10 @@ export default function SettingsScreen({ navigation }) {
                             onValueChange={setNotificationsEnabled}
                         />
                         <SettingItem
-                            icon={Moon}
-                            title="Karanlık Mod"
-                            type="switch"
-                            value={darkModeEnabled}
-                            onValueChange={setDarkModeEnabled}
-                        />
-                        <SettingItem
                             icon={Globe}
                             title="Dil Seçeneği"
-                            subtitle="Türkçe (TR)"
-                            onPress={() => { }}
+                            subtitle={currentLanguage === 'tr' ? "Türkçe (TR)" : "English (EN)"}
+                            onPress={() => setShowLanguageModal(true)}
                         />
                     </SettingSection>
 
@@ -165,13 +172,13 @@ export default function SettingsScreen({ navigation }) {
                         <SettingItem
                             icon={HelpCircle}
                             title="Yardım Merkezi"
-                            onPress={() => { }}
+                            onPress={handleHelp}
                         />
                         <SettingItem
                             icon={Info}
                             title="Hakkında"
                             subtitle="Sürüm 1.0.2"
-                            onPress={() => { }}
+                            onPress={() => showAlert('Hakkında', 'Culinora Mobile v1.0.2\n\nGeliştirici: Culinora Team\n© 2024 Tüm hakları saklıdır.', [{ text: 'Tamam' }])}
                         />
                     </SettingSection>
 
@@ -189,6 +196,59 @@ export default function SettingsScreen({ navigation }) {
 
                 </ScrollView>
             </View>
+
+            {/* Language Selection Modal */}
+            {showLanguageModal && (
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>Dil Seçin</Text>
+                        <TouchableOpacity
+                            style={[styles.modalOption, currentLanguage === 'tr' && styles.modalOptionSelected]}
+                            onPress={() => { setCurrentLanguage('tr'); setShowLanguageModal(false); }}
+                        >
+                            <Text style={[styles.modalOptionText, currentLanguage === 'tr' && styles.modalOptionTextSelected]}>Türkçe (TR)</Text>
+                            {currentLanguage === 'tr' && <Shield size={16} color="#ea580c" />}
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[styles.modalOption, currentLanguage === 'en' && styles.modalOptionSelected]}
+                            onPress={() => { setCurrentLanguage('en'); setShowLanguageModal(false); }}
+                        >
+                            <Text style={[styles.modalOptionText, currentLanguage === 'en' && styles.modalOptionTextSelected]}>English (EN)</Text>
+                            {currentLanguage === 'en' && <Shield size={16} color="#ea580c" />}
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.modalCloseButton} onPress={() => setShowLanguageModal(false)}>
+                            <Text style={styles.modalCloseText}>İptal</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            )}
+
+            {/* Privacy Policy Modal - Simple Text Version */}
+            {showPrivacyModal && (
+                <View style={[styles.modalOverlay, { justifyContent: 'flex-end', padding: 0 }]}>
+                    <View style={[styles.modalContent, { width: '100%', height: '80%', borderBottomLeftRadius: 0, borderBottomRightRadius: 0 }]}>
+                        <View style={styles.modalHeader}>
+                            <Text style={styles.modalTitle}>Gizlilik Politikası</Text>
+                            <TouchableOpacity onPress={() => setShowPrivacyModal(false)}>
+                                <Text style={styles.modalCloseText}>Kapat</Text>
+                            </TouchableOpacity>
+                        </View>
+                        <ScrollView style={{ flex: 1 }}>
+                            <Text style={styles.policyText}>
+                                <Text style={styles.policyHeader}>1. Veri Toplama{'\n'}</Text>
+                                Uygulamamızı kullanırken, adınız, e-posta adresiniz gibi kişisel bilgilerinizi toplayabiliriz. Bu bilgiler, size daha iyi bir hizmet sunmak için kullanılır.{'\n\n'}
+                                <Text style={styles.policyHeader}>2. Kullanım{'\n'}</Text>
+                                Topladığımız bilgiler, hesabınızı yönetmek, size bildirim göndermek ve deneyiminizi kişiselleştirmek için kullanılır.{'\n\n'}
+                                <Text style={styles.policyHeader}>3. Güvenlik{'\n'}</Text>
+                                Verileriniz bizim için önemlidir. Endüstri standardı güvenlik önlemleri ile korunmaktadır.{'\n\n'}
+                                <Text style={styles.policyHeader}>4. Üçüncü Taraflar{'\n'}</Text>
+                                Bilgileriniz, yasal zorunluluklar dışında üçüncü taraflarla paylaşılmaz.{'\n\n'}
+                                Daha fazla bilgi için web sitemizi ziyaret edebilirsiniz.
+                            </Text>
+                        </ScrollView>
+                    </View>
+                </View>
+            )}
 
             {/* Custom Alert */}
             <CustomAlert
@@ -301,5 +361,84 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontSize: 12,
         marginBottom: 20,
+    },
+    // Modal Styles
+    modalOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0,0,0,0.7)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+    },
+    modalContent: {
+        backgroundColor: '#1f2937',
+        borderRadius: 20,
+        padding: 20,
+        width: '100%',
+        maxHeight: '80%',
+    },
+    modalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 20,
+        paddingBottom: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#374151',
+    },
+    modalTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: 'white',
+        marginBottom: 20,
+    },
+    modalOption: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#374151',
+    },
+    modalOptionSelected: {
+        backgroundColor: 'rgba(234, 88, 12, 0.1)',
+        paddingHorizontal: 12,
+        borderRadius: 8,
+        borderBottomWidth: 0,
+    },
+    modalOptionText: {
+        fontSize: 16,
+        color: '#d1d5db',
+    },
+    modalOptionTextSelected: {
+        color: '#ea580c',
+        fontWeight: 'bold',
+    },
+    modalCloseButton: {
+        marginTop: 20,
+        padding: 12,
+        alignItems: 'center',
+        backgroundColor: '#374151',
+        borderRadius: 12,
+    },
+    modalCloseText: {
+        color: 'white',
+        fontWeight: '600',
+        fontSize: 16,
+    },
+    policyText: {
+        color: '#d1d5db',
+        lineHeight: 24,
+        fontSize: 14,
+    },
+    policyHeader: {
+        color: 'white',
+        fontWeight: 'bold',
+        fontSize: 16,
+        marginBottom: 8,
     },
 });

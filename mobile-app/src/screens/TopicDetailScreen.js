@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
     StyleSheet,
@@ -24,6 +24,7 @@ import {
     Send,
     Reply,
     Trash2,
+    Bookmark,
 } from 'lucide-react-native';
 import { Video } from 'expo-av';
 import forumService from '../api/forumService';
@@ -43,11 +44,14 @@ export default function TopicDetailScreen({ route, navigation }) {
     const [replyText, setReplyText] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [isLiked, setIsLiked] = useState(false);
+    const [isSaved, setIsSaved] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [likedComments, setLikedComments] = useState(new Set());
     const [replyingTo, setReplyingTo] = useState(null); // For reply-to-reply
+    const [replyingToName, setReplyingToName] = useState(null); // Name of user being replied to
     const [currentUserId, setCurrentUserId] = useState(null);
     const [fullscreenImageUrl, setFullscreenImageUrl] = useState(null); // For fullscreen image viewer
+    const inputRef = useRef(null); // Ref for main input focus
     const [alertVisible, setAlertVisible] = useState(false);
     const [alertConfig, setAlertConfig] = useState({
         title: '',
@@ -157,6 +161,24 @@ export default function TopicDetailScreen({ route, navigation }) {
         }
     };
 
+    const handleSave = () => {
+        setIsSaved(prev => !prev);
+    };
+
+    const handleReplyTo = (commentId, authorName) => {
+        setReplyingTo(commentId);
+        setReplyingToName(authorName);
+        // Focus the main input
+        setTimeout(() => {
+            inputRef.current?.focus();
+        }, 100);
+    };
+
+    const cancelReply = () => {
+        setReplyingTo(null);
+        setReplyingToName(null);
+    };
+
     const handleCommentLike = async (postId) => {
         if (!isLoggedIn) {
             showAlert('Giriş Yapın', 'Beğenmek için giriş yapmalısınız.', [{ text: 'Tamam' }], 'warning');
@@ -233,6 +255,7 @@ export default function TopicDetailScreen({ route, navigation }) {
             }
             setReplyText('');
             setReplyingTo(null);
+            setReplyingToName(null);
             Keyboard.dismiss();
         } else {
             showAlert('Hata', result.error || 'Yanıt gönderilemedi', [{ text: 'Tamam' }], 'error');
@@ -393,6 +416,13 @@ export default function TopicDetailScreen({ route, navigation }) {
                     <MessageCircle size={16} color="#6b7280" />
                     <Text style={styles.actionButtonText}>{comments.length} Yorum</Text>
                 </View>
+
+                <TouchableOpacity
+                    style={[styles.saveButton, isSaved && styles.actionButtonActive]}
+                    onPress={handleSave}
+                >
+                    <Bookmark size={16} color={isSaved ? '#ea580c' : '#6b7280'} fill={isSaved ? '#ea580c' : 'transparent'} />
+                </TouchableOpacity>
             </View>
 
             {/* Comments Section Header */}
@@ -402,34 +432,59 @@ export default function TopicDetailScreen({ route, navigation }) {
         </View>
     );
 
-    const renderReply = (reply) => (
-        <View key={reply.id} style={styles.replyCard}>
-            <View style={styles.replyHeader}>
+    const renderReply = (reply, parentCommentId) => (
+        <View key={reply.id} style={styles.commentCard}>
+            <View style={styles.commentAvatarContainer}>
                 {reply.author?.image ? (
-                    <Image source={{ uri: reply.author.image }} style={styles.replyAvatar} />
+                    <Image source={{ uri: reply.author.image }} style={styles.commentAvatar} />
                 ) : (
-                    <View style={styles.replyAvatarPlaceholder}>
-                        <User size={12} color="#fff" />
+                    <View style={styles.commentAvatarPlaceholder}>
+                        <User size={16} color="#fff" />
                     </View>
                 )}
-                <View style={styles.replyMeta}>
-                    <Text style={styles.replyAuthor}>{reply.author?.name || 'Anonim'}</Text>
-                    <Text style={styles.replyTime}>{formatTimeAgo(reply.createdAt)}</Text>
+            </View>
+
+            <View style={styles.commentBody}>
+                <View style={styles.commentHeader}>
+                    <Text style={styles.commentAuthor}>{reply.author?.name || 'Anonim'}</Text>
+                    <Text style={styles.commentDot}>•</Text>
+                    <Text style={styles.commentTime}>{formatTimeAgo(reply.createdAt)}</Text>
+                </View>
+
+                <Text style={styles.commentContent}>{reply.content}</Text>
+
+                {/* Reply Actions */}
+                <View style={styles.commentActions}>
+                    {isLoggedIn && (
+                        <>
+                            <TouchableOpacity
+                                style={[styles.likeButton, likedComments.has(reply.id) && styles.likeButtonActive]}
+                                onPress={() => handleCommentLike(reply.id)}
+                            >
+                                <ThumbsUp size={14} color={likedComments.has(reply.id) ? '#fff' : '#6b7280'} />
+                                <Text style={[styles.likeButtonText, likedComments.has(reply.id) && styles.likeButtonTextActive]}>
+                                    {reply.likeCount || 0}
+                                </Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={styles.replyToButton}
+                                onPress={() => handleReplyTo(parentCommentId, reply.author?.name || 'Anonim')}
+                            >
+                                <Reply size={14} color="#6b7280" />
+                                <Text style={styles.replyToText}>Yanıtla</Text>
+                            </TouchableOpacity>
+                            {currentUserId && reply.author?.id === currentUserId && (
+                                <TouchableOpacity
+                                    style={styles.deleteButton}
+                                    onPress={() => handleDeleteComment(reply.id)}
+                                >
+                                    <Trash2 size={14} color="#ef4444" />
+                                </TouchableOpacity>
+                            )}
+                        </>
+                    )}
                 </View>
             </View>
-            <Text style={styles.replyContent}>{reply.content}</Text>
-            {/* Reply like button */}
-            {isLoggedIn && (
-                <TouchableOpacity
-                    style={[styles.replyLikeButton, likedComments.has(reply.id) && styles.replyLikeButtonActive]}
-                    onPress={() => handleCommentLike(reply.id)}
-                >
-                    <ThumbsUp size={12} color={likedComments.has(reply.id) ? '#fff' : '#6b7280'} />
-                    <Text style={[styles.replyLikeText, likedComments.has(reply.id) && styles.replyLikeTextActive]}>
-                        {reply.likeCount || 0}
-                    </Text>
-                </TouchableOpacity>
-            )}
         </View>
     );
 
@@ -469,7 +524,7 @@ export default function TopicDetailScreen({ route, navigation }) {
                             </TouchableOpacity>
                             <TouchableOpacity
                                 style={styles.replyToButton}
-                                onPress={() => setReplyingTo(replyingTo === item.id ? null : item.id)}
+                                onPress={() => handleReplyTo(item.id, item.author?.name || 'Anonim')}
                             >
                                 <Reply size={14} color="#6b7280" />
                                 <Text style={styles.replyToText}>Yanıtla</Text>
@@ -487,40 +542,10 @@ export default function TopicDetailScreen({ route, navigation }) {
                     )}
                 </View>
 
-                {/* Reply Form for this comment */}
-                {replyingTo === item.id && (
-                    <View style={styles.inlineReplyForm}>
-                        <TextInput
-                            style={styles.inlineReplyInput}
-                            placeholder="Yanıtınızı yazın..."
-                            placeholderTextColor="#6b7280"
-                            value={replyText}
-                            onChangeText={setReplyText}
-                            multiline
-                        />
-                        <View style={styles.inlineReplyActions}>
-                            <TouchableOpacity onPress={() => { setReplyingTo(null); setReplyText(''); }}>
-                                <Text style={styles.cancelText}>İptal</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={[styles.sendButton, (!replyText.trim() || submitting) && styles.sendButtonDisabled]}
-                                onPress={handleSubmitReply}
-                                disabled={!replyText.trim() || submitting}
-                            >
-                                {submitting ? (
-                                    <ActivityIndicator size="small" color="#fff" />
-                                ) : (
-                                    <Text style={styles.sendButtonText}>Yanıtla</Text>
-                                )}
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                )}
-
                 {/* Nested Replies */}
                 {item.replies && item.replies.length > 0 && (
                     <View style={styles.repliesContainer}>
-                        {item.replies.map(renderReply)}
+                        {item.replies.map(reply => renderReply(reply, item.id))}
                     </View>
                 )}
             </View>
@@ -593,25 +618,36 @@ export default function TopicDetailScreen({ route, navigation }) {
             ]}>
                 {isLoggedIn ? (
                     <>
-                        <TextInput
-                            style={styles.replyInput}
-                            placeholder="Yorum yazın..."
-                            placeholderTextColor="#6b7280"
-                            value={replyText}
-                            onChangeText={setReplyText}
-                            multiline
-                        />
-                        <TouchableOpacity
-                            style={[styles.sendIconButton, (!replyText.trim() || submitting) && styles.sendIconButtonDisabled]}
-                            disabled={!replyText.trim() || submitting}
-                            onPress={handleSubmitReply}
-                        >
-                            {submitting ? (
-                                <ActivityIndicator size="small" color="#fff" />
-                            ) : (
-                                <Send size={20} color="#fff" />
-                            )}
-                        </TouchableOpacity>
+                        {replyingTo && (
+                            <View style={styles.replyingToIndicator}>
+                                <Text style={styles.replyingToText}>@{replyingToName} kullanıcısına yanıt veriyorsunuz</Text>
+                                <TouchableOpacity onPress={cancelReply}>
+                                    <Text style={styles.cancelReplyText}>İptal</Text>
+                                </TouchableOpacity>
+                            </View>
+                        )}
+                        <View style={styles.inputRow}>
+                            <TextInput
+                                ref={inputRef}
+                                style={styles.replyInput}
+                                placeholder={replyingTo ? `@${replyingToName} kullanıcısına yanıt...` : "Yorum yazın..."}
+                                placeholderTextColor="#6b7280"
+                                value={replyText}
+                                onChangeText={setReplyText}
+                                multiline
+                            />
+                            <TouchableOpacity
+                                style={[styles.sendIconButton, (!replyText.trim() || submitting) && styles.sendIconButtonDisabled]}
+                                disabled={!replyText.trim() || submitting}
+                                onPress={handleSubmitReply}
+                            >
+                                {submitting ? (
+                                    <ActivityIndicator size="small" color="#fff" />
+                                ) : (
+                                    <Send size={20} color="#fff" />
+                                )}
+                            </TouchableOpacity>
+                        </View>
                     </>
                 ) : (
                     <TouchableOpacity
@@ -766,6 +802,10 @@ const styles = StyleSheet.create({
     },
     actionButtonTextActive: {
         color: '#ea580c',
+    },
+    saveButton: {
+        marginLeft: 'auto',
+        padding: 8,
     },
     // Reddit-style header styles
     topicHeader: {
@@ -956,6 +996,7 @@ const styles = StyleSheet.create({
     },
     deleteButton: {
         padding: 4,
+        marginLeft: 12,
     },
     inlineReplyForm: {
         marginTop: 12,
@@ -1079,13 +1120,36 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     replyInputContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
         padding: 16,
         paddingBottom: 16, // Base padding, overridden dynamically
         backgroundColor: '#0a0a0a',
         borderTopWidth: 1,
         borderTopColor: '#1a1a1a',
+    },
+    replyingToIndicator: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        backgroundColor: '#1a1a1a',
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 8,
+        marginBottom: 8,
+    },
+    replyingToText: {
+        color: '#ea580c',
+        fontSize: 12,
+        flex: 1,
+    },
+    cancelReplyText: {
+        color: '#ef4444',
+        fontSize: 12,
+        fontWeight: '600',
+        marginLeft: 12,
+    },
+    inputRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
         gap: 12,
     },
     replyInput: {
