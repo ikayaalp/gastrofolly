@@ -16,13 +16,19 @@ interface MobileUser {
  */
 export async function getAuthUser(request: NextRequest): Promise<MobileUser | null> {
     // First, try NextAuth session (for web)
-    const session = await getServerSession(authOptions);
-    if (session?.user?.id) {
-        return {
-            id: session.user.id,
-            email: session.user.email || '',
-            role: session.user.role,
-        };
+    try {
+        const session = await getServerSession(authOptions);
+        if (session?.user?.id) {
+            console.log('getAuthUser: Found web session', session.user.id);
+            return {
+                id: session.user.id,
+                email: session.user.email || '',
+                role: session.user.role,
+            };
+        }
+        console.log('getAuthUser: No web session found');
+    } catch (err) {
+        console.error('getAuthUser: Error getting web session', err);
     }
 
     // If no session, try JWT token (for mobile)

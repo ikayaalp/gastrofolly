@@ -30,6 +30,7 @@ export default function ProfilePage() {
         // Dosya boyutu kontrolü (10MB)
         if (file.size > 10 * 1024 * 1024) {
             toast.error('Dosya boyutu 10MB\'dan küçük olmalıdır');
+            if (fileInputRef.current) fileInputRef.current.value = '';
             return;
         }
 
@@ -38,6 +39,7 @@ export default function ProfilePage() {
         formData.append('file', file);
 
         try {
+            console.log('Attemping profile photo upload...');
             const res = await fetch('/api/forum/upload-media', {
                 method: 'POST',
                 body: formData,
@@ -45,15 +47,20 @@ export default function ProfilePage() {
 
             const data = await res.json();
 
-            if (!res.ok) throw new Error(data.error || 'Yükleme başarısız');
+            if (!res.ok) {
+                console.error('Upload API reported error:', data);
+                throw new Error(data.error || 'Yükleme başarısız');
+            }
 
+            console.log('Upload successful:', data.mediaUrl);
             setImage(data.mediaUrl);
             toast.success('Fotoğraf yüklendi');
         } catch (error: any) {
-            console.error('Upload error:', error);
+            console.error('Frontend upload error:', error);
             toast.error(error.message || 'Fotoğraf yüklenirken hata oluştu');
         } finally {
             setUploading(false);
+            if (fileInputRef.current) fileInputRef.current.value = '';
         }
     };
 

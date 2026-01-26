@@ -14,8 +14,9 @@ export async function POST(request: NextRequest) {
         const user = await getAuthUser(request)
 
         if (!user) {
+            console.warn('Upload attempt unauthorized: User session not found')
             return NextResponse.json(
-                { error: 'Authentication required' },
+                { error: 'Yükleme yapabilmek için giriş yapmalısınız' },
                 { status: 401 }
             )
         }
@@ -88,10 +89,17 @@ export async function POST(request: NextRequest) {
         })
 
         if (!response.ok) {
-            const errorData = await response.json()
-            console.error('Cloudinary upload error:', errorData)
+            const errorText = await response.text()
+            console.error('Cloudinary upload error raw response:', errorText)
+
+            let errorMessage = 'Bilinmeyen hata'
+            try {
+                const errorData = JSON.parse(errorText)
+                errorMessage = errorData.error?.message || errorData.message || errorMessage
+            } catch (e) { }
+
             return NextResponse.json(
-                { error: 'Dosya yüklenirken hata oluştu: ' + (errorData.error?.message || 'Bilinmeyen hata') },
+                { error: 'Dosya yüklenirken hata oluştu: ' + errorMessage },
                 { status: 500 }
             )
         }
