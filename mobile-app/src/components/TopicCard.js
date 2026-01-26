@@ -48,7 +48,14 @@ export default function TopicCard({
             <View style={styles.topicHeader}>
                 <View style={styles.topicAuthorInfo}>
                     <View style={styles.topicAuthorAvatar}>
-                        <User size={20} color="#fff" />
+                        {item.author?.image ? (
+                            <Image
+                                source={{ uri: item.author.image }}
+                                style={styles.avatarImage}
+                            />
+                        ) : (
+                            <User size={20} color="#fff" />
+                        )}
                     </View>
                     <View>
                         <Text style={styles.topicAuthorName}>{item.author?.name || 'Anonim'}</Text>
@@ -250,6 +257,12 @@ const styles = StyleSheet.create({
         backgroundColor: '#374151',
         justifyContent: 'center',
         alignItems: 'center',
+        overflow: 'hidden',
+    },
+    avatarImage: {
+        width: '100%',
+        height: '100%',
+        borderRadius: 16,
     },
     topicAuthorName: {
         color: '#fff',
