@@ -51,6 +51,32 @@ export default function LeftSidebar({ categories, selectedCategory, trendingHash
                 </div>
             </div>
 
+            {/* Trending Hashtags Section */}
+            {trendingHashtags && trendingHashtags.length > 0 && (
+                <div className="mb-6">
+                    <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 px-2 flex items-center">
+                        Trend Etiketler
+                    </h3>
+                    <div className="space-y-1">
+                        {trendingHashtags.map((hashtag) => (
+                            <Link
+                                key={hashtag.id}
+                                href={`/chef-sosyal?search=${encodeURIComponent('#' + hashtag.name)}`}
+                                className="flex items-center justify-between px-2 py-1.5 rounded-lg text-sm font-medium text-gray-400 hover:bg-gray-800/50 hover:text-white transition-colors group"
+                            >
+                                <span className="truncate flex items-center mr-2">
+                                    <span className="text-orange-500 mr-1.5 opacity-70 group-hover:opacity-100 italic transition-opacity font-bold">#</span>
+                                    {hashtag.name}
+                                </span>
+                                <span className="text-[10px] bg-gray-800 px-1.5 py-0.5 rounded text-gray-500 group-hover:bg-gray-700 transition-colors">
+                                    {hashtag.count}
+                                </span>
+                            </Link>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             {/* Topics / Categories Section */}
             <div className="mb-6">
                 <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 px-2">Konular</h3>
@@ -76,32 +102,7 @@ export default function LeftSidebar({ categories, selectedCategory, trendingHash
                 </div>
             </div>
 
-            {/* Trending Hashtags Section */}
-            {trendingHashtags && trendingHashtags.length > 0 && (
-                <div className="mb-6">
-                    <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 px-2 flex items-center">
-                        <Flame className="h-3 w-3 mr-1 text-orange-500" />
-                        Trend Etiketler
-                    </h3>
-                    <div className="space-y-1">
-                        {trendingHashtags.map((hashtag) => (
-                            <Link
-                                key={hashtag.id}
-                                href={`/chef-sosyal?search=${encodeURIComponent('#' + hashtag.name)}`}
-                                className="flex items-center justify-between px-2 py-1.5 rounded-lg text-sm font-medium text-gray-400 hover:bg-gray-800/50 hover:text-white transition-colors group"
-                            >
-                                <span className="truncate flex items-center mr-2">
-                                    <span className="text-orange-500 mr-1.5 opacity-70 group-hover:opacity-100 italic transition-opacity">#</span>
-                                    {hashtag.name}
-                                </span>
-                                <span className="text-[10px] bg-gray-800 px-1.5 py-0.5 rounded text-gray-500 group-hover:bg-gray-700 transition-colors">
-                                    {hashtag.count}
-                                </span>
-                            </Link>
-                        ))}
-                    </div>
-                </div>
-            )}
+
 
 
 
