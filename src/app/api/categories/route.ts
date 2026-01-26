@@ -6,7 +6,7 @@ export async function GET() {
         console.log("API: Fetching categories request started");
 
         // Simple fetch first to test connection
-        const categories = await prisma.category.findMany({
+        const categories = await (prisma as any).category.findMany({
             include: {
                 _count: {
                     select: { courses: true }

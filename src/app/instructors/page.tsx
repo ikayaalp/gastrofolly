@@ -93,7 +93,7 @@ export default async function InstructorsPage() {
             <section className="py-20">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-                        {instructors.map((chef, i) => (
+                        {instructors.map((chef: any, i: number) => (
                             <div key={i} className="group relative bg-[#0a0a0a] border border-gray-800 rounded-3xl p-8 hover:border-orange-500 transition-all duration-500 hover:-translate-y-2">
                                 <div className="w-32 h-32 bg-gradient-to-br from-orange-400 to-red-600 rounded-full flex items-center justify-center text-5xl mx-auto mb-8 shadow-2xl shadow-orange-500/20 group-hover:scale-110 transition-transform">
                                     {chef.image}
