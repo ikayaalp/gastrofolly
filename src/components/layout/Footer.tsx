@@ -54,7 +54,7 @@ export default function Footer() {
                     <div>
                         <h4 className="text-lg font-semibold mb-4 text-orange-500">Kurslar</h4>
                         <ul className="space-y-2 text-gray-400">
-                            {footerCategories.map((cat) => (
+                            {footerCategories.map((cat: Category) => (
                                 <li key={cat.id}>
                                     <Link href={`/category/${cat.id}`} className="hover:text-white transition-colors">
                                         {cat.name}
