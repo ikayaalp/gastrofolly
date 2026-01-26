@@ -329,7 +329,19 @@ export default function ChefSosyalClient({
 
   const handleCreateTopic = async (e?: React.FormEvent) => {
     e?.preventDefault()
+
+    // Validasyon: İçerik veya medya olmalı
+    if (!newTopicForm.content.trim() && !topicMedia) {
+      alert('Lütfen bir şeyler yazın veya medya paylaşın')
+      return
+    }
+
     setSubmitting(true)
+
+    // Otomatik başlık üretimi
+    let generatedTitle = newTopicForm.content.trim().split('\n')[0].substring(0, 50)
+    if (!generatedTitle) generatedTitle = "Medya Paylaşımı"
+    if (newTopicForm.content.trim().length > 50) generatedTitle += "..."
 
     try {
       const response = await fetch('/api/forum/topics', {
@@ -338,7 +350,9 @@ export default function ChefSosyalClient({
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          ...newTopicForm,
+          title: generatedTitle,
+          content: newTopicForm.content || '...',
+          categoryId: newTopicForm.categoryId,
           mediaUrl: topicMedia?.mediaUrl || null,
           mediaType: topicMedia?.mediaType || null,
           thumbnailUrl: topicMedia?.thumbnailUrl || null
@@ -536,8 +550,8 @@ export default function ChefSosyalClient({
 
               <button
                 onClick={handleCreateTopic}
-                disabled={submitting || (!newTopicForm.title.trim() && !newTopicForm.content.trim() && !topicMedia)}
-                className={`px-5 py-1.5 rounded-full font-bold text-sm transition-all ${submitting || (!newTopicForm.title.trim() && !newTopicForm.content.trim() && !topicMedia)
+                disabled={submitting || (!newTopicForm.content.trim() && !topicMedia)}
+                className={`px-5 py-1.5 rounded-full font-bold text-sm transition-all ${submitting || (!newTopicForm.content.trim() && !topicMedia)
                   ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
                   : 'bg-[#ea580c] text-white hover:bg-[#c2410c]'
                   }`}
@@ -566,15 +580,6 @@ export default function ChefSosyalClient({
                   </div>
                 </div>
               </div>
-
-              {/* Title Input */}
-              <input
-                type="text"
-                value={newTopicForm.title}
-                onChange={(e) => setNewTopicForm({ ...newTopicForm, title: e.target.value })}
-                placeholder="Başlık"
-                className="w-full bg-transparent border-none p-0 text-xl font-bold text-white placeholder-gray-500 focus:ring-0 mb-3"
-              />
 
               {/* Content Input (Auto-growing textarea ideally, but standardfghgfgow) */}
               <textarea

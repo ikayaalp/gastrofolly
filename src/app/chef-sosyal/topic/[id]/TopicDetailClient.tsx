@@ -291,8 +291,14 @@ export default function TopicDetailClient({ session, topic, categories }: TopicD
                 <span className="font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: `${topic.category.color}20`, color: topic.category.color || 'gray' }}>{topic.category.name}</span>
               </div>
 
-              {/* Title */}
-              <h1 className="text-xl font-medium text-gray-100 mb-3">{topic.title}</h1>
+
+
+              {/* Text Content */}
+              {topic.content && (
+                <div className="text-sm text-gray-300 font-normal whitespace-pre-wrap mb-4 leading-relaxed">
+                  {topic.content}
+                </div>
+              )}
 
               {/* Media */}
               {topic.mediaUrl && (
@@ -310,12 +316,7 @@ export default function TopicDetailClient({ session, topic, categories }: TopicD
                 </div>
               )}
 
-              {/* Text Content */}
-              {topic.content && (
-                <div className="text-sm text-gray-300 font-normal whitespace-pre-wrap mb-4 leading-relaxed">
-                  {topic.content}
-                </div>
-              )}
+
 
               {/* Action Bar */}
               <div className="flex items-center space-x-3 text-gray-500 text-xs font-bold pt-1 border-t border-gray-800/50 mt-2">
