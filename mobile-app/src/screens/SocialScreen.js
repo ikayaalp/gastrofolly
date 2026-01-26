@@ -253,68 +253,80 @@ export default function SocialScreen({ navigation }) {
     };
 
     const handleCreateTopic = async () => {
-        if ((!newTopicForm.title.trim() && !newTopicForm.content.trim() && selectedMedias.length === 0)) {
-            showAlert('Hata', 'Lütfen başlık, içerik veya medya ekleyin.', [{ text: 'Tamam' }], 'error');
+        if (!newTopicForm.content.trim() && selectedMedias.length === 0) {
+            showAlert('Uyarı', 'Lütfen bir şeyler yazın veya medya paylaşın.', [{ text: 'Tamam' }], 'warning');
             return;
         }
 
         setSubmitting(true);
 
-        let mediaUrl = null;
-        let thumbnailUrl = null;
-        let mediaType = null;
+        try {
+            let mediaUrl = null;
+            let thumbnailUrl = null;
+            let mediaType = null;
 
-        if (selectedMedias.length > 0) {
-            setUploading(true);
-            try {
-                if (selectedMedias.some(m => m.type === 'video')) {
-                    const video = selectedMedias.find(m => m.type === 'video');
-                    const uploadResult = await forumService.uploadMedia(video.uri, 'video');
-                    if (uploadResult.success) {
-                        mediaUrl = uploadResult.data.mediaUrl;
-                        thumbnailUrl = uploadResult.data.thumbnailUrl;
-                        mediaType = 'video';
+            if (selectedMedias.length > 0) {
+                setUploading(true);
+                try {
+                    if (selectedMedias.some(m => m.type === 'video')) {
+                        const video = selectedMedias.find(m => m.type === 'video');
+                        const uploadResult = await forumService.uploadMedia(video.uri, 'video');
+                        if (uploadResult.success) {
+                            mediaUrl = uploadResult.data.mediaUrl;
+                            thumbnailUrl = uploadResult.data.thumbnailUrl;
+                            mediaType = 'video';
+                        } else {
+                            throw new Error(uploadResult.error || 'Video yüklenemedi');
+                        }
                     } else {
-                        throw new Error(uploadResult.error || 'Video yüklenemedi');
-                    }
-                } else {
-                    const uploadPromises = selectedMedias.map(m => forumService.uploadMedia(m.uri, 'image'));
-                    const results = await Promise.all(uploadPromises);
-                    const failed = results.find(r => !r.success);
-                    if (failed) throw new Error(failed.error || 'Bazı resimler yüklenemedi');
+                        const uploadPromises = selectedMedias.map(m => forumService.uploadMedia(m.uri, 'image'));
+                        const results = await Promise.all(uploadPromises);
+                        const failed = results.find(r => !r.success);
+                        if (failed) throw new Error(failed.error || 'Bazı resimler yüklenemedi');
 
-                    const urls = results.map(r => r.data.mediaUrl);
-                    mediaUrl = urls.join(',');
-                    mediaType = 'image';
-                    thumbnailUrl = urls[0];
+                        const urls = results.map(r => r.data.mediaUrl);
+                        mediaUrl = urls.join(',');
+                        mediaType = 'image';
+                        thumbnailUrl = urls[0];
+                    }
+                } catch (err) {
+                    showAlert('Hata', err.message, [{ text: 'Tamam' }], 'error');
+                    setUploading(false);
+                    setSubmitting(false);
+                    return;
                 }
-            } catch (err) {
-                showAlert('Hata', err.message, [{ text: 'Tamam' }], 'error');
                 setUploading(false);
-                setSubmitting(false);
-                return;
             }
+
+            // Auto-generate title
+            let generatedTitle = newTopicForm.content.trim().split('\n')[0].substring(0, 50);
+            if (!generatedTitle) generatedTitle = "Medya Paylaşımı";
+            if (newTopicForm.content.trim().length > 50) generatedTitle += "...";
+
+            const result = await forumService.createTopic(
+                generatedTitle,
+                newTopicForm.content || '...',
+                'default-category',
+                mediaUrl,
+                thumbnailUrl,
+                mediaType
+            );
+
+            if (result.success) {
+                setShowNewTopicModal(false);
+                setNewTopicForm({ title: '', content: '' });
+                setSelectedMedias([]);
+                onRefresh();
+            } else {
+                showAlert('Hata', result.error, [{ text: 'Tamam' }], 'error');
+            }
+        } catch (error) {
+            console.error(error);
+            showAlert('Hata', 'Bir sorun oluştu', [{ text: 'Tamam' }], 'error');
+        } finally {
+            setSubmitting(false);
             setUploading(false);
         }
-
-        const result = await forumService.createTopic(
-            newTopicForm.title,
-            newTopicForm.content,
-            'default-category',
-            mediaUrl,
-            thumbnailUrl,
-            mediaType
-        );
-
-        if (result.success) {
-            setShowNewTopicModal(false);
-            setNewTopicForm({ title: '', content: '' });
-            setSelectedMedia(null);
-            loadData();
-        } else {
-            showAlert('Hata', result.error, [{ text: 'Tamam' }], 'error');
-        }
-        setSubmitting(false);
     };
 
     const formatTimeAgo = (dateString) => {
@@ -530,9 +542,9 @@ export default function SocialScreen({ navigation }) {
                                 <X size={24} color="#fff" />
                             </TouchableOpacity>
                             <TouchableOpacity
-                                style={[styles.headerPostButton, (submitting || uploading || (!newTopicForm.title.trim() && !newTopicForm.content.trim() && selectedMedias.length === 0)) && styles.headerPostButtonDisabled]}
+                                style={[styles.headerPostButton, (submitting || uploading || (!newTopicForm.content.trim() && selectedMedias.length === 0)) && styles.headerPostButtonDisabled]}
                                 onPress={handleCreateTopic}
-                                disabled={submitting || uploading || (!newTopicForm.title.trim() && !newTopicForm.content.trim() && selectedMedias.length === 0)}
+                                disabled={submitting || uploading || (!newTopicForm.content.trim() && selectedMedias.length === 0)}
                             >
                                 {submitting ? (
                                     <ActivityIndicator size="small" color="#fff" />
@@ -548,21 +560,12 @@ export default function SocialScreen({ navigation }) {
                                     <User size={20} color="#fff" />
                                 </View>
                                 <View style={styles.categorySelector}>
-                                    <Text style={styles.categorySelectorText}>Genel</Text>
+                                    <Text style={styles.categorySelectorText}>Chef Sosyal</Text>
                                 </View>
                             </View>
 
                             <TextInput
                                 autoFocus={true}
-                                style={styles.modalTitleInput}
-                                placeholder="Başlık"
-                                placeholderTextColor="#6b7280"
-                                value={newTopicForm.title}
-                                onChangeText={(text) => setNewTopicForm({ ...newTopicForm, title: text })}
-                                maxLength={100}
-                            />
-
-                            <TextInput
                                 style={styles.modalContentInput}
                                 placeholder="Neler oluyor? Bir şeyler paylaş..."
                                 placeholderTextColor="#6b7280"

@@ -357,8 +357,7 @@ export default function TopicDetailScreen({ route, navigation }) {
                 </View>
             </View>
 
-            {/* Title */}
-            <Text style={styles.topicTitle}>{topic.title}</Text>
+
 
             {/* Text Content - Moved above media */}
             {topic.content && (
