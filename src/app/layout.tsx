@@ -13,12 +13,12 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Culinora - Online Gastronomi Kursları",
+  title: "Culinora - Gastronomi Kursları",
   description: "Profesyonel şeflerden sertifikalı online gastronomi ve aşçılık kursları. Video dersler, uygulamalı projeler ve kariyer odaklı eğitimlerle mutfakta ustalaşın.",
   keywords: ["Culinora", "gastronomi", "edtech", "online kurs", "aşçılık eğitimi", "şef eğitimi", "sertifikalı yemek kursları", "mutfak okulu"],
   openGraph: {
-    title: "Culinora - Online Gastronomi Kursları",
-    description: "Profesyonel şeflerden sertifikalı online gastronomi kursları.",
+    title: "Culinora - Gastronomi Kursları",
+    description: "Profesyonel şeflerden sertifikalı gastronomi kursları.",
     url: "https://culinora.net",
     siteName: "Culinora",
     locale: "tr_TR",
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Culinora - Online Gastronomi Kursları",
+    title: "Culinora - Gastronomi Kursları",
     description: "Profesyonel şeflerden sertifikalı online gastronomi kursları.",
   },
   robots: {
