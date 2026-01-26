@@ -10,7 +10,7 @@ export default async function InstructorsPage() {
     const session = await getServerSession(authOptions);
 
     // Fetch real instructors from database with their course stats
-    const realInstructors = await prisma.user.findMany({
+    const realInstructors = await (prisma as any).user.findMany({
         where: { role: "INSTRUCTOR" },
         select: {
             id: true,
