@@ -438,26 +438,26 @@ export default function TopicDetailScreen({ route, navigation }) {
         </View>
     );
 
-    const renderReply = (reply, parentCommentId) => (
-        <View key={reply.id} style={styles.commentCard}>
+    const renderReply = (reply) => (
+        <View key={reply.id} style={styles.nestedReplyCard}>
             <View style={styles.commentAvatarContainer}>
                 {reply.author?.image ? (
-                    <Image source={{ uri: reply.author.image }} style={styles.commentAvatar} />
+                    <Image source={{ uri: reply.author.image }} style={styles.nestedReplyAvatar} />
                 ) : (
-                    <View style={styles.commentAvatarPlaceholder}>
-                        <User size={16} color="#fff" />
+                    <View style={styles.nestedReplyAvatarPlaceholder}>
+                        <User size={12} color="#fff" />
                     </View>
                 )}
             </View>
 
             <View style={styles.commentBody}>
                 <View style={styles.commentHeader}>
-                    <Text style={styles.commentAuthor}>{reply.author?.name || 'Anonim'}</Text>
+                    <Text style={styles.nestedReplyAuthor}>{reply.author?.name || 'Anonim'}</Text>
                     <Text style={styles.commentDot}>•</Text>
                     <Text style={styles.commentTime}>{formatTimeAgo(reply.createdAt)}</Text>
                 </View>
 
-                <Text style={styles.commentContent}>{reply.content}</Text>
+                <Text style={styles.nestedReplyContent}>{reply.content}</Text>
 
                 {/* Reply Actions */}
                 <View style={styles.commentActions}>
@@ -467,16 +467,16 @@ export default function TopicDetailScreen({ route, navigation }) {
                                 style={[styles.likeButton, likedComments.has(reply.id) && styles.likeButtonActive]}
                                 onPress={() => handleCommentLike(reply.id)}
                             >
-                                <ThumbsUp size={14} color={likedComments.has(reply.id) ? '#fff' : '#6b7280'} />
+                                <ThumbsUp size={12} color={likedComments.has(reply.id) ? '#fff' : '#6b7280'} />
                                 <Text style={[styles.likeButtonText, likedComments.has(reply.id) && styles.likeButtonTextActive]}>
                                     {reply.likeCount || 0}
                                 </Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 style={styles.replyToButton}
-                                onPress={() => handleReplyTo(parentCommentId, reply.author?.name || 'Anonim')}
+                                onPress={() => handleReplyTo(reply.parentId || reply.id, reply.author?.name || 'Anonim')}
                             >
-                                <Reply size={14} color="#6b7280" />
+                                <Reply size={12} color="#6b7280" />
                                 <Text style={styles.replyToText}>Yanıtla</Text>
                             </TouchableOpacity>
                             {currentUserId && reply.author?.id === currentUserId && (
@@ -484,7 +484,7 @@ export default function TopicDetailScreen({ route, navigation }) {
                                     style={styles.deleteButton}
                                     onPress={() => handleDeleteComment(reply.id)}
                                 >
-                                    <Trash2 size={14} color="#ef4444" />
+                                    <Trash2 size={12} color="#ef4444" />
                                 </TouchableOpacity>
                             )}
                         </>
@@ -551,7 +551,7 @@ export default function TopicDetailScreen({ route, navigation }) {
                 {/* Nested Replies */}
                 {item.replies && item.replies.length > 0 && (
                     <View style={styles.repliesContainer}>
-                        {item.replies.map(reply => renderReply(reply, item.id))}
+                        {item.replies.map(reply => renderReply(reply))}
                     </View>
                 )}
             </View>
@@ -1044,76 +1044,39 @@ const styles = StyleSheet.create({
         fontWeight: '600',
     },
     repliesContainer: {
-        marginTop: 12,
-        marginLeft: 16,
-        borderLeftWidth: 2,
-        borderLeftColor: '#374151',
+        marginTop: 4,
+        marginLeft: 10,
+        borderLeftWidth: 1,
+        borderLeftColor: 'rgba(55, 65, 81, 0.5)',
         paddingLeft: 12,
     },
-    replyCard: {
-        backgroundColor: '#1a1a1a',
-        padding: 10,
-        borderRadius: 8,
-        marginBottom: 8,
-    },
-    replyHeader: {
+    nestedReplyCard: {
+        paddingVertical: 10,
         flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 6,
     },
-    replyAvatar: {
+    nestedReplyAvatar: {
         width: 24,
         height: 24,
         borderRadius: 12,
     },
-    replyAvatarPlaceholder: {
+    nestedReplyAvatarPlaceholder: {
         width: 24,
         height: 24,
         borderRadius: 12,
-        backgroundColor: '#ea580c',
+        backgroundColor: '#374151',
         justifyContent: 'center',
         alignItems: 'center',
     },
-    replyMeta: {
-        marginLeft: 8,
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-    },
-    replyAuthor: {
-        fontSize: 12,
-        fontWeight: '600',
-        color: '#fff',
-    },
-    replyTime: {
-        fontSize: 10,
-        color: '#6b7280',
-    },
-    replyContent: {
+    nestedReplyAuthor: {
         fontSize: 13,
+        fontWeight: '700',
+        color: '#e5e7eb',
+    },
+    nestedReplyContent: {
+        fontSize: 14,
         color: '#d1d5db',
         lineHeight: 18,
         marginBottom: 6,
-    },
-    replyLikeButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        alignSelf: 'flex-start',
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 4,
-        backgroundColor: '#0a0a0a',
-        gap: 4,
-    },
-    replyLikeButtonActive: {
-        backgroundColor: '#ea580c',
-    },
-    replyLikeText: {
-        fontSize: 11,
-        color: '#6b7280',
-    },
-    replyLikeTextActive: {
-        color: '#fff',
     },
     emptyComments: {
         padding: 40,

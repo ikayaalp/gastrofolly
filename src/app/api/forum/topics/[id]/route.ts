@@ -43,9 +43,12 @@ export async function GET(
             )
         }
 
-        // Get posts (replies) for this topic
+        // Get topics (only root posts) for this topic
         const posts = await prisma.post.findMany({
-            where: { topicId: id },
+            where: {
+                topicId: id,
+                parentId: null // Sadece ana yorumları getir
+            },
             include: {
                 author: {
                     select: {
@@ -53,10 +56,24 @@ export async function GET(
                         name: true,
                         image: true
                     }
+                },
+                replies: {
+                    include: {
+                        author: {
+                            select: {
+                                id: true,
+                                name: true,
+                                image: true
+                            }
+                        }
+                    },
+                    orderBy: {
+                        createdAt: 'asc'
+                    }
                 }
             },
             orderBy: {
-                createdAt: 'asc'
+                createdAt: 'desc' // Ana yorumlar yeni olan üstte
             }
         })
 
