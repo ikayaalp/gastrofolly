@@ -14,7 +14,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "Culinora - Gastronomi Kursları",
-  description: "Profesyonel şeflerden sertifikalı online gastronomi ve aşçılık kursları. Video dersler, uygulamalı projeler ve kariyer odaklı eğitimlerle mutfakta ustalaşın.",
+  description: "Profesyonel şeflerden sertifikalı gastronomi ve aşçılık kursları. Video dersler, uygulamalı projeler ve kariyer odaklı eğitimlerle mutfakta ustalaşın.",
   keywords: ["Culinora", "gastronomi", "edtech", "online kurs", "aşçılık eğitimi", "şef eğitimi", "sertifikalı yemek kursları", "mutfak okulu"],
   openGraph: {
     title: "Culinora - Gastronomi Kursları",
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Culinora - Gastronomi Kursları",
-    description: "Profesyonel şeflerden sertifikalı online gastronomi kursları.",
+    description: "Profesyonel şeflerden sertifikalı gastronomi kursları.",
   },
   robots: {
     index: true,
