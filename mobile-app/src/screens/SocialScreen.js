@@ -36,6 +36,8 @@ import {
     Pause,
     ChevronsRight,
     ChevronsLeft,
+    Flame,
+    Hash
 } from 'lucide-react-native';
 import { Video, ResizeMode } from 'expo-av';
 import * as ImagePicker from 'expo-image-picker';
@@ -82,6 +84,8 @@ export default function SocialScreen({ navigation }) {
     const [playingVideoId, setPlayingVideoId] = useState(null);
     const [videoDurations, setVideoDurations] = useState({});
     const [videoProgress, setVideoProgress] = useState({});
+    const [trendingHashtags, setTrendingHashtags] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
 
     // Custom Video Controls
     const videoRef = useRef(null);
@@ -464,7 +468,43 @@ export default function SocialScreen({ navigation }) {
                     <Text style={styles.headerTitle}>Chef Sosyal</Text>
                     <Text style={styles.headerSubtitle}>Gastronomi tutkunlarının buluşma noktası</Text>
                 </View>
+                {searchTerm ? (
+                    <TouchableOpacity
+                        style={styles.clearSearchButton}
+                        onPress={() => setSearchTerm('')}
+                    >
+                        <Text style={styles.clearSearchText}>Aramayı Temizle ({searchTerm})</Text>
+                        <X size={14} color="#ef4444" />
+                    </TouchableOpacity>
+                ) : null}
             </View>
+
+            {/* Trending Hashtags - Horizontal Scroll */}
+            {trendingHashtags.length > 0 && (
+                <View style={styles.trendingContainer}>
+                    <View style={styles.trendingHeader}>
+                        <Flame size={14} color="#ea580c" />
+                        <Text style={styles.trendingTitle}>Trend Etiketler</Text>
+                    </View>
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={styles.trendingScroll}
+                    >
+                        {trendingHashtags.map((hashtag) => (
+                            <TouchableOpacity
+                                key={hashtag.id}
+                                style={styles.hashtagBadge}
+                                onPress={() => setSearchTerm('#' + hashtag.name)}
+                            >
+                                <Hash size={12} color="#ea580c" />
+                                <Text style={styles.hashtagText}>{hashtag.name}</Text>
+                                <Text style={styles.hashtagCount}>{hashtag.count}</Text>
+                            </TouchableOpacity>
+                        ))}
+                    </ScrollView>
+                </View>
+            )}
 
             {/* Filter Tabs (like web) */}
             <View style={styles.filterTabsContainer}>
@@ -1441,6 +1481,65 @@ const styles = StyleSheet.create({
         backgroundColor: '#ea580c',
         borderRadius: 3,
     },
-    // Progress bar background (simulated by a View inside container if needed, or container background)
-    // Actually better to have a track background. Let's adjust progressBarContainer.
+    trendingContainer: {
+        paddingVertical: 12,
+        backgroundColor: '#0a0a0a',
+        borderBottomWidth: 1,
+        borderBottomColor: '#1a1a1a',
+    },
+    trendingHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        marginBottom: 8,
+        gap: 6,
+    },
+    trendingTitle: {
+        fontSize: 12,
+        fontWeight: 'bold',
+        color: '#6b7280',
+        textTransform: 'uppercase',
+    },
+    trendingScroll: {
+        paddingHorizontal: 12,
+    },
+    hashtagBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#1a1a1a',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 20,
+        marginHorizontal: 4,
+        borderWidth: 1,
+        borderColor: '#333',
+        gap: 4,
+    },
+    hashtagText: {
+        fontSize: 13,
+        fontWeight: '600',
+        color: '#fff',
+    },
+    hashtagCount: {
+        fontSize: 10,
+        color: '#6b7280',
+        backgroundColor: '#000',
+        paddingHorizontal: 4,
+        borderRadius: 4,
+        marginLeft: 2,
+    },
+    clearSearchButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 12,
+        gap: 6,
+    },
+    clearSearchText: {
+        fontSize: 11,
+        color: '#ef4444',
+        fontWeight: '600',
+    },
 });

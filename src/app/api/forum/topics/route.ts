@@ -164,6 +164,11 @@ export async function POST(request: NextRequest) {
       counter++
     }
 
+    // Hashtagleri ayıkla (e.g., #yemek #chef)
+    const hashtagRegex = /#([a-zA-Z0-9çğıöşüÇĞİÖŞÜ]+)/g
+    const hashtagsFound = Array.from(content.matchAll(hashtagRegex)).map(match => (match as string[])[1].toLowerCase())
+    const uniqueHashtags = [...new Set(hashtagsFound)]
+
     const topic = await prisma.topic.create({
       data: {
         title,
@@ -173,8 +178,14 @@ export async function POST(request: NextRequest) {
         categoryId: finalCategoryId,
         mediaUrl: mediaUrl || null,
         mediaType: mediaType || null,
-        thumbnailUrl: thumbnailUrl || null
-      },
+        thumbnailUrl: thumbnailUrl || null,
+        hashtags: {
+          connectOrCreate: uniqueHashtags.map(name => ({
+            where: { name },
+            create: { name }
+          }))
+        }
+      } as any,
       include: {
         author: {
           select: {

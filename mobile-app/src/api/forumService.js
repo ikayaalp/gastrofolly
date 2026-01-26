@@ -39,6 +39,20 @@ const forumService = {
         }
     },
 
+    // Get trending hashtags
+    getTrendingHashtags: async () => {
+        try {
+            const response = await api.get('/api/forum/hashtags/trending');
+            return { success: true, data: response.data };
+        } catch (error) {
+            console.error('Hashtags error:', error);
+            return {
+                success: false,
+                error: error.response?.data?.message || 'Hashtagler yüklenemedi',
+            };
+        }
+    },
+
     // Get topics with optional filters
     getTopics: async (category = 'all', sort = 'newest', limit = 20) => {
         try {

@@ -7,6 +7,7 @@ import UserDropdown from "@/components/ui/UserDropdown"
 import { useRouter } from "next/navigation"
 import LeftSidebar from "@/components/forum/LeftSidebar"
 import RightSidebar from "@/components/forum/RightSidebar"
+import HashtagText from "@/components/forum/HashtagText"
 
 interface Author {
   id: string
@@ -296,7 +297,7 @@ export default function TopicDetailClient({ session, topic, categories }: TopicD
               {/* Text Content */}
               {topic.content && (
                 <div className="text-sm text-gray-300 font-normal whitespace-pre-wrap mb-4 leading-relaxed">
-                  {topic.content}
+                  <HashtagText text={topic.content} />
                 </div>
               )}
 

@@ -91,6 +91,29 @@ export default async function ChefSosyalPage({ searchParams }: PageProps) {
   // Üye sayısını çek
   const memberCount = await prisma.user.count()
 
+  // Trend hashtagleri çek
+  const trendingHashtagsData = await (prisma as any).hashtag.findMany({
+    take: 5,
+    include: {
+      _count: {
+        select: {
+          topics: true
+        }
+      }
+    },
+    orderBy: {
+      topics: {
+        _count: 'desc'
+      }
+    }
+  })
+
+  const trendingHashtags = trendingHashtagsData.map((h: any) => ({
+    id: h.id,
+    name: h.name,
+    count: h._count.topics
+  }))
+
   // Topic tipinde dönüştür
   const topics = topicsData.map((topic: any) => ({
     ...topic,
@@ -103,6 +126,7 @@ export default async function ChefSosyalPage({ searchParams }: PageProps) {
       initialCategories={categories}
       initialTopics={topics as any}
       memberCount={memberCount}
+      trendingHashtags={trendingHashtags}
     />
   )
 }

@@ -361,7 +361,14 @@ export default function TopicDetailScreen({ route, navigation }) {
 
             {/* Text Content - Moved above media */}
             {topic.content && (
-                <Text style={styles.topicContent}>{topic.content}</Text>
+                <Text style={styles.topicContent}>
+                    {topic.content.split(/(#[a-zA-Z0-9çğıöşüÇĞİÖŞÜ]+)/g).map((part, index) => {
+                        if (part.startsWith('#')) {
+                            return <Text key={index} style={{ color: '#ea580c', fontWeight: '500' }}>{part}</Text>;
+                        }
+                        return part;
+                    })}
+                </Text>
             )}
 
             {/* Media Display - Tappable for fullscreen */}

@@ -64,13 +64,15 @@ interface ChefSosyalClientProps {
   initialCategories: Category[]
   initialTopics: Topic[]
   memberCount: number
+  trendingHashtags?: { id: string, name: string, count: number }[]
 }
 
 export default function ChefSosyalClient({
   session,
   initialCategories,
   initialTopics,
-  memberCount
+  memberCount,
+  trendingHashtags
 }: ChefSosyalClientProps) {
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -441,7 +443,7 @@ export default function ChefSosyalClient({
       {/* Main Grid Layout */}
       <div className="max-w-[1600px] mx-auto pt-20 flex justify-center">
 
-        <LeftSidebar categories={categories} selectedCategory={selectedCategory} />
+        <LeftSidebar categories={categories} selectedCategory={selectedCategory} trendingHashtags={trendingHashtags} />
 
         {/* Main Feed */}
         <div className="w-full max-w-[640px] px-0 sm:px-4 pb-20">

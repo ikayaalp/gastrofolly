@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { ThumbsUp, MessageCircle, MoreHorizontal, User, Play, Clock, Bookmark } from 'lucide-react'
+import HashtagText from './HashtagText'
 
 interface TopicCardProps {
     topic: {
@@ -94,10 +95,9 @@ export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave }: T
                     </div>
 
                     {/* Content Preview */}
-                    <div
-                        className="text-sm text-gray-400 line-clamp-3 mb-3 font-normal"
-                        dangerouslySetInnerHTML={{ __html: topic.content.substring(0, 300) }}
-                    />
+                    <div className="text-sm text-gray-400 line-clamp-3 mb-3 font-normal">
+                        <HashtagText text={topic.content.substring(0, 300)} />
+                    </div>
 
                     {/* Media Preview - Full Width */}
                     {topic.mediaUrl && (

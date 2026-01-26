@@ -281,6 +281,17 @@ model Topic {
 
   posts Post[]
   likes TopicLike[]
+  hashtags Hashtag[] @relation("TopicHashtags")
+}
+
+// Forum Hashtag modeli
+model Hashtag {
+  id        String   @id @default(cuid())
+  name      String   @unique // e.g., "yemektarifleri"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  topics    Topic[]  @relation("TopicHashtags")
 }
 
 // Forum Beğeni modeli

@@ -72,7 +72,12 @@ export default function TopicCard({
             {/* Content */}
             {item.content ? (
                 <Text style={styles.topicContent} numberOfLines={showFullContent ? undefined : 3}>
-                    {item.content}
+                    {item.content.split(/(#[a-zA-Z0-9çğıöşüÇĞİÖŞÜ]+)/g).map((part, index) => {
+                        if (part.startsWith('#')) {
+                            return <Text key={index} style={{ color: '#ea580c', fontWeight: '500' }}>{part}</Text>;
+                        }
+                        return part;
+                    })}
                 </Text>
             ) : null}
 
