@@ -3,6 +3,7 @@ import { ChefHat, Mail, Phone, Clock, MapPin, Send, Headphones, Building2, Globe
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import UserDropdown from "@/components/ui/UserDropdown"
+import Footer from "@/components/layout/Footer"
 
 export default async function ContactPage() {
   const session = await getServerSession(authOptions)
@@ -342,54 +343,7 @@ export default async function ContactPage() {
 
 
 
-      {/* Footer */}
-      <footer className="bg-black text-white py-16 border-t border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
-            <div className="md:col-span-1">
-              <div className="flex items-center space-x-2 mb-4">
-                <ChefHat className="h-8 w-8 text-orange-500" />
-                <span className="text-2xl font-bold">Culinora</span>
-              </div>
-              <p className="text-gray-400 text-sm leading-relaxed">
-                Türkiye&apos;nin lider online gastronomi eğitim platformu.
-                Profesyonel şeflerden öğren, kariyerine yön ver.
-              </p>
-            </div>
-            <div>
-              <h4 className="text-lg font-semibold mb-4">Eğitimler</h4>
-              <ul className="space-y-3 text-gray-400 text-sm">
-                <li><Link href="#" className="hover:text-white transition-colors">Temel Mutfak</Link></li>
-                <li><Link href="#" className="hover:text-white transition-colors">Türk Mutfağı</Link></li>
-                <li><Link href="#" className="hover:text-white transition-colors">Pastacılık</Link></li>
-                <li><Link href="#" className="hover:text-white transition-colors">Dünya Mutfakları</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-lg font-semibold mb-4">Şirket</h4>
-              <ul className="space-y-3 text-gray-400 text-sm">
-                <li><Link href="/about" className="hover:text-white transition-colors">Hakkımızda</Link></li>
-                <li><Link href="#" className="hover:text-white transition-colors">Kariyer</Link></li>
-                <li><Link href="#" className="hover:text-white transition-colors">Basın</Link></li>
-                <li><Link href="/contact" className="hover:text-white transition-colors">İletişim</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-lg font-semibold mb-4">Yasal</h4>
-              <ul className="space-y-3 text-gray-400 text-sm">
-                <li><Link href="#" className="hover:text-white transition-colors">Gizlilik Politikası</Link></li>
-                <li><Link href="#" className="hover:text-white transition-colors">Kullanım Koşulları</Link></li>
-                <li><Link href="#" className="hover:text-white transition-colors">Çerez Politikası</Link></li>
-                <li><Link href="#" className="hover:text-white transition-colors">KVKK</Link></li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-500 text-sm">&copy; 2026 Culinora Eğitim Teknolojileri A.Ş. Tüm hakları saklıdır.</p>
-            <p className="text-gray-600 text-sm mt-4 md:mt-0">Made with ❤️ in İstanbul</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
 
       {/* Mobile Bottom Navigation */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-black border-t border-gray-800">

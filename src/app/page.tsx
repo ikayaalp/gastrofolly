@@ -7,6 +7,7 @@ import HomeStories from "@/components/home/HomeStories";
 import FAQSection from "@/components/home/FAQSection";
 import HeaderSearch from "@/components/layout/HeaderSearch";
 import { useRouter } from "next/navigation";
+import Footer from "@/components/layout/Footer";
 
 interface Category {
   id: string;
@@ -352,51 +353,7 @@ export default function Home() {
 
 
       {/* Footer */}
-      <footer className="bg-black text-white py-12 border-t border-orange-500/20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center space-x-2 mb-4">
-                <ChefHat className="h-8 w-8 text-orange-500" />
-                <span className="text-2xl font-bold text-white">Culinora</span>
-              </div>
-              <p className="text-gray-400">
-                Gastronomi dünyasında kendinizi geliştirin ve profesyonel bir şef olun.
-              </p>
-            </div>
-            <div>
-              <h4 className="text-lg font-semibold mb-4">Kurslar</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li><Link href="#" className="hover:text-white">Temel Mutfak</Link></li>
-                <li><Link href="#" className="hover:text-white">Türk Mutfağı</Link></li>
-                <li><Link href="#" className="hover:text-white">Pastane</Link></li>
-                <li><Link href="#" className="hover:text-white">Dünya Mutfağı</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-lg font-semibold mb-4">Şirket</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li><Link href="#" className="hover:text-white">Hakkımızda</Link></li>
-                <li><Link href="#" className="hover:text-white">Eğitmenler</Link></li>
-                <li><Link href="#" className="hover:text-white">Kariyer</Link></li>
-                <li><Link href="#" className="hover:text-white">İletişim</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-lg font-semibold mb-4">Destek</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li><Link href="#" className="hover:text-white">Yardım Merkezi</Link></li>
-                <li><Link href="#" className="hover:text-white">Gizlilik</Link></li>
-                <li><Link href="#" className="hover:text-white">Şartlar</Link></li>
-                <li><Link href="#" className="hover:text-white">SSS</Link></li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2026 Culinora. Tüm hakları saklıdır.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
