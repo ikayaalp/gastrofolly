@@ -31,7 +31,9 @@ async function getAdminData() {
         email: true,
         role: true,
         createdAt: true,
-        image: true
+        image: true,
+        subscriptionPlan: true,
+        subscriptionEndDate: true,
       }
     })
   ])
@@ -131,43 +133,54 @@ export default async function AdminPage() {
               <thead className="bg-black/40">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Kullanıcı</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Rol</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Rol / Paket</th>
                   <th className="px-6 py-3 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">Tarih</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-800">
-                {recentRegistrations.map((user) => (
-                  <tr key={user.id} className="hover:bg-white/5 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-8 w-8">
-                          {user.image ? (
-                            <img className="h-8 w-8 rounded-full" src={user.image} alt="" />
-                          ) : (
-                            <div className="h-8 w-8 rounded-full bg-gray-800 flex items-center justify-center text-xs font-bold text-gray-400">
-                              {user.name?.charAt(0) || 'U'}
-                            </div>
+                {recentRegistrations.map((user) => {
+                  const isPremium = user.subscriptionEndDate && new Date(user.subscriptionEndDate) > new Date();
+
+                  return (
+                    <tr key={user.id} className="hover:bg-white/5 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 h-8 w-8">
+                            {user.image ? (
+                              <img className="h-8 w-8 rounded-full" src={user.image} alt="" />
+                            ) : (
+                              <div className="h-8 w-8 rounded-full bg-gray-800 flex items-center justify-center text-xs font-bold text-gray-400">
+                                {user.name?.charAt(0) || 'U'}
+                              </div>
+                            )}
+                          </div>
+                          <div className="ml-3">
+                            <p className="text-sm font-medium text-white">{user.name}</p>
+                            <p className="text-xs text-gray-500">{user.email}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex flex-col gap-1 items-start">
+                          <span className={`inline-flex px-2 py-1 text-[10px] font-semibold rounded-full ${user.role === 'ADMIN' ? 'bg-red-900/50 text-red-300 border border-red-800' :
+                            user.role === 'INSTRUCTOR' ? 'bg-blue-900/50 text-blue-300 border border-blue-800' :
+                              'bg-green-900/50 text-green-300 border border-green-800'
+                            }`}>
+                            {user.role}
+                          </span>
+                          {isPremium && (
+                            <span className="inline-flex px-2 py-1 text-[10px] font-semibold rounded-full bg-orange-500/20 text-orange-400 border border-orange-500/30">
+                              PREMIUM
+                            </span>
                           )}
                         </div>
-                        <div className="ml-3">
-                          <p className="text-sm font-medium text-white">{user.name}</p>
-                          <p className="text-xs text-gray-500">{user.email}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-[10px] font-semibold rounded-full ${user.role === 'ADMIN' ? 'bg-red-900/50 text-red-300 border border-red-800' :
-                        user.role === 'INSTRUCTOR' ? 'bg-blue-900/50 text-blue-300 border border-blue-800' :
-                          'bg-green-900/50 text-green-300 border border-green-800'
-                        }`}>
-                        {user.role}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-400">
-                      {new Date(user.createdAt).toLocaleDateString('tr-TR')}
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-400">
+                        {new Date(user.createdAt).toLocaleDateString('tr-TR')}
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
