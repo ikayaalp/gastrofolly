@@ -453,7 +453,7 @@ export default function ChefSosyalClient({
 
           {/* Mobile Header */}
           <div className="md:hidden pt-2 pb-4 px-4">
-            <h1 className="text-2xl font-bold text-white">Culinora</h1>
+            <h1 className="text-2xl font-bold text-white">Chef Sosyal</h1>
             <p className="text-gray-400 text-sm">Gastronomi tutkunlarının buluşma noktası</p>
           </div>
 
@@ -623,13 +623,7 @@ export default function ChefSosyalClient({
               </div>
 
               {/* Content Input (Auto-growing textarea ideally, but standardfghgfgow) */}
-              <input
-                type="text"
-                value={newTopicForm.title}
-                onChange={(e) => setNewTopicForm({ ...newTopicForm, title: e.target.value })}
-                placeholder="Başlık (İsteğe bağlı)"
-                className="w-full bg-transparent border-none p-0 text-xl font-bold text-white placeholder-gray-600 focus:ring-0 mb-4"
-              />
+              {/* Title input removed as per request - auto-generated from content */}
 
               <textarea
                 value={newTopicForm.content}

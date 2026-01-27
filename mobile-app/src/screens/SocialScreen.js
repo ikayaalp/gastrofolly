@@ -199,6 +199,7 @@ export default function SocialScreen({ navigation }) {
             if (categoriesResult.success) {
                 setCategories(categoriesResult.data || []);
             }
+            //deneme
 
             if (trendingResult.success) {
                 setTrendingHashtags(trendingResult.data?.hashtags || []);
@@ -208,7 +209,7 @@ export default function SocialScreen({ navigation }) {
                 setTopics(topicsResult.data.topics || []);
             }
 
-            // Only fetch liked topics if logged in
+            // Only fetch liked topics if logged inggh
             if (token) {
                 const likedResult = await forumService.getLikedTopics();
                 if (likedResult.success && likedResult.data.likedTopicIds) {

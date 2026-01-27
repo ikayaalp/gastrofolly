@@ -94,13 +94,18 @@ export default async function ChefSosyalPage({ searchParams }: PageProps) {
   // Trend hashtagleri çek
   let trendingHashtags: any[] = []
   try {
-    const trendingHashtagsData = await prisma.hashtag.findMany({
+    const trendingHashtagsData = await (prisma as any).hashtag.findMany({
       take: 5,
       include: {
         _count: {
           select: {
             topics: true
           }
+        }
+      },
+      where: {
+        topics: {
+          some: {}
         }
       },
       orderBy: {
