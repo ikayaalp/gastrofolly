@@ -74,7 +74,7 @@ export default function UserDropdown() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-72 bg-[#0a0a0a] border border-gray-800 rounded-lg shadow-xl z-50">
+        <div className="absolute right-0 mt-2 w-72 bg-[#0a0a0a] border border-gray-800 rounded-lg shadow-xl z-[60]">
           {/* Kullanıcı Bilgileri */}
           <div className="px-4 py-3 border-b border-gray-800">
             <div className="flex items-center space-x-3">

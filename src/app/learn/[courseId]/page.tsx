@@ -307,7 +307,7 @@ export default async function LearnPage({ params, searchParams }: LearnPageProps
   return (
     <div className="min-h-screen bg-black">
       {/* Mobile Top Bar */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
+      <div className="md:hidden fixed top-0 left-0 right-0 z-[60] bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
         <div className="flex justify-between items-center py-3 px-4">
           <Link href="/home" className="flex items-center space-x-2">
             <ChefHat className="h-6 w-6 text-orange-500" />
