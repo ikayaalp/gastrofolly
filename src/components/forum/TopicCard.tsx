@@ -93,13 +93,6 @@ export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave }: T
                             </span>
                             <span className="text-gray-600">•</span>
                             <span>{formatTimeAgo(topic.createdAt.toString())}</span>
-                            <span className="text-gray-600">•</span>
-                            <span
-                                className="font-medium px-2 py-0.5 rounded-full"
-                                style={{ backgroundColor: `${topic.category.color}20`, color: topic.category.color || 'gray' }}
-                            >
-                                {topic.category.name}
-                            </span>
                         </div>
 
                         {/* Content Preview - Clickable to Detail */}

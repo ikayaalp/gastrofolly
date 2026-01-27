@@ -42,6 +42,7 @@ import {
 import { Video, ResizeMode } from 'expo-av';
 import * as ImagePicker from 'expo-image-picker';
 import forumService from '../api/forumService';
+import authService from '../api/authService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomAlert from '../components/CustomAlert';
 import ImageViewerModal from '../components/ImageViewerModal';
@@ -79,6 +80,7 @@ export default function SocialScreen({ navigation }) {
     // Media state for new topic
     const [selectedMedias, setSelectedMedias] = useState([]);
     const [uploading, setUploading] = useState(false);
+    const [currentUser, setCurrentUser] = useState(null);
     const [fullscreenImageUrl, setFullscreenImageUrl] = useState(null); // For fullscreen modal
     const [fullscreenVideoUrl, setFullscreenVideoUrl] = useState(null); // For fullscreen video
     const [playingVideoId, setPlayingVideoId] = useState(null);
@@ -178,6 +180,10 @@ export default function SocialScreen({ navigation }) {
     const checkLoginStatus = async () => {
         const token = await AsyncStorage.getItem('authToken');
         setIsLoggedIn(!!token);
+        if (token) {
+            const user = await authService.getCurrentUser();
+            setCurrentUser(user);
+        }
     };
 
     const loadData = async () => {
@@ -602,7 +608,7 @@ export default function SocialScreen({ navigation }) {
                                     <User size={20} color="#fff" />
                                 </View>
                                 <View style={styles.categorySelector}>
-                                    <Text style={styles.categorySelectorText}>Chef Sosyal</Text>
+                                    <Text style={styles.categorySelectorText}>{currentUser?.name || 'Kullanıcı'}</Text>
                                 </View>
                             </View>
 

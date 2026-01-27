@@ -346,10 +346,13 @@ export default function ChefSosyalClient({
 
     setSubmitting(true)
 
-    // Otomatik başlık üretimi
-    let generatedTitle = newTopicForm.content.trim().split('\n')[0].substring(0, 50)
-    if (!generatedTitle) generatedTitle = "Medya Paylaşımı"
-    if (newTopicForm.content.trim().length > 50) generatedTitle += "..."
+    // Otomatik başlık üretimi (Eğer kullanıcı girmediyse)
+    let finalTitle = newTopicForm.title.trim();
+    if (!finalTitle) {
+      finalTitle = newTopicForm.content.trim().split('\n')[0].substring(0, 50);
+      if (!finalTitle) finalTitle = "Medya Paylaşımı";
+      if (newTopicForm.content.trim().length > 50) finalTitle += "...";
+    }
 
     try {
       const response = await fetch('/api/forum/topics', {
@@ -358,7 +361,7 @@ export default function ChefSosyalClient({
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          title: generatedTitle,
+          title: finalTitle,
           content: newTopicForm.content || '...',
           categoryId: newTopicForm.categoryId,
           mediaUrl: topicMedia?.mediaUrl || null,
@@ -499,7 +502,7 @@ export default function ChefSosyalClient({
             <div className="h-6 w-px bg-gray-800 mx-2 hidden sm:block"></div>
 
             <div className="flex items-center space-x-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide">
-              {trendingHashtags.map((hashtag) => (
+              {(trendingHashtags || []).map((hashtag) => (
                 <button
                   key={hashtag.id}
                   onClick={() => setSearchTerm('#' + hashtag.name)}
@@ -599,15 +602,19 @@ export default function ChefSosyalClient({
                 )}
                 <div className="flex flex-col">
                   <span className="text-white font-bold text-sm">{session?.user?.name || 'Kullanıcı'}</span>
-                  <div className="px-2 py-0.5 rounded-full border border-gray-800 bg-gray-900 w-fit mt-1">
-                    <span className="text-[10px] font-bold text-gray-400 flex items-center">
-                      Genel <ArrowDown className="h-3 w-3 ml-1" />
-                    </span>
-                  </div>
+
                 </div>
               </div>
 
               {/* Content Input (Auto-growing textarea ideally, but standardfghgfgow) */}
+              <input
+                type="text"
+                value={newTopicForm.title}
+                onChange={(e) => setNewTopicForm({ ...newTopicForm, title: e.target.value })}
+                placeholder="Başlık (İsteğe bağlı)"
+                className="w-full bg-transparent border-none p-0 text-xl font-bold text-white placeholder-gray-600 focus:ring-0 mb-4"
+              />
+
               <textarea
                 value={newTopicForm.content}
                 onChange={(e) => setNewTopicForm({ ...newTopicForm, content: e.target.value })}
