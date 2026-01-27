@@ -297,6 +297,17 @@ export default function ChefAIClient() {
                         placeholder="Bir şeyler sor (örn: Lazanya tarifi)..."
                         className="flex-1 bg-transparent text-white text-[15px] max-h-24 py-3 focus:outline-none resize-none placeholder-gray-500"
                         rows={1}
+                        onFocus={() => {
+                            const nav = document.getElementById('mobile-bottom-nav');
+                            if (nav) nav.style.display = 'none';
+                        }}
+                        onBlur={() => {
+                            // Small delay to prevent flashing if just switching focus or clicking send
+                            setTimeout(() => {
+                                const nav = document.getElementById('mobile-bottom-nav');
+                                if (nav) nav.style.display = 'block';
+                            }, 100);
+                        }}
                         onKeyDown={(e) => {
                             if (e.key === 'Enter' && !e.shiftKey) {
                                 e.preventDefault();
