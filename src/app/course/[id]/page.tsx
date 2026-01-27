@@ -88,7 +88,8 @@ export default async function CoursePage({ params }: CoursePageProps) {
     if (user?.subscriptionPlan && user?.subscriptionEndDate && new Date(user.subscriptionEndDate) > new Date()) {
       hasActiveSubscription = true
       // Abonelik seviyesini belirle
-      if (user.subscriptionPlan === 'Commis') userSubscriptionLevel = 1
+      if (user.subscriptionPlan === 'Premium') userSubscriptionLevel = 99 // Tüm kurslara erişim
+      else if (user.subscriptionPlan === 'Commis') userSubscriptionLevel = 1
       else if (user.subscriptionPlan === 'Chef D party') userSubscriptionLevel = 2
       else if (user.subscriptionPlan === 'Executive') userSubscriptionLevel = 3
     }
