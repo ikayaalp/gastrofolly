@@ -13,6 +13,11 @@ export async function GET() {
                     }
                 }
             },
+            where: {
+                topics: {
+                    some: {}
+                }
+            },
             orderBy: {
                 topics: {
                     _count: 'desc'
