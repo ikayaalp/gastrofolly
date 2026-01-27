@@ -87,7 +87,6 @@ export default function SocialScreen({ navigation }) {
     const [playingVideoId, setPlayingVideoId] = useState(null);
     const [videoDurations, setVideoDurations] = useState({});
     const [videoProgress, setVideoProgress] = useState({});
-    const [trendingHashtags, setTrendingHashtags] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
 
     // Custom Video Controls
@@ -202,7 +201,7 @@ export default function SocialScreen({ navigation }) {
             }
 
             if (trendingResult.success) {
-                setTrendingHashtags(trendingResult.data || []);
+                setTrendingHashtags(trendingResult.data?.hashtags || []);
             }
 
             if (topicsResult.success) {
@@ -533,7 +532,7 @@ export default function SocialScreen({ navigation }) {
                     <View style={{ width: 1, height: 20, backgroundColor: '#333', marginHorizontal: 4 }} />
 
                     {/* Trending Hashtags */}
-                    {trendingHashtags.map((hashtag) => (
+                    {trendingHashtags?.map((hashtag) => (
                         <TouchableOpacity
                             key={hashtag.id}
                             style={[styles.hashtagBadge, { backgroundColor: '#111', borderColor: '#222' }]}

@@ -327,8 +327,6 @@ export default function ExpandableCourseCard({ course, showProgress, rank, large
 
                                 {/* Tags/Categories */}
                                 <div className="flex flex-wrap gap-2 text-xs text-white">
-                                    <span className="text-zinc-300">{course.category.name}</span>
-                                    <span className="text-zinc-500">•</span>
                                     <span className="text-zinc-300">{course.instructor.name}</span>
                                 </div>
 

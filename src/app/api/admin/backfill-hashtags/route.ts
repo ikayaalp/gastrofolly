@@ -16,32 +16,39 @@ export async function GET() {
         let updatedCount = 0
         const logs: string[] = []
 
+
         // 2. Process each topic
+        const errors: any[] = []
         for (const topic of topics) {
-            const content = topic.content || ''
-            const title = topic.title || ''
-            const fullText = `${title} ${content}`
+            try {
+                const content = topic.content || ''
+                const title = topic.title || ''
+                const fullText = `${title} ${content}`
 
-            // Extract hashtags
-            const hashtagRegex = /#([a-zA-Z0-9çğıöşüÇĞİÖŞÜ]+)/g
-            const hashtagsFound = Array.from(fullText.matchAll(hashtagRegex)).map(match => match[1].toLowerCase())
-            const uniqueHashtags = [...new Set(hashtagsFound)]
+                // Extract hashtags
+                const hashtagRegex = /#([a-zA-Z0-9çğıöşüÇĞİÖŞÜ]+)/g
+                const hashtagsFound = Array.from(fullText.matchAll(hashtagRegex)).map(match => match[1].toLowerCase())
+                const uniqueHashtags = [...new Set(hashtagsFound)]
 
-            if (uniqueHashtags.length > 0) {
-                // Connect/Create hashtags for this topic
-                await prisma.topic.update({
-                    where: { id: topic.id },
-                    data: {
-                        hashtags: {
-                            connectOrCreate: uniqueHashtags.map(name => ({
-                                where: { name },
-                                create: { name }
-                            }))
+                if (uniqueHashtags.length > 0) {
+                    // Connect/Create hashtags for this topic
+                    await prisma.topic.update({
+                        where: { id: topic.id },
+                        data: {
+                            hashtags: {
+                                connectOrCreate: uniqueHashtags.map(name => ({
+                                    where: { name },
+                                    create: { name }
+                                }))
+                            }
                         }
-                    }
-                })
-                updatedCount++
-                logs.push(`Topic "${topic.id}" updated with hashtags: ${uniqueHashtags.join(', ')}`)
+                    })
+                    updatedCount++
+                    logs.push(`Topic "${topic.id}" updated with hashtags: ${uniqueHashtags.join(', ')}`)
+                }
+            } catch (err: any) {
+                console.error(`Error processing topic ${topic.id}:`, err)
+                errors.push({ topicId: topic.id, error: err.message, stack: err.stack })
             }
         }
 
@@ -49,13 +56,15 @@ export async function GET() {
             message: 'Backfill completed',
             totalTopics: topics.length,
             updatedTopics: updatedCount,
-            logs
+            logs,
+            errors
         })
-    } catch (error) {
-        console.error('Backfill error:', error)
+    } catch (error: any) {
+        console.error('Backfill fatal error:', error)
         return NextResponse.json(
-            { error: 'Backfill failed', details: String(error) },
+            { error: 'Backfill failed', details: error.message, stack: error.stack },
             { status: 500 }
         )
     }
 }
+

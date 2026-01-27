@@ -501,7 +501,7 @@ export default function ChefSosyalClient({
 
             <div className="h-6 w-px bg-gray-800 mx-2 hidden sm:block"></div>
 
-            <div className="flex items-center space-x-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide w-full max-w-full touch-pan-x">
+            <div className="flex items-center space-x-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide flex-1 min-w-0 touch-pan-x">
               {trendingHashtags.map((hashtag) => (
                 <button
                   key={hashtag.id}
