@@ -9,7 +9,18 @@ import { User, Settings, BookOpen, LogOut, ChevronDown, Play, Heart, Award } fro
 export default function UserDropdown() {
   const { data: session } = useSession()
   const [isOpen, setIsOpen] = useState(false)
+  const [imageError, setImageError] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+
+  const getInitials = (name: string | null | undefined) => {
+    if (!name) return 'U'
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .substring(0, 2)
+  }
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -39,16 +50,19 @@ export default function UserDropdown() {
         className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors focus:outline-none"
       >
         <div className="w-8 h-8 rounded-full bg-orange-600 flex items-center justify-center border-2 border-gray-600 hover:border-orange-500 transition-colors overflow-hidden relative">
-          {session.user.image ? (
+          {session.user.image && !imageError ? (
             <Image
               src={session.user.image}
               alt={session.user.name || 'User'}
               fill
               sizes="32px"
               className="object-cover"
+              onError={() => setImageError(true)}
             />
           ) : (
-            <span className="text-lg">👨‍🍳</span>
+            <span className="text-sm font-bold text-white tracking-wider">
+              {getInitials(session.user.name)}
+            </span>
           )}
         </div>
         <span className="hidden md:block text-sm font-medium">
@@ -65,7 +79,7 @@ export default function UserDropdown() {
           <div className="px-4 py-3 border-b border-gray-800">
             <div className="flex items-center space-x-3">
               <div className="w-12 h-12 rounded-full bg-orange-600 flex items-center justify-center overflow-hidden relative">
-                {session.user.image ? (
+                {session.user.image && !imageError ? (
                   <Image
                     src={session.user.image}
                     alt={session.user.name || 'User'}
@@ -74,7 +88,9 @@ export default function UserDropdown() {
                     className="object-cover"
                   />
                 ) : (
-                  <span className="text-2xl">👨‍🍳</span>
+                  <span className="text-lg font-bold text-white tracking-wider">
+                    {getInitials(session.user.name)}
+                  </span>
                 )}
               </div>
               <div className="flex-1 min-w-0">

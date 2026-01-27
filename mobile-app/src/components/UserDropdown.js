@@ -6,6 +6,7 @@ import authService from '../api/authService';
 export default function UserDropdown({ navigation }) {
     const [visible, setVisible] = useState(false);
     const [userData, setUserData] = useState(null);
+    const [imageError, setImageError] = useState(false);
 
     useEffect(() => {
         loadUserData();
@@ -14,6 +15,16 @@ export default function UserDropdown({ navigation }) {
     const loadUserData = async () => {
         const user = await authService.getCurrentUser();
         setUserData(user);
+    };
+
+    const getInitials = (name) => {
+        if (!name) return 'U';
+        return name
+            .split(' ')
+            .map((n) => n[0])
+            .join('')
+            .toUpperCase()
+            .substring(0, 2);
     };
 
     const handleLogout = async () => {
@@ -38,13 +49,16 @@ export default function UserDropdown({ navigation }) {
             <TouchableOpacity onPress={() => setVisible(true)} style={styles.trigger}>
                 <View style={styles.triggerContent}>
                     <View style={styles.avatarSmall}>
-                        {userData?.image ? (
+                        {userData?.image && !imageError ? (
                             <Image
                                 source={{ uri: userData.image }}
                                 style={styles.avatarImageSmall}
+                                onError={() => setImageError(true)}
                             />
                         ) : (
-                            <Text style={styles.avatarEmoji}>👨‍🍳</Text>
+                            <Text style={styles.avatarEmoji}>
+                                {userData?.name ? getInitials(userData.name) : '👨‍🍳'}
+                            </Text>
                         )}
                     </View>
                     <ChevronDown size={16} color="#d1d5db" />
@@ -66,13 +80,15 @@ export default function UserDropdown({ navigation }) {
                         {/* User Info Header */}
                         <View style={styles.userInfo}>
                             <View style={styles.avatar}>
-                                {userData?.image ? (
+                                {userData?.image && !imageError ? (
                                     <Image
                                         source={{ uri: userData.image }}
                                         style={styles.avatarImageLarge}
                                     />
                                 ) : (
-                                    <Text style={styles.avatarEmojiLarge}>👨‍🍳</Text>
+                                    <Text style={styles.avatarEmojiLarge}>
+                                        {userData?.name ? getInitials(userData.name) : '👨‍🍳'}
+                                    </Text>
                                 )}
                             </View>
                             <View style={styles.userDetails}>
