@@ -141,6 +141,16 @@ export default function ChefSosyalClient({
     }
   }
 
+  // Hashtag tıklama işlemi (Mobile)
+  const handleHashtagClick = (hashtagName: string) => {
+    const term = '#' + hashtagName
+    setSearchTerm(term)
+    // Sidebar gibi diğer filtreleri sıfırla
+    const params = new URLSearchParams()
+    params.set('search', term)
+    router.push(`/chef-sosyal?${params.toString()}`)
+  }
+
   // Modal açıldığında kategorileri yükle
   useEffect(() => {
     if (showNewTopicModal && categories.length === 0) {
@@ -521,7 +531,7 @@ export default function ChefSosyalClient({
               {trendingHashtags.map((hashtag) => (
                 <button
                   key={hashtag.id}
-                  onClick={() => setSearchTerm('#' + hashtag.name)}
+                  onClick={() => handleHashtagClick(hashtag.name)}
                   className="flex items-center px-3 py-1.5 rounded-full bg-[#1a1a1a] border border-gray-800 text-xs font-medium text-gray-400 hover:text-orange-500 hover:border-orange-500/50 transition-colors whitespace-nowrap"
                 >
                   <span className="text-orange-500 mr-1">#</span>
