@@ -632,35 +632,8 @@ export default function ChefSosyalClient({
                 className="w-full bg-transparent border-none p-0 text-base text-gray-300 placeholder-gray-600 focus:ring-0 min-h-[120px] resize-none"
               />
 
-              {/* Media Preview */}
-              {topicMedia && (
-                <div className="relative mt-4 rounded-xl overflow-hidden bg-gray-900 border border-gray-800 group">
-                  <button
-                    onClick={() => setTopicMedia(null)}
-                    className="absolute top-2 right-2 p-1.5 bg-black/60 rounded-full text-white hover:bg-black/80 transition-colors z-10"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                  {topicMedia.mediaType === 'VIDEO' ? (
-                    <video
-                      src={topicMedia.mediaUrl}
-                      className="w-full max-h-[400px] object-contain bg-black"
-                      controls
-                    />
-                  ) : (
-                    <img
-                      src={topicMedia.mediaUrl}
-                      alt="Preview"
-                      className="w-full max-h-[400px] object-cover"
-                    />
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Bottom Toolbar */}
-            <div className="p-4 border-t border-gray-900 bg-black/50 backdrop-blur-xl">
-              <div className="flex items-center space-x-6 text-[#ea580c]">
+              {/* Toolbar moved inline */}
+              <div className="flex items-center space-x-6 text-[#ea580c] mt-2 mb-2">
                 <button
                   onClick={() => document.getElementById('media-upload-image')?.click()}
                   className="p-2 -ml-2 hover:bg-[#ea580c]/10 rounded-full transition-colors"
@@ -707,7 +680,34 @@ export default function ChefSosyalClient({
                 className="hidden"
                 onChange={(e) => handleMediaSelect(e, 'VIDEO')}
               />
+
+              {/* Media Preview */}
+              {topicMedia && (
+                <div className="relative mt-4 rounded-xl overflow-hidden bg-gray-900 border border-gray-800 group">
+                  <button
+                    onClick={() => setTopicMedia(null)}
+                    className="absolute top-2 right-2 p-1.5 bg-black/60 rounded-full text-white hover:bg-black/80 transition-colors z-10"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                  {topicMedia.mediaType === 'VIDEO' ? (
+                    <video
+                      src={topicMedia.mediaUrl}
+                      className="w-full max-h-[400px] object-contain bg-black"
+                      controls
+                    />
+                  ) : (
+                    <img
+                      src={topicMedia.mediaUrl}
+                      alt="Preview"
+                      className="w-full max-h-[400px] object-cover"
+                    />
+                  )}
+                </div>
+              )}
             </div>
+
+
           </div>
         </div>
       )}
