@@ -81,7 +81,14 @@ export default function TopicDetailClient({ session, topic, categories }: TopicD
   const [likeCount, setLikeCount] = useState(topic.likeCount)
   const [likedComments, setLikedComments] = useState<Set<string>>(new Set())
   const [deleting, setDeleting] = useState(false)
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false)
   const router = useRouter()
+
+  const handleImageClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsLightboxOpen(true)
+  }
 
   // Initial Check
   useEffect(() => {
@@ -301,10 +308,18 @@ export default function TopicDetailClient({ session, topic, categories }: TopicD
               )}
 
               {topic.mediaUrl && (
-                <div className="mb-4 rounded-lg overflow-hidden bg-gray-900 border border-gray-800 flex justify-center items-center">
+                <div
+                  onClick={handleImageClick}
+                  className="mb-4 rounded-lg overflow-hidden bg-gray-900 border border-gray-800 flex justify-center items-center cursor-pointer relative group"
+                >
                   {topic.mediaType === 'VIDEO' ? (
                     <div className="relative w-full aspect-video">
-                      <video controls poster={topic.thumbnailUrl || undefined} className="w-full h-full object-contain bg-black">
+                      <video
+                        controls
+                        poster={topic.thumbnailUrl || undefined}
+                        className="w-full h-full object-contain bg-black"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <source src={topic.mediaUrl} type="video/mp4" />
                       </video>
                     </div>
@@ -322,10 +337,6 @@ export default function TopicDetailClient({ session, topic, categories }: TopicD
                 <div className="flex items-center space-x-1.5 px-3 py-2 hover:bg-gray-800 rounded-full transition-colors cursor-pointer text-gray-400 hover:text-white">
                   <MessageCircle className="h-4 w-4" />
                   <span className="text-sm">{comments.length} Yorum</span>
-                </div>
-                <div className="flex items-center space-x-1.5 px-3 py-2 hover:bg-gray-800 rounded-full transition-colors cursor-pointer text-gray-400 hover:text-white">
-                  <Share2 className="h-4 w-4" />
-                  <span className="hidden sm:inline">Paylaş</span>
                 </div>
                 {session?.user && topic.author.id === session.user.id && (
                   <button onClick={handleDeleteTopic} className="flex items-center space-x-1 px-3 py-2 hover:bg-gray-800 rounded-full text-red-500 hover:text-red-400">
@@ -422,6 +433,28 @@ export default function TopicDetailClient({ session, topic, categories }: TopicD
         </div>
         <RightSidebar />
       </div>
+
+      {/* Lightbox Overlay */}
+      {isLightboxOpen && topic.mediaUrl && topic.mediaType !== 'VIDEO' && (
+        <div
+          className="fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center p-4 animate-in fade-in duration-200"
+          onClick={() => setIsLightboxOpen(false)}
+        >
+          <div className="relative max-w-7xl max-h-screen w-full h-full flex items-center justify-center">
+            <img
+              src={topic.mediaUrl}
+              alt={topic.title}
+              className="max-w-full max-h-full object-contain"
+            />
+            <button
+              onClick={() => setIsLightboxOpen(false)}
+              className="absolute top-4 right-4 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
