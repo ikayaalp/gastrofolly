@@ -21,8 +21,7 @@ import {
     CheckCircle,
     ArrowLeft,
 } from 'lucide-react-native';
-import axios from 'axios';
-import config from '../api/config';
+import courseService from '../api/courseService';
 import authService from '../api/authService';
 import CustomAlert from '../components/CustomAlert';
 
@@ -46,8 +45,6 @@ export default function CourseDetailScreen({ route, navigation }) {
         setAlertConfig({ title, message, buttons, type });
         setAlertVisible(true);
     };
-
-    const [refreshing, setRefreshing] = React.useState(false);
 
     // useFocusEffect to refresh data when screen comes into focus (e.g. back from payment)
     const { useFocusEffect } = require('@react-navigation/native');
@@ -99,13 +96,13 @@ export default function CourseDetailScreen({ route, navigation }) {
             setLoading(true);
             setError(null);
 
-            // Fetch course details from backend
-            const response = await axios.get(`${config.API_BASE_URL}/api/courses/${courseId}`);
+            // Fetch course details using service (sends auth token)
+            const result = await courseService.getCourseDetails(courseId);
 
-            if (response.data) {
-                setCourse(response.data);
+            if (result.success) {
+                setCourse(result.data);
             } else {
-                throw new Error('Kurs bulunamadı');
+                throw new Error(result.error || 'Kurs bulunamadı');
             }
         } catch (err) {
             console.error('Course detail error:', err);
@@ -257,7 +254,7 @@ export default function CourseDetailScreen({ route, navigation }) {
                         >
                             <Play size={20} color="white" fill="white" />
                             <Text style={styles.enrolledButtonText}>
-                                {course.progress > 0 ? 'İzlemeye Devam Et' : 'Kursa Başla'}
+                                {course.progress > 0 ? 'Kursa Devam Et' : 'Kursa Başla'}
                             </Text>
                         </TouchableOpacity>
                     )}

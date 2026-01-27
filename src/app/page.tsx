@@ -2,6 +2,8 @@
 import Link from "next/link";
 import { ChefHat, Play, Star, Users, Crown, BookOpen, Zap, ArrowRight, Check, Search, ChevronDown, X } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
+import { useSession } from "next-auth/react";
+import UserDropdown from "@/components/ui/UserDropdown";
 import AutoScrollCourses from "@/components/home/AutoScrollCourses";
 import HomeStories from "@/components/home/HomeStories";
 import FAQSection from "@/components/home/FAQSection";
@@ -52,6 +54,7 @@ export default function Home() {
     };
   }
 
+  const { data: session, status } = useSession();
   const [featured, setFeatured] = useState<FeaturedCourse[]>([]);
   const [userCourses, setUserCourses] = useState<any[]>([]); // Added state for user courses
   const [loading, setLoading] = useState(true);
@@ -113,30 +116,38 @@ export default function Home() {
       }
     };
 
-    // Check for user courses (Continue Watching)
-    const fetchUserCourses = async () => {
-      try {
-        const response = await fetch("/api/user/courses", {
-          cache: "no-store",
-          credentials: "include"
-          // Ensure cookies are sent (important for NextAuth session)
-          // Note: Same-origin requests typically send cookies by default, 
-          // but 'include' ensures it across different browser policies.
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setUserCourses(data.courses || []);
-        } else {
-          console.error("Failed to fetch user courses:", response.status);
-        }
-      } catch (error) {
-        console.error("Error loading user courses:", error);
-      }
-    }
-
     fetchCourses();
-    fetchUserCourses();
   }, []);
+
+  // Check for user courses (Continue Watching) - Depends on Session
+  useEffect(() => {
+    if (status === 'loading') return;
+
+    // Only fetch if user is logged in
+    if (session?.user?.id) {
+      const fetchUserCourses = async () => {
+        try {
+          const response = await fetch("/api/user/courses", {
+            cache: "no-store",
+            // credentials: "include" - standard fetch with NextAuth typically handles this if same origin, 
+            // but explicit is fine too.
+          });
+          if (response.ok) {
+            const data = await response.json();
+            // Maps API response (courses or enrollments) to render structure
+            setUserCourses(data.courses || []);
+          } else {
+            console.error("Failed to fetch user courses:", response.status);
+          }
+        } catch (error) {
+          console.error("Error loading user courses:", error);
+        }
+      };
+      fetchUserCourses();
+    } else {
+      setUserCourses([]);
+    }
+  }, [session, status]);
 
   const handleSignUpClick = () => {
     console.log("Hemen Başla butonuna tıklandı!");
@@ -220,15 +231,23 @@ export default function Home() {
 
               {/* Auth Links */}
               <div className="flex items-center gap-4">
-                <Link href="/auth/signin" className="text-gray-400 hover:text-white text-sm transition-colors">
-                  Giriş yap
-                </Link>
-                <Link
-                  href="/auth/signup"
-                  className="bg-orange-600 hover:bg-orange-500 text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors"
-                >
-                  Kayıt Ol
-                </Link>
+                {status === "loading" ? (
+                  <div className="w-8 h-8 rounded-full bg-gray-800 animate-pulse "></div>
+                ) : session ? (
+                  <UserDropdown />
+                ) : (
+                  <>
+                    <Link href="/auth/signin" className="text-gray-400 hover:text-white text-sm transition-colors">
+                      Giriş yap
+                    </Link>
+                    <Link
+                      href="/auth/signup"
+                      className="bg-orange-600 hover:bg-orange-500 text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors"
+                    >
+                      Kayıt Ol
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </div>
