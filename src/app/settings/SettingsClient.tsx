@@ -309,15 +309,15 @@ export default function SettingsClient({ user }: SettingsClientProps) {
   return (
     <div className="space-y-8">
       {/* Tabs */}
-      <div className="border-b border-gray-800">
-        <nav className="flex space-x-8">
+      <div className="border-b border-gray-800 overflow-x-auto scrollbar-hide">
+        <nav className="flex space-x-8 px-4 md:px-0 min-w-max">
           {tabs.map((tab) => {
             const Icon = tab.icon
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === tab.id
+                className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition-colors ${activeTab === tab.id
                   ? 'border-orange-500 text-orange-500'
                   : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-300'
                   }`}
