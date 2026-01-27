@@ -54,13 +54,17 @@ const forumService = {
     },
 
     // Get topics with optional filters
-    getTopics: async (category = 'all', sort = 'newest', limit = 20) => {
+    getTopics: async (category = 'all', sort = 'newest', limit = 20, search = '') => {
         try {
             const params = new URLSearchParams({
                 category,
                 sort,
                 limit: limit.toString(),
             });
+
+            if (search) {
+                params.append('search', search);
+            }
             const response = await api.get(`/api/forum/topics?${params}`);
             return { success: true, data: response.data };
         } catch (error) {

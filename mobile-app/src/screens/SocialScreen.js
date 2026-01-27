@@ -186,7 +186,7 @@ export default function SocialScreen({ navigation }) {
 
             const [categoriesResult, topicsResult] = await Promise.all([
                 forumService.getCategories(),
-                forumService.getTopics(selectedCategory, sortBy),
+                forumService.getTopics(selectedCategory, sortBy, 20, searchTerm),
             ]);
 
             if (categoriesResult.success) {
@@ -216,7 +216,7 @@ export default function SocialScreen({ navigation }) {
         useCallback(() => {
             checkLoginStatus();
             loadData();
-        }, [selectedCategory, sortBy])
+        }, [selectedCategory, sortBy, searchTerm])
     );
 
     const onRefresh = () => {
