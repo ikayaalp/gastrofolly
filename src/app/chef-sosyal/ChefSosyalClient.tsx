@@ -490,11 +490,26 @@ export default function ChefSosyalClient({
             </button>
             <button
               onClick={() => handleSortChange('saved')}
-              className={`flex items-center space-x-2 px-3 py-1.5 rounded-full font-bold text-sm transition-colors ${sortBy === 'saved' ? 'bg-gray-800 text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}`}
+              className={`flex items-center space-x-2 px-3 py-1.5 rounded-full font-bold text-sm transition-colors whitespace-nowrap ${sortBy === 'saved' ? 'bg-gray-800 text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}`}
             >
               <Bookmark className="h-4 w-4" />
               <span>Kaydedilenler</span>
             </button>
+
+            <div className="h-6 w-px bg-gray-800 mx-2 hidden sm:block"></div>
+
+            <div className="flex items-center space-x-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide">
+              {trendingHashtags.map((hashtag) => (
+                <button
+                  key={hashtag.id}
+                  onClick={() => setSearchTerm('#' + hashtag.name)}
+                  className="flex items-center px-3 py-1.5 rounded-full bg-[#1a1a1a] border border-gray-800 text-xs font-medium text-gray-400 hover:text-orange-500 hover:border-orange-500/50 transition-colors whitespace-nowrap"
+                >
+                  <span className="text-orange-500 mr-1">#</span>
+                  {hashtag.name}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Posts Feed */}

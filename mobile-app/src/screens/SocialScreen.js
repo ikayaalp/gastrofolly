@@ -480,59 +480,56 @@ export default function SocialScreen({ navigation }) {
                 ) : null}
             </View>
 
-            {/* Trending Hashtags - Horizontal Scroll */}
-            {trendingHashtags.length > 0 && (
-                <View style={styles.trendingContainer}>
-                    <View style={styles.trendingHeader}>
-                        <Flame size={14} color="#ea580c" />
-                        <Text style={styles.trendingTitle}>Trend Etiketler</Text>
-                    </View>
-                    <ScrollView
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        contentContainerStyle={styles.trendingScroll}
-                    >
-                        {trendingHashtags.map((hashtag) => (
-                            <TouchableOpacity
-                                key={hashtag.id}
-                                style={styles.hashtagBadge}
-                                onPress={() => setSearchTerm('#' + hashtag.name)}
-                            >
-                                <Hash size={12} color="#ea580c" />
-                                <Text style={styles.hashtagText}>{hashtag.name}</Text>
-                                <Text style={styles.hashtagCount}>{hashtag.count}</Text>
-                            </TouchableOpacity>
-                        ))}
-                    </ScrollView>
-                </View>
-            )}
+
 
             {/* Filter Tabs (like web) */}
-            <View style={styles.filterTabsContainer}>
-                <TouchableOpacity
-                    style={[styles.filterTab, sortBy === 'newest' && !searchTerm && selectedCategory === 'all' && styles.filterTabActive]}
-                    onPress={() => {
-                        setSortBy('newest');
-                        setSearchTerm('');
-                        setSelectedCategory('all');
-                    }}
+            {/* Filter Tabs & Hashtags */}
+            <View style={{ height: 50, marginBottom: 12 }}>
+                <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={{ paddingHorizontal: 16, alignItems: 'center', gap: 12 }}
                 >
-                    <Users size={14} color={sortBy === 'newest' && !searchTerm && selectedCategory === 'all' ? '#fff' : '#6b7280'} />
-                    <Text style={[styles.filterTabText, sortBy === 'newest' && !searchTerm && selectedCategory === 'all' && styles.filterTabTextActive]}>Anasayfa</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={[styles.filterTab, sortBy === 'popular' && styles.filterTabActive]}
-                    onPress={() => setSortBy('popular')}
-                >
-                    <Text style={[styles.filterTabText, sortBy === 'popular' && styles.filterTabTextActive]}>Popüler</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={[styles.filterTab, sortBy === 'saved' && styles.filterTabActive]}
-                    onPress={() => setSortBy('saved')}
-                >
-                    <Bookmark size={14} color={sortBy === 'saved' ? '#fff' : '#6b7280'} />
-                    <Text style={[styles.filterTabText, sortBy === 'saved' && styles.filterTabTextActive]}>Kaydedilenler</Text>
-                </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[styles.filterTab, sortBy === 'newest' && !searchTerm && selectedCategory === 'all' && styles.filterTabActive]}
+                        onPress={() => {
+                            setSortBy('newest');
+                            setSearchTerm('');
+                            setSelectedCategory('all');
+                        }}
+                    >
+                        <Users size={14} color={sortBy === 'newest' && !searchTerm && selectedCategory === 'all' ? '#fff' : '#6b7280'} />
+                        <Text style={[styles.filterTabText, sortBy === 'newest' && !searchTerm && selectedCategory === 'all' && styles.filterTabTextActive]}>Anasayfa</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[styles.filterTab, sortBy === 'popular' && styles.filterTabActive]}
+                        onPress={() => setSortBy('popular')}
+                    >
+                        <Text style={[styles.filterTabText, sortBy === 'popular' && styles.filterTabTextActive]}>Popüler</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[styles.filterTab, sortBy === 'saved' && styles.filterTabActive]}
+                        onPress={() => setSortBy('saved')}
+                    >
+                        <Bookmark size={14} color={sortBy === 'saved' ? '#fff' : '#6b7280'} />
+                        <Text style={[styles.filterTabText, sortBy === 'saved' && styles.filterTabTextActive]}>Kaydedilenler</Text>
+                    </TouchableOpacity>
+
+                    {/* Divider */}
+                    <View style={{ width: 1, height: 20, backgroundColor: '#333', marginHorizontal: 4 }} />
+
+                    {/* Trending Hashtags */}
+                    {trendingHashtags.map((hashtag) => (
+                        <TouchableOpacity
+                            key={hashtag.id}
+                            style={[styles.hashtagBadge, { backgroundColor: '#111', borderColor: '#222' }]}
+                            onPress={() => setSearchTerm('#' + hashtag.name)}
+                        >
+                            <Hash size={12} color="#ea580c" />
+                            <Text style={styles.hashtagText}>{hashtag.name}</Text>
+                        </TouchableOpacity>
+                    ))}
+                </ScrollView>
             </View>
             < FlatList
                 data={sortBy === 'saved' ? topics.filter(t => savedTopics.has(t.id)) : topics
@@ -1486,28 +1483,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#ea580c',
         borderRadius: 3,
     },
-    trendingContainer: {
-        paddingVertical: 12,
-        backgroundColor: '#0a0a0a',
-        borderBottomWidth: 1,
-        borderBottomColor: '#1a1a1a',
-    },
-    trendingHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 16,
-        marginBottom: 8,
-        gap: 6,
-    },
-    trendingTitle: {
-        fontSize: 12,
-        fontWeight: 'bold',
-        color: '#6b7280',
-        textTransform: 'uppercase',
-    },
-    trendingScroll: {
-        paddingHorizontal: 12,
-    },
+
     hashtagBadge: {
         flexDirection: 'row',
         alignItems: 'center',
