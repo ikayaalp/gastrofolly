@@ -81,7 +81,7 @@ export default function AIAssistantWidget() {
         <>
             {/* Chat Window */}
             {isOpen && (
-                <div className="fixed bottom-36 md:bottom-28 right-6 w-[350px] md:w-[400px] h-[450px] md:h-[550px] bg-[#0a0a0a] border border-gray-800 rounded-2xl shadow-2xl flex flex-col z-[9999] overflow-hidden animate-in slide-in-from-bottom-5 duration-300">
+                <div className="hidden md:flex fixed bottom-36 md:bottom-28 right-6 w-[350px] md:w-[400px] h-[450px] md:h-[550px] bg-[#0a0a0a] border border-gray-800 rounded-2xl shadow-2xl flex-col z-[9999] overflow-hidden animate-in slide-in-from-bottom-5 duration-300">
                     {/* Header */}
                     <div className="bg-gradient-to-r from-orange-600 to-orange-500 px-4 py-3 flex items-center justify-between">
                         <div className="flex items-center gap-3">
@@ -165,7 +165,7 @@ export default function AIAssistantWidget() {
             {/* Toggle Button */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className={`fixed bottom-24 md:bottom-8 right-6 w-14 h-14 md:w-16 md:h-16 rounded-full shadow-lg flex items-center justify-center z-[9999] transition-colors duration-300 ${isOpen
+                className={`hidden md:flex fixed bottom-24 md:bottom-8 right-6 w-14 h-14 md:w-16 md:h-16 rounded-full shadow-lg items-center justify-center z-[9999] transition-colors duration-300 ${isOpen
                     ? 'bg-gray-800 hover:bg-gray-700'
                     : 'bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600'
                     }`}
