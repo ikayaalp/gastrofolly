@@ -536,10 +536,15 @@ export default function SocialScreen({ navigation }) {
                     {trendingHashtags?.map((hashtag) => (
                         <TouchableOpacity
                             key={hashtag.id}
-                            style={[styles.hashtagBadge, { backgroundColor: '#111', borderColor: '#222' }]}
+                            style={[
+                                styles.hashtagBadge,
+                                searchTerm === '#' + hashtag.name
+                                    ? { backgroundColor: '#ea580c', borderColor: '#ea580c' }
+                                    : { backgroundColor: '#111', borderColor: '#222' }
+                            ]}
                             onPress={() => setSearchTerm('#' + hashtag.name)}
                         >
-                            <Hash size={12} color="#ea580c" />
+                            <Hash size={12} color={searchTerm === '#' + hashtag.name ? '#fff' : '#ea580c'} />
                             <Text style={styles.hashtagText}>{hashtag.name}</Text>
                         </TouchableOpacity>
                     ))}
@@ -957,7 +962,7 @@ const styles = StyleSheet.create({
         gap: 6,
     },
     filterTabActive: {
-        backgroundColor: '#1f2937',
+        backgroundColor: '#ea580c',
     },
     filterTabText: {
         color: '#6b7280',
