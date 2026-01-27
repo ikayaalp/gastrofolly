@@ -53,6 +53,7 @@ export default function Home() {
   }
 
   const [featured, setFeatured] = useState<FeaturedCourse[]>([]);
+  const [userCourses, setUserCourses] = useState<any[]>([]); // Added state for user courses
   const [loading, setLoading] = useState(true);
   const [showBrowseMenu, setShowBrowseMenu] = useState(false);
   // Default categories for fallback
@@ -112,7 +113,21 @@ export default function Home() {
       }
     };
 
+    // Check for user courses (Continue Watching)
+    const fetchUserCourses = async () => {
+      try {
+        const response = await fetch("/api/user/courses");
+        if (response.ok) {
+          const data = await response.json();
+          setUserCourses(data.courses || []);
+        }
+      } catch (error) {
+        console.error("Error loading user courses:", error);
+      }
+    }
+
     fetchCourses();
+    fetchUserCourses();
   }, []);
 
   const handleSignUpClick = () => {
@@ -336,6 +351,61 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Continue Watching Section */}
+      {userCourses.length > 0 && (
+        <section className="py-8 bg-black">
+          <div className="max-w-[1400px] mx-auto px-6">
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-6 flex items-center gap-2">
+              <Play className="text-orange-500 w-6 h-6" fill="currentColor" />
+              Kaldığın Yerden Devam Et
+            </h2>
+            <div className="flex overflow-x-auto scrollbar-hide space-x-6 pb-4">
+              {userCourses.map((course) => (
+                <Link key={course.id} href={`/course/${course.id}`} className="block group flex-shrink-0">
+                  <div className="w-[280px] md:w-[320px] relative rounded-xl overflow-hidden bg-gray-900 border border-gray-800 group-hover:border-orange-500/30 transition-all duration-300">
+                    {/* Image */}
+                    <div className="aspect-video relative overflow-hidden">
+                      <img
+                        src={course.imageUrl || 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&q=80'}
+                        alt={course.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors" />
+
+                      {/* Play Button Overlay */}
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="bg-white/20 backdrop-blur-sm p-3 rounded-full">
+                          <Play className="w-6 h-6 text-white" fill="white" />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-4">
+                      <h3 className="text-white font-semibold text-lg line-clamp-1 mb-1">{course.title}</h3>
+                      <p className="text-gray-400 text-xs mb-3">{course.instructor?.name || 'Eğitmen'}</p>
+
+                      {/* Progress Bar */}
+                      <div className="w-full bg-gray-800 h-1.5 rounded-full mb-3 overflow-hidden">
+                        <div
+                          className="bg-orange-500 h-full rounded-full transition-all duration-500"
+                          style={{ width: `${course.progress || 0}%` }}
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-gray-400">%{course.progress || 0} Tamamlandı</span>
+                        <span className="text-orange-500 font-medium group-hover:underline">Devam Et</span>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Stories Section (Mobile Only) */}
       <HomeStories />

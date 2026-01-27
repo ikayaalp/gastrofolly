@@ -249,12 +249,15 @@ export default function CourseDetailScreen({ route, navigation }) {
 
                     {hasAccess && (
                         <TouchableOpacity
-                            style={styles.enrolledButtonInline}
+                            style={[
+                                styles.enrolledButtonInline,
+                                (course.progress > 0) && { backgroundColor: '#10b981' } // Green if started
+                            ]}
                             onPress={() => navigation.navigate('Learn', { courseId: course.id })}
                         >
                             <Play size={20} color="white" fill="white" />
                             <Text style={styles.enrolledButtonText}>
-                                Kursa Başla
+                                {course.progress > 0 ? 'İzlemeye Devam Et' : 'Kursa Başla'}
                             </Text>
                         </TouchableOpacity>
                     )}

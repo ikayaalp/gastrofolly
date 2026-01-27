@@ -89,11 +89,28 @@ export async function GET(
             };
         });
 
+        // Calculate progress if user exists
+        let progress = 0;
+        if (user) {
+            const completedCount = await prisma.progress.count({
+                where: {
+                    userId: user.id,
+                    courseId: id,
+                    isCompleted: true
+                }
+            });
+            const totalLessons = course.lessons.length;
+            if (totalLessons > 0) {
+                progress = Math.round((completedCount / totalLessons) * 100);
+            }
+        }
+
         const responseData = {
             ...course,
             lessons: processedLessons,
             isEnrolled: !!enrollment,
-            hasAccess: !!hasValidSubscription // Stictly subscription based
+            hasAccess: !!hasValidSubscription, // Stictly subscription based
+            progress // Added progress percentage
         };
 
         return NextResponse.json(responseData);
