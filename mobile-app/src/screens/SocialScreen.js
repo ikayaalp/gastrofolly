@@ -59,6 +59,7 @@ const formatDuration = (millis) => {
 export default function SocialScreen({ navigation }) {
     const insets = useSafeAreaInsets();
     const [categories, setCategories] = useState([]);
+    const [trendingHashtags, setTrendingHashtags] = useState([]);
     const [topics, setTopics] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -190,13 +191,18 @@ export default function SocialScreen({ navigation }) {
         try {
             const token = await AsyncStorage.getItem('authToken');
 
-            const [categoriesResult, topicsResult] = await Promise.all([
+            const [categoriesResult, topicsResult, trendingResult] = await Promise.all([
                 forumService.getCategories(),
                 forumService.getTopics(selectedCategory, sortBy, 20, searchTerm),
+                forumService.getTrendingHashtags(),
             ]);
 
             if (categoriesResult.success) {
                 setCategories(categoriesResult.data || []);
+            }
+
+            if (trendingResult.success) {
+                setTrendingHashtags(trendingResult.data || []);
             }
 
             if (topicsResult.success) {
@@ -230,8 +236,10 @@ export default function SocialScreen({ navigation }) {
         loadData();
     };
 
-    const handleCategoryChange = (categorySlug) => {
+    const handleCategoryChange = (categorySlug, newSearchTerm = '') => {
         setSelectedCategory(categorySlug);
+        setSearchTerm(newSearchTerm);
+        // Refresh triggers useEffect
     };
 
     const handleLike = async (topicId) => {
@@ -636,8 +644,6 @@ export default function SocialScreen({ navigation }) {
                                                         source={{ uri: media.uri }}
                                                         style={styles.modalMediaPreview}
                                                         resizeMode={ResizeMode.COVER}
-                                                        shouldPlay={false}
-                                                        useNativeControls={false}
                                                     />
                                                 )}
                                                 <TouchableOpacity
@@ -686,17 +692,18 @@ export default function SocialScreen({ navigation }) {
                             </View>
                         )}
                     </View>
-                </KeyboardAvoidingView>
-            </Modal>
+                </KeyboardAvoidingView >
+            </Modal >
 
             {/* Custom Alert */}
-            <CustomAlert
+            < CustomAlert
                 visible={alertVisible}
                 title={alertConfig.title}
                 message={alertConfig.message}
                 buttons={alertConfig.buttons}
                 type={alertConfig.type}
-                onClose={() => setAlertVisible(false)}
+                onClose={() => setAlertVisible(false)
+                }
             />
 
             {/* Fullscreen Image Viewer Modal */}
@@ -833,6 +840,32 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
         borderBottomWidth: 1,
         borderBottomColor: '#1a1a1a',
+    },
+    filterContent: {
+        paddingHorizontal: 16,
+        paddingRight: 32,
+    },
+    hashtagsContainer: {
+        marginBottom: 12,
+        height: 36,
+    },
+    hashtagsContent: {
+        paddingHorizontal: 16,
+        alignItems: 'center',
+    },
+    hashtagChip: {
+        backgroundColor: '#1a1a1a',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 20,
+        marginRight: 8,
+        borderWidth: 1,
+        borderColor: '#333',
+    },
+    hashtagText: {
+        color: '#9ca3af',
+        fontSize: 12,
+        fontWeight: '500',
     },
     categoriesList: {
         paddingHorizontal: 16,
