@@ -159,7 +159,7 @@ export default function ChefAIClient() {
     };
 
     return (
-        <div className="flex flex-col h-screen bg-black text-white pb-20 md:pb-0">
+        <div className="fixed inset-0 flex flex-col h-[100dvh] bg-black text-white z-40 overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-4 border-b border-[#27272a] bg-black/80 backdrop-blur sticky top-0 z-10">
                 <div className="flex items-center">
@@ -193,7 +193,7 @@ export default function ChefAIClient() {
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 overscroll-contain">
                 {messages.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full text-center px-4 pt-10">
                         <div className="w-20 h-20 rounded-full bg-[#27272a] border border-[#3f3f46] flex items-center justify-center mb-6">
@@ -289,7 +289,7 @@ export default function ChefAIClient() {
             </div>
 
             {/* Input Area */}
-            <div className="bg-[#09090b] p-3 pb-safe border-t border-[#27272a]">
+            <div className="bg-[#09090b] p-3 border-t border-[#27272a] shrink-0 pb-24 md:pb-3">
                 <div className="flex items-end bg-[#18181b] border border-[#3f3f46] rounded-[28px] p-1 px-4 relative">
                     <textarea
                         value={input}
