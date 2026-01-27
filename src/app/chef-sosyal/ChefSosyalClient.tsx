@@ -399,7 +399,7 @@ export default function ChefSosyalClient({
           <div className="flex items-center space-x-12">
             <Link href="/home" className="flex items-center space-x-2">
               <ChefHat className="h-8 w-8 text-orange-500" />
-              <span className="text-xl font-bold hidden sm:block">Culinora</span>
+              <span className="text-xl font-bold">Culinora</span>
             </Link>
           </div>
 
@@ -424,7 +424,7 @@ export default function ChefSosyalClient({
           <div className="flex items-center space-x-3 sm:space-x-4">
             {session?.user ? (
               <>
-                <button className="text-gray-400 hover:text-white transition-colors">
+                <button className="text-gray-400 hover:text-white transition-colors hidden md:block">
                   <Bell className="h-6 w-6" />
                 </button>
                 <UserDropdown />
@@ -451,9 +451,15 @@ export default function ChefSosyalClient({
         {/* Main Feed */}
         <div className="w-full max-w-[640px] px-0 sm:px-4 pb-20">
 
-          {/* Create Post Input Trigger */}
+          {/* Mobile Header */}
+          <div className="md:hidden pt-2 pb-4 px-4">
+            <h1 className="text-2xl font-bold text-white">Culinora</h1>
+            <p className="text-gray-400 text-sm">Gastronomi tutkunlarının buluşma noktası</p>
+          </div>
+
+          {/* Create Post Input Trigger (Desktop) */}
           {session?.user && (
-            <div className="bg-[#0a0a0a] border border-gray-800 rounded-md p-3 mb-4 flex items-center space-x-3">
+            <div className="hidden md:flex bg-[#0a0a0a] border border-gray-800 rounded-md p-3 mb-4 items-center space-x-3">
               {session.user.image ? (
                 <img src={session.user.image} alt={session.user.name || ''} className="w-9 h-9 rounded-full object-cover" />
               ) : (
@@ -473,11 +479,21 @@ export default function ChefSosyalClient({
             </div>
           )}
 
+          {/* Mobile FAB for Create Post */}
+          {session?.user && (
+            <button
+              onClick={() => setShowNewTopicModal(true)}
+              className="md:hidden fixed bottom-24 right-4 w-14 h-14 bg-orange-600 rounded-full flex items-center justify-center shadow-lg shadow-orange-900/40 z-50 active:scale-95 transition-transform"
+            >
+              <Plus className="h-8 w-8 text-white" />
+            </button>
+          )}
+
           {/* Filter Tabs */}
-          <div className="flex items-center space-x-4 mb-4 px-2 sm:px-0">
+          <div className="flex items-center space-x-4 mb-4 px-2 sm:px-0 overflow-x-auto scrollbar-hide touch-pan-x">
             <button
               onClick={() => router.push('/chef-sosyal')}
-              className={`flex items-center px-4 py-2 rounded-full text-sm font-medium transition-all ${sortBy === 'newest' && !searchTerm && selectedCategory === 'all'
+              className={`flex items-center px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${sortBy === 'newest' && !searchTerm && selectedCategory === 'all'
                 ? 'bg-orange-600 text-white shadow-lg shadow-orange-900/20'
                 : 'bg-[#1a1a1a] text-gray-400 hover:bg-[#252525] border border-gray-800'
                 }`}
@@ -487,7 +503,7 @@ export default function ChefSosyalClient({
             </button>
             <button
               onClick={() => handleSortChange('popular')}
-              className={`flex items-center space-x-2 px-3 py-1.5 rounded-full font-bold text-sm transition-colors ${sortBy === 'popular' ? 'bg-gray-800 text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}`}
+              className={`flex items-center space-x-2 px-3 py-1.5 rounded-full font-bold text-sm transition-colors whitespace-nowrap ${sortBy === 'popular' ? 'bg-gray-800 text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}`}
             >
               <span>Popüler</span>
             </button>
@@ -499,9 +515,9 @@ export default function ChefSosyalClient({
               <span>Kaydedilenler</span>
             </button>
 
-            <div className="h-6 w-px bg-gray-800 mx-2 hidden sm:block"></div>
+            <div className="h-6 w-px bg-gray-800 mx-2 hidden sm:block md:hidden shrink-0"></div>
 
-            <div className="flex items-center space-x-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide flex-1 min-w-0 touch-pan-x">
+            <div className="flex items-center space-x-2 md:hidden shrink-0">
               {trendingHashtags.map((hashtag) => (
                 <button
                   key={hashtag.id}
