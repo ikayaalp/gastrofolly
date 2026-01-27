@@ -118,6 +118,7 @@ export default function Home() {
       try {
         const response = await fetch("/api/user/courses", {
           cache: "no-store",
+          credentials: "include"
           // Ensure cookies are sent (important for NextAuth session)
           // Note: Same-origin requests typically send cookies by default, 
           // but 'include' ensures it across different browser policies.
