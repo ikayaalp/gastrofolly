@@ -51,30 +51,7 @@ export default function LeftSidebar({ categories, selectedCategory, trendingHash
                 </div>
             </div>
 
-            {/* Topics / Categories Section */}
-            <div className="mb-6">
-                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 px-2">Konular</h3>
-                <div className="space-y-1">
-                    {categories.map((category) => (
-                        <Link
-                            key={category.id}
-                            href={`/chef-sosyal?category=${category.slug}`}
-                            className={`flex items-center px-2 py-2 rounded-lg text-sm font-medium transition-colors group ${selectedCategory === category.slug
-                                ? 'bg-gray-800 text-white'
-                                : 'text-gray-400 hover:bg-gray-800/50 hover:text-white'
-                                }`}
-                        >
-                            <span
-                                className="w-5 h-5 rounded-full flex items-center justify-center mr-3 text-xs font-bold shrink-0"
-                                style={{ backgroundColor: `${category.color || '#6b7280'}20`, color: category.color || '#6b7280' }}
-                            >
-                                #
-                            </span>
-                            <span className="truncate">{category.name}</span>
-                        </Link>
-                    ))}
-                </div>
-            </div>
+
 
             {/* Trending Hashtags Section */}
             {trendingHashtags && trendingHashtags.length > 0 && (

@@ -473,11 +473,14 @@ export default function ChefSosyalClient({
           {/* Filter Tabs */}
           <div className="flex items-center space-x-4 mb-4 px-2 sm:px-0">
             <button
-              onClick={() => handleSortChange('newest')}
-              className={`flex items-center space-x-2 px-3 py-1.5 rounded-full font-bold text-sm transition-colors ${sortBy === 'newest' ? 'bg-gray-800 text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}`}
+              onClick={() => router.push('/chef-sosyal')}
+              className={`flex items-center px-4 py-2 rounded-full text-sm font-medium transition-all ${sortBy === 'newest' && !searchTerm && selectedCategory === 'all'
+                ? 'bg-orange-600 text-white shadow-lg shadow-orange-900/20'
+                : 'bg-[#1a1a1a] text-gray-400 hover:bg-[#252525] border border-gray-800'
+                }`}
             >
-              <Clock className="h-4 w-4" />
-              <span>Yeni</span>
+              <Home className="w-4 h-4 mr-2" />
+              Anasayfa
             </button>
             <button
               onClick={() => handleSortChange('popular')}
