@@ -30,6 +30,7 @@ export default function ChefAIClient() {
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isMenuVisible, setIsMenuVisible] = useState(false);
+    const [isFocused, setIsFocused] = useState(false);
     const [chatHistory, setChatHistory] = useState<HistoryItem[]>([]);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
@@ -289,7 +290,7 @@ export default function ChefAIClient() {
             </div>
 
             {/* Input Area */}
-            <div className="bg-[#09090b] p-3 border-t border-[#27272a] shrink-0 pb-24 md:pb-3">
+            <div className={`bg-[#09090b] p-3 border-t border-[#27272a] shrink-0 transition-all duration-200 ${isFocused ? 'pb-2' : 'pb-24 md:pb-3'}`}>
                 <div className="flex items-end bg-[#18181b] border border-[#3f3f46] rounded-[28px] p-1 px-4 relative">
                     <textarea
                         value={input}
@@ -298,12 +299,14 @@ export default function ChefAIClient() {
                         className="flex-1 bg-transparent text-white text-[15px] max-h-24 py-3 focus:outline-none resize-none placeholder-gray-500"
                         rows={1}
                         onFocus={() => {
+                            setIsFocused(true);
                             const nav = document.getElementById('mobile-bottom-nav');
                             if (nav) nav.style.display = 'none';
                         }}
                         onBlur={() => {
                             // Small delay to prevent flashing if just switching focus or clicking send
                             setTimeout(() => {
+                                setIsFocused(false);
                                 const nav = document.getElementById('mobile-bottom-nav');
                                 if (nav) nav.style.display = 'block';
                             }, 100);
