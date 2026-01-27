@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/mobileAuth'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
 
 // Dosya boyutu limitleri (bytes)
 const MAX_IMAGE_SIZE = 50 * 1024 * 1024 // 50MB
@@ -11,12 +14,43 @@ const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/quicktime', 'video/webm']
 
 export async function POST(request: NextRequest) {
     try {
+        console.log('Upload API: Starting upload process...');
         const user = await getAuthUser(request)
+        let finalUser = user;
 
-        if (!user) {
-            console.warn('Upload attempt unauthorized: User session not found')
+        if (!finalUser) {
+            console.warn('getAuthUser returned null, trying direct getServerSession fallback...');
+            const session = await getServerSession(authOptions);
+
+            if (session?.user?.email) {
+                console.log('Direct getServerSession found user:', session.user.email);
+                const dbUser = await prisma.user.findUnique({
+                    where: { email: session.user.email },
+                    select: {
+                        id: true,
+                        email: true,
+                        role: true,
+                        subscriptionEndDate: true,
+                        subscriptionPlan: true
+                    }
+                });
+
+                if (dbUser) {
+                    finalUser = {
+                        id: dbUser.id,
+                        email: dbUser.email,
+                        role: dbUser.role,
+                        subscriptionEndDate: dbUser.subscriptionEndDate,
+                        subscriptionPlan: dbUser.subscriptionPlan
+                    };
+                }
+            }
+        }
+
+        if (!finalUser) {
+            console.warn('Upload attempt unauthorized: User session not found (both methods failed)')
             return NextResponse.json(
-                { error: 'Yükleme yapabilmek için giriş yapmalısınız' },
+                { error: 'Yükleme yapabilmek için giriş yapmalısınız (Oturum bulunamadı)' },
                 { status: 401 }
             )
         }

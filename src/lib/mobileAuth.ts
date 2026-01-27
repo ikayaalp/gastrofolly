@@ -19,8 +19,12 @@ interface MobileUser {
 export async function getAuthUser(request: NextRequest): Promise<MobileUser | null> {
     // First, try NextAuth session (for web)
     try {
+        console.log('getAuthUser: Attempting to get server session for Web...');
         const session = await getServerSession(authOptions);
+        console.log('getAuthUser: Session result:', session ? 'Session found' : 'No session');
+
         if (session?.user?.id) {
+            console.log('getAuthUser: User ID from session:', session.user.id);
             // Always fetch fresh user data to get latest subscription status
             const user = await prisma.user.findUnique({
                 where: { id: session.user.id },
@@ -34,6 +38,7 @@ export async function getAuthUser(request: NextRequest): Promise<MobileUser | nu
             });
 
             if (user) {
+                console.log('getAuthUser: User found in DB via session');
                 return {
                     id: user.id,
                     email: user.email,
@@ -41,6 +46,8 @@ export async function getAuthUser(request: NextRequest): Promise<MobileUser | nu
                     subscriptionEndDate: user.subscriptionEndDate,
                     subscriptionPlan: user.subscriptionPlan
                 };
+            } else {
+                console.log('getAuthUser: User NOT found in DB via session ID');
             }
         }
     } catch (err) {
