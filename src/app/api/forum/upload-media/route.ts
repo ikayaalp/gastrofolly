@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/mobileAuth'
 
 // Dosya boyutu limitleri (bytes)
-const MAX_IMAGE_SIZE = 10 * 1024 * 1024 // 10MB
+const MAX_IMAGE_SIZE = 50 * 1024 * 1024 // 50MB
 const MAX_VIDEO_SIZE = 100 * 1024 * 1024 // 100MB
 
 // Desteklenen formatlar
