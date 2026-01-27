@@ -355,7 +355,11 @@ export default function SettingsClient({ user }: SettingsClientProps) {
                     className="w-full h-full rounded-full object-cover"
                   />
                 ) : (
-                  <User className="h-10 w-10 text-white" />
+                  <span className="text-white text-2xl font-bold">
+                    {profileData.name
+                      ? profileData.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+                      : <User className="h-10 w-10 text-white" />}
+                  </span>
                 )}
               </div>
               <div>
@@ -366,14 +370,59 @@ export default function SettingsClient({ user }: SettingsClientProps) {
                   onChange={handleFileSelect}
                   className="hidden"
                 />
-                <label
-                  htmlFor="profile-image"
-                  className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2 cursor-pointer"
-                >
-                  <Camera className="h-4 w-4" />
-                  <span>Fotoğraf Seç</span>
-                </label>
-                <p className="text-gray-400 text-sm mt-1">JPG, PNG formatları desteklenir (Max 5MB)</p>
+                <div className="flex flex-col items-start gap-2">
+                  <label
+                    htmlFor="profile-image"
+                    className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2 cursor-pointer"
+                  >
+                    <Camera className="h-4 w-4" />
+                    <span>Fotoğraf Seç</span>
+                  </label>
+                  {profileData.image && (
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (!confirm('Fotoğrafı kaldırmak istediğinize emin misiniz?')) return;
+                        setLoading(true);
+                        try {
+                          // Call update API directly with null image
+                          const response = await fetch("/api/user/update-profile", {
+                            method: "PUT",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              name: profileData.name,
+                              phoneNumber: profileData.phoneNumber,
+                              image: null
+                            })
+                          });
+
+                          if (response.ok) {
+                            const data = await response.json();
+                            setProfileData(prev => ({ ...prev, image: "" })); // Fix: Use empty string instead of null for string state
+                            setPreviewUrl(null);
+                            // Update session
+                            await update({
+                              ...session,
+                              user: { ...session?.user, image: null }
+                            });
+                            setMessage("Fotoğraf kaldırıldı");
+                            setTimeout(() => setMessage(""), 3000);
+                          } else {
+                            setMessage("Fotoğraf kaldırılamadı");
+                          }
+                        } catch (e) {
+                          setMessage("Bir hata oluştu");
+                        } finally {
+                          setLoading(false);
+                        }
+                      }}
+                      className="text-red-400 hover:text-red-300 text-sm font-medium px-1"
+                    >
+                      Fotoğrafı Kaldır
+                    </button>
+                  )}
+                </div>
+                <p className="text-gray-400 text-sm mt-1">JPG, PNG formatları desteklenir (Max 50MB)</p>
                 {selectedFile && (
                   <p className="text-green-400 text-sm mt-1">
                     Seçilen dosya: {selectedFile.name}
@@ -440,326 +489,333 @@ export default function SettingsClient({ user }: SettingsClientProps) {
               </button>
             </div>
           </form>
-        </div>
-      )}
+        </div >
+      )
+      }
 
-      {activeTab === "subscription" && (
-        <div className="bg-[#0a0a0a] border border-gray-800 rounded-xl p-6">
-          <h2 className="text-xl font-bold text-white mb-6">Premium Üyelik Bilgileri</h2>
+      {
+        activeTab === "subscription" && (
+          <div className="bg-[#0a0a0a] border border-gray-800 rounded-xl p-6">
+            <h2 className="text-xl font-bold text-white mb-6">Premium Üyelik Bilgileri</h2>
 
-          {user.subscriptionPlan ? (
-            <div className="space-y-6">
-              <div className="bg-gradient-to-r from-orange-900/20 to-red-900/20 border border-orange-500/30 rounded-xl p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center space-x-4">
-                    <div className="bg-orange-600 rounded-full p-3">
-                      <Crown className="h-8 w-8 text-white" />
+            {user.subscriptionPlan ? (
+              <div className="space-y-6">
+                <div className="bg-gradient-to-r from-orange-900/20 to-red-900/20 border border-orange-500/30 rounded-xl p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center space-x-4">
+                      <div className="bg-orange-600 rounded-full p-3">
+                        <Crown className="h-8 w-8 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold text-white">{user.subscriptionPlan}</h3>
+                        <p className="text-orange-400 text-sm font-medium">Aktif Premium</p>
+                      </div>
                     </div>
+                    <span className={`px-3 py-1 rounded-full text-sm font-semibold ${user.subscriptionCancelled
+                      ? 'bg-yellow-500/20 text-yellow-400'
+                      : 'bg-green-500/20 text-green-400'
+                      }`}>
+                      {user.subscriptionCancelled ? 'İptal Edildi' : 'Aktif'}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 border-t border-orange-500/20 pt-6">
                     <div>
-                      <h3 className="text-xl font-bold text-white">{user.subscriptionPlan}</h3>
-                      <p className="text-orange-400 text-sm font-medium">Aktif Premium</p>
-                    </div>
-                  </div>
-                  <span className={`px-3 py-1 rounded-full text-sm font-semibold ${user.subscriptionCancelled
-                    ? 'bg-yellow-500/20 text-yellow-400'
-                    : 'bg-green-500/20 text-green-400'
-                    }`}>
-                    {user.subscriptionCancelled ? 'İptal Edildi' : 'Aktif'}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 border-t border-orange-500/20 pt-6">
-                  <div>
-                    <p className="text-gray-400 text-sm mb-1">Başlangıç Tarihi</p>
-                    <p className="text-white font-medium">
-                      {user.subscriptionStartDate ? formatDate(user.subscriptionStartDate) : '-'}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-gray-400 text-sm mb-1">Yenileme Tarihi</p>
-                    <p className="text-white font-medium">
-                      {user.subscriptionEndDate ? formatDate(user.subscriptionEndDate) : '-'}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
-                <h4 className="text-white font-semibold mb-2">Premium Yönetimi</h4>
-                {user.subscriptionCancelled ? (
-                  <>
-                    <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 mb-4">
-                      <p className="text-yellow-400 text-sm font-medium mb-1">Premium üyeliğiniz iptal edildi</p>
-                      <p className="text-gray-400 text-sm">
-                        Premium erişiminiz {user.subscriptionEndDate ? formatDate(user.subscriptionEndDate) : '-'} tarihine kadar devam edecektir.
+                      <p className="text-gray-400 text-sm mb-1">Başlangıç Tarihi</p>
+                      <p className="text-white font-medium">
+                        {user.subscriptionStartDate ? formatDate(user.subscriptionStartDate) : '-'}
                       </p>
                     </div>
-                    <p className="text-gray-400 text-sm">
-                      Premium üyeliğinizi yenilemek isterseniz Premium Ol butonunu kullanabilirsiniz.
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-gray-400 text-sm mb-4">
-                      Premium üyeliğinizi iptal ederseniz, mevcut dönem sonuna kadar erişiminiz devam edecektir.
-                    </p>
-                    <button
-                      onClick={handleCancelSubscription}
-                      disabled={loading}
-                      className="text-red-400 hover:text-red-300 text-sm font-medium transition-colors disabled:opacity-50"
-                    >
-                      {loading ? "İşleniyor..." : "İptal Et"}
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-          ) : (
-            <div className="text-center py-12 bg-gray-900/30 rounded-xl border border-gray-800">
-              <div className="bg-gray-800 rounded-full p-4 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                <Crown className="h-8 w-8 text-gray-500" />
-              </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Premium Üyelik Bulunamadı</h3>
-              <p className="text-gray-400 mb-6 max-w-md mx-auto">
-                Henüz Premium üye değilsiniz. Ayrıcalıklı içeriklere erişmek için hemen Premium olun.
-              </p>
-              <button
-                onClick={() => router.push('/subscription')}
-                className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
-              >
-                Premium Ol
-              </button>
-            </div>
-          )}
-        </div>
-      )}
-
-      {activeTab === "password" && (
-        <div className="bg-[#0a0a0a] border border-gray-800 rounded-xl p-6">
-          <h2 className="text-xl font-bold text-white mb-6">Şifre Değiştir</h2>
-
-          <form onSubmit={handlePasswordSubmit} className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Mevcut Şifre
-              </label>
-              <div className="relative">
-                <input
-                  type={showPasswords.current ? "text" : "password"}
-                  value={passwordData.currentPassword}
-                  onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
-                  required
-                  className="w-full px-4 py-3 pr-10 bg-[#1a1a1a] border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
-                  placeholder="Mevcut şifrenizi girin"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPasswords(prev => ({ ...prev, current: !prev.current }))}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                >
-                  {showPasswords.current ? (
-                    <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-300" />
-                  ) : (
-                    <Eye className="h-5 w-5 text-gray-400 hover:text-gray-300" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Yeni Şifre
-              </label>
-              <div className="relative">
-                <input
-                  type={showPasswords.new ? "text" : "password"}
-                  value={passwordData.newPassword}
-                  onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
-                  required
-                  className="w-full px-4 py-3 pr-10 bg-[#1a1a1a] border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
-                  placeholder="Yeni şifrenizi girin"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPasswords(prev => ({ ...prev, new: !prev.new }))}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                >
-                  {showPasswords.new ? (
-                    <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-300" />
-                  ) : (
-                    <Eye className="h-5 w-5 text-gray-400 hover:text-gray-300" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Yeni Şifre Tekrar
-              </label>
-              <div className="relative">
-                <input
-                  type={showPasswords.confirm ? "text" : "password"}
-                  value={passwordData.confirmPassword}
-                  onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                  required
-                  className="w-full px-4 py-3 pr-10 bg-[#1a1a1a] border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
-                  placeholder="Yeni şifrenizi tekrar girin"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPasswords(prev => ({ ...prev, confirm: !prev.confirm }))}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                >
-                  {showPasswords.confirm ? (
-                    <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-300" />
-                  ) : (
-                    <Eye className="h-5 w-5 text-gray-400 hover:text-gray-300" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            <div className="flex justify-end">
-              <button
-                type="submit"
-                disabled={loading}
-                className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center space-x-2 disabled:opacity-50"
-              >
-                {loading ? (
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                ) : (
-                  <Lock className="h-5 w-5" />
-                )}
-                <span>Şifreyi Değiştir</span>
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {activeTab === "account" && (
-        <div className="bg-[#0a0a0a] border border-gray-800 rounded-xl p-6">
-          <h2 className="text-xl font-bold text-white mb-6">Hesap Bilgileri</h2>
-
-          <div className="space-y-6">
-            {/* Hesap İstatistikleri */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-[#1a1a1a] border border-gray-800 rounded-lg p-4">
-                <div className="flex items-center space-x-3">
-                  <div className="bg-blue-500/20 p-2 rounded">
-                    <User className="h-5 w-5 text-blue-400" />
+                    <div>
+                      <p className="text-gray-400 text-sm mb-1">Yenileme Tarihi</p>
+                      <p className="text-white font-medium">
+                        {user.subscriptionEndDate ? formatDate(user.subscriptionEndDate) : '-'}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-lg font-bold text-white">{user._count.enrollments}</p>
-                    <p className="text-gray-400 text-sm">Kayıtlı Kurs</p>
-                  </div>
+                </div>
+
+                <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+                  <h4 className="text-white font-semibold mb-2">Premium Yönetimi</h4>
+                  {user.subscriptionCancelled ? (
+                    <>
+                      <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 mb-4">
+                        <p className="text-yellow-400 text-sm font-medium mb-1">Premium üyeliğiniz iptal edildi</p>
+                        <p className="text-gray-400 text-sm">
+                          Premium erişiminiz {user.subscriptionEndDate ? formatDate(user.subscriptionEndDate) : '-'} tarihine kadar devam edecektir.
+                        </p>
+                      </div>
+                      <p className="text-gray-400 text-sm">
+                        Premium üyeliğinizi yenilemek isterseniz Premium Ol butonunu kullanabilirsiniz.
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-gray-400 text-sm mb-4">
+                        Premium üyeliğinizi iptal ederseniz, mevcut dönem sonuna kadar erişiminiz devam edecektir.
+                      </p>
+                      <button
+                        onClick={handleCancelSubscription}
+                        disabled={loading}
+                        className="text-red-400 hover:text-red-300 text-sm font-medium transition-colors disabled:opacity-50"
+                      >
+                        {loading ? "İşleniyor..." : "İptal Et"}
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-12 bg-gray-900/30 rounded-xl border border-gray-800">
+                <div className="bg-gray-800 rounded-full p-4 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                  <Crown className="h-8 w-8 text-gray-500" />
+                </div>
+                <h3 className="text-lg font-semibold text-white mb-2">Premium Üyelik Bulunamadı</h3>
+                <p className="text-gray-400 mb-6 max-w-md mx-auto">
+                  Henüz Premium üye değilsiniz. Ayrıcalıklı içeriklere erişmek için hemen Premium olun.
+                </p>
+                <button
+                  onClick={() => router.push('/subscription')}
+                  className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+                >
+                  Premium Ol
+                </button>
+              </div>
+            )}
+          </div>
+        )
+      }
+
+      {
+        activeTab === "password" && (
+          <div className="bg-[#0a0a0a] border border-gray-800 rounded-xl p-6">
+            <h2 className="text-xl font-bold text-white mb-6">Şifre Değiştir</h2>
+
+            <form onSubmit={handlePasswordSubmit} className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Mevcut Şifre
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPasswords.current ? "text" : "password"}
+                    value={passwordData.currentPassword}
+                    onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
+                    required
+                    className="w-full px-4 py-3 pr-10 bg-[#1a1a1a] border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+                    placeholder="Mevcut şifrenizi girin"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPasswords(prev => ({ ...prev, current: !prev.current }))}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  >
+                    {showPasswords.current ? (
+                      <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-300" />
+                    ) : (
+                      <Eye className="h-5 w-5 text-gray-400 hover:text-gray-300" />
+                    )}
+                  </button>
                 </div>
               </div>
 
-              <div className="bg-[#1a1a1a] border border-gray-800 rounded-lg p-4">
-                <div className="flex items-center space-x-3">
-                  <div className="bg-yellow-500/20 p-2 rounded">
-                    <Award className="h-5 w-5 text-yellow-400" />
-                  </div>
-                  <div>
-                    <p className="text-lg font-bold text-white">{user._count.reviews}</p>
-                    <p className="text-gray-400 text-sm">Değerlendirme</p>
-                  </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Yeni Şifre
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPasswords.new ? "text" : "password"}
+                    value={passwordData.newPassword}
+                    onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
+                    required
+                    className="w-full px-4 py-3 pr-10 bg-[#1a1a1a] border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+                    placeholder="Yeni şifrenizi girin"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPasswords(prev => ({ ...prev, new: !prev.new }))}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  >
+                    {showPasswords.new ? (
+                      <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-300" />
+                    ) : (
+                      <Eye className="h-5 w-5 text-gray-400 hover:text-gray-300" />
+                    )}
+                  </button>
                 </div>
               </div>
-            </div>
 
-            {/* Hesap Detayları */}
-            <div className="bg-[#1a1a1a] border border-gray-800 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-white mb-4">Hesap Detayları</h3>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Yeni Şifre Tekrar
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPasswords.confirm ? "text" : "password"}
+                    value={passwordData.confirmPassword}
+                    onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                    required
+                    className="w-full px-4 py-3 pr-10 bg-[#1a1a1a] border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+                    placeholder="Yeni şifrenizi tekrar girin"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPasswords(prev => ({ ...prev, confirm: !prev.confirm }))}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  >
+                    {showPasswords.confirm ? (
+                      <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-300" />
+                    ) : (
+                      <Eye className="h-5 w-5 text-gray-400 hover:text-gray-300" />
+                    )}
+                  </button>
+                </div>
+              </div>
 
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center space-x-2 disabled:opacity-50"
+                >
+                  {loading ? (
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  ) : (
+                    <Lock className="h-5 w-5" />
+                  )}
+                  <span>Şifreyi Değiştir</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        )
+      }
+
+      {
+        activeTab === "account" && (
+          <div className="bg-[#0a0a0a] border border-gray-800 rounded-xl p-6">
+            <h2 className="text-xl font-bold text-white mb-6">Hesap Bilgileri</h2>
+
+            <div className="space-y-6">
+              {/* Hesap İstatistikleri */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1">
-                    Kullanıcı ID
-                  </label>
-                  <p className="text-white font-mono text-sm bg-gray-700 px-3 py-2 rounded">
-                    {user.id}
-                  </p>
+                <div className="bg-[#1a1a1a] border border-gray-800 rounded-lg p-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="bg-blue-500/20 p-2 rounded">
+                      <User className="h-5 w-5 text-blue-400" />
+                    </div>
+                    <div>
+                      <p className="text-lg font-bold text-white">{user._count.enrollments}</p>
+                      <p className="text-gray-400 text-sm">Kayıtlı Kurs</p>
+                    </div>
+                  </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1">
-                    Hesap Türü
-                  </label>
-                  <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${user.role === 'ADMIN' ? 'bg-red-500/20 text-red-400' :
-                    user.role === 'INSTRUCTOR' ? 'bg-blue-500/20 text-blue-400' :
-                      'bg-green-500/20 text-green-400'
-                    }`}>
-                    {getRoleName(user.role)}
-                  </span>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1">
-                    Kayıt Tarihi
-                  </label>
-                  <p className="text-white">
-                    {formatDate(user.createdAt)}
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1">
-                    E-posta Durumu
-                  </label>
-                  <span className="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-green-500/20 text-green-400">
-                    Doğrulanmış
-                  </span>
+                <div className="bg-[#1a1a1a] border border-gray-800 rounded-lg p-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="bg-yellow-500/20 p-2 rounded">
+                      <Award className="h-5 w-5 text-yellow-400" />
+                    </div>
+                    <div>
+                      <p className="text-lg font-bold text-white">{user._count.reviews}</p>
+                      <p className="text-gray-400 text-sm">Değerlendirme</p>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Tehlikeli İşlemler */}
-            <div className="bg-red-900/20 border border-red-800 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-red-400 mb-4">Tehlikeli İşlemler</h3>
-              <p className="text-gray-400 mb-4">
-                Bu işlemler geri alınamaz. Dikkatli olun.
-              </p>
+              {/* Hesap Detayları */}
+              <div className="bg-[#1a1a1a] border border-gray-800 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-white mb-4">Hesap Detayları</h3>
 
-              <button
-                type="button"
-                disabled={loading}
-                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
-                onClick={async () => {
-                  if (confirm('Hesabınızı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz ve tüm verileriniz silinecektir.')) {
-                    if (confirm('Son kez soruyoruz: Hesabınızı kalıcı olarak silmek istiyor musunuz?')) {
-                      setLoading(true)
-                      try {
-                        const response = await fetch('/api/user/delete-account', {
-                          method: 'DELETE'
-                        })
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-1">
+                      Kullanıcı ID
+                    </label>
+                    <p className="text-white font-mono text-sm bg-gray-700 px-3 py-2 rounded">
+                      {user.id}
+                    </p>
+                  </div>
 
-                        if (response.ok) {
-                          // Hesap silindi, çıkış yap ve ana sayfaya yönlendir
-                          const { signOut } = await import('next-auth/react')
-                          await signOut({ callbackUrl: '/' })
-                        } else {
-                          const data = await response.json()
-                          setMessage(data.error || 'Hesap silinemedi')
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-1">
+                      Hesap Türü
+                    </label>
+                    <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${user.role === 'ADMIN' ? 'bg-red-500/20 text-red-400' :
+                      user.role === 'INSTRUCTOR' ? 'bg-blue-500/20 text-blue-400' :
+                        'bg-green-500/20 text-green-400'
+                      }`}>
+                      {getRoleName(user.role)}
+                    </span>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-1">
+                      Kayıt Tarihi
+                    </label>
+                    <p className="text-white">
+                      {formatDate(user.createdAt)}
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-1">
+                      E-posta Durumu
+                    </label>
+                    <span className="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-green-500/20 text-green-400">
+                      Doğrulanmış
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Tehlikeli İşlemler */}
+              <div className="bg-red-900/20 border border-red-800 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-red-400 mb-4">Tehlikeli İşlemler</h3>
+                <p className="text-gray-400 mb-4">
+                  Bu işlemler geri alınamaz. Dikkatli olun.
+                </p>
+
+                <button
+                  type="button"
+                  disabled={loading}
+                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
+                  onClick={async () => {
+                    if (confirm('Hesabınızı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz ve tüm verileriniz silinecektir.')) {
+                      if (confirm('Son kez soruyoruz: Hesabınızı kalıcı olarak silmek istiyor musunuz?')) {
+                        setLoading(true)
+                        try {
+                          const response = await fetch('/api/user/delete-account', {
+                            method: 'DELETE'
+                          })
+
+                          if (response.ok) {
+                            // Hesap silindi, çıkış yap ve ana sayfaya yönlendir
+                            const { signOut } = await import('next-auth/react')
+                            await signOut({ callbackUrl: '/' })
+                          } else {
+                            const data = await response.json()
+                            setMessage(data.error || 'Hesap silinemedi')
+                          }
+                        } catch (error) {
+                          console.error('Delete account error:', error)
+                          setMessage('Bir hata oluştu')
+                        } finally {
+                          setLoading(false)
                         }
-                      } catch (error) {
-                        console.error('Delete account error:', error)
-                        setMessage('Bir hata oluştu')
-                      } finally {
-                        setLoading(false)
                       }
                     }
-                  }
-                }}
-              >
-                {loading ? 'Siliniyor...' : 'Hesabı Sil'}
-              </button>
+                  }}
+                >
+                  {loading ? 'Siliniyor...' : 'Hesabı Sil'}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+    </div >
   )
 }

@@ -91,7 +91,22 @@ export default function AccountScreen({ navigation }) {
                 {/* Profile Header */}
                 <View style={styles.profileHeader}>
                     <View style={styles.avatarContainer}>
-                        <Text style={styles.avatarEmoji}>👨‍🍳</Text>
+                        {userData?.image ? (
+                            <Image
+                                source={{ uri: userData.image }}
+                                style={{
+                                    width: 74,
+                                    height: 74,
+                                    borderRadius: 37,
+                                }}
+                            />
+                        ) : (
+                            <Text style={styles.avatarEmoji}>
+                                {userData?.name
+                                    ? userData.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+                                    : 'U'}
+                            </Text>
+                        )}
                     </View>
                     <View style={styles.profileInfo}>
                         <Text style={styles.profileName}>{userData?.name || 'Kullanıcı'}</Text>

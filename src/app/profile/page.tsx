@@ -167,6 +167,33 @@ export default function ProfilePage() {
                                 <p className="text-zinc-400 text-sm mt-1">
                                     JPG, PNG veya GIF. Maksimum 50MB.
                                 </p>
+                                {image && (
+                                    <button
+                                        type="button"
+                                        onClick={async () => {
+                                            if (!confirm('Profil fotoğrafınızı kaldırmak istediğinize emin misiniz?')) return;
+                                            setLoading(true);
+                                            try {
+                                                const res = await fetch('/api/user/update-profile', {
+                                                    method: 'PUT',
+                                                    headers: { 'Content-Type': 'application/json' },
+                                                    body: JSON.stringify({ name, image: null }),
+                                                });
+                                                if (!res.ok) throw new Error('İşlem başarısız');
+                                                setImage('');
+                                                await update({ ...session, user: { ...session?.user, image: null } });
+                                                toast.success('Fotoğraf kaldırıldı');
+                                            } catch (error) {
+                                                toast.error('Hata oluştu');
+                                            } finally {
+                                                setLoading(false);
+                                            }
+                                        }}
+                                        className="text-red-400 hover:text-red-300 text-sm mt-3 font-medium transition-colors"
+                                    >
+                                        Fotoğrafı Kaldır
+                                    </button>
+                                )}
                             </div>
                         </div>
 

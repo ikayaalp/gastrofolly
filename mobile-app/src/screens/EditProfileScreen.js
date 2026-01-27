@@ -168,6 +168,45 @@ export default function EditProfileScreen({ navigation }) {
                             </View>
                         </TouchableOpacity>
                         <Text style={styles.avatarHint}>Fotoğrafı değiştirmek için dokunun</Text>
+
+                        {image && (
+                            <TouchableOpacity
+                                style={styles.removeButton}
+                                onPress={() => {
+                                    setAlertVisible(true);
+                                    setAlertConfig({
+                                        title: 'Fotoğrafı Kaldır',
+                                        message: 'Profil fotoğrafınızı kaldırmak istediğinize emin misiniz?',
+                                        type: 'confirm',
+                                        buttons: [
+                                            { text: 'İptal', style: 'cancel' },
+                                            {
+                                                text: 'Kaldır',
+                                                style: 'destructive',
+                                                onPress: async () => {
+                                                    setLoading(true);
+                                                    try {
+                                                        const result = await authService.updateProfile({ name, image: null });
+                                                        if (result.success) {
+                                                            setImage(null);
+                                                            showAlert('Başarılı', 'Profil fotoğrafı kaldırıldı.', [{ text: 'Tamam' }], 'success');
+                                                        } else {
+                                                            showAlert('Hata', result.error, [{ text: 'Tamam' }], 'error');
+                                                        }
+                                                    } catch (error) {
+                                                        showAlert('Hata', 'İşlem başarısız oldu.', [{ text: 'Tamam' }], 'error');
+                                                    } finally {
+                                                        setLoading(false);
+                                                    }
+                                                }
+                                            }
+                                        ]
+                                    })
+                                }}
+                            >
+                                <Text style={styles.removeButtonText}>Fotoğrafı Kaldır</Text>
+                            </TouchableOpacity>
+                        )}
                     </View>
 
                     {/* Form Fields */}
@@ -324,6 +363,20 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderWidth: 3,
         borderColor: '#000',
+    },
+    removeButton: {
+        marginTop: 12,
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: 'rgba(239, 68, 68, 0.2)',
+    },
+    removeButtonText: {
+        color: '#ef4444',
+        fontSize: 13,
+        fontWeight: '500',
     },
     form: {
         gap: 20,
