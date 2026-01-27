@@ -275,6 +275,47 @@ export default function HomeScreen({ navigation }) {
         );
     };
 
+    // Continue Watching Card with Progress Bar
+    const renderContinueWatchingCard = (course, index) => {
+        const courseData = course.course || course;
+        const imageUrl = courseData.imageUrl || 'https://images.unsplash.com/photo-1556910103-1c02745a30bf?q=80&w=400';
+        const progress = courseData.progress || 0;
+
+        return (
+            <TouchableOpacity
+                key={courseData.id || index}
+                style={styles.courseCard}
+                onPress={() => navigation.navigate('CourseDetail', { courseId: courseData.id })}
+                activeOpacity={0.9}
+            >
+                <Image
+                    source={{ uri: imageUrl }}
+                    style={styles.courseImage}
+                />
+                <LinearGradient
+                    colors={['transparent', 'rgba(0,0,0,0.8)', '#000']}
+                    style={styles.courseOverlay}
+                >
+                    <Text style={styles.courseTitle} numberOfLines={1}>{courseData.title}</Text>
+
+                    {/* Progress Bar Section */}
+                    <View style={styles.resumeContainer}>
+                        <View style={styles.progressBarBg}>
+                            <View style={[styles.progressBarFill, { width: `${progress}%` }]} />
+                        </View>
+                        <View style={styles.resumeRow}>
+                            <Text style={styles.resumeText}>%{progress} Tamamlandı</Text>
+                            <View style={styles.resumeAction}>
+                                <Play size={10} color="#ea580c" fill="#ea580c" />
+                                <Text style={styles.resumeActionText}>Devam Et</Text>
+                            </View>
+                        </View>
+                    </View>
+                </LinearGradient>
+            </TouchableOpacity>
+        );
+    };
+
     if (loading) {
         return (
             <View style={styles.loadingContainer}>
@@ -371,12 +412,12 @@ export default function HomeScreen({ navigation }) {
                     </View>
                 )}
 
-                {/* My Courses Section */}
+                {/* My Courses Section (Continue Watching) */}
                 {userCourses.length > 0 && (
                     <View style={styles.section}>
                         <Text style={styles.sectionTitle}>Kaldığın Yerden Devam Et</Text>
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
-                            {userCourses.map((enrollment, index) => renderCourseCard(enrollment, index))}
+                            {userCourses.map((course, index) => renderContinueWatchingCard(course, index))}
                         </ScrollView>
                     </View>
                 )}
@@ -767,5 +808,40 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
+    },
+    // styles for Continue Watching cards
+    resumeContainer: {
+        marginTop: 8,
+    },
+    progressBarBg: {
+        height: 4,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        borderRadius: 2,
+        marginBottom: 6,
+        overflow: 'hidden',
+    },
+    progressBarFill: {
+        height: '100%',
+        backgroundColor: '#ea580c',
+        borderRadius: 2,
+    },
+    resumeRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    resumeText: {
+        color: '#9ca3af',
+        fontSize: 10,
+    },
+    resumeAction: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 2,
+    },
+    resumeActionText: {
+        color: '#ea580c',
+        fontSize: 10,
+        fontWeight: 'bold',
     },
 });

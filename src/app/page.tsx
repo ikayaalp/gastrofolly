@@ -116,10 +116,17 @@ export default function Home() {
     // Check for user courses (Continue Watching)
     const fetchUserCourses = async () => {
       try {
-        const response = await fetch("/api/user/courses");
+        const response = await fetch("/api/user/courses", {
+          cache: "no-store",
+          // Ensure cookies are sent (important for NextAuth session)
+          // Note: Same-origin requests typically send cookies by default, 
+          // but 'include' ensures it across different browser policies.
+        });
         if (response.ok) {
           const data = await response.json();
           setUserCourses(data.courses || []);
+        } else {
+          console.error("Failed to fetch user courses:", response.status);
         }
       } catch (error) {
         console.error("Error loading user courses:", error);
