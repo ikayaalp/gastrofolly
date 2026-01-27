@@ -8,6 +8,8 @@ import AIAssistantWidget from "@/components/ai/AIAssistantWidget"
 async function getHomeData(userId?: string) {
   // Kullanıcı bilgilerini ve ödemelerini al (Erişim kontrolü için)
   let user = null;
+  let userCourseIds: string[] = [];
+
   if (userId) {
     user = await prisma.user.findUnique({
       where: { id: userId },
@@ -16,20 +18,32 @@ async function getHomeData(userId?: string) {
         payments: {
           where: { status: 'COMPLETED', amount: { gt: 0 } },
           select: { courseId: true }
+        },
+        progress: {
+          select: { courseId: true }
+        },
+        enrollments: {
+          select: { courseId: true }
         }
       }
     });
-  }
 
-  const isSubscriptionValid = user?.subscriptionEndDate && new Date(user.subscriptionEndDate) > new Date();
-  const purchasedCourseIds = user?.payments.map(p => p.courseId) || [];
+    if (user) {
+      const paymentIds = user.payments.map(p => p.courseId).filter(id => id !== null) as string[];
+      const progressIds = user.progress.map(p => p.courseId);
+      const enrollmentIds = user.enrollments.map(e => e.courseId);
+
+      // Merge all IDs and remove duplicates
+      userCourseIds = Array.from(new Set([...paymentIds, ...progressIds, ...enrollmentIds]));
+    }
+  }
 
   const [
     featuredCourses,
     popularCourses,
     recentCourses,
     categories,
-    rawUserEnrollments
+    userCourses
   ] = await Promise.all([
     // Öne çıkan kurslar
     prisma.course.findMany({
@@ -82,31 +96,27 @@ async function getHomeData(userId?: string) {
         }
       }
     }),
-    // Kullanıcının kayıtlı olduğu kurslar
-    userId ? prisma.enrollment.findMany({
-      where: { userId },
+    // Kullanıcının kursları (Progress, Payment veya Enrollment kaynaklı)
+    userCourseIds.length > 0 ? prisma.course.findMany({
+      where: {
+        id: { in: userCourseIds },
+        isPublished: true
+      },
       include: {
-        course: {
-          include: {
-            instructor: true,
-            category: true,
-            lessons: true,
-            reviews: true,
-            _count: { select: { lessons: true, enrollments: true } }
-          }
-        }
+        instructor: true,
+        category: true,
+        lessons: true,
+        reviews: true,
+        _count: { select: { lessons: true, enrollments: true } }
       },
       take: 6
     }) : []
   ])
 
-  // Enrollments filtreleme: Abonelik yoksa sadece satın alınan veya ücretsiz kursları göster
-  const userEnrollments = rawUserEnrollments.filter(enrollment => {
-    if (isSubscriptionValid) return true; // Abonelik varsa hepsi görünür
-    if (enrollment.course.price === 0) return true; // Ücretsizse görünür
-    if (purchasedCourseIds.includes(enrollment.courseId)) return true; // Satın alınmışsa görünür
-    return false; // Aksi halde (sadece abonelikle erişilen ama süresi bitmiş) gizle
-  });
+  // Map courses to the expected "userEnrollments" structure for the client component
+  const userEnrollments = userCourses.map(course => ({
+    course: course
+  }));
 
   return {
     featuredCourses,
