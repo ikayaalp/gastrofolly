@@ -62,8 +62,9 @@ export default function ProfilePage() {
             const uploadData = await uploadRes.json();
 
             if (!uploadRes.ok) {
-                console.error('Cloudinary direct upload error:', uploadData);
-                throw new Error(uploadData.error?.message || 'Resim yüklenemedi');
+                console.error('Cloudinary direct upload failed. Status:', uploadRes.status);
+                console.error('Full Error Response:', uploadData);
+                throw new Error(uploadData.error?.message || `Yükleme başarısız: ${uploadRes.status}`);
             }
 
             console.log('Direct upload successful:', uploadData.secure_url);
