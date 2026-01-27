@@ -42,9 +42,11 @@ export async function GET(request: NextRequest) {
     // Arama filtresi
     const search = searchParams.get('search')
     if (search) {
+      const searchClean = search.replace(/^#/, '')
       where.OR = [
         { title: { contains: search, mode: 'insensitive' } },
-        { content: { contains: search, mode: 'insensitive' } }
+        { content: { contains: search, mode: 'insensitive' } },
+        { hashtags: { some: { name: { contains: searchClean, mode: 'insensitive' } } } }
       ]
     }
 
