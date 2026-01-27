@@ -76,9 +76,12 @@ export async function GET(
             );
         }
 
-        // Process lessons to hide videoUrl if not enrolled or not free/first
+        // Check for valid subscription
+        const hasValidSubscription = user?.subscriptionEndDate && new Date(user.subscriptionEndDate) > new Date();
+
+        // Process lessons to hide videoUrl if not enrolled or not free/first/subscribed
         const processedLessons = course.lessons.map((lesson, index) => {
-            const hasAccess = enrollment || lesson.isFree || index === 0;
+            const hasAccess = enrollment || hasValidSubscription || lesson.isFree || index === 0;
             return {
                 ...lesson,
                 videoUrl: hasAccess ? lesson.videoUrl : null
@@ -89,6 +92,7 @@ export async function GET(
             ...course,
             lessons: processedLessons,
             isEnrolled: !!enrollment,
+            hasAccess: !!enrollment || !!hasValidSubscription
         };
 
         return NextResponse.json(responseData);

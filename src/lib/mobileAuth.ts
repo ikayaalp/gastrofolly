@@ -8,6 +8,8 @@ interface MobileUser {
     id: string;
     email: string;
     role?: string;
+    subscriptionEndDate?: Date | null;
+    subscriptionPlan?: string | null;
 }
 
 /**
@@ -19,14 +21,28 @@ export async function getAuthUser(request: NextRequest): Promise<MobileUser | nu
     try {
         const session = await getServerSession(authOptions);
         if (session?.user?.id) {
-            console.log('getAuthUser: Found web session', session.user.id);
-            return {
-                id: session.user.id,
-                email: session.user.email || '',
-                role: session.user.role,
-            };
+            // Always fetch fresh user data to get latest subscription status
+            const user = await prisma.user.findUnique({
+                where: { id: session.user.id },
+                select: {
+                    id: true,
+                    email: true,
+                    role: true,
+                    subscriptionEndDate: true,
+                    subscriptionPlan: true
+                }
+            });
+
+            if (user) {
+                return {
+                    id: user.id,
+                    email: user.email,
+                    role: user.role,
+                    subscriptionEndDate: user.subscriptionEndDate,
+                    subscriptionPlan: user.subscriptionPlan
+                };
+            }
         }
-        console.log('getAuthUser: No web session found');
     } catch (err) {
         console.error('getAuthUser: Error getting web session', err);
     }
@@ -49,7 +65,13 @@ export async function getAuthUser(request: NextRequest): Promise<MobileUser | nu
         // Verify user still exists
         const user = await prisma.user.findUnique({
             where: { id: decoded.userId },
-            select: { id: true, email: true, role: true }
+            select: {
+                id: true,
+                email: true,
+                role: true,
+                subscriptionEndDate: true,
+                subscriptionPlan: true
+            }
         });
 
         if (!user) {
@@ -60,6 +82,8 @@ export async function getAuthUser(request: NextRequest): Promise<MobileUser | nu
             id: user.id,
             email: user.email,
             role: user.role,
+            subscriptionEndDate: user.subscriptionEndDate,
+            subscriptionPlan: user.subscriptionPlan
         };
     } catch (error) {
         console.error('JWT verification error:', error);
