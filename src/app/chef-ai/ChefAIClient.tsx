@@ -51,34 +51,48 @@ export default function ChefAIClient() {
         }
     }, []);
 
-    const saveHistory = (msgs: Message[]) => {
-        if (msgs.length === 0) return;
-        const newItem: HistoryItem = {
-            id: Date.now().toString(),
-            date: new Date().toISOString(),
-            preview: msgs[msgs.length - 1].content.substring(0, 50) + '...',
-            messages: msgs
-        };
-        const newHistory = [newItem, ...chatHistory].slice(0, 10);
-        setChatHistory(newHistory);
-        localStorage.setItem('chef_ai_history_web', JSON.stringify(newHistory));
+    if (msgs.length === 0) return;
+
+    // Create a new history item or update the latest one if it's the same session?
+    // For simplicity, let's treat every "send" as updating the current session's history entry.
+    // We need a session ID.
+    const currentSessionId = sessionStorage.getItem('current_chat_session_id') || Date.now().toString();
+    if (!sessionStorage.getItem('current_chat_session_id')) {
+        sessionStorage.setItem('current_chat_session_id', currentSessionId);
+    }
+
+    const updatedHistory = [...chatHistory];
+    const existingIndex = updatedHistory.findIndex(h => h.id === currentSessionId);
+
+    const newItem: HistoryItem = {
+        id: currentSessionId,
+        date: new Date().toISOString(),
+        preview: msgs[msgs.length - 1].content.substring(0, 50) + '...',
+        messages: msgs
     };
+
+    if (existingIndex >= 0) {
+        updatedHistory[existingIndex] = newItem;
+    } else {
+        updatedHistory.unshift(newItem);
+    }
+
+    // Limit to 10 items
+    const limitedHistory = updatedHistory.slice(0, 10);
+
+    setChatHistory(limitedHistory);
+    localStorage.setItem('chef_ai_history_web', JSON.stringify(limitedHistory));
 
     // Save on unmount (approximate for web) or when chat "ends" (user clears/resets)
     // For web, we might just save when navigating away? Hard to hook exactly like RN focus/blur.
     // We'll save on every message for simplicity or have a "New Chat" button?
     // Let's save when the user explicitly clears or maybe just append to current session.
     // The RN app saves on "blur". We can try to use cleanup effect.
+    // Auto-save history whenever messages change
     useEffect(() => {
-        return () => {
-            // This runs on unmount.
-            if (messages.length > 0) {
-                // We can't easily update state here but we can read it if we used a ref.
-                // For now, let's just save manually or rely on a "New Chat" action if we added one.
-                // Or simpler: Save to history continuously? No, that creates duplicates.
-                // Let's implement a specific "Save" or just auto-save current session locally and commit to history on "New Chat".
-            }
-        };
+        if (messages.length > 0) {
+            saveHistory(messages);
+        }
     }, [messages]);
 
 
@@ -98,7 +112,7 @@ export default function ChefAIClient() {
         // If not, I'll simulate a response.
 
         try {
-            const response = await fetch('/api/ai/chat', {
+            const response = await fetch('/api/ai-chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ messages: newMessages })
@@ -123,12 +137,22 @@ export default function ChefAIClient() {
 
     const loadHistoryItem = (item: HistoryItem) => {
         setMessages(item.messages);
+        sessionStorage.setItem('current_chat_session_id', item.id);
         setIsMenuVisible(false);
     };
 
     const clearHistory = () => {
         localStorage.removeItem('chef_ai_history_web');
         setChatHistory([]);
+        setMessages([]); // Clear current screen too
+        sessionStorage.removeItem('current_chat_session_id'); // Reset session
+        setIsMenuVisible(false);
+    };
+
+    // New Chat handler
+    const startNewChat = () => {
+        setMessages([]);
+        sessionStorage.removeItem('current_chat_session_id');
         setIsMenuVisible(false);
     };
 
@@ -221,8 +245,8 @@ export default function ChefAIClient() {
                                 )}
                                 <div
                                     className={`max-w-[85%] p-4 rounded-2xl ${msg.role === 'user'
-                                            ? 'bg-orange-600 text-white rounded-br-sm'
-                                            : 'bg-[#27272a] border border-[#3f3f46] text-gray-200 rounded-bl-sm'
+                                        ? 'bg-orange-600 text-white rounded-br-sm'
+                                        : 'bg-[#27272a] border border-[#3f3f46] text-gray-200 rounded-bl-sm'
                                         }`}
                                 >
                                     {msg.role === 'user' ? (
@@ -282,8 +306,8 @@ export default function ChefAIClient() {
                         onClick={() => sendMessage(input)}
                         disabled={!input.trim() || isLoading}
                         className={`mb-1 p-2 rounded-full flex-shrink-0 transition-all ${!input.trim() || isLoading
-                                ? 'bg-[#27272a] text-gray-500'
-                                : 'bg-gradient-to-br from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-900/30'
+                            ? 'bg-[#27272a] text-gray-500'
+                            : 'bg-gradient-to-br from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-900/30'
                             }`}
                     >
                         <Send size={18} />
@@ -297,9 +321,17 @@ export default function ChefAIClient() {
                     <div className="w-full h-full md:w-80 bg-[#18181b] flex flex-col animate-in slide-in-from-right duration-200">
                         <div className="flex items-center justify-between p-4 border-b border-[#27272a]">
                             <h3 className="text-lg font-bold text-white">Sohbet Geçmişi</h3>
-                            <button onClick={() => setIsMenuVisible(false)} className="p-2 hover:bg-[#27272a] rounded-full">
-                                <ChevronLeft className="w-6 h-6 text-white" />
-                            </button>
+                            <div className="flex items-center">
+                                <button
+                                    onClick={startNewChat}
+                                    className="mr-2 px-3 py-1.5 bg-orange-600 rounded-lg text-xs font-bold text-white hover:bg-orange-700 transition-colors"
+                                >
+                                    + Yeni
+                                </button>
+                                <button onClick={() => setIsMenuVisible(false)} className="p-2 hover:bg-[#27272a] rounded-full">
+                                    <ChevronLeft className="w-6 h-6 text-white" />
+                                </button>
+                            </div>
                         </div>
 
                         <div className="flex-1 overflow-y-auto p-4">
