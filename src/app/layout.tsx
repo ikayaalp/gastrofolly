@@ -80,6 +80,10 @@ export default function RootLayout({
             </Script>
           </>
         )}
+        import MobileNavbar from "@/components/layout/MobileNavbar";
+
+        // ... existing code ...
+
         <AuthSessionProvider>
           <CartProvider>
             <FavoritesProvider>
@@ -87,6 +91,7 @@ export default function RootLayout({
             </FavoritesProvider>
           </CartProvider>
         </AuthSessionProvider>
+        <MobileNavbar />
       </body>
     </html>
   );
