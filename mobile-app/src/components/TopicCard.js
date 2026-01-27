@@ -27,7 +27,8 @@ export default function TopicCard({
     videoDurations,
     setVideoDurations,
     setVideoProgress,
-    formatTimeAgo
+    formatTimeAgo,
+    onHashtagPress
 }) {
     const [activeSlide, setActiveSlide] = useState(0);
 
@@ -74,7 +75,18 @@ export default function TopicCard({
                 <Text style={styles.topicContent} numberOfLines={showFullContent ? undefined : 3}>
                     {item.content.split(/(#[a-zA-Z0-9çğıöşüÇĞİÖŞÜ]+)/g).map((part, index) => {
                         if (part.startsWith('#')) {
-                            return <Text key={index} style={{ color: '#ea580c', fontWeight: '500' }}>{part}</Text>;
+                            return (
+                                <Text
+                                    key={index}
+                                    style={{ color: '#ea580c', fontWeight: '500' }}
+                                    onPress={(e) => {
+                                        e.stopPropagation();
+                                        if (onHashtagPress) onHashtagPress(part);
+                                    }}
+                                >
+                                    {part}
+                                </Text>
+                            );
                         }
                         return part;
                     })}

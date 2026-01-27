@@ -439,6 +439,7 @@ export default function SocialScreen({ navigation }) {
             isLiked={likedTopics.has(item.id)}
             onSave={handleSave}
             isSaved={savedTopics.has(item.id)}
+            onHashtagPress={setSearchTerm}
             onMediaPress={(url, type) => {
                 if (type === 'image') setFullscreenImageUrl(url);
                 else setFullscreenVideoUrl(url);
