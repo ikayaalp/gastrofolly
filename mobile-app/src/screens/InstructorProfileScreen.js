@@ -150,10 +150,6 @@ export default function InstructorProfileScreen({ navigation, route }) {
                             <Text style={styles.statValue}>{courses.length}</Text>
                             <Text style={styles.statLabel}>KURS</Text>
                         </View>
-                        <View style={styles.statBox}>
-                            <Text style={styles.statValue}>{getTotalStudents()}</Text>
-                            <Text style={styles.statLabel}>ÖĞRENCİ</Text>
-                        </View>
                     </View>
 
                     {/* Ask Chef Button - Only for Enrolled Students */}
@@ -230,10 +226,6 @@ export default function InstructorProfileScreen({ navigation, route }) {
                                         <View style={styles.metaItem}>
                                             <Play size={14} color="#ea580c" />
                                             <Text style={styles.metaText}>{course._count?.lessons || 0} Ders</Text>
-                                        </View>
-                                        <View style={styles.metaItem}>
-                                            <Users size={14} color="#ea580c" />
-                                            <Text style={styles.metaText}>{course._count?.enrollments || 0}</Text>
                                         </View>
                                     </View>
 

@@ -213,18 +213,12 @@ export default async function InstructorPage({ params }: InstructorPageProps) {
 
 
 
-                  <div className="grid grid-cols-2 gap-4 text-center mb-6">
+                  <div className="grid grid-cols-1 gap-4 text-center mb-6">
                     <div className="bg-gray-900/30 p-3 rounded-lg border border-gray-800">
                       <div className="text-xl font-bold text-white mb-1">
                         {instructor._count.createdCourses}
                       </div>
                       <div className="text-xs text-gray-500 uppercase tracking-wider">Kurs</div>
-                    </div>
-                    <div className="bg-gray-900/30 p-3 rounded-lg border border-gray-800">
-                      <div className="text-xl font-bold text-white mb-1">
-                        {totalStudents}
-                      </div>
-                      <div className="text-xs text-gray-500 uppercase tracking-wider">Öğrenci</div>
                     </div>
                   </div>
 
@@ -331,10 +325,6 @@ export default async function InstructorPage({ params }: InstructorPageProps) {
                               <div className="flex items-center">
                                 <Play className="h-3.5 w-3.5 mr-1.5 text-orange-500" />
                                 {course._count.lessons} Ders
-                              </div>
-                              <div className="flex items-center">
-                                <Users className="h-3.5 w-3.5 mr-1.5 text-orange-500" />
-                                {course._count.enrollments}
                               </div>
                             </div>
 
