@@ -507,276 +507,290 @@ export default function SocialScreen({ navigation }) {
             )}
 
             {/* Filter Tabs (like web) */}
-            </TouchableOpacity>
-            <TouchableOpacity
-                style={[styles.filterTab, sortBy === 'saved' && styles.filterTabActive]}
-                onPress={() => setSortBy('saved')}
+            <View style={styles.filterTabsContainer}>
+                <TouchableOpacity
+                    style={[styles.filterTab, sortBy === 'newest' && !searchTerm && selectedCategory === 'all' && styles.filterTabActive]}
+                    onPress={() => {
+                        setSortBy('newest');
+                        setSearchTerm('');
+                        setSelectedCategory('all');
+                    }}
+                >
+                    <Users size={14} color={sortBy === 'newest' && !searchTerm && selectedCategory === 'all' ? '#fff' : '#6b7280'} />
+                    <Text style={[styles.filterTabText, sortBy === 'newest' && !searchTerm && selectedCategory === 'all' && styles.filterTabTextActive]}>Anasayfa</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={[styles.filterTab, sortBy === 'popular' && styles.filterTabActive]}
+                    onPress={() => setSortBy('popular')}
+                >
+                    <Text style={[styles.filterTabText, sortBy === 'popular' && styles.filterTabTextActive]}>Popüler</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={[styles.filterTab, sortBy === 'saved' && styles.filterTabActive]}
+                    onPress={() => setSortBy('saved')}
+                >
+                    <Bookmark size={14} color={sortBy === 'saved' ? '#fff' : '#6b7280'} />
+                    <Text style={[styles.filterTabText, sortBy === 'saved' && styles.filterTabTextActive]}>Kaydedilenler</Text>
+                </TouchableOpacity>
+            </View>
+            < FlatList
+                data={sortBy === 'saved' ? topics.filter(t => savedTopics.has(t.id)) : topics
+                }
+                renderItem={renderTopicItem}
+                keyExtractor={(item) => item.id}
+                contentContainerStyle={styles.topicsList}
+                refreshControl={
+                    < RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ea580c" />
+                }
+                onViewableItemsChanged={onViewableItemsChanged}
+                viewabilityConfig={viewabilityConfig}
+                ListEmptyComponent={
+                    < View style={styles.emptyContainer} >
+                        <Users size={64} color="#374151" />
+                        <Text style={styles.emptyText}>{sortBy === 'saved' ? 'Henüz kaydedilen gönderi yok' : 'Henüz tartışma yok'}</Text>
+                    </View >
+                }
+            />
+
+            {/* FAB - New Topic */}
+            {
+                isLoggedIn && (
+                    <TouchableOpacity
+                        style={styles.fab}
+                        onPress={() => setShowNewTopicModal(true)}
+                    >
+                        <Plus size={24} color="#fff" />
+                    </TouchableOpacity>
+                )
+            }
+
+            {/* New Topic Modal */}
+            {/* Premium Create Topic Modal */}
+            <Modal
+                visible={showNewTopicModal}
+                animationType="slide"
+                transparent={true}
+                onRequestClose={() => setShowNewTopicModal(false)}
             >
-                <Bookmark size={14} color={sortBy === 'saved' ? '#fff' : '#6b7280'} />
-                <Text style={[styles.filterTabText, sortBy === 'saved' && styles.filterTabTextActive]}>Kaydedilenler</Text>
-            </TouchableOpacity>
-        </View >
-
-
-        {/* Topics List */ }
-        < FlatList
-    data = { sortBy === 'saved' ? topics.filter(t => savedTopics.has(t.id)) : topics
-}
-renderItem = { renderTopicItem }
-keyExtractor = {(item) => item.id}
-contentContainerStyle = { styles.topicsList }
-refreshControl = {
-            < RefreshControl refreshing = { refreshing } onRefresh = { onRefresh } tintColor = "#ea580c" />
-        }
-onViewableItemsChanged = { onViewableItemsChanged }
-viewabilityConfig = { viewabilityConfig }
-ListEmptyComponent = {
-            < View style = { styles.emptyContainer } >
-                <Users size={64} color="#374151" />
-                <Text style={styles.emptyText}>{sortBy === 'saved' ? 'Henüz kaydedilen gönderi yok' : 'Henüz tartışma yok'}</Text>
-            </View >
-        }
-    />
-
-{/* FAB - New Topic */ }
-{
-    isLoggedIn && (
-        <TouchableOpacity
-            style={styles.fab}
-            onPress={() => setShowNewTopicModal(true)}
-        >
-            <Plus size={24} color="#fff" />
-        </TouchableOpacity>
-    )
-}
-
-{/* New Topic Modal */ }
-{/* Premium Create Topic Modal */ }
-<Modal
-    visible={showNewTopicModal}
-    animationType="slide"
-    transparent={true}
-    onRequestClose={() => setShowNewTopicModal(false)}
->
-    <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.modalContainer}
-    >
-        <View style={styles.modalContent}>
-            {/* Header */}
-            <View style={styles.modalHeader}>
-                <TouchableOpacity
-                    onPress={() => { setShowNewTopicModal(false); setSelectedMedias([]); }}
-                    style={styles.closeButton}
+                <KeyboardAvoidingView
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                    style={styles.modalContainer}
                 >
-                    <X size={24} color="#fff" />
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={[styles.headerPostButton, (submitting || uploading || (!newTopicForm.content.trim() && selectedMedias.length === 0)) && styles.headerPostButtonDisabled]}
-                    onPress={handleCreateTopic}
-                    disabled={submitting || uploading || (!newTopicForm.content.trim() && selectedMedias.length === 0)}
-                >
-                    {submitting ? (
-                        <ActivityIndicator size="small" color="#fff" />
-                    ) : (
-                        <Text style={styles.headerPostButtonText}>Paylaş</Text>
-                    )}
-                </TouchableOpacity>
-            </View>
+                    <View style={styles.modalContent}>
+                        {/* Header */}
+                        <View style={styles.modalHeader}>
+                            <TouchableOpacity
+                                onPress={() => { setShowNewTopicModal(false); setSelectedMedias([]); }}
+                                style={styles.closeButton}
+                            >
+                                <X size={24} color="#fff" />
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.headerPostButton, (submitting || uploading || (!newTopicForm.content.trim() && selectedMedias.length === 0)) && styles.headerPostButtonDisabled]}
+                                onPress={handleCreateTopic}
+                                disabled={submitting || uploading || (!newTopicForm.content.trim() && selectedMedias.length === 0)}
+                            >
+                                {submitting ? (
+                                    <ActivityIndicator size="small" color="#fff" />
+                                ) : (
+                                    <Text style={styles.headerPostButtonText}>Paylaş</Text>
+                                )}
+                            </TouchableOpacity>
+                        </View>
 
-            <ScrollView style={styles.modalBody}>
-                <View style={styles.userInfoRow}>
-                    <View style={styles.modalUserAvatar}>
-                        <User size={20} color="#fff" />
-                    </View>
-                    <View style={styles.categorySelector}>
-                        <Text style={styles.categorySelectorText}>Chef Sosyal</Text>
-                    </View>
-                </View>
-
-                <TextInput
-                    autoFocus={true}
-                    style={styles.modalContentInput}
-                    placeholder="Neler oluyor? Bir şeyler paylaş..."
-                    placeholderTextColor="#6b7280"
-                    value={newTopicForm.content}
-                    onChangeText={(text) => setNewTopicForm({ ...newTopicForm, content: text })}
-                    multiline
-                    textAlignVertical="top"
-                />
-
-                {/* Selected Media Preview */}
-                {selectedMedias.length > 0 && (
-                    <View style={styles.modalMediaPreviewContainer}>
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                            {selectedMedias.map((media, index) => (
-                                <View key={index} style={{ marginRight: 10 }}>
-                                    {media.type === 'image' ? (
-                                        <Image source={{ uri: media.uri }} style={styles.modalMediaPreview} resizeMode="cover" />
-                                    ) : (
-                                        <Video
-                                            source={{ uri: media.uri }}
-                                            style={styles.modalMediaPreview}
-                                            resizeMode={ResizeMode.COVER}
-                                            shouldPlay={false}
-                                            useNativeControls={false}
-                                        />
-                                    )}
-                                    <TouchableOpacity
-                                        style={styles.removeMediaButton}
-                                        onPress={() => {
-                                            const newMedias = [...selectedMedias];
-                                            newMedias.splice(index, 1);
-                                            setSelectedMedias(newMedias);
-                                        }}
-                                    >
-                                        <X size={16} color="#fff" />
-                                    </TouchableOpacity>
+                        <ScrollView style={styles.modalBody}>
+                            <View style={styles.userInfoRow}>
+                                <View style={styles.modalUserAvatar}>
+                                    <User size={20} color="#fff" />
                                 </View>
-                            ))}
+                                <View style={styles.categorySelector}>
+                                    <Text style={styles.categorySelectorText}>Chef Sosyal</Text>
+                                </View>
+                            </View>
+
+                            <TextInput
+                                autoFocus={true}
+                                style={styles.modalContentInput}
+                                placeholder="Neler oluyor? Bir şeyler paylaş..."
+                                placeholderTextColor="#6b7280"
+                                value={newTopicForm.content}
+                                onChangeText={(text) => setNewTopicForm({ ...newTopicForm, content: text })}
+                                multiline
+                                textAlignVertical="top"
+                            />
+
+                            {/* Selected Media Preview */}
+                            {selectedMedias.length > 0 && (
+                                <View style={styles.modalMediaPreviewContainer}>
+                                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                                        {selectedMedias.map((media, index) => (
+                                            <View key={index} style={{ marginRight: 10 }}>
+                                                {media.type === 'image' ? (
+                                                    <Image source={{ uri: media.uri }} style={styles.modalMediaPreview} resizeMode="cover" />
+                                                ) : (
+                                                    <Video
+                                                        source={{ uri: media.uri }}
+                                                        style={styles.modalMediaPreview}
+                                                        resizeMode={ResizeMode.COVER}
+                                                        shouldPlay={false}
+                                                        useNativeControls={false}
+                                                    />
+                                                )}
+                                                <TouchableOpacity
+                                                    style={styles.removeMediaButton}
+                                                    onPress={() => {
+                                                        const newMedias = [...selectedMedias];
+                                                        newMedias.splice(index, 1);
+                                                        setSelectedMedias(newMedias);
+                                                    }}
+                                                >
+                                                    <X size={16} color="#fff" />
+                                                </TouchableOpacity>
+                                            </View>
+                                        ))}
+                                    </ScrollView>
+                                </View>
+                            )}
                         </ScrollView>
+
+                        {/* Bottom Toolbar */}
+                        <View style={[styles.modalToolbar, { paddingBottom: Platform.OS === 'android' ? insets.bottom + 16 : 16 }]}>
+                            <TouchableOpacity
+                                style={styles.toolbarButton}
+                                onPress={pickImage}
+                            >
+                                <ImageIcon size={24} color="#ea580c" />
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={styles.toolbarButton}
+                                onPress={pickImageFromCamera}
+                            >
+                                <Camera size={24} color="#ea580c" />
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={styles.toolbarButton}
+                                onPress={pickVideo}
+                            >
+                                <Film size={24} color="#ea580c" />
+                            </TouchableOpacity>
+                        </View>
+
+                        {uploading && (
+                            <View style={styles.uploadingOverlay}>
+                                <ActivityIndicator size="large" color="#ea580c" />
+                                <Text style={styles.uploadingText}>Medya yükleniyor...</Text>
+                            </View>
+                        )}
                     </View>
-                )}
-            </ScrollView>
+                </KeyboardAvoidingView>
+            </Modal>
 
-            {/* Bottom Toolbar */}
-            <View style={[styles.modalToolbar, { paddingBottom: Platform.OS === 'android' ? insets.bottom + 16 : 16 }]}>
-                <TouchableOpacity
-                    style={styles.toolbarButton}
-                    onPress={pickImage}
-                >
-                    <ImageIcon size={24} color="#ea580c" />
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={styles.toolbarButton}
-                    onPress={pickImageFromCamera}
-                >
-                    <Camera size={24} color="#ea580c" />
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={styles.toolbarButton}
-                    onPress={pickVideo}
-                >
-                    <Film size={24} color="#ea580c" />
-                </TouchableOpacity>
-            </View>
+            {/* Custom Alert */}
+            <CustomAlert
+                visible={alertVisible}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                buttons={alertConfig.buttons}
+                type={alertConfig.type}
+                onClose={() => setAlertVisible(false)}
+            />
 
-            {uploading && (
-                <View style={styles.uploadingOverlay}>
-                    <ActivityIndicator size="large" color="#ea580c" />
-                    <Text style={styles.uploadingText}>Medya yükleniyor...</Text>
+            {/* Fullscreen Image Viewer Modal */}
+            <ImageViewerModal
+                visible={!!fullscreenImageUrl}
+                imageUrl={fullscreenImageUrl}
+                onClose={() => setFullscreenImageUrl(null)}
+            />
+
+            {/* Fullscreen Video Player Modal */}
+            <Modal
+                visible={!!fullscreenVideoUrl}
+                animationType="slide"
+                transparent={false}
+                onRequestClose={() => setFullscreenVideoUrl(null)}
+            >
+                <View style={{ flex: 1, backgroundColor: '#000', paddingBottom: Platform.OS === 'android' ? 20 : 0 }}>
+                    <TouchableWithoutFeedback onPress={handleVideoTap}>
+                        <View style={{ flex: 1, justifyContent: 'center' }}>
+                            <Video
+                                ref={videoRef}
+                                source={{ uri: fullscreenVideoUrl }}
+                                style={{ flex: 1, width: '100%' }}
+                                resizeMode={ResizeMode.CONTAIN}
+                                shouldPlay
+                                isLooping
+                                onPlaybackStatusUpdate={status => setPlaybackStatus(status)}
+                            />
+
+                            {/* Seek Backward Overlay (Minimal) */}
+                            {seekOverlay === 'backward' && (
+                                <View style={styles.seekOverlayLeft}>
+                                    <ChevronsLeft size={40} color="#fff" />
+                                    <Text style={styles.seekText}>5 sn</Text>
+                                </View>
+                            )}
+
+                            {/* Seek Forward Overlay (Minimal) */}
+                            {seekOverlay === 'forward' && (
+                                <View style={styles.seekOverlayRight}>
+                                    <ChevronsRight size={40} color="#fff" />
+                                    <Text style={styles.seekText}>5 sn</Text>
+                                </View>
+                            )}
+                        </View>
+                    </TouchableWithoutFeedback>
+
+                    {/* Bottom Control Bar */}
+                    <View style={styles.bottomControlBar}>
+                        <TouchableOpacity onPress={togglePlayPause} style={styles.playPauseButton}>
+                            {playbackStatus?.isPlaying ? (
+                                <Pause size={24} color="#ea580c" fill="#ea580c" />
+                            ) : (
+                                <Play size={24} color="#ea580c" fill="#ea580c" />
+                            )}
+                        </TouchableOpacity>
+
+                        <TouchableWithoutFeedback onPress={handleProgressBarTap}>
+                            <View
+                                style={styles.progressBarContainer}
+                                onLayout={e => setProgressBarWidth(e.nativeEvent.layout.width)}
+                            >
+                                {/* Track Background */}
+                                <View style={{
+                                    position: 'absolute',
+                                    left: 0,
+                                    right: 0,
+                                    height: 6,
+                                    backgroundColor: 'rgba(255,255,255,0.3)',
+                                    borderRadius: 3
+                                }} />
+                                {/* Progress Fill */}
+                                <View
+                                    style={[
+                                        styles.progressBarFill,
+                                        { width: `${(playbackStatus?.durationMillis ? (playbackStatus.positionMillis / playbackStatus.durationMillis) * 100 : 0)}%` }
+                                    ]}
+                                />
+                            </View>
+                        </TouchableWithoutFeedback>
+                    </View>
+
+                    <TouchableOpacity
+                        style={{
+                            position: 'absolute',
+                            top: Platform.OS === 'ios' ? 50 : 40,
+                            left: 20,
+                            padding: 8,
+                            backgroundColor: 'rgba(0,0,0,0.5)',
+                            borderRadius: 20,
+                            zIndex: 10,
+                        }}
+                        onPress={() => setFullscreenVideoUrl(null)}
+                    >
+                        <X size={24} color="#fff" />
+                    </TouchableOpacity>
                 </View>
-            )}
-        </View>
-    </KeyboardAvoidingView>
-</Modal>
-
-{/* Custom Alert */ }
-<CustomAlert
-    visible={alertVisible}
-    title={alertConfig.title}
-    message={alertConfig.message}
-    buttons={alertConfig.buttons}
-    type={alertConfig.type}
-    onClose={() => setAlertVisible(false)}
-/>
-
-{/* Fullscreen Image Viewer Modal */ }
-<ImageViewerModal
-    visible={!!fullscreenImageUrl}
-    imageUrl={fullscreenImageUrl}
-    onClose={() => setFullscreenImageUrl(null)}
-/>
-
-{/* Fullscreen Video Player Modal */ }
-<Modal
-    visible={!!fullscreenVideoUrl}
-    animationType="slide"
-    transparent={false}
-    onRequestClose={() => setFullscreenVideoUrl(null)}
->
-    <View style={{ flex: 1, backgroundColor: '#000', paddingBottom: Platform.OS === 'android' ? 20 : 0 }}>
-        <TouchableWithoutFeedback onPress={handleVideoTap}>
-            <View style={{ flex: 1, justifyContent: 'center' }}>
-                <Video
-                    ref={videoRef}
-                    source={{ uri: fullscreenVideoUrl }}
-                    style={{ flex: 1, width: '100%' }}
-                    resizeMode={ResizeMode.CONTAIN}
-                    shouldPlay
-                    isLooping
-                    onPlaybackStatusUpdate={status => setPlaybackStatus(status)}
-                />
-
-                {/* Seek Backward Overlay (Minimal) */}
-                {seekOverlay === 'backward' && (
-                    <View style={styles.seekOverlayLeft}>
-                        <ChevronsLeft size={40} color="#fff" />
-                        <Text style={styles.seekText}>5 sn</Text>
-                    </View>
-                )}
-
-                {/* Seek Forward Overlay (Minimal) */}
-                {seekOverlay === 'forward' && (
-                    <View style={styles.seekOverlayRight}>
-                        <ChevronsRight size={40} color="#fff" />
-                        <Text style={styles.seekText}>5 sn</Text>
-                    </View>
-                )}
-            </View>
-        </TouchableWithoutFeedback>
-
-        {/* Bottom Control Bar */}
-        <View style={styles.bottomControlBar}>
-            <TouchableOpacity onPress={togglePlayPause} style={styles.playPauseButton}>
-                {playbackStatus?.isPlaying ? (
-                    <Pause size={24} color="#ea580c" fill="#ea580c" />
-                ) : (
-                    <Play size={24} color="#ea580c" fill="#ea580c" />
-                )}
-            </TouchableOpacity>
-
-            <TouchableWithoutFeedback onPress={handleProgressBarTap}>
-                <View
-                    style={styles.progressBarContainer}
-                    onLayout={e => setProgressBarWidth(e.nativeEvent.layout.width)}
-                >
-                    {/* Track Background */}
-                    <View style={{
-                        position: 'absolute',
-                        left: 0,
-                        right: 0,
-                        height: 6,
-                        backgroundColor: 'rgba(255,255,255,0.3)',
-                        borderRadius: 3
-                    }} />
-                    {/* Progress Fill */}
-                    <View
-                        style={[
-                            styles.progressBarFill,
-                            { width: `${(playbackStatus?.durationMillis ? (playbackStatus.positionMillis / playbackStatus.durationMillis) * 100 : 0)}%` }
-                        ]}
-                    />
-                </View>
-            </TouchableWithoutFeedback>
-        </View>
-
-        <TouchableOpacity
-            style={{
-                position: 'absolute',
-                top: Platform.OS === 'ios' ? 50 : 40,
-                left: 20,
-                padding: 8,
-                backgroundColor: 'rgba(0,0,0,0.5)',
-                borderRadius: 20,
-                zIndex: 10,
-            }}
-            onPress={() => setFullscreenVideoUrl(null)}
-        >
-            <X size={24} color="#fff" />
-        </TouchableOpacity>
-    </View>
-</Modal>
+            </Modal>
         </View >
     );
 }
