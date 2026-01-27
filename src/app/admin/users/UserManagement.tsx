@@ -11,8 +11,10 @@ import {
   UserCheck,
   Mail,
   Calendar,
-  BookOpen,
-  GraduationCap
+  GraduationCap,
+  CreditCard,
+  TrendingUp,
+  Crown
 } from "lucide-react"
 
 
@@ -24,6 +26,13 @@ interface User {
   image?: string | null
   createdAt: Date
   subscriptionPlan: string | null
+  subscriptionStartDate: Date | null
+  subscriptionEndDate: Date | null
+  subscriptionCancelled: boolean
+  payments: Array<{
+    amount: number
+    currency: string
+  }>
   _count: {
     createdCourses: number
     enrollments: number
@@ -36,9 +45,9 @@ interface UserManagementProps {
 }
 
 const SUBSCRIPTION_LABELS: Record<string, { label: string, color: string }> = {
-  'COMMIS': { label: 'Commis', color: 'bg-orange-500 text-white' },
-  'CHEF_DE_PARTIE': { label: 'Chef de P.', color: 'bg-blue-500 text-white' },
-  'EXECUTIVE': { label: 'Executive', color: 'bg-purple-500 text-white' }
+  'COMMIS': { label: 'Commis', color: 'bg-orange-900/40 text-orange-200 border-orange-700/50' },
+  'CHEF_DE_PARTIE': { label: 'Chef de P.', color: 'bg-blue-900/40 text-blue-200 border-blue-700/50' },
+  'EXECUTIVE': { label: 'Executive', color: 'bg-purple-900/40 text-purple-200 border-purple-700/50' }
 }
 
 export default function UserManagement({ users }: UserManagementProps) {
@@ -47,6 +56,16 @@ export default function UserManagement({ users }: UserManagementProps) {
   const [roleFilter, setRoleFilter] = useState("ALL")
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [isUpdating, setIsUpdating] = useState(false)
+
+  // İstatistik Hesaplamaları
+  const totalUsers = users.length
+  const premiumUsers = users.filter(u => u.subscriptionPlan).length
+  const premiumRatio = totalUsers > 0 ? (premiumUsers / totalUsers) * 100 : 0
+
+  const totalRevenue = users.reduce((sum, user) => {
+    const userTotal = user.payments.reduce((pSum, payment) => pSum + payment.amount, 0)
+    return sum + userTotal
+  }, 0)
 
   // Filtreleme
   const filteredUsers = users.filter(user => {
@@ -110,6 +129,17 @@ export default function UserManagement({ users }: UserManagementProps) {
     return allRoles.filter(role => role.value !== currentRole)
   }
 
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('tr-TR', {
+      style: 'currency',
+      currency: 'TRY'
+    }).format(amount)
+  }
+
+  const getUserTotalSpend = (user: User) => {
+    return user.payments.reduce((sum, p) => sum + p.amount, 0)
+  }
+
   return (
     <div className="space-y-8">
       {/* Stats */}
@@ -128,12 +158,27 @@ export default function UserManagement({ users }: UserManagementProps) {
 
         <div className="bg-black border border-gray-800 rounded-xl p-6">
           <div className="flex items-center space-x-3">
-            <div className="bg-green-500/20 p-3 rounded-lg">
-              <GraduationCap className="h-6 w-6 text-green-400" />
+            <div className="bg-purple-500/20 p-3 rounded-lg">
+              <Crown className="h-6 w-6 text-purple-400" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-white">{users.filter(u => u.role === 'STUDENT').length}</p>
-              <p className="text-gray-400">Öğrenci</p>
+              <div className="flex items-baseline space-x-2">
+                <p className="text-2xl font-bold text-white">%{premiumRatio.toFixed(1)}</p>
+                <span className="text-sm text-gray-500">({premiumUsers} üye)</span>
+              </div>
+              <p className="text-gray-400">Premium Oranı</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-black border border-gray-800 rounded-xl p-6">
+          <div className="flex items-center space-x-3">
+            <div className="bg-green-500/20 p-3 rounded-lg">
+              <TrendingUp className="h-6 w-6 text-green-400" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-white">{formatCurrency(totalRevenue)}</p>
+              <p className="text-gray-400">Toplam Gelir</p>
             </div>
           </div>
         </div>
@@ -146,18 +191,6 @@ export default function UserManagement({ users }: UserManagementProps) {
             <div>
               <p className="text-2xl font-bold text-white">{users.filter(u => u.role === 'INSTRUCTOR').length}</p>
               <p className="text-gray-400">Eğitmen</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-black border border-gray-800 rounded-xl p-6">
-          <div className="flex items-center space-x-3">
-            <div className="bg-red-500/20 p-3 rounded-lg">
-              <Shield className="h-6 w-6 text-red-400" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-white">{users.filter(u => u.role === 'ADMIN').length}</p>
-              <p className="text-gray-400">Yönetici</p>
             </div>
           </div>
         </div>
@@ -200,9 +233,10 @@ export default function UserManagement({ users }: UserManagementProps) {
             <thead>
               <tr className="border-b border-white/10 text-left bg-black/20">
                 <th className="px-6 py-4 font-semibold text-gray-400 text-sm">Kullanıcı</th>
-                <th className="px-6 py-4 font-semibold text-gray-400 text-sm">Rol & Abonelik</th>
+                <th className="px-6 py-4 font-semibold text-gray-400 text-sm">Rol & Üyelik</th>
+                <th className="px-6 py-4 font-semibold text-gray-400 text-sm">Abonelik Detayı</th>
+                <th className="px-6 py-4 font-semibold text-gray-400 text-sm">Finansal</th>
                 <th className="px-6 py-4 font-semibold text-gray-400 text-sm">İstatistikler</th>
-                <th className="px-6 py-4 font-semibold text-gray-400 text-sm">Kayıt Tarihi</th>
                 <th className="px-6 py-4 font-semibold text-gray-400 text-sm text-right">İşlemler</th>
               </tr>
             </thead>
@@ -228,11 +262,14 @@ export default function UserManagement({ users }: UserManagementProps) {
                       </div>
                       <div className="ml-4">
                         <div className="text-sm font-medium text-white">
-                          {user.name || 'İsimsiz Kullanıcı'}
+                          {user.name || 'İsimsiz'}
                         </div>
                         <div className="text-sm text-gray-500 flex items-center mt-0.5">
                           <Mail className="h-3 w-3 mr-1.5" />
                           {user.email}
+                        </div>
+                        <div className="text-xs text-gray-600 mt-1">
+                          {new Date(user.createdAt).toLocaleDateString('tr-TR')}
                         </div>
                       </div>
                     </div>
@@ -241,35 +278,49 @@ export default function UserManagement({ users }: UserManagementProps) {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex flex-col items-start gap-2">
                       {getRoleBadge(user.role)}
-                      {user.subscriptionPlan && (
-                        <span className={`text-[10px] px-2 py-0.5 rounded border ${SUBSCRIPTION_LABELS[user.subscriptionPlan]?.color ? 'bg-opacity-20 ' + SUBSCRIPTION_LABELS[user.subscriptionPlan].color.replace('text-white', 'border-current') : 'bg-gray-800 text-gray-400 border-gray-700'}`}>
-                          {SUBSCRIPTION_LABELS[user.subscriptionPlan]?.label || user.subscriptionPlan}
-                        </span>
-                      )}
                     </div>
                   </td>
 
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex space-x-6 text-sm text-gray-400">
-                      <div className="flex flex-col items-center">
-                        <span className="font-bold text-white">{user._count.createdCourses}</span>
-                        <span className="text-[10px]">Kurs</span>
+                    {user.subscriptionPlan ? (
+                      <div className="flex flex-col gap-1">
+                        <span className={`inline-flex w-fit px-2 py-0.5 text-xs font-medium rounded border ${SUBSCRIPTION_LABELS[user.subscriptionPlan]?.color || 'bg-gray-800 text-gray-400 border-gray-700'}`}>
+                          {SUBSCRIPTION_LABELS[user.subscriptionPlan]?.label || user.subscriptionPlan}
+                        </span>
+                        {user.subscriptionEndDate && (
+                          <span className={`text-xs ${user.subscriptionCancelled ? 'text-red-400' : 'text-gray-400'}`}>
+                            Bitiş: {new Date(user.subscriptionEndDate).toLocaleDateString('tr-TR')}
+                            {user.subscriptionCancelled && ' (İptal)'}
+                          </span>
+                        )}
+                        {/* Burada ödemelerden periyot tahmin edilebilir veya sadece plan adı gösterilebilir */}
                       </div>
-                      <div className="flex flex-col items-center">
-                        <span className="font-bold text-white">{user._count.enrollments}</span>
-                        <span className="text-[10px]">Kayıt</span>
-                      </div>
-                      <div className="flex flex-col items-center">
-                        <span className="font-bold text-white">{user._count.reviews}</span>
-                        <span className="text-[10px]">Yorum</span>
-                      </div>
+                    ) : (
+                      <span className="text-gray-600 text-xs">Standart Üyelik</span>
+                    )}
+                  </td>
+
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex flex-col">
+                      <span className="text-white font-medium">
+                        {formatCurrency(getUserTotalSpend(user))}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {user.payments.length} işlem
+                      </span>
                     </div>
                   </td>
 
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
-                    <div className="flex items-center">
-                      <Calendar className="h-4 w-4 mr-2 text-gray-600" />
-                      {new Date(user.createdAt).toLocaleDateString('tr-TR')}
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex space-x-4 text-sm text-gray-400">
+                      <div className="text-center">
+                        <span className="block font-bold text-white">{user._count.enrollments}</span>
+                        <span className="text-[10px]">Kayıt</span>
+                      </div>
+                      <div className="text-center">
+                        <span className="block font-bold text-white">{user._count.reviews}</span>
+                        <span className="text-[10px]">Yorum</span>
+                      </div>
                     </div>
                   </td>
 

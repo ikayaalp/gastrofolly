@@ -14,6 +14,15 @@ export default async function UsersPage() {
   // Kullanıcıları getir
   const users = await prisma.user.findMany({
     include: {
+      payments: {
+        where: {
+          status: 'COMPLETED'
+        },
+        select: {
+          amount: true,
+          currency: true
+        }
+      },
       _count: {
         select: {
           createdCourses: true,
