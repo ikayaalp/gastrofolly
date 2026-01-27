@@ -35,26 +35,43 @@ export default function ProfilePage() {
         }
 
         setUploading(true);
-        const formData = new FormData();
-        formData.append('file', file);
 
         try {
-            console.log('Attemping profile photo upload...');
-            const res = await fetch('/api/forum/upload-media', {
+            console.log('Fetching Cloudinary params...');
+            // 1. Cloudinary konfigürasyonunu al
+            const configRes = await fetch('/api/auth/cloudinary-params');
+            if (!configRes.ok) throw new Error('Yükleme konfigürasyonu alınamadı');
+            const { cloudName, uploadPreset } = await configRes.json();
+
+            if (!cloudName || !uploadPreset) {
+                throw new Error('Cloudinary konfigürasyonu eksik');
+            }
+
+            // 2. Doğrudan Cloudinary'e yükle (Vercel limitine takılmamak için)
+            console.log('Uploading directly to Cloudinary...');
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', uploadPreset);
+            formData.append('folder', 'forum-media'); // Profil fotoları için aynı klasörü kullanabiliriz
+
+            const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
                 method: 'POST',
                 body: formData,
             });
 
-            const data = await res.json();
+            const uploadData = await uploadRes.json();
 
-            if (!res.ok) {
-                console.error('Upload API reported error:', data);
-                throw new Error(data.error || 'Yükleme başarısız');
+            if (!uploadRes.ok) {
+                console.error('Cloudinary direct upload error:', uploadData);
+                throw new Error(uploadData.error?.message || 'Resim yüklenemedi');
             }
 
-            console.log('Upload successful:', data.mediaUrl);
-            setImage(data.mediaUrl);
+            console.log('Direct upload successful:', uploadData.secure_url);
+
+            // 3. Başarılı URL'i state'e kaydet
+            setImage(uploadData.secure_url);
             toast.success('Fotoğraf yüklendi');
+
         } catch (error: any) {
             console.error('Frontend upload error:', error);
             toast.error(error.message || 'Fotoğraf yüklenirken hata oluştu');
