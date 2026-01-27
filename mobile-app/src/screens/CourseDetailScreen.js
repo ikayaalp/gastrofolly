@@ -47,10 +47,43 @@ export default function CourseDetailScreen({ route, navigation }) {
         setAlertVisible(true);
     };
 
+    const [refreshing, setRefreshing] = React.useState(false);
+
+    // useFocusEffect to refresh data when screen comes into focus (e.g. back from payment)
+    const { useFocusEffect } = require('@react-navigation/native');
+
+    useFocusEffect(
+        React.useCallback(() => {
+            // Force refresh user data from server to check for new subscription
+            const refreshData = async () => {
+                try {
+                    console.log('Refreshing user data for subscription check...');
+                    const updatedUser = await authService.refreshUserData();
+                    if (updatedUser) {
+                        setUserData(updatedUser);
+                    } else {
+                        // Fallback to local if refresh fails (e.g. offline)
+                        loadUserData();
+                    }
+                } catch (err) {
+                    console.log('Refresh error:', err);
+                    loadUserData();
+                }
+            };
+
+            refreshData();
+            loadCourseDetails();
+
+            return () => {
+                // cleanup
+            };
+        }, [courseId])
+    );
+
+    // Initial load kept as backup
     useEffect(() => {
-        loadCourseDetails();
         loadUserData();
-    }, [courseId]);
+    }, []);
 
     const loadUserData = async () => {
         try {
