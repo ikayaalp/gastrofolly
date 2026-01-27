@@ -51,37 +51,39 @@ export default function ChefAIClient() {
         }
     }, []);
 
-    if (msgs.length === 0) return;
+    const saveHistory = (msgs: Message[]) => {
+        if (msgs.length === 0) return;
 
-    // Create a new history item or update the latest one if it's the same session?
-    // For simplicity, let's treat every "send" as updating the current session's history entry.
-    // We need a session ID.
-    const currentSessionId = sessionStorage.getItem('current_chat_session_id') || Date.now().toString();
-    if (!sessionStorage.getItem('current_chat_session_id')) {
-        sessionStorage.setItem('current_chat_session_id', currentSessionId);
-    }
+        // Create a new history item or update the latest one if it's the same session?
+        // For simplicity, let's treat every "send" as updating the current session's history entry.
+        // We need a session ID.
+        const currentSessionId = sessionStorage.getItem('current_chat_session_id') || Date.now().toString();
+        if (!sessionStorage.getItem('current_chat_session_id')) {
+            sessionStorage.setItem('current_chat_session_id', currentSessionId);
+        }
 
-    const updatedHistory = [...chatHistory];
-    const existingIndex = updatedHistory.findIndex(h => h.id === currentSessionId);
+        const updatedHistory = [...chatHistory];
+        const existingIndex = updatedHistory.findIndex(h => h.id === currentSessionId);
 
-    const newItem: HistoryItem = {
-        id: currentSessionId,
-        date: new Date().toISOString(),
-        preview: msgs[msgs.length - 1].content.substring(0, 50) + '...',
-        messages: msgs
+        const newItem: HistoryItem = {
+            id: currentSessionId,
+            date: new Date().toISOString(),
+            preview: msgs[msgs.length - 1].content.substring(0, 50) + '...',
+            messages: msgs
+        };
+
+        if (existingIndex >= 0) {
+            updatedHistory[existingIndex] = newItem;
+        } else {
+            updatedHistory.unshift(newItem);
+        }
+
+        // Limit to 10 items
+        const limitedHistory = updatedHistory.slice(0, 10);
+
+        setChatHistory(limitedHistory);
+        localStorage.setItem('chef_ai_history_web', JSON.stringify(limitedHistory));
     };
-
-    if (existingIndex >= 0) {
-        updatedHistory[existingIndex] = newItem;
-    } else {
-        updatedHistory.unshift(newItem);
-    }
-
-    // Limit to 10 items
-    const limitedHistory = updatedHistory.slice(0, 10);
-
-    setChatHistory(limitedHistory);
-    localStorage.setItem('chef_ai_history_web', JSON.stringify(limitedHistory));
 
     // Save on unmount (approximate for web) or when chat "ends" (user clears/resets)
     // For web, we might just save when navigating away? Hard to hook exactly like RN focus/blur.
