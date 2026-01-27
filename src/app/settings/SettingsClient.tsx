@@ -4,8 +4,7 @@ import { useState } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { User, Mail, Lock, Camera, Save, Eye, EyeOff, Calendar, Award, Crown } from "lucide-react"
-import { storage } from "@/lib/firebase"
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
+
 
 interface UserData {
   id: string
@@ -64,9 +63,9 @@ export default function SettingsClient({ user }: SettingsClientProps) {
         return
       }
 
-      // Dosya boyutunu kontrol et (5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        setMessage("Dosya boyutu 5MB'dan küçük olmalıdır")
+      // Dosya boyutunu kontrol et (50MB)
+      if (file.size > 50 * 1024 * 1024) {
+        setMessage("Dosya boyutu 50MB'dan küçük olmalıdır")
         return
       }
 
@@ -87,18 +86,73 @@ export default function SettingsClient({ user }: SettingsClientProps) {
     try {
       let imageUrl = profileData.image
 
-      // Eğer dosya seçildiyse önce Firebase'e yükle
+      // Eğer dosya seçildiyse: Hybrid Upload Strategy (Direct Cloudinary + Server Fallback)
       if (selectedFile) {
-        // Dosya uzantısını al
-        const fileExtension = selectedFile.name.split('.').pop()
-        const fileName = `profile-${user.id}-${Date.now()}.${fileExtension}`
-        const storageRef = ref(storage, `profile-images/${user.id}/${fileName}`)
+        let uploadSuccess = false;
+        let uploadedUrl = '';
 
-        // Dosyayı yükle
-        const snapshot = await uploadBytes(storageRef, selectedFile)
+        // 1. Direct Upload Strategy
+        try {
+          console.log('Fetching Cloudinary params...');
+          let cloudConfig;
+          try {
+            const configRes = await fetch('/api/auth/cloudinary-params');
+            if (configRes.ok) cloudConfig = await configRes.json();
+          } catch (err) { console.warn('Config fetch failed', err); }
 
-        // Download URL'ini al
-        imageUrl = await getDownloadURL(snapshot.ref)
+          if (cloudConfig?.cloudName && cloudConfig?.uploadPreset) {
+            console.log('Attempting Direct Upload...');
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            formData.append('upload_preset', cloudConfig.uploadPreset);
+            formData.append('folder', 'profile-images');
+
+            const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudConfig.cloudName}/image/upload`, {
+              method: 'POST',
+              body: formData
+            });
+
+            const uploadData = await uploadRes.json();
+            if (uploadRes.ok) {
+              uploadedUrl = uploadData.secure_url;
+              uploadSuccess = true;
+              console.log('Direct upload success');
+            } else {
+              console.error('Direct upload failed:', uploadData);
+            }
+          }
+        } catch (directErr) {
+          console.error('Direct upload exception:', directErr);
+        }
+
+        // 2. Fallback to Server Proxy (if direct failed and file is small enough)
+        if (!uploadSuccess) {
+          if (selectedFile.size < 4.5 * 1024 * 1024) {
+            console.log('Attempting Server Proxy Fallback...');
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            const proxyRes = await fetch('/api/forum/upload-media', {
+              method: 'POST',
+              body: formData
+            });
+            const proxyData = await proxyRes.json();
+
+            if (proxyRes.ok) {
+              uploadedUrl = proxyData.mediaUrl;
+              uploadSuccess = true;
+              console.log('Server proxy success');
+            } else {
+              throw new Error(proxyData.error || 'Yükleme başarısız');
+            }
+          } else {
+            throw new Error('Dosya yüklenemedi. Doğrudan yükleme başarısız oldu ve dosya sunucu limiti için çok büyük.');
+          }
+        }
+
+        if (uploadSuccess) {
+          imageUrl = uploadedUrl;
+        }
       }
 
       const response = await fetch("/api/user/update-profile", {
@@ -135,9 +189,9 @@ export default function SettingsClient({ user }: SettingsClientProps) {
       } else {
         setMessage(data.error || "Profil güncellenemedi")
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Profile update error:", error)
-      setMessage("Bir hata oluştu")
+      setMessage(error.message || "Bir hata oluştu")
     } finally {
       setLoading(false)
     }
