@@ -139,8 +139,8 @@ export default function CourseDetailScreen({ route, navigation }) {
     }
 
     const checkAccess = () => {
-        // Enrolled users
-        if (course?.isEnrolled) return true;
+        // Enrolled users check REMOVED - strictly subscription based now
+        // if (course?.isEnrolled) return true;
 
         // Valid Premium Subscription
         if (userData?.subscriptionPlan && userData.subscriptionPlan !== 'FREE') {

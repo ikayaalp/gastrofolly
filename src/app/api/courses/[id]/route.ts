@@ -81,7 +81,8 @@ export async function GET(
 
         // Process lessons to hide videoUrl if not enrolled or not free/first/subscribed
         const processedLessons = course.lessons.map((lesson, index) => {
-            const hasAccess = enrollment || hasValidSubscription || lesson.isFree || index === 0;
+            // STRICT ACCESS: removed 'enrollment' check. Only subscribed users or free lessons.
+            const hasAccess = hasValidSubscription || lesson.isFree || index === 0;
             return {
                 ...lesson,
                 videoUrl: hasAccess ? lesson.videoUrl : null
@@ -92,7 +93,7 @@ export async function GET(
             ...course,
             lessons: processedLessons,
             isEnrolled: !!enrollment,
-            hasAccess: !!enrollment || !!hasValidSubscription
+            hasAccess: !!hasValidSubscription // Stictly subscription based
         };
 
         return NextResponse.json(responseData);
