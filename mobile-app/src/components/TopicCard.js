@@ -61,7 +61,7 @@ export default function TopicCard({
                     <View>
                         <Text style={styles.topicAuthorName}>{item.author?.name || 'Anonim'}</Text>
                         <Text style={styles.topicDate}>
-                            {item.category?.name || 'Genel'} • {formatTimeAgo ? formatTimeAgo(item.createdAt) : ''}
+                            {formatTimeAgo ? formatTimeAgo(item.createdAt) : ''}
                         </Text>
                     </View>
                 </View>

@@ -194,12 +194,7 @@ export default function CourseDetailScreen({ route, navigation }) {
 
                 {/* Course Info */}
                 <View style={styles.contentContainer}>
-                    {/* Category */}
-                    {course.category && (
-                        <View style={styles.categoryBadge}>
-                            <Text style={styles.categoryText}>{course.category.name}</Text>
-                        </View>
-                    )}
+
 
                     {/* Title */}
                     <Text style={styles.title}>{course.title}</Text>
