@@ -18,12 +18,7 @@ interface HistoryItem {
     messages: Message[];
 }
 
-const SUGGESTIONS = [
-    { id: 1, text: "🍝 İtalyan Makarnası Tarifi", icon: "🍝" },
-    { id: 2, text: "🥩 Et Nasıl Mühürlenir?", icon: "🥩" },
-    { id: 3, text: "🍰 Kolay Tatlı Önerisi", icon: "🍰" },
-    { id: 4, text: "🥗 Sağlıklı Akşam Yemeği", icon: "🥗" },
-];
+
 
 export default function ChefAIClient() {
     const [messages, setMessages] = useState<Message[]>([]);
@@ -206,19 +201,7 @@ export default function ChefAIClient() {
                         </p>
 
                         <div className="w-full max-w-md">
-                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-4">Örnek Sorular</p>
-                            <div className="grid grid-cols-1 gap-3">
-                                {SUGGESTIONS.map((s) => (
-                                    <button
-                                        key={s.id}
-                                        onClick={() => sendMessage(s.text)}
-                                        className="flex items-center p-4 bg-[#18181b] border border-[#3f3f46] rounded-xl hover:bg-[#27272a] transition-all text-left group"
-                                    >
-                                        <span className="text-xl mr-3 group-hover:scale-110 transition-transform">{s.icon}</span>
-                                        <span className="text-sm font-medium text-gray-200">{s.text}</span>
-                                    </button>
-                                ))}
-                            </div>
+                            {/* Suggestions removed as per user request */}
                         </div>
                     </div>
                 ) : (
