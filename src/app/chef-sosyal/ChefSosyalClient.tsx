@@ -585,7 +585,7 @@ export default function ChefSosyalClient({
       {showNewTopicModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 sm:p-4">
           <div className="absolute inset-0 bg-black/90 backdrop-blur-sm" onClick={() => setShowNewTopicModal(false)}></div>
-          <div className="relative w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-2xl sm:rounded-2xl bg-[#000] sm:border sm:border-gray-800 flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+          <div className="relative w-full h-[100dvh] sm:h-auto sm:max-h-[90vh] sm:max-w-2xl sm:rounded-2xl bg-[#000] sm:border sm:border-gray-800 flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
 
             {/* Header */}
             <div className="flex justify-between items-center px-4 py-3 border-b border-gray-900">
