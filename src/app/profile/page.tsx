@@ -27,9 +27,9 @@ export default function ProfilePage() {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        // Dosya boyutu kontrolü (10MB)
-        if (file.size > 10 * 1024 * 1024) {
-            toast.error('Dosya boyutu 10MB\'dan küçük olmalıdır');
+        // Dosya boyutu kontrolü (50MB)
+        if (file.size > 50 * 1024 * 1024) {
+            toast.error('Dosya boyutu 50MB\'dan küçük olmalıdır');
             if (fileInputRef.current) fileInputRef.current.value = '';
             return;
         }
@@ -147,7 +147,7 @@ export default function ProfilePage() {
                             <div className="text-center sm:text-left pt-2">
                                 <h3 className="text-lg font-medium text-white">Profil Fotoğrafı</h3>
                                 <p className="text-zinc-400 text-sm mt-1">
-                                    JPG, PNG veya GIF. Maksimum 10MB.
+                                    JPG, PNG veya GIF. Maksimum 50MB.
                                 </p>
                             </div>
                         </div>

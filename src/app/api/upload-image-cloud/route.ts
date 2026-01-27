@@ -23,9 +23,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Lütfen bir resim dosyası seçin" }, { status: 400 })
     }
 
-    // Dosya boyutu kontrolü (10MB limit)
-    if (file.size > 10 * 1024 * 1024) {
-      return NextResponse.json({ error: "Resim dosyası 10MB'dan küçük olmalıdır" }, { status: 400 })
+    // Dosya boyutu kontrolü (50MB limit)
+    if (file.size > 50 * 1024 * 1024) {
+      return NextResponse.json({ error: "Resim dosyası 50MB'dan küçük olmalıdır" }, { status: 400 })
     }
 
     // Cloudinary upload
