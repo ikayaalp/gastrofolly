@@ -5,6 +5,7 @@ import "./globals.css";
 import AuthSessionProvider from "@/components/providers/SessionProvider";
 import { CartProvider } from "@/contexts/CartContext";
 import { FavoritesProvider } from "@/contexts/FavoritesContext";
+import MobileNavbar from "@/components/layout/MobileNavbar";
 
 
 const inter = Inter({
@@ -80,9 +81,7 @@ export default function RootLayout({
             </Script>
           </>
         )}
-        import MobileNavbar from "@/components/layout/MobileNavbar";
 
-        // ... existing code ...
 
         <AuthSessionProvider>
           <CartProvider>
