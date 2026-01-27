@@ -34,11 +34,7 @@ export default function MobileNavbar() {
             path: '/chef-sosyal',
             icon: Users
         },
-        {
-            name: 'Hesabım',
-            path: '/dashboard',
-            icon: User
-        }
+
     ]
 
     return (
