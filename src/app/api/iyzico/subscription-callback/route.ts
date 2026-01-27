@@ -195,8 +195,11 @@ async function handlePayment(token: string, request: NextRequest) {
             })
         }
 
-        // Eğer courseId varsa (abonelik + kurs kombinasyonu), enrollment oluştur
+        // Eğer courseId varsa (abonelik + kurs kombinasyonu), enrollment OLUŞTURMA (Netflix tarzı)
+        // Sadece kullanıcıyı o kursa geri yönlendir
         if (payment.courseId) {
+            // REMOVED: Enrollment creation to ensure global access feeling
+            /*
             const existingEnrollment = await prisma.enrollment.findFirst({
                 where: {
                     userId: payment.userId,
@@ -213,6 +216,8 @@ async function handlePayment(token: string, request: NextRequest) {
                 })
                 console.log(`✅ Enrollment created for course: ${payment.courseId}`)
             }
+            */
+            console.log(`ℹ️ Subscription purchased via course ${payment.courseId}, redirecting user...`)
 
             const html = `
                 <!DOCTYPE html>
