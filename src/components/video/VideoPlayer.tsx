@@ -219,8 +219,17 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
   }
 
   const toggleFullscreen = () => {
+    const video = videoRef.current;
     const playerContainer = playerContainerRef.current;
+
+    // iOS Safari native fullscreen support
+    if (video && (video as any).webkitEnterFullscreen) {
+      (video as any).webkitEnterFullscreen();
+      return;
+    }
+
     if (!playerContainer) return;
+
     if (document.fullscreenElement) {
       document.exitFullscreen();
     } else {
@@ -294,7 +303,7 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
   return (
     <div
       ref={playerContainerRef}
-      className={`relative w-full aspect-video md:h-[75vh] md:aspect-auto bg-black group flex-shrink-0 ${isFullscreen ? 'w-screen h-screen max-w-none max-h-none !rounded-none fullscreen-active z-[10000]' : ''}`}
+      className={`relative w-full h-[50vh] md:aspect-video md:h-[75vh] bg-black group flex-shrink-0 ${isFullscreen ? 'w-screen h-screen max-w-none max-h-none !rounded-none fullscreen-active z-[10000]' : ''}`}
       style={isFullscreen ? { minHeight: '100vh', minWidth: '100vw' } : {}}
       onClick={handleVideoAreaClick}
       onMouseMove={triggerControls}
@@ -435,9 +444,9 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
             </div>
 
             {/* Lesson Info Overlay */}
-            {/* Tam ekran değilse başlık/açıklama overlay göster */}
-            {!isFullscreen && (
-              <div className="absolute top-4 left-4 text-white z-20 max-w-[80%]">
+            {/* Tam ekran değilse ve video OYNAMIYORKEN başlık/açıklama overlay göster */}
+            {!isFullscreen && !isPlaying && (
+              <div className="absolute top-4 left-4 text-white z-20 max-w-[80%] pointer-events-none">
                 <div className="bg-black/60 backdrop-blur-sm rounded-lg p-2 md:p-4">
                   <h1 className="text-lg md:text-2xl font-bold mb-1 md:mb-2">{lesson.title}</h1>
                   <p className="text-orange-500 text-sm md:text-base mb-1 md:mb-2">{course.title}</p>
