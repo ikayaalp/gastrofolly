@@ -85,7 +85,7 @@ export default function HeroSection({ courses }: HeroSectionProps) {
   const course = courses[currentIndex]
 
   return (
-    <div className="relative h-[70vh] min-h-[500px] overflow-hidden group">
+    <div className="relative h-[55vh] md:h-[70vh] min-h-[400px] md:min-h-[500px] overflow-hidden group">
       {/* Background Image */}
       <div className="absolute inset-0">
         <div className={`w-full h-full transition-all duration-500 ease-in-out ${isTransitioning ? 'opacity-0 scale-105' : 'opacity-100 scale-100'}`}>
