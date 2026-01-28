@@ -2,10 +2,14 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useSession } from "next-auth/react"
 import { Home, BookOpen, Users, User, Bot } from "lucide-react"
 
 export default function MobileNavbar() {
     const pathname = usePathname()
+    const { data: session, status } = useSession()
+
+    if (status === 'loading' || !session) return null
 
     // Helper to check active state
     const isActive = (path: string) => {

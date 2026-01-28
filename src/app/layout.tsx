@@ -89,8 +89,8 @@ export default function RootLayout({
               {children}
             </FavoritesProvider>
           </CartProvider>
+          <MobileNavbar />
         </AuthSessionProvider>
-        <MobileNavbar />
       </body>
     </html>
   );
