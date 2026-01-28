@@ -71,14 +71,23 @@ export default function MyCoursesPage() {
         console.error('Error fetching courses:', error)
         setLoading(false)
       })
+    // Safety timeout to prevent infinite loading
+    const timer = setTimeout(() => {
+      setLoading(false)
+    }, 5000)
+
+    return () => clearTimeout(timer)
   }, [session, status, router])
 
-  if (status === 'loading' || loading) {
+  // Don't block indefinitely on session loading
+  const isLoading = (status === 'loading' && loading) || loading
+
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
-          <p className="text-white">Yükleniyor...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <p className="text-gray-400">Kurslarınız yükleniyor...</p>
         </div>
       </div>
     )
@@ -181,7 +190,7 @@ export default function MyCoursesPage() {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 justify-items-center md:justify-items-start">
             {enrollments.map((enrollment) => {
               const course = enrollment.course
               const totalLessons = course._count.lessons
