@@ -294,7 +294,7 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
   return (
     <div
       ref={playerContainerRef}
-      className={`relative w-full h-[75vh] bg-black group flex-shrink-0 ${isFullscreen ? 'w-screen h-screen max-w-none max-h-none !rounded-none fullscreen-active z-[10000]' : ''}`}
+      className={`relative w-full aspect-video md:h-[75vh] md:aspect-auto bg-black group flex-shrink-0 ${isFullscreen ? 'w-screen h-screen max-w-none max-h-none !rounded-none fullscreen-active z-[10000]' : ''}`}
       style={isFullscreen ? { minHeight: '100vh', minWidth: '100vw' } : {}}
       onClick={handleVideoAreaClick}
       onMouseMove={triggerControls}
@@ -313,6 +313,8 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
             <video
               ref={videoRef}
               className="w-full h-full object-contain"
+              playsInline
+              webkit-playsinline="true"
               onMouseMove={() => {
                 setShowControls(true)
                 setTimeout(() => setShowControls(false), 3000)
@@ -352,7 +354,7 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
 
               {/* Control Buttons */}
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2 md:space-x-4">
                   {/* Önceki Ders (SkipBack) - İlk derse her zaman dönebilir */}
                   <button
                     onClick={() => {
@@ -366,19 +368,19 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
                     className={`text-white hover:text-orange-400 transition-colors rounded-full p-2 ${!previousLesson ? 'opacity-40 cursor-not-allowed' : ''}`}
                     title="Önceki ders"
                   >
-                    <SkipBack className="h-7 w-7" />
+                    <SkipBack className="h-5 w-5 md:h-7 md:w-7" />
                   </button>
 
                   {/* Play/Pause */}
                   <button
                     onClick={togglePlay}
-                    className="bg-orange-600 hover:bg-orange-700 text-white p-3 rounded-full transition-colors mx-2"
+                    className="bg-orange-600 hover:bg-orange-700 text-white p-2 md:p-3 rounded-full transition-colors mx-1 md:mx-2"
                     title={isPlaying ? "Duraklat" : "Oynat"}
                   >
                     {isPlaying ? (
-                      <Pause className="h-7 w-7" />
+                      <Pause className="h-5 w-5 md:h-7 md:w-7" />
                     ) : (
-                      <Play className="h-7 w-7 ml-1" />
+                      <Play className="h-5 w-5 md:h-7 md:w-7 ml-1" />
                     )}
                   </button>
 
@@ -395,19 +397,19 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
                     className={`text-white hover:text-orange-400 transition-colors rounded-full p-2 ${(!nextLesson || !hasFullAccess) ? 'opacity-40 cursor-not-allowed' : ''}`}
                     title={!hasFullAccess ? "Premium abonelik gerekli" : "Sonraki ders"}
                   >
-                    <SkipForward className="h-7 w-7" />
+                    <SkipForward className="h-5 w-5 md:h-7 md:w-7" />
                   </button>
 
                   {/* Ses kontrolü */}
                   <button
                     onClick={toggleMute}
-                    className="text-white hover:text-orange-400 transition-colors ml-4"
+                    className="text-white hover:text-orange-400 transition-colors ml-2 md:ml-4"
                     title={isMuted ? "Sesi Aç" : "Sesi Kapat"}
                   >
                     {isMuted ? (
-                      <VolumeX className="h-5 w-5" />
+                      <VolumeX className="h-5 w-5 md:h-6 md:w-6" />
                     ) : (
-                      <Volume2 className="h-5 w-5" />
+                      <Volume2 className="h-5 w-5 md:h-6 md:w-6" />
                     )}
                   </button>
                   <input
@@ -417,7 +419,7 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
                     step="0.1"
                     value={isMuted ? 0 : volume}
                     onChange={handleVolumeChange}
-                    className="w-20 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer"
+                    className="w-16 md:w-20 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer block"
                   />
                 </div>
                 {/* Tam ekran */}
@@ -435,10 +437,10 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
             {/* Lesson Info Overlay */}
             {/* Tam ekran değilse başlık/açıklama overlay göster */}
             {!isFullscreen && (
-              <div className="absolute top-4 left-4 text-white z-20">
-                <div className="bg-black/60 backdrop-blur-sm rounded-lg p-4">
-                  <h1 className="text-2xl font-bold mb-2">{lesson.title}</h1>
-                  <p className="text-orange-500 mb-2">{course.title}</p>
+              <div className="absolute top-4 left-4 text-white z-20 max-w-[80%]">
+                <div className="bg-black/60 backdrop-blur-sm rounded-lg p-2 md:p-4">
+                  <h1 className="text-lg md:text-2xl font-bold mb-1 md:mb-2">{lesson.title}</h1>
+                  <p className="text-orange-500 text-sm md:text-base mb-1 md:mb-2">{course.title}</p>
                   <div className="flex items-center space-x-2 text-sm">
                     <span className="bg-orange-500/20 text-orange-500 px-2 py-1 rounded text-xs">
                       Culinora
@@ -456,11 +458,11 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
             {showCenterPlay && (
               <div className="absolute inset-0 flex justify-center items-center z-30 pointer-events-none">
                 <button
-                  className="bg-orange-600 bg-opacity-90 rounded-full p-7 shadow-lg flex items-center justify-center border-2 border-orange-700 animate-pop pointer-events-auto hover:bg-orange-700 transition"
+                  className="bg-orange-600 bg-opacity-90 rounded-full p-4 md:p-7 shadow-lg flex items-center justify-center border-2 border-orange-700 animate-pop pointer-events-auto hover:bg-orange-700 transition"
                   style={{ pointerEvents: 'auto' }}
                   onClick={handleCenterPlayClick}
                 >
-                  <Play className="h-20 w-20 text-white drop-shadow-md" style={{ color: '#fff6e3' }} />
+                  <Play className="h-10 w-10 md:h-20 md:w-20 text-white drop-shadow-md" style={{ color: '#fff6e3' }} />
                 </button>
               </div>
             )}
