@@ -190,7 +190,7 @@ export default function MyCoursesPage() {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 justify-items-center md:justify-items-start">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             {enrollments.map((enrollment) => {
               const course = enrollment.course
               const totalLessons = course._count.lessons
@@ -206,7 +206,7 @@ export default function MyCoursesPage() {
                 <Link
                   key={enrollment.id}
                   href={`/learn/${course.id}`}
-                  className="group block max-w-[90%] mx-auto md:max-w-none md:mx-0"
+                  className="group block w-full max-w-[90%] mx-auto md:max-w-none md:mx-0"
                 >
                   <div className="relative rounded-2xl overflow-hidden bg-gray-900 border border-gray-800 group-hover:border-orange-500/30 transition-all duration-500 shadow-xl">
                     {/* Aspect Ratio Container */}
