@@ -197,7 +197,7 @@ export default function MyCoursesPage() {
                 <Link
                   key={enrollment.id}
                   href={`/learn/${course.id}`}
-                  className="group block"
+                  className="group block max-w-[90%] mx-auto md:max-w-none md:mx-0"
                 >
                   <div className="relative rounded-2xl overflow-hidden bg-gray-900 border border-gray-800 group-hover:border-orange-500/30 transition-all duration-500 shadow-xl">
                     {/* Aspect Ratio Container */}
