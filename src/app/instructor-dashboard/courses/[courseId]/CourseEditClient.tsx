@@ -4,11 +4,11 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
-import { 
-  Save, 
-  Eye, 
-  Upload, 
-  X, 
+import {
+  Save,
+  Eye,
+  Upload,
+  X,
   Plus,
   BookOpen,
   DollarSign,
@@ -25,7 +25,9 @@ import {
   Star,
   MessageSquare
 } from "lucide-react"
+
 import VideoUpload from "@/components/admin/VideoUpload"
+import ConfirmationModal from "@/components/ui/ConfirmationModal"
 
 interface Category {
   id: string
@@ -113,7 +115,12 @@ export default function CourseEditClient({ course, categories, session }: Props)
   const [isLoading, setIsLoading] = useState(false)
   const [activeTab, setActiveTab] = useState('basic')
   const [previewImage, setPreviewImage] = useState<string | null>(course.imageUrl || null)
-  
+
+  // Confirmation Modal State
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [lessonToDelete, setLessonToDelete] = useState<string | null>(null)
+  const [deleteLoading, setDeleteLoading] = useState(false)
+
   const [formData, setFormData] = useState({
     title: course.title,
     description: course.description,
@@ -213,11 +220,17 @@ export default function CourseEditClient({ course, categories, session }: Props)
     }
   }
 
-  const handleDeleteLesson = async (lessonId: string) => {
-    if (!confirm("Bu dersi silmek istediğinizden emin misiniz?")) return
+  const handleDeleteLessonClick = (lessonId: string) => {
+    setLessonToDelete(lessonId)
+    setShowDeleteModal(true)
+  }
 
+  const handleConfirmDelete = async () => {
+    if (!lessonToDelete) return
+
+    setDeleteLoading(true)
     try {
-      const response = await fetch(`/api/instructor/lessons/${lessonId}`, {
+      const response = await fetch(`/api/instructor/lessons/${lessonToDelete}`, {
         method: 'DELETE',
       })
 
@@ -226,11 +239,15 @@ export default function CourseEditClient({ course, categories, session }: Props)
       }
     } catch (error) {
       console.error('Error deleting lesson:', error)
+    } finally {
+      setDeleteLoading(false)
+      setShowDeleteModal(false)
+      setLessonToDelete(null)
     }
   }
 
-  const averageRating = course.reviews.length > 0 
-    ? course.reviews.reduce((acc, review) => acc + review.rating, 0) / course.reviews.length 
+  const averageRating = course.reviews.length > 0
+    ? course.reviews.reduce((acc, review) => acc + review.rating, 0) / course.reviews.length
     : 0
 
   return (
@@ -320,11 +337,10 @@ export default function CourseEditClient({ course, categories, session }: Props)
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center space-x-2 py-4 px-2 border-b-2 font-medium text-sm ${
-                      activeTab === tab.id
-                        ? 'border-orange-500 text-orange-500'
-                        : 'border-transparent text-gray-400 hover:text-gray-300'
-                    }`}
+                    className={`flex items-center space-x-2 py-4 px-2 border-b-2 font-medium text-sm ${activeTab === tab.id
+                      ? 'border-orange-500 text-orange-500'
+                      : 'border-transparent text-gray-400 hover:text-gray-300'
+                      }`}
                   >
                     <Icon className="h-4 w-4" />
                     <span>{tab.label}</span>
@@ -344,7 +360,7 @@ export default function CourseEditClient({ course, categories, session }: Props)
                     <ImageIcon className="h-5 w-5" />
                     <span>Kurs Görseli</span>
                   </h3>
-                  
+
                   <div className="space-y-4">
                     {previewImage ? (
                       <div className="relative">
@@ -521,9 +537,8 @@ export default function CourseEditClient({ course, categories, session }: Props)
                               {index + 1}
                             </span>
                             <h4 className="text-white font-semibold">{lesson.title}</h4>
-                            <span className={`px-2 py-1 rounded text-xs ${
-                              lesson.isPublished ? 'bg-green-600 text-white' : 'bg-yellow-600 text-white'
-                            }`}>
+                            <span className={`px-2 py-1 rounded text-xs ${lesson.isPublished ? 'bg-green-600 text-white' : 'bg-yellow-600 text-white'
+                              }`}>
                               {lesson.isPublished ? 'Yayında' : 'Taslak'}
                             </span>
                           </div>
@@ -539,8 +554,8 @@ export default function CourseEditClient({ course, categories, session }: Props)
                           <button className="text-orange-500 hover:text-orange-400">
                             <Edit className="h-4 w-4" />
                           </button>
-                          <button 
-                            onClick={() => handleDeleteLesson(lesson.id)}
+                          <button
+                            onClick={() => handleDeleteLessonClick(lesson.id)}
                             className="text-red-500 hover:text-red-400"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -598,7 +613,7 @@ export default function CourseEditClient({ course, categories, session }: Props)
                       <label className="block text-sm font-medium text-gray-300 mb-2">
                         Video Yükle
                       </label>
-                      <VideoUpload 
+                      <VideoUpload
                         onVideoUploaded={(videoUrl) => {
                           setNewLesson(prev => ({ ...prev, videoUrl }))
                         }}
@@ -649,9 +664,8 @@ export default function CourseEditClient({ course, categories, session }: Props)
                                 {[...Array(5)].map((_, i) => (
                                   <Star
                                     key={i}
-                                    className={`h-4 w-4 ${
-                                      i < review.rating ? 'text-yellow-400 fill-current' : 'text-gray-400'
-                                    }`}
+                                    className={`h-4 w-4 ${i < review.rating ? 'text-yellow-400 fill-current' : 'text-gray-400'
+                                      }`}
                                   />
                                 ))}
                               </div>
@@ -722,6 +736,16 @@ export default function CourseEditClient({ course, categories, session }: Props)
           </div>
         </div>
       </div>
+      <ConfirmationModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleConfirmDelete}
+        title="Dersi Sil"
+        message="Bu dersi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."
+        confirmText="Evet, Sil"
+        isDanger={true}
+        isLoading={deleteLoading}
+      />
     </div>
   )
 }

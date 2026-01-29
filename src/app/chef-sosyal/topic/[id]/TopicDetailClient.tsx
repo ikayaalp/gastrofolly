@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation"
 import LeftSidebar from "@/components/forum/LeftSidebar"
 import RightSidebar from "@/components/forum/RightSidebar"
 import HashtagText from "@/components/forum/HashtagText"
+import ConfirmationModal from "@/components/ui/ConfirmationModal"
 
 interface Author {
   id: string
@@ -83,6 +84,18 @@ export default function TopicDetailClient({ session, topic, categories }: TopicD
   const [deleting, setDeleting] = useState(false)
   const [isLightboxOpen, setIsLightboxOpen] = useState(false)
   const router = useRouter()
+
+  // Confirmation Modal State
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    type: 'topic' | 'comment';
+    id: string | null;
+  }>({
+    isOpen: false,
+    type: 'topic',
+    id: null
+  });
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const handleImageClick = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -183,19 +196,40 @@ export default function TopicDetailClient({ session, topic, categories }: TopicD
     return date.toLocaleDateString('tr-TR')
   }
 
-  const handleDeleteTopic = async () => {
-    if (!confirm('Bu tartışmayı silmek istediğinizden emin misiniz?')) return
-    setDeleting(true)
+  const handleDeleteTopicClick = () => {
+    setDeleteModal({ isOpen: true, type: 'topic', id: topic.id })
+  }
+
+  const handleDeleteCommentClick = (commentId: string) => {
+    setDeleteModal({ isOpen: true, type: 'comment', id: commentId })
+  }
+
+  const handleConfirmDelete = async () => {
+    setDeleteLoading(true)
     try {
-      const response = await fetch(`/api/forum/topics/${topic.id}/delete`, { method: 'DELETE' })
-      if (response.ok) {
-        router.push('/chef-sosyal')
-      } else {
-        alert('Hata oluştu')
+      if (deleteModal.type === 'topic') {
+        const response = await fetch(`/api/forum/topics/${topic.id}/delete`, { method: 'DELETE' })
+        if (response.ok) {
+          router.push('/chef-sosyal')
+        } else {
+          alert('Hata oluştu')
+        }
+      } else if (deleteModal.type === 'comment' && deleteModal.id) {
+        const postId = deleteModal.id
+        const response = await fetch(`/api/forum/posts/${postId}`, { method: 'DELETE' })
+        if (response.ok) {
+          setComments(prev => prev.filter(c => {
+            if (c.id === postId) return false
+            if (c.replies) c.replies = c.replies.filter(r => r.id !== postId)
+            return true
+          }))
+        }
       }
     } catch (error) {
       console.error(error)
     } finally {
+      setDeleteLoading(false)
+      setDeleteModal({ isOpen: false, type: 'topic', id: null })
       setDeleting(false)
     }
   }
@@ -248,19 +282,7 @@ export default function TopicDetailClient({ session, topic, categories }: TopicD
     finally { setSubmitting(false) }
   }
 
-  const handleDeleteComment = async (postId: string) => {
-    if (!confirm('Silmek istediğinizden emin misiniz?')) return
-    try {
-      const response = await fetch(`/api/forum/posts/${postId}`, { method: 'DELETE' })
-      if (response.ok) {
-        setComments(prev => prev.filter(c => {
-          if (c.id === postId) return false
-          if (c.replies) c.replies = c.replies.filter(r => r.id !== postId)
-          return true
-        }))
-      }
-    } catch (error) { console.error(error) }
-  }
+
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -339,7 +361,7 @@ export default function TopicDetailClient({ session, topic, categories }: TopicD
                   <span className="text-sm">{comments.length} Yorum</span>
                 </div>
                 {session?.user && topic.author.id === session.user.id && (
-                  <button onClick={handleDeleteTopic} className="flex items-center space-x-1 px-3 py-2 hover:bg-gray-800 rounded-full text-red-500 hover:text-red-400">
+                  <button onClick={handleDeleteTopicClick} className="flex items-center space-x-1 px-3 py-2 hover:bg-gray-800 rounded-full text-red-500 hover:text-red-400">
                     <Trash2 className="h-4 w-4" />
                     <span className="hidden sm:inline">Sil</span>
                   </button>
@@ -402,7 +424,7 @@ export default function TopicDetailClient({ session, topic, categories }: TopicD
                       <div className="flex items-center space-x-4">
                         <button onClick={() => handleCommentLike(comment.id)} className={`flex items-center space-x-1 text-xs font-bold ${likedComments.has(comment.id) ? 'text-orange-500' : 'text-gray-500 hover:text-gray-300'}`}><ThumbsUp className={`h-3 w-3 ${likedComments.has(comment.id) ? 'fill-current' : ''}`} /><span>{comment.likeCount || 0}</span></button>
                         <button onClick={() => handleReplyTo(comment.id, comment.author.name || 'anonim')} className={`flex items-center space-x-1 text-xs font-bold ${replyingTo === comment.id ? 'text-orange-500' : 'text-gray-500 hover:text-gray-300'}`}><MessageCircle className="h-3 w-3" /><span>Yanıtla</span></button>
-                        {session?.user && comment.author.id === session.user.id && <button onClick={() => handleDeleteComment(comment.id)} className="text-xs font-bold text-red-500 hover:text-red-400">Sil</button>}
+                        {session?.user && comment.author.id === session.user.id && <button onClick={() => handleDeleteCommentClick(comment.id)} className="text-xs font-bold text-red-500 hover:text-red-400">Sil</button>}
                       </div>
                       {comment.replies && comment.replies.length > 0 && (
                         <div className="mt-4 space-y-4 border-l border-gray-800/50 ml-2 pl-4">
@@ -417,7 +439,7 @@ export default function TopicDetailClient({ session, topic, categories }: TopicD
                                 <div className="flex items-center space-x-4">
                                   <button onClick={() => handleCommentLike(reply.id)} className={`flex items-center space-x-1 text-xs font-bold ${likedComments.has(reply.id) ? 'text-orange-500' : 'text-gray-500 hover:text-gray-300'}`}><ThumbsUp className={`h-3 w-3 ${likedComments.has(reply.id) ? 'fill-current' : ''}`} /><span>{reply.likeCount || 0}</span></button>
                                   <button onClick={() => handleReplyTo(comment.id, reply.author.name || 'anonim')} className="flex items-center space-x-1 text-xs font-bold text-gray-500 hover:text-gray-300"><MessageCircle className="h-3 w-3" /><span>Yanıtla</span></button>
-                                  {session?.user && reply.author.id === session.user.id && <button onClick={() => handleDeleteComment(reply.id)} className="text-xs font-bold text-red-500 hover:text-red-400">Sil</button>}
+                                  {session?.user && reply.author.id === session.user.id && <button onClick={() => handleDeleteCommentClick(reply.id)} className="text-xs font-bold text-red-500 hover:text-red-400">Sil</button>}
                                 </div>
                               </div>
                             </div>
@@ -455,6 +477,20 @@ export default function TopicDetailClient({ session, topic, categories }: TopicD
           </div>
         </div>
       )}
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal(prev => ({ ...prev, isOpen: false }))}
+        onConfirm={handleConfirmDelete}
+        title={deleteModal.type === 'topic' ? "Tartışmayı Sil" : "Yorumu Sil"}
+        message={deleteModal.type === 'topic'
+          ? "Bu tartışmayı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."
+          : "Bu yorumu silmek istediğinizden emin misiniz?"
+        }
+        confirmText="Evet, Sil"
+        isDanger={true}
+        isLoading={deleteLoading}
+      />
     </div>
   )
 }

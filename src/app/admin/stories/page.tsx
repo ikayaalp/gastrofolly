@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { Plus, Trash, Play, Image as ImageIcon, Video, Loader2 } from "lucide-react";
 import Image from "next/image";
+import ConfirmationModal from "@/components/ui/ConfirmationModal";
 
 interface Course {
     id: string;
@@ -33,6 +34,11 @@ export default function AdminStoriesPage() {
     const [mediaType, setMediaType] = useState("IMAGE");
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [coverPreviewUrl, setCoverPreviewUrl] = useState<string | null>(null); // New
+
+    // Confirmation Modal State
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [storyToDelete, setStoryToDelete] = useState<string | null>(null);
+    const [deleteLoading, setDeleteLoading] = useState(false);
 
     useEffect(() => {
         fetchData();
@@ -90,18 +96,28 @@ export default function AdminStoriesPage() {
         }
     };
 
-    const handleDelete = async (id: string) => {
-        if (!confirm("Bu hikayeyi silmek istediğinize emin misiniz?")) return;
+    const handleDeleteClick = (id: string) => {
+        setStoryToDelete(id);
+        setShowDeleteModal(true);
+    };
 
+    const handleConfirmDelete = async () => {
+        if (!storyToDelete) return;
+
+        setDeleteLoading(true);
         try {
-            const res = await fetch(`/api/stories/${id}`, { method: "DELETE" });
+            const res = await fetch(`/api/stories/${storyToDelete}`, { method: "DELETE" });
             if (res.ok) {
-                setStories(stories.filter(s => s.id !== id));
+                setStories(stories.filter(s => s.id !== storyToDelete));
             } else {
                 alert("Silme işlemi başarısız");
             }
         } catch (error) {
             console.error("Delete error:", error);
+        } finally {
+            setDeleteLoading(false);
+            setShowDeleteModal(false);
+            setStoryToDelete(null);
         }
     };
 
@@ -313,7 +329,7 @@ export default function AdminStoriesPage() {
                                                 {new Date(story.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                             </span>
                                             <button
-                                                onClick={() => handleDelete(story.id)}
+                                                onClick={() => handleDeleteClick(story.id)}
                                                 className="p-1.5 bg-red-500/20 text-red-500 rounded-full hover:bg-red-500 hover:text-white transition-colors"
                                             >
                                                 <Trash className="w-4 h-4" />
@@ -327,6 +343,17 @@ export default function AdminStoriesPage() {
                 </div>
 
             </div>
+
+            <ConfirmationModal
+                isOpen={showDeleteModal}
+                onClose={() => setShowDeleteModal(false)}
+                onConfirm={handleConfirmDelete}
+                title="Hikayeyi Sil"
+                message="Bu hikayeyi silmek istediğinize emin misiniz?"
+                confirmText="Evet, Sil"
+                isDanger={true}
+                isLoading={deleteLoading}
+            />
         </div>
     );
 }

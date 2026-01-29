@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Plus, Edit2, ListVideo, Trash2, Search, Filter, Play, Users, Eye, EyeOff, Settings } from "lucide-react"
 import Image from "next/image"
 import UnifiedCourseEditor from "./UnifiedCourseEditor"
+import ConfirmationModal from "@/components/ui/ConfirmationModal"
 
 interface Course {
   id: string
@@ -78,8 +79,12 @@ export default function CourseManagement({ initialCourses, categories, instructo
 
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
 
-  // New Unified Editor State
+  // Sub-components state
   const [showUnifiedEditor, setShowUnifiedEditor] = useState(false)
+
+  // Delete Modal State
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [courseToDelete, setCourseToDelete] = useState<string | null>(null)
 
   const filteredCourses = courses.filter(course => {
     const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -119,24 +124,32 @@ export default function CourseManagement({ initialCourses, categories, instructo
     }
   }
 
-  const deleteCourse = async (courseId: string) => {
-    if (!confirm('Bu kursu silmek istediğinizden emin misiniz?')) {
-      return
-    }
+  const handleDeleteClick = (courseId: string) => {
+    setCourseToDelete(courseId)
+    setShowDeleteModal(true)
+  }
 
+  const handleConfirmDelete = async () => {
+    if (!courseToDelete) return
+
+    setLoading(courseToDelete)
     try {
-      const response = await fetch(`/api/admin/courses/${courseId}`, {
+      const response = await fetch(`/api/admin/courses/${courseToDelete}`, {
         method: 'DELETE'
       })
 
       if (response.ok) {
-        setCourses(courses.filter(c => c.id !== courseId))
+        setCourses(courses.filter(c => c.id !== courseToDelete))
       } else {
         alert('Kurs silinemedi')
       }
     } catch (error) {
       console.error('Delete course error:', error)
       alert('Bir hata oluştu')
+    } finally {
+      setLoading(null)
+      setShowDeleteModal(false)
+      setCourseToDelete(null)
     }
   }
 
@@ -281,7 +294,7 @@ export default function CourseManagement({ initialCourses, categories, instructo
                         </button>
 
                         <button
-                          onClick={() => deleteCourse(course.id)}
+                          onClick={() => handleDeleteClick(course.id)}
                           className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
                           title="Sil"
                         >
@@ -309,6 +322,17 @@ export default function CourseManagement({ initialCourses, categories, instructo
           }}
         />
       )}
+
+      <ConfirmationModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleConfirmDelete}
+        title="Kursu Sil"
+        message="Bu kursu silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."
+        confirmText="Evet, Sil"
+        isDanger={true}
+        isLoading={loading === courseToDelete}
+      />
     </div>
   )
 }

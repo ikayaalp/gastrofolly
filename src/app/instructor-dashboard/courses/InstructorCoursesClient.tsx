@@ -3,14 +3,14 @@
 import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { 
-  Plus, 
-  Edit, 
-  Eye, 
-  Trash2, 
-  BookOpen, 
-  Users, 
-  Star, 
+import {
+  Plus,
+  Edit,
+  Eye,
+  Trash2,
+  BookOpen,
+  Users,
+  Star,
   Calendar,
   Play,
   Settings,
@@ -24,6 +24,7 @@ import {
   Phone,
   User
 } from "lucide-react"
+import ConfirmationModal from "@/components/ui/ConfirmationModal"
 
 interface Category {
   id: string
@@ -65,7 +66,7 @@ interface Course {
     email: string
   }
   lessons: Lesson[]
-  reviews: Array<{ 
+  reviews: Array<{
     id: string
     rating: number
     comment: string | null
@@ -107,24 +108,35 @@ export default function InstructorCoursesClient({ courses, categories, session }
   const [filterCategory, setFilterCategory] = useState("all")
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
 
+  // Confirmation Modal State
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [courseToDelete, setCourseToDelete] = useState<string | null>(null)
+  const [deleteLoading, setDeleteLoading] = useState(false)
+
   const filteredCourses = courses.filter(course => {
     const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         course.description.toLowerCase().includes(searchTerm.toLowerCase())
-    
-    const matchesStatus = filterStatus === "all" || 
-                         (filterStatus === "published" && course.isPublished) ||
-                         (filterStatus === "draft" && !course.isPublished)
-    
+      course.description.toLowerCase().includes(searchTerm.toLowerCase())
+
+    const matchesStatus = filterStatus === "all" ||
+      (filterStatus === "published" && course.isPublished) ||
+      (filterStatus === "draft" && !course.isPublished)
+
     const matchesCategory = filterCategory === "all" || course.category.id === filterCategory
-    
+
     return matchesSearch && matchesStatus && matchesCategory
   })
 
-  const handleDeleteCourse = async (courseId: string) => {
-    if (!confirm("Bu kursu silmek istediğinizden emin misiniz?")) return
+  const handleDeleteClick = (courseId: string) => {
+    setCourseToDelete(courseId)
+    setShowDeleteModal(true)
+  }
 
+  const handleConfirmDelete = async () => {
+    if (!courseToDelete) return
+
+    setDeleteLoading(true)
     try {
-      const response = await fetch(`/api/instructor/courses/${courseId}`, {
+      const response = await fetch(`/api/instructor/courses/${courseToDelete}`, {
         method: 'DELETE',
       })
 
@@ -133,6 +145,10 @@ export default function InstructorCoursesClient({ courses, categories, session }
       }
     } catch (error) {
       console.error('Error deleting course:', error)
+    } finally {
+      setDeleteLoading(false)
+      setShowDeleteModal(false)
+      setCourseToDelete(null)
     }
   }
 
@@ -189,7 +205,7 @@ export default function InstructorCoursesClient({ courses, categories, session }
                 </Link>
               </nav>
             </div>
-            
+
             <div className="flex items-center space-x-4">
               <Link
                 href="/instructor-dashboard/profile"
@@ -343,11 +359,10 @@ export default function InstructorCoursesClient({ courses, categories, session }
                   </div>
                 )}
                 <div className="absolute top-4 right-4">
-                  <span className={`px-2 py-1 rounded text-xs font-medium ${
-                    course.isPublished 
-                      ? 'bg-green-600 text-white' 
+                  <span className={`px-2 py-1 rounded text-xs font-medium ${course.isPublished
+                      ? 'bg-green-600 text-white'
                       : 'bg-yellow-600 text-white'
-                  }`}>
+                    }`}>
                     {course.isPublished ? 'Yayında' : 'Taslak'}
                   </span>
                 </div>
@@ -363,9 +378,9 @@ export default function InstructorCoursesClient({ courses, categories, session }
                     </button>
                   </div>
                 </div>
-                
+
                 <p className="text-gray-400 text-sm mb-4 line-clamp-2">{course.description}</p>
-                
+
                 <div className="flex items-center justify-between text-sm text-gray-400 mb-4">
                   <span>{course.category.name}</span>
                   <span>₺{course.price}</span>
@@ -407,16 +422,15 @@ export default function InstructorCoursesClient({ courses, categories, session }
                   </Link>
                   <button
                     onClick={() => handleTogglePublish(course.id, course.isPublished)}
-                    className={`px-3 py-2 rounded text-sm transition-colors ${
-                      course.isPublished
+                    className={`px-3 py-2 rounded text-sm transition-colors ${course.isPublished
                         ? 'bg-yellow-600 text-white hover:bg-yellow-700'
                         : 'bg-green-600 text-white hover:bg-green-700'
-                    }`}
+                      }`}
                   >
                     {course.isPublished ? 'Gizle' : 'Yayınla'}
                   </button>
                   <button
-                    onClick={() => handleDeleteCourse(course.id)}
+                    onClick={() => handleDeleteClick(course.id)}
                     className="px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors text-sm"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -446,6 +460,18 @@ export default function InstructorCoursesClient({ courses, categories, session }
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleConfirmDelete}
+        title="Kursu Sil"
+        message="Bu kursu silmek istediğinizden emin misiniz? Bu işlem geri alınamaz ve kursa ait tüm veriler silinecektir."
+        confirmText="Evet, Sil"
+        isDanger={true}
+        isLoading={deleteLoading}
+      />
     </div>
   )
 }

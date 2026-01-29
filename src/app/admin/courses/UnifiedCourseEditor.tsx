@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { X, Save, Check, Plus, Edit, Trash2, Upload, Play, Clock, Layout, List, Settings, Eye } from "lucide-react"
 import ImageUpload from "@/components/admin/ImageUpload"
 import VideoUpload from "@/components/admin/VideoUpload"
+import ConfirmationModal from '@/components/ui/ConfirmationModal'
 
 interface Course {
     id: string
@@ -97,6 +98,10 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
         isFree: false
     })
     const [showVideoUploadForLessonId, setShowVideoUploadForLessonId] = useState<string | null>(null) // If set, showing upload modal for this lesson ID
+
+    // Delete Modal State
+    const [showDeleteModal, setShowDeleteModal] = useState(false)
+    const [lessonToDelete, setLessonToDelete] = useState<string | null>(null)
 
     // -- HANDLERS: GENERAL --
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -242,14 +247,25 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
         }
     }
 
-    const deleteLesson = async (lessonId: string) => {
-        if (!confirm('Silmek istiyor musunuz?')) return
+    const handleDeleteLesson = (lessonId: string) => {
+        setLessonToDelete(lessonId)
+        setShowDeleteModal(true)
+    }
+
+    const handleConfirmDelete = async () => {
+        if (!lessonToDelete) return
+
         try {
-            const res = await fetch(`/api/admin/lessons/${lessonId}`, { method: 'DELETE' })
+            const res = await fetch(`/api/admin/lessons/${lessonToDelete}`, { method: 'DELETE' })
             if (res.ok) {
-                setLessons(prev => prev.filter(l => l.id !== lessonId))
+                setLessons(prev => prev.filter(l => l.id !== lessonToDelete))
             }
-        } catch (e) { console.error(e) }
+        } catch (e) {
+            console.error(e)
+        } finally {
+            setShowDeleteModal(false)
+            setLessonToDelete(null)
+        }
     }
 
     const [uploadingVideo, setUploadingVideo] = useState(false)
@@ -640,7 +656,7 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
                                                 <button onClick={() => openLessonForm(lesson)} className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-400/10 rounded-lg">
                                                     <Edit className="h-4 w-4" />
                                                 </button>
-                                                <button onClick={() => deleteLesson(lesson.id)} className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-400/10 rounded-lg">
+                                                <button onClick={() => handleDeleteLesson(lesson.id)} className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-400/10 rounded-lg">
                                                     <Trash2 className="h-4 w-4" />
                                                 </button>
                                             </div>
@@ -696,6 +712,16 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
                     </div>
                 )}
             </div>
+
+            <ConfirmationModal
+                isOpen={showDeleteModal}
+                onClose={() => setShowDeleteModal(false)}
+                onConfirm={handleConfirmDelete}
+                title="Dersi Sil"
+                message="Bu dersi silmek istediğinizden emin misiniz?"
+                confirmText="Evet, Sil"
+                isDanger={true}
+            />
         </div>
     )
 }

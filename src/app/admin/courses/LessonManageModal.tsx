@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { X, Plus, Edit, Trash2, Upload, Play, Clock } from "lucide-react"
 import VideoUpload from "@/components/admin/VideoUpload"
+import ConfirmationModal from "@/components/ui/ConfirmationModal"
 
 interface Lesson {
   id: string
@@ -40,6 +41,11 @@ export default function LessonManageModal({ course, onClose }: LessonManageModal
     isFree: false
   })
   const [uploadingVideo, setUploadingVideo] = useState(false)
+
+  // Delete Modal State
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [lessonToDelete, setLessonToDelete] = useState<string | null>(null)
+  const [deleteLoading, setDeleteLoading] = useState(false)
 
   const handleVideoUpload = (lessonId: string) => {
     setSelectedLessonId(lessonId)
@@ -83,21 +89,23 @@ export default function LessonManageModal({ course, onClose }: LessonManageModal
     }
   }
 
-  const deleteLesson = async (lessonId: string) => {
-    if (!confirm('Bu dersi silmek istediğinizden emin misiniz?')) {
-      return
-    }
+  const handleDeleteClick = (lessonId: string) => {
+    setLessonToDelete(lessonId)
+    setShowDeleteModal(true)
+  }
 
+  const handleConfirmDelete = async () => {
+    if (!lessonToDelete) return
+
+    setDeleteLoading(true)
     try {
-      const response = await fetch(`/api/admin/lessons/${lessonId}`, {
+      const response = await fetch(`/api/admin/lessons/${lessonToDelete}`, {
         method: 'DELETE'
       })
 
       if (response.ok) {
         if (typeof window !== 'undefined') {
-          if (typeof window !== 'undefined') {
           window.location.reload()
-        }
         }
       } else {
         alert('Ders silinemedi')
@@ -105,6 +113,10 @@ export default function LessonManageModal({ course, onClose }: LessonManageModal
     } catch (error) {
       console.error('Delete lesson error:', error)
       alert('Bir hata oluştu')
+    } finally {
+      setDeleteLoading(false)
+      setShowDeleteModal(false)
+      setLessonToDelete(null)
     }
   }
 
@@ -112,10 +124,10 @@ export default function LessonManageModal({ course, onClose }: LessonManageModal
     e.preventDefault()
 
     try {
-      const url = editingLesson 
+      const url = editingLesson
         ? `/api/admin/lessons/${editingLesson.id}`
         : '/api/admin/lessons'
-      
+
       const method = editingLesson ? 'PUT' : 'POST'
 
       const response = await fetch(url, {
@@ -186,12 +198,12 @@ export default function LessonManageModal({ course, onClose }: LessonManageModal
 
       await new Promise<void>((resolve, reject) => {
         const uploadTask = uploadBytesResumable(storageRef, file, { contentType: file.type || 'video/mp4' })
-        uploadTask.on('state_changed', () => {}, reject, async () => {
+        uploadTask.on('state_changed', () => { }, reject, async () => {
           try {
             const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref)
             // URL'i forma yaz
             setLessonForm(prev => ({ ...prev, videoUrl: downloadUrl }))
-            
+
             // Süreyi hesapla
             const video = document.createElement('video')
             video.src = downloadUrl
@@ -228,7 +240,7 @@ export default function LessonManageModal({ course, onClose }: LessonManageModal
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex items-center justify-center min-h-screen px-4">
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-        
+
         <div className="relative bg-gray-900 border border-gray-700 rounded-xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
           <div className="p-6">
             {/* Header */}
@@ -280,7 +292,7 @@ export default function LessonManageModal({ course, onClose }: LessonManageModal
                           </span>
                         )}
                       </div>
-                      
+
                       <div className="flex items-center space-x-4 mt-2 text-sm text-gray-400">
                         <div className="flex items-center space-x-1">
                           <Clock className="h-3 w-3" />
@@ -291,7 +303,7 @@ export default function LessonManageModal({ course, onClose }: LessonManageModal
                         )}
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center space-x-2">
                       <button
                         onClick={() => editLesson(lesson)}
@@ -300,7 +312,7 @@ export default function LessonManageModal({ course, onClose }: LessonManageModal
                       >
                         <Edit className="h-4 w-4" />
                       </button>
-                      
+
                       <button
                         onClick={() => handleVideoUpload(lesson.id)}
                         className="bg-purple-600 hover:bg-purple-700 text-white p-2 rounded-lg transition-colors"
@@ -308,9 +320,9 @@ export default function LessonManageModal({ course, onClose }: LessonManageModal
                       >
                         <Upload className="h-4 w-4" />
                       </button>
-                      
+
                       <button
-                        onClick={() => deleteLesson(lesson.id)}
+                        onClick={() => handleDeleteClick(lesson.id)}
                         className="bg-red-600 hover:bg-red-700 text-white p-2 rounded-lg transition-colors"
                         title="Dersi Sil"
                       >
@@ -327,7 +339,7 @@ export default function LessonManageModal({ course, onClose }: LessonManageModal
               <div className="fixed inset-0 z-60 overflow-y-auto">
                 <div className="flex items-center justify-center min-h-screen px-4">
                   <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowVideoUpload(false)} />
-                  
+
                   <div className="relative bg-gray-800 border border-gray-600 rounded-xl shadow-2xl max-w-2xl w-full">
                     <div className="p-6">
                       <div className="flex items-center justify-between mb-6">
@@ -339,8 +351,8 @@ export default function LessonManageModal({ course, onClose }: LessonManageModal
                           <X className="h-5 w-5" />
                         </button>
                       </div>
-                      
-                      <VideoUpload 
+
+                      <VideoUpload
                         onVideoUploaded={handleVideoUploaded}
                         lessonId={selectedLessonId}
                       />
@@ -355,7 +367,7 @@ export default function LessonManageModal({ course, onClose }: LessonManageModal
               <div className="fixed inset-0 z-60 overflow-y-auto">
                 <div className="flex items-center justify-center min-h-screen px-4">
                   <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowLessonForm(false)} />
-                  
+
                   <div className="relative bg-gray-800 border border-gray-600 rounded-xl shadow-2xl max-w-2xl w-full">
                     <div className="p-6">
                       <div className="flex items-center justify-between mb-6">
@@ -372,7 +384,7 @@ export default function LessonManageModal({ course, onClose }: LessonManageModal
                           <X className="h-5 w-5" />
                         </button>
                       </div>
-                      
+
                       <form onSubmit={saveLesson} className="space-y-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -406,7 +418,7 @@ export default function LessonManageModal({ course, onClose }: LessonManageModal
                           <label className="block text-sm font-medium text-gray-300 mb-2">
                             Ders Videosu
                           </label>
-                          
+
                           {lessonForm.videoUrl ? (
                             <div className="bg-gray-700 border border-gray-600 rounded-lg p-4">
                               <div className="flex items-center justify-between">
@@ -441,7 +453,7 @@ export default function LessonManageModal({ course, onClose }: LessonManageModal
                                 id="video-upload"
                                 disabled={uploadingVideo}
                               />
-                              
+
                               {uploadingVideo ? (
                                 <div className="space-y-3">
                                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto"></div>
@@ -536,6 +548,16 @@ export default function LessonManageModal({ course, onClose }: LessonManageModal
             )}
           </div>
         </div>
+        <ConfirmationModal
+          isOpen={showDeleteModal}
+          onClose={() => setShowDeleteModal(false)}
+          onConfirm={handleConfirmDelete}
+          title="Dersi Sil"
+          message="Bu dersi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."
+          confirmText="Evet, Sil"
+          isDanger={true}
+          isLoading={deleteLoading}
+        />
       </div>
     </div>
   )

@@ -36,6 +36,7 @@ export default function SettingsClient({ user }: SettingsClientProps) {
   // Modal States
   const [showCancelModal, setShowCancelModal] = useState(false)
   const [showPhotoModal, setShowPhotoModal] = useState(false)
+  const [showAccountDeleteModal, setShowAccountDeleteModal] = useState(false)
 
   const [activeTab, setActiveTab] = useState("profile")
   const [profileData, setProfileData] = useState({
@@ -269,6 +270,10 @@ export default function SettingsClient({ user }: SettingsClientProps) {
     { id: "account", name: "Hesap Bilgileri", icon: Award }
   ]
 
+  /* 
+     NOTE: This function allows user to cancel subscription.
+     We removed the native confirm dialog and now control it via Modal state.
+  */
   const handleCancelSubscription = async () => {
     const endDate = user.subscriptionEndDate
       ? new Date(user.subscriptionEndDate).toLocaleDateString('tr-TR', {
@@ -278,13 +283,9 @@ export default function SettingsClient({ user }: SettingsClientProps) {
       })
       : null
 
-    const confirmMessage = endDate
-      ? `Aboneliğinizi iptal etmek istediğinizden emin misiniz? Premium erişiminiz ${endDate} tarihine kadar devam edecektir.`
-      : 'Aboneliğinizi iptal etmek istediğinizden emin misiniz?'
+    setLoading(true)
 
-    if (!confirm(confirmMessage)) {
-      return
-    }
+
 
     setLoading(true)
     setMessage("")
@@ -308,6 +309,7 @@ export default function SettingsClient({ user }: SettingsClientProps) {
       setMessage("Bir hata oluştu")
     } finally {
       setLoading(false)
+      setShowCancelModal(false)
     }
   }
 
@@ -753,32 +755,7 @@ export default function SettingsClient({ user }: SettingsClientProps) {
                   type="button"
                   disabled={loading}
                   className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
-                  onClick={async () => {
-                    if (confirm('Hesabınızı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz ve tüm verileriniz silinecektir.')) {
-                      if (confirm('Son kez soruyoruz: Hesabınızı kalıcı olarak silmek istiyor musunuz?')) {
-                        setLoading(true)
-                        try {
-                          const response = await fetch('/api/user/delete-account', {
-                            method: 'DELETE'
-                          })
-
-                          if (response.ok) {
-                            // Hesap silindi, çıkış yap ve ana sayfaya yönlendir
-                            const { signOut } = await import('next-auth/react')
-                            await signOut({ callbackUrl: '/' })
-                          } else {
-                            const data = await response.json()
-                            setMessage(data.error || 'Hesap silinemedi')
-                          }
-                        } catch (error) {
-                          console.error('Delete account error:', error)
-                          setMessage('Bir hata oluştu')
-                        } finally {
-                          setLoading(false)
-                        }
-                      }
-                    }
-                  }}
+                  onClick={() => setShowAccountDeleteModal(true)}
                 >
                   {loading ? 'Siliniyor...' : 'Hesabı Sil'}
                 </button>
@@ -787,6 +764,55 @@ export default function SettingsClient({ user }: SettingsClientProps) {
           </div>
         )
       }
+      {/* Photo Remove Modal */}
+      <ConfirmationModal
+        isOpen={showAccountDeleteModal}
+        onClose={() => setShowAccountDeleteModal(false)}
+        onConfirm={async () => {
+          setLoading(true)
+          try {
+            const response = await fetch('/api/user/delete-account', {
+              method: 'DELETE'
+            })
+
+            if (response.ok) {
+              // Hesap silindi, çıkış yap ve ana sayfaya yönlendir
+              const { signOut } = await import('next-auth/react')
+              await signOut({ callbackUrl: '/' })
+            } else {
+              const data = await response.json()
+              setMessage(data.error || 'Hesap silinemedi')
+            }
+          } catch (error) {
+            console.error('Delete account error:', error)
+            setMessage('Bir hata oluştu')
+          } finally {
+            setLoading(false)
+            setShowAccountDeleteModal(false)
+          }
+        }}
+        title="Hesabı Kalıcı Olarak Sil"
+        message="Hesabınızı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz ve tüm verileriniz (kurslar, yorumlar, ilerleme durumları) silinecektir."
+        confirmText="Evet, Hesabımı Sil"
+        isDanger={true}
+        isLoading={loading}
+      />
+
+      {/* Subscription Cancel Modal */}
+      <ConfirmationModal
+        isOpen={showCancelModal}
+        onClose={() => setShowCancelModal(false)}
+        onConfirm={handleCancelSubscription}
+        title="Abonelik İptali"
+        message={user.subscriptionEndDate
+          ? `Aboneliğinizi iptal etmek istediğinizden emin misiniz? Premium erişiminiz ${formatDate(user.subscriptionEndDate)} tarihine kadar devam edecektir.`
+          : "Aboneliğinizi iptal etmek istediğinizden emin misiniz?"
+        }
+        confirmText="Evet, İptal Et"
+        isDanger={true}
+        isLoading={loading}
+      />
+
       {/* Photo Remove Modal */}
       <ConfirmationModal
         isOpen={showPhotoModal}

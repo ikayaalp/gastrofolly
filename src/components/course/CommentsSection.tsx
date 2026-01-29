@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Star, MessageCircle, User, Trash2, Send, X, Edit, Mail, Copy, Check, ChefHat } from "lucide-react"
 import Image from "next/image"
+import ConfirmationModal from "@/components/ui/ConfirmationModal"
 
 interface Review {
   id: string
@@ -43,6 +44,10 @@ export default function CommentsSection({
   const [showCommentModal, setShowCommentModal] = useState(false)
   const [showChefModal, setShowChefModal] = useState(false)
   const [emailCopied, setEmailCopied] = useState(false)
+
+  // Confirmation Modal State
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [reviewToDelete, setReviewToDelete] = useState<string | null>(null)
 
   const handleCopyEmail = async () => {
     if (instructor?.email) {
@@ -89,14 +94,17 @@ export default function CommentsSection({
     }
   }
 
-  const handleDeleteComment = async (reviewId: string) => {
-    if (!confirm('Bu yorumu silmek istediğinizden emin misiniz?')) {
-      return
-    }
+  const handleDeleteClick = (reviewId: string) => {
+    setReviewToDelete(reviewId)
+    setShowDeleteModal(true)
+  }
 
-    setDeletingReviewId(reviewId)
+  const handleConfirmDelete = async () => {
+    if (!reviewToDelete) return;
+
+    setDeletingReviewId(reviewToDelete)
     try {
-      const response = await fetch(`/api/reviews/${reviewId}`, {
+      const response = await fetch(`/api/reviews/${reviewToDelete}`, {
         method: 'DELETE',
       })
 
@@ -112,6 +120,8 @@ export default function CommentsSection({
       alert('Yorum silinirken bir hata oluştu.')
     } finally {
       setDeletingReviewId(null)
+      setShowDeleteModal(false)
+      setReviewToDelete(null)
     }
   }
 
@@ -252,7 +262,17 @@ export default function CommentsSection({
         </div>
       )}
 
-
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleConfirmDelete}
+        title="Yorumu Sil"
+        message="Bu yorumu silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."
+        confirmText="Evet, Sil"
+        isDanger={true}
+        isLoading={deletingReviewId !== null}
+      />
     </div>
   )
 }
