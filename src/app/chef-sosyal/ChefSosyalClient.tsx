@@ -708,6 +708,8 @@ export default function ChefSosyalClient({
                       src={topicMedia.mediaUrl}
                       className="w-full max-h-[400px] object-contain bg-black"
                       controls
+                      controlsList="nodownload"
+                      onContextMenu={(e) => e.preventDefault()}
                     />
                   ) : (
                     <img

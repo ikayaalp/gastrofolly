@@ -114,6 +114,8 @@ export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave }: T
                                             src={topic.mediaUrl}
                                             className="w-full h-full object-contain bg-black"
                                             controls
+                                            controlsList="nodownload"
+                                            onContextMenu={(e) => e.preventDefault()}
                                             onClick={(e) => e.stopPropagation()} // Video controls should work
                                         />
                                     </div>

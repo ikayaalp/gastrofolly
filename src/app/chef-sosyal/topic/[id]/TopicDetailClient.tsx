@@ -338,6 +338,8 @@ export default function TopicDetailClient({ session, topic, categories }: TopicD
                     <div className="relative w-full aspect-video">
                       <video
                         controls
+                        controlsList="nodownload"
+                        onContextMenu={(e) => e.preventDefault()}
                         poster={topic.thumbnailUrl || undefined}
                         className="w-full h-full object-contain bg-black"
                         onClick={(e) => e.stopPropagation()}

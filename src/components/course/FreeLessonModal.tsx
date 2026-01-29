@@ -97,6 +97,8 @@ export default function FreeLessonModal({ lesson, courseTitle }: FreeLessonModal
                                     <video
                                         className="w-full h-full object-contain"
                                         controls
+                                        controlsList="nodownload"
+                                        onContextMenu={(e) => e.preventDefault()}
                                         autoPlay
                                     >
                                         <source src={lesson.videoUrl} type="video/mp4" />

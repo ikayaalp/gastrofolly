@@ -324,6 +324,8 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
               className="w-full h-full object-contain"
               playsInline
               webkit-playsinline="true"
+              controlsList="nodownload"
+              onContextMenu={(e) => e.preventDefault()}
               onMouseMove={() => {
                 setShowControls(true)
                 setTimeout(() => setShowControls(false), 3000)

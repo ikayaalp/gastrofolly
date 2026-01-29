@@ -10,9 +10,7 @@ export async function GET(request: NextRequest) {
     try {
         const stories = await prisma.story.findMany({
             where: {
-                expiresAt: {
-                    gt: new Date(),
-                },
+                // Hikayeler artık süresiz (24 saat sınırı kaldırıldı)
             },
             include: {
                 creator: {
@@ -116,8 +114,8 @@ export async function POST(request: NextRequest) {
             coverImageUrl = await uploadToCloudinary(coverFile, 'image');
         }
 
-        // Expiry: 24 hours from now
-        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+        // Expiry: Süresiz (100 yıl)
+        const expiresAt = new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000);
 
         const story = await prisma.story.create({
             data: {
