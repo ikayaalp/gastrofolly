@@ -166,20 +166,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
       "@type": "CourseInstance",
       "courseMode": "Online",
       "courseWorkload": `PT${Math.round(totalDuration)}M`
-    },
-    "offers": {
-      "@type": "Offer",
-      "price": course.price,
-      "priceCurrency": "TRY",
-      "category": "Paid"
-    },
-    ...(averageRating > 0 ? {
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": averageRating.toFixed(1),
-        "reviewCount": course.reviews.length
-      }
-    } : {})
+    }
   }
 
   return (
