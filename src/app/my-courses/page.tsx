@@ -210,7 +210,7 @@ export default function MyCoursesPage() {
                 >
                   <div className="relative rounded-2xl overflow-hidden bg-gray-900 border border-gray-800 group-hover:border-orange-500/30 transition-all duration-500 shadow-xl">
                     {/* Aspect Ratio Container */}
-                    <div className="aspect-[1.618/1] relative w-full">
+                    <div className="aspect-[1.45/1] relative w-full">
                       {course.imageUrl ? (
                         <Image
                           src={course.imageUrl}
