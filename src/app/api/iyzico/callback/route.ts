@@ -101,7 +101,14 @@ export async function GET(request: NextRequest) {
               // Abonelik güncelleme
               if (payment.subscriptionPlan) {
                 const now = new Date()
-                const endDate = new Date(now.setMonth(now.getMonth() + 1)) // 1 aylık abonelik
+                let endDate = new Date(now)
+
+                // Ödeme dönemine göre süre ekle
+                if (payment.billingPeriod === 'yearly') {
+                  endDate.setFullYear(endDate.getFullYear() + 1)
+                } else {
+                  endDate.setMonth(endDate.getMonth() + 1)
+                }
 
                 await prisma.user.update({
                   where: { id: userId },
@@ -241,7 +248,13 @@ export async function GET(request: NextRequest) {
           // Abonelik güncelleme
           if (payment.subscriptionPlan) {
             const now = new Date()
-            const endDate = new Date(now.setMonth(now.getMonth() + 1)) // 1 aylık abonelik
+            let endDate = new Date(now)
+
+            if (payment.billingPeriod === 'yearly') {
+              endDate.setFullYear(endDate.getFullYear() + 1)
+            } else {
+              endDate.setMonth(endDate.getMonth() + 1)
+            }
 
             await prisma.user.update({
               where: { id: userId },
@@ -408,7 +421,14 @@ export async function GET(request: NextRequest) {
         // Abonelik güncelleme
         if (payment.subscriptionPlan) {
           const now = new Date()
-          const endDate = new Date(now.setMonth(now.getMonth() + 1)) // 1 aylık abonelik
+          let endDate = new Date(now)
+
+          // Ödeme dönemine göre süre ekle
+          if (payment.billingPeriod === 'yearly') {
+            endDate.setFullYear(endDate.getFullYear() + 1)
+          } else {
+            endDate.setMonth(endDate.getMonth() + 1) // Default Aylık
+          }
 
           await prisma.user.update({
             where: { id: userId },
@@ -418,7 +438,7 @@ export async function GET(request: NextRequest) {
               subscriptionEndDate: endDate
             }
           })
-          console.log(`✅ Subscription updated for user ${userId}: ${payment.subscriptionPlan}`)
+          console.log(`✅ Subscription updated for user ${userId}: ${payment.subscriptionPlan} (Until: ${endDate.toISOString()})`)
         }
 
         // Enrollment kontrolü ve oluşturma (sadece kurs ödemeleri için)

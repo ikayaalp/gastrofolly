@@ -16,14 +16,49 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json()
-        const { planName, price, courseId, billingPeriod, discountCode } = body
+        const { planName, courseId, billingPeriod, discountCode } = body
 
-        if (!planName || !price) {
+        // 1. Plan Fiyatını Sunucuda Belirle (Güvenlik)
+        const PLANS = {
+            "Premium": { price: 299 }
+        }
+
+        const selectedPlan = PLANS[planName as keyof typeof PLANS]
+        if (!selectedPlan) {
             return NextResponse.json(
-                { error: "Plan bilgileri eksik" },
+                { error: "Geçersiz plan" },
                 { status: 400 }
             )
         }
+
+        let finalPrice = selectedPlan.price
+
+        // Yıllık ise %20 indirim
+        if (billingPeriod === 'yearly') {
+            finalPrice = (finalPrice * 12) * 0.8
+        }
+
+        // İndirim Kodu Varsa Doğrula ve Uygula
+        if (discountCode) {
+            const discount = await prisma.discountCode.findUnique({
+                where: { code: discountCode }
+            })
+
+            if (discount && discount.isActive &&
+                new Date() >= discount.validFrom &&
+                new Date() <= discount.validUntil &&
+                (!discount.maxUses || discount.usedCount < discount.maxUses)) {
+
+                if (discount.discountType === "PERCENTAGE") {
+                    finalPrice = finalPrice - (finalPrice * discount.discountValue / 100)
+                } else {
+                    finalPrice = Math.max(0, finalPrice - discount.discountValue)
+                }
+            }
+        }
+
+        // Fiyat formatı (Iyzico string bekler ve 0.00 formatında sever)
+        const priceStr = finalPrice.toFixed(2)
 
         const user = await prisma.user.findUnique({
             where: { email: session.user.email }
@@ -36,10 +71,10 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        // 1. Ödeme kaydı oluştur (Pending)
+        // 2. Ödeme kaydı oluştur (Pending)
         const payment = await prisma.payment.create({
             data: {
-                amount: parseFloat(price),
+                amount: finalPrice,
                 currency: "TRY",
                 status: "PENDING",
                 userId: user.id,
@@ -50,7 +85,7 @@ export async function POST(request: NextRequest) {
             }
         })
 
-        // 2. İyzico ödeme isteği hazırla
+        // 3. İyzico ödeme isteği hazırla
         const origin = request.nextUrl.origin
         const callbackUrl = `${origin}/api/iyzico/subscription-callback`
 
@@ -62,8 +97,8 @@ export async function POST(request: NextRequest) {
         const paymentRequest: IyzicoPaymentRequest = {
             locale: "tr",
             conversationId: payment.id,
-            price: price,
-            paidPrice: price,
+            price: priceStr,
+            paidPrice: priceStr,
             currency: "TRY",
             basketId: payment.id,
             paymentGroup: "SUBSCRIPTION",
@@ -99,7 +134,7 @@ export async function POST(request: NextRequest) {
                     name: `${planName} Abonelik`,
                     category1: "Abonelik",
                     itemType: "VIRTUAL",
-                    price: price,
+                    price: priceStr,
                 }
             ]
         }

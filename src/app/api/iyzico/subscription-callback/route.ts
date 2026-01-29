@@ -183,7 +183,14 @@ async function handlePayment(token: string, request: NextRequest) {
         const planName = payment.subscriptionPlan
         if (planName) {
             const now = new Date()
-            const endDate = new Date(now.setMonth(now.getMonth() + 1)) // 1 aylık abonelik
+            let endDate = new Date(now)
+
+            // Ödeme dönemine göre süre ekle
+            if (payment.billingPeriod === 'yearly') {
+                endDate.setFullYear(endDate.getFullYear() + 1)
+            } else {
+                endDate.setMonth(endDate.getMonth() + 1) // Default Aylık
+            }
 
             await prisma.user.update({
                 where: { id: payment.userId },
