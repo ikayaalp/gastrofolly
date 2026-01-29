@@ -5,11 +5,17 @@ import { usePathname } from "next/navigation"
 import { useSession } from "next-auth/react"
 import { Home, BookOpen, Users, User, Bot } from "lucide-react"
 
-export default function MobileNavbar() {
+import { Session } from "next-auth"
+
+export default function MobileNavbar({ initialSession }: { initialSession?: Session | null }) {
     const pathname = usePathname()
     const { data: session, status } = useSession()
 
-    if (status === 'loading' || !session) return null
+    // Use initialSession to show navbar immediately if available, avoiding flicker
+    const activeSession = session || initialSession
+    const isLoading = status === 'loading' && !initialSession
+
+    if (isLoading || !activeSession) return null
 
     // Helper to check active state
     const isActive = (path: string) => {

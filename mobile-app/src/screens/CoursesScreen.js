@@ -199,8 +199,8 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
     },
     courseImage: {
-        width: 100,
-        height: 100,
+        width: 120,
+        height: 80,
         resizeMode: 'cover',
     },
     courseContent: {

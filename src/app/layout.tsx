@@ -5,6 +5,8 @@ import "./globals.css";
 import AuthSessionProvider from "@/components/providers/SessionProvider";
 import { CartProvider } from "@/contexts/CartContext";
 import { FavoritesProvider } from "@/contexts/FavoritesContext";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import MobileNavbar from "@/components/layout/MobileNavbar";
 
 
@@ -36,11 +38,12 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await getServerSession(authOptions);
   // JSON-LD for Organization and Course
   const jsonLd = {
     "@context": "https://schema.org",
@@ -89,7 +92,7 @@ export default function RootLayout({
               {children}
             </FavoritesProvider>
           </CartProvider>
-          <MobileNavbar />
+          <MobileNavbar initialSession={session} />
         </AuthSessionProvider>
       </body>
     </html>

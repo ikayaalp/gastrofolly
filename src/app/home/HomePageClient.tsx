@@ -197,7 +197,6 @@ export default function HomePageClient({
           <CourseRow
             title="Yeni Eklenen Kurslar"
             courses={recentCourses}
-            largeCards={true}
           />
 
           {/* Kategorilere Göre */}
