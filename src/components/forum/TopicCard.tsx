@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ThumbsUp, MessageCircle, MoreHorizontal, User, Play, Clock, Bookmark } from 'lucide-react'
+import { ThumbsUp, MessageCircle, MoreHorizontal, User, Play, Clock, Bookmark, ChefHat } from 'lucide-react'
 import HashtagText from './HashtagText'
 import ConfirmationModal from '@/components/ui/ConfirmationModal'
 
@@ -109,16 +109,29 @@ export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave }: T
                     <div className="flex-1 p-3 pb-1">
                         {/* Header */}
                         <div className="flex items-center text-xs text-gray-500 mb-2 space-x-2">
-                            {topic.author.image ? (
-                                <img src={topic.author.image} alt={topic.author.name || ''} className="w-5 h-5 rounded-full object-cover" />
+                            {pollData ? (
+                                <>
+                                    <div className="w-5 h-5 bg-orange-600 rounded-full flex items-center justify-center">
+                                        <ChefHat className="w-3 h-3 text-white" />
+                                    </div>
+                                    <span className="font-bold text-white">
+                                        Culinora Anket
+                                    </span>
+                                </>
                             ) : (
-                                <div className="w-5 h-5 bg-gray-700 rounded-full flex items-center justify-center">
-                                    <User className="w-3 h-3 text-gray-400" />
-                                </div>
+                                <>
+                                    {topic.author.image ? (
+                                        <img src={topic.author.image} alt={topic.author.name || ''} className="w-5 h-5 rounded-full object-cover" />
+                                    ) : (
+                                        <div className="w-5 h-5 bg-gray-700 rounded-full flex items-center justify-center">
+                                            <User className="w-3 h-3 text-gray-400" />
+                                        </div>
+                                    )}
+                                    <span className="font-medium text-gray-400 hover:text-white transition-colors">
+                                        u/{topic.author.name || 'anonim'}
+                                    </span>
+                                </>
                             )}
-                            <span className="font-medium text-gray-400 hover:text-white transition-colors">
-                                u/{topic.author.name || 'anonim'}
-                            </span>
                             <span className="text-gray-600">•</span>
                             <span>{formatTimeAgo(topic.createdAt.toString())}</span>
                         </div>
@@ -222,37 +235,46 @@ export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave }: T
                         )}
 
                         {/* Action Bar */}
-                        <div className="flex items-center space-x-3 text-gray-500 text-xs font-bold pt-1 pb-1">
-                            {/* Vote Button */}
-                            <button
-                                onClick={handleLike}
-                                className={`flex items-center space-x-1.5 px-3 py-2 rounded-full transition-all duration-200 ${isLiked
-                                    ? 'bg-orange-500/10 text-orange-500'
-                                    : 'hover:bg-gray-800 text-gray-400 hover:text-orange-500'
-                                    }`}
-                            >
-                                <ThumbsUp className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
-                                <span className="text-sm">{topic.likeCount}</span>
-                            </button>
+                        {pollData ? (
+                            <div className="flex items-center space-x-3 text-gray-500 text-xs font-bold pt-1 pb-1 pl-1">
+                                <span className="flex items-center space-x-1.5 text-orange-500">
+                                    <MessageCircle className="h-4 w-4" />
+                                    <span>Anket</span>
+                                </span>
+                            </div>
+                        ) : (
+                            <div className="flex items-center space-x-3 text-gray-500 text-xs font-bold pt-1 pb-1">
+                                {/* Vote Button */}
+                                <button
+                                    onClick={handleLike}
+                                    className={`flex items-center space-x-1.5 px-3 py-2 rounded-full transition-all duration-200 ${isLiked
+                                        ? 'bg-orange-500/10 text-orange-500'
+                                        : 'hover:bg-gray-800 text-gray-400 hover:text-orange-500'
+                                        }`}
+                                >
+                                    <ThumbsUp className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
+                                    <span className="text-sm">{topic.likeCount}</span>
+                                </button>
 
-                            <Link href={`/chef-sosyal/topic/${topic.id}`} className="flex items-center space-x-1.5 px-3 py-2 hover:bg-gray-800 rounded-full transition-colors group cursor-pointer text-gray-400 hover:text-white">
-                                <MessageCircle className="h-4 w-4" />
-                                <span className="text-sm">{topic._count.posts}</span>
-                                <span className="hidden sm:inline">Yorum</span>
-                            </Link>
+                                <Link href={`/chef-sosyal/topic/${topic.id}`} className="flex items-center space-x-1.5 px-3 py-2 hover:bg-gray-800 rounded-full transition-colors group cursor-pointer text-gray-400 hover:text-white">
+                                    <MessageCircle className="h-4 w-4" />
+                                    <span className="text-sm">{topic._count.posts}</span>
+                                    <span className="hidden sm:inline">Yorum</span>
+                                </Link>
 
-                            {/* Save Button */}
-                            <button
-                                onClick={handleSave}
-                                className={`flex items-center space-x-1.5 px-3 py-2 rounded-full transition-all duration-200 ${isSaved
-                                    ? 'bg-orange-500/10 text-orange-500'
-                                    : 'hover:bg-gray-800 text-gray-400 hover:text-orange-500'
-                                    }`}
-                            >
-                                <Bookmark className={`h-4 w-4 ${isSaved ? 'fill-current' : ''}`} />
-                                <span className="hidden sm:inline">{isSaved ? 'Kaydedildi' : 'Kaydet'}</span>
-                            </button>
-                        </div>
+                                {/* Save Button */}
+                                <button
+                                    onClick={handleSave}
+                                    className={`flex items-center space-x-1.5 px-3 py-2 rounded-full transition-all duration-200 ${isSaved
+                                        ? 'bg-orange-500/10 text-orange-500'
+                                        : 'hover:bg-gray-800 text-gray-400 hover:text-orange-500'
+                                        }`}
+                                >
+                                    <Bookmark className={`h-4 w-4 ${isSaved ? 'fill-current' : ''}`} />
+                                    <span className="hidden sm:inline">{isSaved ? 'Kaydedildi' : 'Kaydet'}</span>
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
