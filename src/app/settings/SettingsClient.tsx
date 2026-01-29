@@ -1,10 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { User, Mail, Lock, Camera, Save, Eye, EyeOff, Calendar, Award, Crown } from "lucide-react"
-
+import ConfirmationModal from '@/components/ui/ConfirmationModal'
 
 interface UserData {
   id: string
@@ -32,6 +32,11 @@ interface SettingsClientProps {
 export default function SettingsClient({ user }: SettingsClientProps) {
   const { data: session, update } = useSession()
   const router = useRouter()
+
+  // Modal States
+  const [showCancelModal, setShowCancelModal] = useState(false)
+  const [showPhotoModal, setShowPhotoModal] = useState(false)
+
   const [activeTab, setActiveTab] = useState("profile")
   const [profileData, setProfileData] = useState({
     name: user.name || "",
@@ -381,41 +386,7 @@ export default function SettingsClient({ user }: SettingsClientProps) {
                   {profileData.image && (
                     <button
                       type="button"
-                      onClick={async () => {
-                        if (!confirm('Fotoğrafı kaldırmak istediğinize emin misiniz?')) return;
-                        setLoading(true);
-                        try {
-                          // Call update API directly with null image
-                          const response = await fetch("/api/user/update-profile", {
-                            method: "PUT",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({
-                              name: profileData.name,
-                              phoneNumber: profileData.phoneNumber,
-                              image: null
-                            })
-                          });
-
-                          if (response.ok) {
-                            const data = await response.json();
-                            setProfileData(prev => ({ ...prev, image: "" })); // Fix: Use empty string instead of null for string state
-                            setPreviewUrl(null);
-                            // Update session
-                            await update({
-                              ...session,
-                              user: { ...session?.user, image: null }
-                            });
-                            setMessage("Fotoğraf kaldırıldı");
-                            setTimeout(() => setMessage(""), 3000);
-                          } else {
-                            setMessage("Fotoğraf kaldırılamadı");
-                          }
-                        } catch (e) {
-                          setMessage("Bir hata oluştu");
-                        } finally {
-                          setLoading(false);
-                        }
-                      }}
+                      onClick={() => setShowPhotoModal(true)}
                       className="text-red-400 hover:text-red-300 text-sm font-medium px-1"
                     >
                       Fotoğrafı Kaldır
@@ -555,7 +526,7 @@ export default function SettingsClient({ user }: SettingsClientProps) {
                         Premium üyeliğinizi iptal ederseniz, mevcut dönem sonuna kadar erişiminiz devam edecektir.
                       </p>
                       <button
-                        onClick={handleCancelSubscription}
+                        onClick={() => setShowCancelModal(true)}
                         disabled={loading}
                         className="text-red-400 hover:text-red-300 text-sm font-medium transition-colors disabled:opacity-50"
                       >
@@ -816,6 +787,92 @@ export default function SettingsClient({ user }: SettingsClientProps) {
           </div>
         )
       }
+      {/* Photo Remove Modal */}
+      <ConfirmationModal
+        isOpen={showPhotoModal}
+        onClose={() => setShowPhotoModal(false)}
+        onConfirm={async () => {
+          setLoading(true);
+          try {
+            // Call update API directly with null image
+            const response = await fetch("/api/user/update-profile", {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                name: profileData.name,
+                phoneNumber: profileData.phoneNumber,
+                image: null
+              })
+            });
+
+            if (response.ok) {
+              const data = await response.json();
+              setProfileData(prev => ({ ...prev, image: "" }));
+              setPreviewUrl(null);
+              // Update session
+              await update({
+                ...session,
+                user: { ...session?.user, image: null }
+              });
+              setMessage("Fotoğraf kaldırıldı");
+              setTimeout(() => setMessage(""), 3000);
+              setShowPhotoModal(false);
+            } else {
+              setMessage("Fotoğraf kaldırılamadı");
+            }
+          } catch (e) {
+            setMessage("Bir hata oluştu");
+          } finally {
+            setLoading(false);
+          }
+        }}
+        title="Profil Fotoğrafını Kaldır"
+        message="Profil fotoğrafınızı kaldırmak istediğinize emin misiniz?"
+        confirmText="Evet, Kaldır"
+        isDanger={true}
+        isLoading={loading}
+      />
+
+      {/* Subscription Cancel Modal */}
+      <ConfirmationModal
+        isOpen={showCancelModal}
+        onClose={() => setShowCancelModal(false)}
+        onConfirm={async () => {
+          setLoading(true)
+          setMessage("")
+
+          try {
+            const response = await fetch("/api/user/cancel-subscription", {
+              method: "POST",
+            })
+
+            const data = await response.json()
+
+            if (response.ok) {
+              setMessage("Abonelik başarıyla iptal edildi")
+              setShowCancelModal(false)
+              router.refresh()
+              setTimeout(() => setMessage(""), 3000)
+            } else {
+              setMessage(data.error || "Abonelik iptal edilemedi")
+            }
+          } catch (error) {
+            console.error("Cancel subscription error:", error)
+            setMessage("Bir hata oluştu")
+          } finally {
+            setLoading(false)
+          }
+        }}
+        title="Aboneliği İptal Et"
+        message={`Aboneliğinizi iptal etmek istediğinize emin misiniz? Premium erişiminiz ${user.subscriptionEndDate
+          ? new Date(user.subscriptionEndDate).toLocaleDateString('tr-TR')
+          : 'dönem sonuna'
+          } tarihine kadar devam edecektir.`}
+        confirmText="Aboneliği İptal Et"
+        cancelText="Vazgeç"
+        isDanger={true}
+        isLoading={loading}
+      />
     </div >
   )
 }
