@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/mobileAuth'
 import { prisma } from '@/lib/prisma'
+import { containsProfanity } from '@/lib/profanity'
 
 export async function GET(
   request: NextRequest,
@@ -94,6 +95,14 @@ export async function POST(
     if (!content) {
       return NextResponse.json(
         { error: 'Content is required' },
+        { status: 400 }
+      )
+    }
+
+    // Küfür Kontrolü
+    if (containsProfanity(content)) {
+      return NextResponse.json(
+        { error: 'Yorumunuz uygunsuz ifadeler içeriyor.' },
         { status: 400 }
       )
     }

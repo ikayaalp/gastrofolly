@@ -343,16 +343,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
 
                 </div>
 
-                <div className="grid grid-cols-3 gap-4 text-center border-t pt-6">
-                  <div>
-                    <div className="flex items-center justify-center mb-2">
-                      <Users className="h-5 w-5 text-orange-600" />
-                    </div>
-                    <p className="text-2xl font-bold text-white">
-                      {course._count.enrollments}
-                    </p>
-                    <p className="text-sm text-gray-400">Öğrenci</p>
-                  </div>
+                <div className="grid grid-cols-2 gap-4 text-center border-t pt-6">
                   <div>
                     <div className="flex items-center justify-center mb-2">
                       <Play className="h-5 w-5 text-orange-500" />

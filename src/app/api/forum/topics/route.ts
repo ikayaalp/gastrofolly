@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/mobileAuth'
 import { prisma } from '@/lib/prisma'
+import { containsProfanity } from '@/lib/profanity'
 
 export async function GET(request: NextRequest) {
   try {
@@ -124,6 +125,14 @@ export async function POST(request: NextRequest) {
     if (!title || !content || !categoryId) {
       return NextResponse.json(
         { error: 'Title, content, and category are required' },
+        { status: 400 }
+      )
+    }
+
+    // Küfür Kontrolü
+    if (containsProfanity(title) || containsProfanity(content)) {
+      return NextResponse.json(
+        { error: 'İçeriğinizde uygunsuz ifadeler tespit edildi. Lütfen düzenleyip tekrar deneyin.' },
         { status: 400 }
       )
     }
