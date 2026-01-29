@@ -47,20 +47,25 @@ export async function POST(request: NextRequest) {
         }
 
         if (poll.votes.length > 0) {
-            return NextResponse.json(
-                { error: 'You have already voted in this poll' },
-                { status: 400 }
-            )
+            // Already voted, update the vote
+            await prisma.pollVote.update({
+                where: {
+                    id: poll.votes[0].id
+                },
+                data: {
+                    optionId
+                }
+            })
+        } else {
+            // Create new vote
+            await prisma.pollVote.create({
+                data: {
+                    userId: user.id,
+                    pollId,
+                    optionId
+                }
+            })
         }
-
-        // Create vote
-        await prisma.pollVote.create({
-            data: {
-                userId: user.id,
-                pollId,
-                optionId
-            }
-        })
 
         return NextResponse.json({ success: true }, { status: 201 })
     } catch (error) {
