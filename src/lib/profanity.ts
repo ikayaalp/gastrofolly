@@ -1,7 +1,7 @@
 
 const TR_BAD_WORDS = [
     // Genel Küfürler
-    "amk", "aq", "siktir", "sokayim", "sokayım", "ananı", "anani", "avradını", "avradini",
+    "am", "amk", "aq", "siktir", "sokayim", "sokayım", "ananı", "anani", "avradını", "avradini",
     "kaşar", "kasar", "oç", "oc", "piç", "pic", "yarak", "yarrak", "amcık", "amcik",
     "götveren", "gotveren", "gavat", "pezevenk", "kalta", "kahpe", "orospu",
     "sikerim", "sikeyim", "sikem", "sikim", "sik", "yarram", "yarragim", "yarrağım",
@@ -32,7 +32,9 @@ export function containsProfanity(text: string): boolean {
 
     return TR_BAD_WORDS.some(word => {
         // Tam kelime eşleşmesi veya bariz küfürlerin geçtiği yerler
+        // .includes() kaldırıldı çünkü "am" gibi kısa kelimeler "tamam" içinde geçebiliyor.
+        // Sadece regex boundary (\b) kullanıyoruz.
         const regex = new RegExp(`\\b${word}\\b`, 'i');
-        return regex.test(lowerText) || lowerText.includes(word);
+        return regex.test(lowerText);
     });
 }
