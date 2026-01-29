@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Camera, User, Mail, Save, Loader2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import ConfirmationModal from '@/components/ui/ConfirmationModal';
 
 export default function ProfilePage() {
     const { data: session, update } = useSession();
@@ -14,6 +15,10 @@ export default function ProfilePage() {
     const [image, setImage] = useState('');
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
+
+    // Modal States
+    const [showCancelModal, setShowCancelModal] = useState(false);
+    const [showPhotoModal, setShowPhotoModal] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -170,25 +175,7 @@ export default function ProfilePage() {
                                 {image && (
                                     <button
                                         type="button"
-                                        onClick={async () => {
-                                            if (!confirm('Profil fotoğrafınızı kaldırmak istediğinize emin misiniz?')) return;
-                                            setLoading(true);
-                                            try {
-                                                const res = await fetch('/api/user/update-profile', {
-                                                    method: 'PUT',
-                                                    headers: { 'Content-Type': 'application/json' },
-                                                    body: JSON.stringify({ name, image: null }),
-                                                });
-                                                if (!res.ok) throw new Error('İşlem başarısız');
-                                                setImage('');
-                                                await update({ ...session, user: { ...session?.user, image: null } });
-                                                toast.success('Fotoğraf kaldırıldı');
-                                            } catch (error) {
-                                                toast.error('Hata oluştu');
-                                            } finally {
-                                                setLoading(false);
-                                            }
-                                        }}
+                                        onClick={() => setShowPhotoModal(true)}
                                         className="text-red-400 hover:text-red-300 text-sm mt-3 font-medium transition-colors"
                                     >
                                         Fotoğrafı Kaldır
@@ -252,8 +239,8 @@ export default function ProfilePage() {
                                         <div className="text-right">
                                             <p className="text-zinc-400 text-sm">Durum</p>
                                             <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${(session?.user as any).subscriptionCancelled
-                                                    ? 'bg-red-500/20 text-red-400'
-                                                    : 'bg-green-500/20 text-green-400'
+                                                ? 'bg-red-500/20 text-red-400'
+                                                : 'bg-green-500/20 text-green-400'
                                                 }`}>
                                                 {(session?.user as any).subscriptionCancelled ? 'İptal Edildi' : 'Aktif'}
                                             </span>
@@ -277,27 +264,7 @@ export default function ProfilePage() {
                                     {!(session?.user as any).subscriptionCancelled && (
                                         <button
                                             type="button"
-                                            onClick={async () => {
-                                                if (!confirm('Aboneliğinizi iptal etmek istediğinize emin misiniz? Dönem sonuna kadar erişiminiz devam edecektir.')) return;
-                                                setLoading(true);
-                                                try {
-                                                    const res = await fetch('/api/iyzico/cancel-subscription', {
-                                                        method: 'POST'
-                                                    });
-                                                    const data = await res.json();
-                                                    if (!res.ok) throw new Error(data.error || 'İptal işlemi başarısız');
-
-                                                    toast.success('Abonelik iptal edildi');
-                                                    // Session'ı güncellemek için refresh veya update
-                                                    // Pratik çözüm: Sayfayı yenile veya update()
-                                                    // await update(); // Session'daki field'lar hemen güncellenmeyebilir eğer trigger yoksa
-                                                    window.location.reload();
-                                                } catch (error: any) {
-                                                    toast.error(error.message);
-                                                } finally {
-                                                    setLoading(false);
-                                                }
-                                            }}
+                                            onClick={() => setShowCancelModal(true)}
                                             className="w-full py-2 bg-red-600/10 hover:bg-red-600/20 text-red-500 border border-red-600/20 rounded-lg transition-colors text-sm font-medium"
                                         >
                                             Aboneliği İptal Et
@@ -336,6 +303,69 @@ export default function ProfilePage() {
                     </form>
                 </div>
             </div>
+
+            {/* Photo Remove Modal */}
+            <ConfirmationModal
+                isOpen={showPhotoModal}
+                onClose={() => setShowPhotoModal(false)}
+                onConfirm={async () => {
+                    setLoading(true);
+                    try {
+                        const res = await fetch('/api/user/update-profile', {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ name, image: null }),
+                        });
+                        if (!res.ok) throw new Error('İşlem başarısız');
+                        setImage('');
+                        await update({ ...session, user: { ...session?.user, image: null } });
+                        toast.success('Fotoğraf kaldırıldı');
+                        setShowPhotoModal(false);
+                    } catch (error: any) {
+                        toast.error(error.message || 'Hata oluştu');
+                    } finally {
+                        setLoading(false);
+                    }
+                }}
+                title="Profil Fotoğrafını Kaldır"
+                message="Profil fotoğrafınızı kaldırmak istediğinize emin misiniz?"
+                confirmText="Evet, Kaldır"
+                isDanger={true}
+                isLoading={loading}
+            />
+
+            {/* Subscription Cancel Modal */}
+            <ConfirmationModal
+                isOpen={showCancelModal}
+                onClose={() => setShowCancelModal(false)}
+                onConfirm={async () => {
+                    setLoading(true);
+                    try {
+                        const res = await fetch('/api/iyzico/cancel-subscription', {
+                            method: 'POST'
+                        });
+                        const data = await res.json();
+                        if (!res.ok) throw new Error(data.error || 'İptal işlemi başarısız');
+
+                        toast.success('Abonelik iptal edildi');
+                        setShowCancelModal(false);
+                        window.location.reload();
+                    } catch (error: any) {
+                        toast.error(error.message);
+                    } finally {
+                        setLoading(false);
+                    }
+                }}
+                title="Aboneliği İptal Et"
+                message={`Aboneliğinizi iptal etmek istediğinize emin misiniz? Premium erişiminiz ${(session?.user as any)?.subscriptionEndDate
+                    ? new Date((session?.user as any).subscriptionEndDate).toLocaleDateString('tr-TR')
+                    : 'dönem sonuna'
+                    } tarihine kadar devam edecektir.`}
+                confirmText="Aboneliği İptal Et"
+                cancelText="Vazgeç"
+                isDanger={true}
+                isLoading={loading}
+            />
         </div>
     );
 }
