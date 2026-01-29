@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
+import Image from "next/image"
 import {
   ChefHat,
   Clock,
@@ -146,8 +147,49 @@ export default async function CoursePage({ params }: CoursePageProps) {
     hasProgress = !!userProgress
   }
 
+  // Structured Data for Google Rich Snippets
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Course",
+    "name": course.title,
+    "description": course.description,
+    "provider": {
+      "@type": "Organization",
+      "name": "Culinora",
+      "sameAs": "https://culinora.net"
+    },
+    "instructor": {
+      "@type": "Person",
+      "name": course.instructor.name || "Culinora Şefi"
+    },
+    "hasCourseInstance": {
+      "@type": "CourseInstance",
+      "courseMode": "Online",
+      "courseWorkload": `PT${Math.round(totalDuration)}M`
+    },
+    "offers": {
+      "@type": "Offer",
+      "price": course.price,
+      "priceCurrency": "TRY",
+      "category": "Paid"
+    },
+    ...(averageRating > 0 ? {
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": averageRating.toFixed(1),
+        "reviewCount": course.reviews.length
+      }
+    } : {})
+  }
+
   return (
     <div className="min-h-screen bg-black">
+      {/* Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
       {/* Desktop Header */}
       <header className="hidden md:block fixed top-0 left-0 right-0 z-50 bg-black/30 backdrop-blur-sm border-b border-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -262,11 +304,16 @@ export default async function CoursePage({ params }: CoursePageProps) {
             {/* Course Header */}
             <div className="bg-black border border-black rounded-xl shadow-lg overflow-hidden mb-8">
               {course.imageUrl ? (
-                <img
-                  src={course.imageUrl}
-                  alt={course.title}
-                  className="w-full h-64 object-cover"
-                />
+                <div className="relative w-full h-64">
+                  <Image
+                    src={course.imageUrl}
+                    alt={course.title}
+                    fill
+                    priority
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 100vw"
+                  />
+                </div>
               ) : (
                 <div className="w-full h-64 bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center">
                   <ChefHat className="h-24 w-24 text-white" />
