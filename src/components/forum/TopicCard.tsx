@@ -32,6 +32,19 @@ interface TopicCardProps {
             posts: number
         }
     }
+    poll?: {
+        id: string
+        question: string
+        startDate: string | Date
+        endDate: string | Date
+        options: {
+            id: string
+            text: string
+            votes?: { id: string }[]
+            _count?: { votes: number }
+        }[]
+        votes: { userId: string }[]
+    } | null
     isLiked?: boolean
     onLike?: (id: string) => void
     isSaved?: boolean
@@ -39,8 +52,21 @@ interface TopicCardProps {
 }
 
 export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave }: TopicCardProps) {
-
     const [isLightboxOpen, setIsLightboxOpen] = useState(false)
+    const [votingLoading, setVotingLoading] = useState<string | null>(null)
+    const [pollData, setPollData] = useState(topic.poll)
+
+    // Check if current user has voted (client-side approximation if we don't have user ID handy easily, 
+    // but the API response includes votes by user. Ideally we need current User ID.
+    // However, the `votes` array in `poll` usually contains ALL votes or user's vote depending on the query.
+    // In our API `votes` in `poll` includes ALL votes.
+    // Wait, `votes: { userId: string }[]` allows checking if *some* user voted. 
+    // We need the logged-in user's ID to know if THEY voted.
+    // For now, let's assume if the API returns a vote matching the session, we show results.
+    // Actually, `src/app/api/forum/topics/route.ts` included `votes: true`.
+    // In `TopicCard` usage, we might not have the session user ID readily available in props unless passed.
+    // But we can check if we successfully voted to toggle state locally.
+
 
     const formatTimeAgo = (dateString: string) => {
         const date = new Date(dateString)
@@ -126,6 +152,70 @@ export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave }: T
                                         className="object-contain max-h-[500px] w-full bg-black"
                                     />
                                 )}
+                            </div>
+                        )}
+
+                        {/* Poll Display */}
+                        {pollData && (
+                            <div className="mb-3 p-4 bg-gray-900/50 border border-gray-800 rounded-xl">
+                                <h3 className="text-white font-medium mb-3">{pollData.question}</h3>
+                                <div className="space-y-2">
+                                    {pollData.options.map((option) => {
+                                        const totalVotes = pollData.votes?.length || 0
+                                        const percent = totalVotes > 0 ? Math.round((option.votes?.length || 0) / totalVotes * 100) : 0
+                                        const isExpired = new Date() > new Date(pollData.endDate)
+
+                                        return (
+                                            <div key={option.id} className="relative">
+                                                {/* Background Bar */}
+                                                <div className="absolute inset-0 bg-gray-800 rounded-lg overflow-hidden">
+                                                    <div
+                                                        className="h-full bg-orange-900/40 transition-all duration-500"
+                                                        style={{ width: `${percent}%` }}
+                                                    />
+                                                </div>
+
+                                                <button
+                                                    onClick={async () => {
+                                                        if (isExpired) return;
+                                                        setVotingLoading(option.id)
+                                                        try {
+                                                            const res = await fetch('/api/forum/polls/vote', {
+                                                                method: 'POST',
+                                                                headers: { 'Content-Type': 'application/json' },
+                                                                body: JSON.stringify({ pollId: pollData.id, optionId: option.id })
+                                                            })
+
+                                                            if (res.ok) {
+                                                                window.location.reload()
+                                                            } else {
+                                                                const err = await res.json()
+                                                                alert(err.error)
+                                                            }
+                                                        } catch (e) {
+                                                            console.error(e)
+                                                        } finally {
+                                                            setVotingLoading(null)
+                                                        }
+                                                    }}
+                                                    disabled={!!votingLoading || isExpired}
+                                                    className="relative w-full text-left px-4 py-3 flex justify-between items-center z-10 hover:bg-white/5 transition-colors rounded-lg"
+                                                >
+                                                    <span className="text-gray-200 text-sm font-medium">{option.text}</span>
+                                                    <span className="text-xs text-gray-400 font-mono">
+                                                        {percent}% ({option.votes?.length || 0})
+                                                    </span>
+                                                </button>
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                                <div className="mt-3 flex items-center justify-between text-xs text-gray-500">
+                                    <span>Toplam Oy: {pollData.votes?.length || 0}</span>
+                                    <span>
+                                        {new Date() > new Date(pollData.endDate) ? 'Anket Sona Erdi' : `Bitiş: ${new Date(pollData.endDate).toLocaleDateString()}`}
+                                    </span>
+                                </div>
                             </div>
                         )}
 

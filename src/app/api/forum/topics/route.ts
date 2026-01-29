@@ -28,7 +28,10 @@ export async function GET(request: NextRequest) {
         break
       case 'newest':
       default:
-        orderBy = { createdAt: 'desc' }
+        orderBy = [
+          { isPinned: 'desc' },
+          { createdAt: 'desc' }
+        ]
         break
     }
 
@@ -76,6 +79,16 @@ export async function GET(request: NextRequest) {
           posts: {
             select: {
               id: true
+            }
+          },
+          poll: {
+            include: {
+              options: {
+                include: {
+                  votes: true
+                }
+              },
+              votes: true
             }
           },
           _count: {

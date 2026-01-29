@@ -85,6 +85,7 @@ model User {
   certificates  Certificate[]
   notifications Notification[]
   stories       Story[]
+  pollVotes     PollVote[]
 }
 
 enum UserRole {
@@ -283,6 +284,50 @@ model Topic {
   posts Post[]
   likes TopicLike[]
   hashtags Hashtag[] @relation("TopicHashtags")
+  
+  poll Poll?
+}
+
+// Anket Modeli
+model Poll {
+  id        String   @id @default(cuid())
+  question  String
+  startDate DateTime @default(now())
+  endDate   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  topicId String @unique
+  topic   Topic  @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  options PollOption[]
+  votes   PollVote[]
+}
+
+model PollOption {
+  id        String   @id @default(cuid())
+  text      String
+  
+  pollId String
+  poll   Poll   @relation(fields: [pollId], references: [id], onDelete: Cascade)
+
+  votes PollVote[]
+}
+
+model PollVote {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  pollId String
+  poll   Poll   @relation(fields: [pollId], references: [id], onDelete: Cascade)
+
+  optionId String
+  option   PollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, pollId])
 }
 
 // Forum Hashtag modeli
