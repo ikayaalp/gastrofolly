@@ -82,6 +82,22 @@ export const authOptions: NextAuthOptions = {
       if (token && token.sub) {
         session.user.id = token.sub
         session.user.role = token.role
+
+        // Abonelik durumunu taze çek
+        const user = await prisma.user.findUnique({
+          where: { id: token.sub },
+          select: {
+            subscriptionPlan: true,
+            subscriptionEndDate: true,
+            subscriptionCancelled: true
+          }
+        })
+
+        if (user) {
+          (session.user as any).subscriptionPlan = user.subscriptionPlan;
+          (session.user as any).subscriptionEndDate = user.subscriptionEndDate;
+          (session.user as any).subscriptionCancelled = user.subscriptionCancelled;
+        }
       }
       return session
     },

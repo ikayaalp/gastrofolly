@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { retrieveCheckoutForm } from "@/lib/iyzico"
+import { retrieveCheckoutForm, getSubscriptionCheckoutResult } from "@/lib/iyzico"
 import { prisma } from "@/lib/prisma"
 
 export async function POST(request: NextRequest) {
@@ -182,12 +182,28 @@ async function handlePayment(token: string, request: NextRequest) {
             endDate.setMonth(endDate.getMonth() + 1)
         }
 
+        // Subscription Reference Code'u al (İptal işlemi için gerekli)
+        let subscriptionReferenceCode = null
+        if (isV2) {
+            try {
+                const detail = await getSubscriptionCheckoutResult(token)
+                if (detail?.referenceCode) {
+                    subscriptionReferenceCode = detail.referenceCode
+                    console.log("Subscription Reference Code retrieved:", subscriptionReferenceCode)
+                }
+            } catch (err) {
+                console.error("Failed to retrieve subscription reference code:", err)
+            }
+        }
+
         await prisma.user.update({
             where: { id: paymentRecord.userId },
             data: {
                 subscriptionPlan: planName,
                 subscriptionStartDate: new Date(),
-                subscriptionEndDate: endDate
+                subscriptionEndDate: endDate,
+                subscriptionReferenceCode: subscriptionReferenceCode,
+                subscriptionCancelled: false // Yeni abonelik, iptal durumu sıfırla
             }
         })
     }

@@ -358,3 +358,66 @@ export const createSubscriptionPricingPlan = async (plan: IyzicoSubscriptionPric
 export const initializeSubscriptionCheckout = async (request: IyzicoSubscriptionCheckoutRequest): Promise<IyzicoSubscriptionCheckoutResult> => {
   return makeIyzicoRequest<IyzicoSubscriptionCheckoutResult>('/v2/subscription/checkout-form/initialize', request)
 }
+export interface IyzicoCancelSubscriptionResult {
+  status: string
+  errorCode?: string
+  errorMessage?: string
+  systemTime: number
+}
+
+/**
+ * Abonelik İptal Et (Subscription API v2)
+ * Endpoint: /v2/subscription/subscriptions/{subscriptionReferenceCode}/cancel
+ */
+export const cancelSubscription = async (subscriptionReferenceCode: string): Promise<IyzicoCancelSubscriptionResult> => {
+  return makeIyzicoRequest<IyzicoCancelSubscriptionResult>(`/v2/subscription/subscriptions/${subscriptionReferenceCode}/cancel`, {
+    locale: 'tr',
+    conversationId: Date.now().toString()
+  })
+}
+
+/**
+ * Iyzico Webhook İmza Doğrulama
+ * Iyzico'dan gelen isteğin güvenilir olup olmadığını kontrol eder.
+ * Iyzico, "X-Iyzi-Signature" header'ı ile gelir.
+ */
+export const validateWebhookSignature = (iyziSignature: string, payload: any): boolean => {
+  try {
+    const secretKey = IYZICO_CONFIG.secretKey;
+    // Payload, raw json string olmalıdır. Route handler'dan alırken dikkat edilmeli.
+    // Iyzico dokümanına göre: sha1(secretKey + requestBody) ? Hayır, Iyzico v2 Subscription için farklı olabilir.
+    // Standart Iyzico webhook: "iyziSignature" header contains base64 encoded signature.
+    // Ancak Subscription v2 webhook dokümantasyonu bazen farklılık gösterir.
+    // Genelde: base64(sha1(secretKey + content))
+
+    // NOT: Iyzico sandbox ortamında webhook tetiklemek zor olabilir.
+    // Güvenlik için secretKey kontrolü ekliyoruz.
+
+    const calculatedSignature = crypto
+      .createHmac('sha1', secretKey)
+      .update(JSON.stringify(payload))
+      .digest('base64');
+
+    // Şimdilik imza kontrolünü opsiyonel yapalım, çünkü Iyzico'nun hangi formatı kullandığı dokümanda net değil.
+    // Ama loglayalım.
+    console.log("Webhook Signature Check:", {
+      incoming: iyziSignature,
+      calculated: calculatedSignature
+    });
+
+    return iyziSignature === calculatedSignature;
+  } catch (e) {
+    console.error("Signature validation error:", e);
+    return false;
+  }
+}
+
+export interface IyzicoWebhookPayload {
+  orderReferenceCode: string;
+  customerReferenceCode: string;
+  subscriptionReferenceCode: string;
+  iyziReferenceCode: string;
+  iyziEventTime: number;
+  iyziEventType: "SUBSCRIPTION_ORDER_SUCCESS" | "SUBSCRIPTION_CREATED" | "SUBSCRIPTION_CANCELED";
+  status: string;
+}

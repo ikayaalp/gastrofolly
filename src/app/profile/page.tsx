@@ -239,6 +239,85 @@ export default function ProfilePage() {
                             </div>
                         </div>
 
+                        {/* Subscription Management */}
+                        <div className="pt-6 border-t border-zinc-800">
+                            <h3 className="text-lg font-medium text-white mb-4">Abonelik Bilgileri</h3>
+                            {(session?.user as any)?.subscriptionPlan ? (
+                                <div className="bg-zinc-950 border border-zinc-800 rounded-xl p-4">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <div>
+                                            <p className="text-zinc-400 text-sm">Mevcut Plan</p>
+                                            <p className="text-white font-semibold">{(session?.user as any).subscriptionPlan}</p>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-zinc-400 text-sm">Durum</p>
+                                            <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${(session?.user as any).subscriptionCancelled
+                                                    ? 'bg-red-500/20 text-red-400'
+                                                    : 'bg-green-500/20 text-green-400'
+                                                }`}>
+                                                {(session?.user as any).subscriptionCancelled ? 'İptal Edildi' : 'Aktif'}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {(session?.user as any).subscriptionEndDate && (
+                                        <div className="mb-4">
+                                            <p className="text-zinc-400 text-sm">Bitiş Tarihi</p>
+                                            <p className="text-white">
+                                                {new Date((session?.user as any).subscriptionEndDate).toLocaleDateString('tr-TR')}
+                                            </p>
+                                            {(session?.user as any).subscriptionCancelled && (
+                                                <p className="text-xs text-zinc-500 mt-1">
+                                                    Bu tarihe kadar erişiminiz devam edecektir.
+                                                </p>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {!(session?.user as any).subscriptionCancelled && (
+                                        <button
+                                            type="button"
+                                            onClick={async () => {
+                                                if (!confirm('Aboneliğinizi iptal etmek istediğinize emin misiniz? Dönem sonuna kadar erişiminiz devam edecektir.')) return;
+                                                setLoading(true);
+                                                try {
+                                                    const res = await fetch('/api/iyzico/cancel-subscription', {
+                                                        method: 'POST'
+                                                    });
+                                                    const data = await res.json();
+                                                    if (!res.ok) throw new Error(data.error || 'İptal işlemi başarısız');
+
+                                                    toast.success('Abonelik iptal edildi');
+                                                    // Session'ı güncellemek için refresh veya update
+                                                    // Pratik çözüm: Sayfayı yenile veya update()
+                                                    // await update(); // Session'daki field'lar hemen güncellenmeyebilir eğer trigger yoksa
+                                                    window.location.reload();
+                                                } catch (error: any) {
+                                                    toast.error(error.message);
+                                                } finally {
+                                                    setLoading(false);
+                                                }
+                                            }}
+                                            className="w-full py-2 bg-red-600/10 hover:bg-red-600/20 text-red-500 border border-red-600/20 rounded-lg transition-colors text-sm font-medium"
+                                        >
+                                            Aboneliği İptal Et
+                                        </button>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="bg-zinc-950 border border-zinc-800 rounded-xl p-6 text-center">
+                                    <p className="text-zinc-400 mb-4">Aktif bir aboneliğiniz bulunmuyor.</p>
+                                    <button
+                                        type="button"
+                                        onClick={() => router.push('/subscription')}
+                                        className="text-orange-500 hover:text-orange-400 text-sm font-medium"
+                                    >
+                                        Premium Planları İncele
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+
                         {/* Submit Button */}
                         <div className="pt-4">
                             <button

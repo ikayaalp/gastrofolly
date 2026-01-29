@@ -66,6 +66,7 @@ model User {
   subscriptionPlan      String?   // "Commis", "Chef D party", "Executive"
   subscriptionStartDate DateTime? // Abonelik başlangıç tarihi
   subscriptionEndDate   DateTime? // Abonelik bitiş tarihi
+  subscriptionReferenceCode String? // Iyzico Abonelik Referans Kodu (İptal için gerekli)
   subscriptionCancelled Boolean   @default(false) // Abonelik iptal edildi mi (dönem sonunda silinecek)
   pushToken             String?   // Expo Push Notification token
 
