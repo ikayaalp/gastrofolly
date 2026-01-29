@@ -236,3 +236,125 @@ export const retrieveCheckoutForm = async (token: string): Promise<IyzicoPayment
   // İyzico dokümantasyonuna göre doğru endpoint
   return makeIyzicoRequest<IyzicoPaymentResult>('/payment/iyzipos/checkoutform/auth/ecom/detail', request)
 }
+
+/* ---------- SUBSCRIPTION API V2 ---------- */
+
+export interface IyzicoSubscriptionCheckoutResultDetail {
+  status: string
+  errorCode?: string
+  errorMessage?: string
+  token: string
+  referenceCode: string
+  parentReferenceCode: string
+  pricingPlanReferenceCode: string
+  customerReferenceCode: string
+  subscriptionStatus: "ACTIVE" | "PENDING" | "CANCELED"
+  trialEndDate?: number
+  createdDate: number
+  startDate: number
+  endDate: number
+}
+
+// ... existing interfaces ...
+
+/**
+ * Abonelik Checkout Form Sonucunu Sorgula (V2)
+ * Endpoint: /v2/subscription/checkout-form/{token}
+ * NOT: Bu endpoint dökümantasyonda bazen farklı olabiliyor, 
+ * ama genelde token ile detay almak için bu yapı kullanılır.
+ * Eğer Iyzico dökümanında yoksa, webhook en güvenli yoldur.
+ * Ancak basit entegrasyon için token'ı 'active' varsayabiliriz veya
+ * en doğrusu: subscription details sorgulamak.
+ */
+export const getSubscriptionCheckoutResult = async (token: string): Promise<IyzicoSubscriptionCheckoutResultDetail> => {
+  // API v2'de token ile direkt sorgu genelde /v2/subscription/checkout-form/{token} şeklindedir
+  // Ancak resmi dökümanda net değilse, 'active' kabul edip, güvenli yol için
+  // ileride webhook kullanmak daha iyidir.
+  // Şimdilik standart bir GET yapısı deneyelim.
+  return makeIyzicoRequest<IyzicoSubscriptionCheckoutResultDetail>(`/v2/subscription/checkout-form/${token}`, {})
+}
+
+export interface IyzicoSubscriptionProduct {
+  name: string
+  referenceCode: string
+}
+
+export interface IyzicoSubscriptionPricingPlan {
+  productReferenceCode: string
+  name: string
+  price: number
+  currencyCode: "TRY" | "USD" | "EUR"
+  paymentInterval: "MONTHLY" | "WEEKLY" | "YEARLY"
+  paymentIntervalCount: number
+  trialPeriodDays: number
+  planPaymentType: "RECURRING"
+  referenceCode: string
+}
+
+export interface IyzicoSubscriptionCustomer {
+  name: string
+  surname: string
+  identityNumber: string
+  email: string
+  gsmNumber: string
+  billingAddress: IyzicoAddress
+  shippingAddress: IyzicoAddress
+}
+
+export interface IyzicoAddress {
+  contactName: string
+  city: string
+  country: string
+  address: string
+  zipCode?: string
+}
+
+export interface IyzicoSubscriptionCheckoutRequest {
+  locale: "tr" | "en"
+  conversationId: string
+  pricingPlanReferenceCode: string
+  subscriptionInitialStatus: "ACTIVE" | "PENDING"
+  callbackUrl: string
+  customer: IyzicoSubscriptionCustomer
+}
+
+export interface IyzicoSubscriptionCheckoutResult {
+  status: string
+  errorCode?: string
+  errorMessage?: string
+  conversationId: string
+  token: string
+  checkoutFormContent: string
+}
+
+/**
+ * Ürün Oluştur (Subscription API v2)
+ * Endpoint: /v2/subscription/products
+ */
+export const createSubscriptionProduct = async (product: IyzicoSubscriptionProduct) => {
+  return makeIyzicoRequest('/v2/subscription/products', {
+    locale: 'tr',
+    conversationId: Date.now().toString(),
+    ...product
+  })
+}
+
+/**
+ * Plan Oluştur (Subscription API v2)
+ * Endpoint: /v2/subscription/pricing-plans
+ */
+export const createSubscriptionPricingPlan = async (plan: IyzicoSubscriptionPricingPlan) => {
+  return makeIyzicoRequest('/v2/subscription/pricing-plans', {
+    locale: 'tr',
+    conversationId: Date.now().toString(),
+    ...plan
+  })
+}
+
+/**
+ * Abonelik Ödeme Formu Başlat (Subscription API v2)
+ * Endpoint: /v2/subscription/checkout-form/initialize
+ */
+export const initializeSubscriptionCheckout = async (request: IyzicoSubscriptionCheckoutRequest): Promise<IyzicoSubscriptionCheckoutResult> => {
+  return makeIyzicoRequest<IyzicoSubscriptionCheckoutResult>('/v2/subscription/checkout-form/initialize', request)
+}

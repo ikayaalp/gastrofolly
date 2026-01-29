@@ -110,8 +110,27 @@ function CheckoutContent() {
 
       const data = await response.json()
 
-      if (data.success && data.paymentPageUrl) {
-        window.location.href = data.paymentPageUrl
+      if (data.success) {
+        if (data.paymentPageUrl) {
+          window.location.href = data.paymentPageUrl
+        } else if (data.checkoutFormContent) {
+          // Iyzico Subscription v2 formunu render et
+          const checkoutContainer = document.getElementById('iyzico-checkout-form')
+          if (checkoutContainer) {
+            checkoutContainer.innerHTML = data.checkoutFormContent
+            // Scriptleri manuel çalıştır
+            const scripts = checkoutContainer.getElementsByTagName('script')
+            for (let i = 0; i < scripts.length; i++) {
+              const script = document.createElement('script')
+              script.text = scripts[i].text
+              document.body.appendChild(script)
+            }
+          } else {
+            // Fallback: Yeni sayfada aç (içeriği yaz) - Popup blocker takılabilir
+            const paymentWindow = window.open('', '_blank')
+            paymentWindow?.document.write(data.checkoutFormContent)
+          }
+        }
       } else {
         toast.error(data.error || "Ödeme başlatılamadı")
         setLoading(false)
@@ -368,6 +387,7 @@ export default function CheckoutPage() {
         <Loader2 className="h-8 w-8 text-orange-500 animate-spin" />
       </div>
     }>
+      <div id="iyzico-checkout-form" className="responsive"></div>
       <CheckoutContent />
     </Suspense>
   )

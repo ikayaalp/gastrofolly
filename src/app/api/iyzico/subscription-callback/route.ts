@@ -76,179 +76,43 @@ async function handleCallback(request: NextRequest) {
 }
 
 async function handlePayment(token: string, request: NextRequest) {
-    const result = await retrieveCheckoutForm(token)
-
-    console.log('Subscription callback - Payment result:', {
-        status: result.status,
-        paymentStatus: result.paymentStatus,
-        conversationId: result.conversationId,
-        basketId: result.basketId,
-        paymentId: result.paymentId
+    // 1. Önce Token ile DB'de ödeme var mı ona bak (V2 Subscription)
+    let paymentRecord = await prisma.payment.findFirst({
+        where: { stripePaymentId: token }
     })
 
-    if (result.status === "success" && result.paymentStatus === "SUCCESS") {
-        const basketId = result.basketId // basketId bizim payment.id'miz
+    let isV2 = !!paymentRecord
+    let result: any = { status: "failure" }
 
-        // Ödemeyi bul - basketId ile ara
-        const payment = await prisma.payment.findFirst({
-            where: {
-                OR: [
-                    { id: basketId },
-                    { stripePaymentId: basketId }
-                ]
-            }
-        })
-
-        console.log('Payment lookup result:', {
-            basketId,
-            paymentFound: !!payment,
-            paymentId: payment?.id,
-            paymentStatus: payment?.status
-        })
-
-        if (!payment) {
-            // Debug: Tüm pending subscription payments'ları listele
-            const allSubscriptionPayments = await prisma.payment.findMany({
-                where: {
-                    subscriptionPlan: { not: null }
-                },
-                select: {
-                    id: true,
-                    stripePaymentId: true,
-                    subscriptionPlan: true,
-                    status: true,
-                    createdAt: true
-                },
-                orderBy: { createdAt: 'desc' },
-                take: 5
-            })
-            console.error('Payment not found. Recent subscription payments:', allSubscriptionPayments)
-            const html = `
-                <!DOCTYPE html>
-                <html>
-                    <head>
-                        <meta charset="utf-8">
-                        <title>Redirecting...</title>
-                    </head>
-                    <body>
-                        <script>
-                            window.location.href = '/subscription?error=payment_not_found';
-                        </script>
-                        <noscript>
-                            <meta http-equiv="refresh" content="0; url=/subscription?error=payment_not_found">
-                        </noscript>
-                    </body>
-                </html>
-            `
-            return new NextResponse(html, {
-                status: 200,
-                headers: { 'Content-Type': 'text/html' }
-            })
-        }
-
-        if (payment.status === 'COMPLETED') {
-            const html = `
-                <!DOCTYPE html>
-                <html>
-                    <head>
-                        <meta charset="utf-8">
-                        <title>Redirecting...</title>
-                    </head>
-                    <body>
-                        <script>
-                            window.location.href = '/home?success=already_completed';
-                        </script>
-                        <noscript>
-                            <meta http-equiv="refresh" content="0; url=/home?success=already_completed">
-                        </noscript>
-                    </body>
-                </html>
-            `
-            return new NextResponse(html, {
-                status: 200,
-                headers: { 'Content-Type': 'text/html' }
-            })
-        }
-
-        // Ödemeyi güncelle
-        await prisma.payment.update({
-            where: { id: payment.id },
-            data: {
-                status: 'COMPLETED',
-                stripePaymentId: result.paymentId || result.conversationId
-            }
-        })
-
-        // Kullanıcı aboneliğini güncelle
-        const planName = payment.subscriptionPlan
-        if (planName) {
-            const now = new Date()
-            let endDate = new Date(now)
-
-            // Ödeme dönemine göre süre ekle
-            if (payment.billingPeriod === 'yearly') {
-                endDate.setFullYear(endDate.getFullYear() + 1)
-            } else {
-                endDate.setMonth(endDate.getMonth() + 1) // Default Aylık
-            }
-
-            await prisma.user.update({
-                where: { id: payment.userId },
-                data: {
-                    subscriptionPlan: planName,
-                    subscriptionStartDate: new Date(),
-                    subscriptionEndDate: endDate
-                }
-            })
-        }
-
-        // Eğer courseId varsa (abonelik + kurs kombinasyonu), enrollment OLUŞTURMA (Netflix tarzı)
-        // Sadece kullanıcıyı o kursa geri yönlendir
-        if (payment.courseId) {
-            // REMOVED: Enrollment creation to ensure global access feeling
-            /*
-            const existingEnrollment = await prisma.enrollment.findFirst({
-                where: {
-                    userId: payment.userId,
-                    courseId: payment.courseId
-                }
-            })
-
-            if (!existingEnrollment) {
-                await prisma.enrollment.create({
-                    data: {
-                        userId: payment.userId,
-                        courseId: payment.courseId
+    // 2. Eğer DB'de yoksa, Iyzico'dan sor (V1 - Eski Yöntem veya Standart Checkout)
+    if (!paymentRecord) {
+        try {
+            result = await retrieveCheckoutForm(token)
+            if (result.status === "success" && result.paymentStatus === "SUCCESS") {
+                const basketId = result.basketId
+                paymentRecord = await prisma.payment.findFirst({
+                    where: {
+                        OR: [
+                            { id: basketId },
+                            { stripePaymentId: basketId }
+                        ]
                     }
                 })
-                console.log(`✅ Enrollment created for course: ${payment.courseId}`)
             }
-            */
-            console.log(`ℹ️ Subscription purchased via course ${payment.courseId}, redirecting user...`)
-
-            const html = `
-                <!DOCTYPE html>
-                <html>
-                    <head>
-                        <meta charset="utf-8">
-                        <title>Redirecting...</title>
-                    </head>
-                    <body>
-                        <script>
-                            window.location.href = '/learn/${payment.courseId}?success=true';
-                        </script>
-                        <noscript>
-                            <meta http-equiv="refresh" content="0; url=/learn/${payment.courseId}?success=true">
-                        </noscript>
-                    </body>
-                </html>
-            `
-            return new NextResponse(html, {
-                status: 200,
-                headers: { 'Content-Type': 'text/html' }
-            })
+        } catch (e) {
+            console.error("Retrieve checkout form error:", e)
         }
+    }
 
+    console.log('Payment Resolution:', {
+        token,
+        isV2,
+        paymentFound: !!paymentRecord,
+        paymentId: paymentRecord?.id,
+        iyzicoStatus: result?.status
+    })
+
+    if (!paymentRecord) {
         const html = `
             <!DOCTYPE html>
             <html>
@@ -258,33 +122,10 @@ async function handlePayment(token: string, request: NextRequest) {
                 </head>
                 <body>
                     <script>
-                        window.location.href = '/home?subscription=success';
+                        window.location.href = '/subscription?error=payment_not_found';
                     </script>
                     <noscript>
-                        <meta http-equiv="refresh" content="0; url=/home?subscription=success">
-                    </noscript>
-                </body>
-            </html>
-        `
-        return new NextResponse(html, {
-            status: 200,
-            headers: { 'Content-Type': 'text/html' }
-        })
-    } else {
-        const errorMsg = result.errorMessage || 'payment_failed'
-        const html = `
-            <!DOCTYPE html>
-            <html>
-                <head>
-                    <meta charset="utf-8">
-                    <title>Redirecting...</title>
-                </head>
-                <body>
-                    <script>
-                        window.location.href = '/subscription?error=${encodeURIComponent(errorMsg)}';
-                    </script>
-                    <noscript>
-                        <meta http-equiv="refresh" content="0; url=/subscription?error=${encodeURIComponent(errorMsg)}">
+                        <meta http-equiv="refresh" content="0; url=/subscription?error=payment_not_found">
                     </noscript>
                 </body>
             </html>
@@ -294,4 +135,108 @@ async function handlePayment(token: string, request: NextRequest) {
             headers: { 'Content-Type': 'text/html' }
         })
     }
+
+    if (paymentRecord.status === 'COMPLETED') {
+        const html = `
+            <!DOCTYPE html>
+            <html>
+                <head>
+                    <meta charset="utf-8">
+                    <title>Redirecting...</title>
+                </head>
+                <body>
+                    <script>
+                        window.location.href = '/home?success=already_completed';
+                    </script>
+                    <noscript>
+                        <meta http-equiv="refresh" content="0; url=/home?success=already_completed">
+                    </noscript>
+                </body>
+            </html>
+        `
+        return new NextResponse(html, {
+            status: 200,
+            headers: { 'Content-Type': 'text/html' }
+        })
+    }
+
+    // 3. Başarılı İşlem - Kayıtları Güncelle
+    // V1 ise stripePaymentId'yi güncelle, V2 ise zaten tokendi.
+    await prisma.payment.update({
+        where: { id: paymentRecord.id },
+        data: {
+            status: 'COMPLETED',
+            stripePaymentId: token // Her zaman güncel token/id olsun
+        }
+    })
+
+    // Kullanıcı Aboneliğini Güncelle
+    const planName = paymentRecord.subscriptionPlan
+    if (planName) {
+        const now = new Date()
+        let endDate = new Date(now)
+
+        if (paymentRecord.billingPeriod === 'yearly') {
+            endDate.setFullYear(endDate.getFullYear() + 1)
+        } else {
+            endDate.setMonth(endDate.getMonth() + 1)
+        }
+
+        await prisma.user.update({
+            where: { id: paymentRecord.userId },
+            data: {
+                subscriptionPlan: planName,
+                subscriptionStartDate: new Date(),
+                subscriptionEndDate: endDate
+            }
+        })
+    }
+
+    // Yönlendirme
+    if (paymentRecord.courseId) {
+        console.log(`ℹ️ Subscription purchased via course ${paymentRecord.courseId}, redirecting user...`)
+        const html = `
+            <!DOCTYPE html>
+            <html>
+                <head>
+                    <meta charset="utf-8">
+                    <title>Redirecting...</title>
+                </head>
+                <body>
+                    <script>
+                        window.location.href = '/learn/${paymentRecord.courseId}?success=true';
+                    </script>
+                    <noscript>
+                        <meta http-equiv="refresh" content="0; url=/learn/${paymentRecord.courseId}?success=true">
+                    </noscript>
+                </body>
+            </html>
+        `
+        return new NextResponse(html, {
+            status: 200,
+            headers: { 'Content-Type': 'text/html' }
+        })
+    }
+
+    const html = `
+        <!DOCTYPE html>
+        <html>
+            <head>
+                <meta charset="utf-8">
+                <title>Redirecting...</title>
+                </head>
+            <body>
+                <script>
+                    window.location.href = '/home?subscription=success';
+                </script>
+                <noscript>
+                    <meta http-equiv="refresh" content="0; url=/home?subscription=success">
+                </noscript>
+            </body>
+        </html>
+    `
+    return new NextResponse(html, {
+        status: 200,
+        headers: { 'Content-Type': 'text/html' }
+    })
 }
