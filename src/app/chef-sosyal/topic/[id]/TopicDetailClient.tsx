@@ -95,6 +95,20 @@ export default function TopicDetailClient({ session, topic, categories }: TopicD
     type: 'topic',
     id: null
   });
+
+  // Alert Modal State
+  const [alertModal, setAlertModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: 'success' | 'error';
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'error'
+  });
+
   const [deleteLoading, setDeleteLoading] = useState(false);
 
   const handleImageClick = (e: React.MouseEvent) => {
@@ -212,7 +226,12 @@ export default function TopicDetailClient({ session, topic, categories }: TopicD
         if (response.ok) {
           router.push('/chef-sosyal')
         } else {
-          alert('Hata oluştu')
+          setAlertModal({
+            isOpen: true,
+            title: 'Hata',
+            message: 'Silme işlemi başarısız oldu.',
+            type: 'error'
+          });
         }
       } else if (deleteModal.type === 'comment' && deleteModal.id) {
         const postId = deleteModal.id
@@ -492,6 +511,18 @@ export default function TopicDetailClient({ session, topic, categories }: TopicD
         confirmText="Evet, Sil"
         isDanger={true}
         isLoading={deleteLoading}
+      />
+
+      {/* Alert Modal */}
+      <ConfirmationModal
+        isOpen={alertModal.isOpen}
+        onClose={() => setAlertModal(prev => ({ ...prev, isOpen: false }))}
+        onConfirm={() => setAlertModal(prev => ({ ...prev, isOpen: false }))}
+        title={alertModal.title}
+        message={alertModal.message}
+        confirmText="Tamam"
+        showCancelButton={false}
+        isDanger={alertModal.type === 'error'}
       />
     </div>
   )

@@ -10,6 +10,7 @@ import MediaUploader from "@/components/forum/MediaUploader"
 import LeftSidebar from "@/components/forum/LeftSidebar"
 import RightSidebar from "@/components/forum/RightSidebar"
 import TopicCard from "@/components/forum/TopicCard"
+import ConfirmationModal from "@/components/ui/ConfirmationModal"
 
 interface Category {
   id: string
@@ -106,6 +107,19 @@ export default function ChefSosyalClient({
   const [submitting, setSubmitting] = useState(false)
   const [likedTopics, setLikedTopics] = useState<Set<string>>(new Set())
   const [savedTopics, setSavedTopics] = useState<Set<string>>(new Set())
+
+  // Alert Modal State
+  const [alertModal, setAlertModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: 'success' | 'error' | 'warning';
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'error'
+  });
 
   // Props değiştiğinde (URL değişimi sonrası yeni veri geldiğinde) state'i güncelle
   useEffect(() => {
@@ -300,7 +314,12 @@ export default function ChefSosyalClient({
 
     // Simple validation
     if (file.size > (type === 'VIDEO' ? 100 * 1024 * 1024 : 10 * 1024 * 1024)) {
-      alert('Dosya boyutu çok yüksek.')
+      setAlertModal({
+        isOpen: true,
+        title: 'Dosya Boyutu Hatası',
+        message: 'Dosya boyutu çok yüksek.',
+        type: 'error'
+      });
       return
     }
 
@@ -340,7 +359,12 @@ export default function ChefSosyalClient({
 
     } catch (error) {
       console.error('Upload error:', error)
-      alert('Medya yüklenirken hata oluştu.')
+      setAlertModal({
+        isOpen: true,
+        title: 'Yükleme Hatası',
+        message: 'Medya yüklenirken hata oluştu.',
+        type: 'error'
+      });
       setTopicMedia(null)
     }
   }
@@ -350,7 +374,12 @@ export default function ChefSosyalClient({
 
     // Validasyon: İçerik veya medya olmalı
     if (!newTopicForm.content.trim() && !topicMedia) {
-      alert('Lütfen bir şeyler yazın veya medya paylaşın')
+      setAlertModal({
+        isOpen: true,
+        title: 'Eksik Bilgi',
+        message: 'Lütfen bir şeyler yazın veya medya paylaşın',
+        type: 'warning'
+      });
       return
     }
 
@@ -390,11 +419,21 @@ export default function ChefSosyalClient({
       } else {
         const error = await response.json()
         console.error('Topic creation failed:', error)
-        alert('Hata: ' + (error.error || 'Bilinmeyen hata'))
+        setAlertModal({
+          isOpen: true,
+          title: 'İşlem Başarısız',
+          message: error.error || 'Bilinmeyen hata',
+          type: 'error'
+        });
       }
     } catch (error) {
       console.error('Error creating topic:', error)
-      alert('Başlık oluşturulurken hata oluştu')
+      setAlertModal({
+        isOpen: true,
+        title: 'Hata',
+        message: 'Başlık oluşturulurken hata oluştu',
+        type: 'error'
+      });
     } finally {
       setSubmitting(false)
     }
@@ -749,6 +788,16 @@ export default function ChefSosyalClient({
         </div>
       </div>
 
+      <ConfirmationModal
+        isOpen={alertModal.isOpen}
+        onClose={() => setAlertModal(prev => ({ ...prev, isOpen: false }))}
+        onConfirm={() => setAlertModal(prev => ({ ...prev, isOpen: false }))}
+        title={alertModal.title}
+        message={alertModal.message}
+        confirmText="Tamam"
+        showCancelButton={false}
+        isDanger={alertModal.type === 'error'}
+      />
     </div>
   )
 }

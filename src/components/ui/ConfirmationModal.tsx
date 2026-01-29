@@ -25,8 +25,9 @@ export default function ConfirmationModal({
     confirmText = 'Onayla',
     cancelText = 'İptal',
     isDanger = false,
-    isLoading = false
-}: ConfirmationModalProps) {
+    isLoading = false,
+    showCancelButton = true
+}: ConfirmationModalProps & { showCancelButton?: boolean }) {
     const [isVisible, setIsVisible] = useState(false);
 
     useEffect(() => {
@@ -67,13 +68,15 @@ export default function ConfirmationModal({
                         </p>
 
                         <div className="flex items-center justify-end gap-3">
-                            <button
-                                onClick={onClose}
-                                disabled={isLoading}
-                                className="px-4 py-2 text-sm font-medium text-zinc-400 hover:text-white transition-colors disabled:opacity-50"
-                            >
-                                {cancelText}
-                            </button>
+                            {showCancelButton && (
+                                <button
+                                    onClick={onClose}
+                                    disabled={isLoading}
+                                    className="px-4 py-2 text-sm font-medium text-zinc-400 hover:text-white transition-colors disabled:opacity-50"
+                                >
+                                    {cancelText}
+                                </button>
+                            )}
                             <button
                                 onClick={onConfirm}
                                 disabled={isLoading}
