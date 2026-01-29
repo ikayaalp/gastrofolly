@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { ThumbsUp, MessageCircle, MoreHorizontal, User, Play, Clock, Bookmark } from 'lucide-react'
 import HashtagText from './HashtagText'
+import ConfirmationModal from '@/components/ui/ConfirmationModal'
 
 interface TopicCardProps {
     topic: {
@@ -31,20 +32,20 @@ interface TopicCardProps {
         _count: {
             posts: number
         }
-    }
-    poll?: {
-        id: string
-        question: string
-        startDate: string | Date
-        endDate: string | Date
-        options: {
+        poll?: {
             id: string
-            text: string
-            votes?: { id: string }[]
-            _count?: { votes: number }
-        }[]
-        votes: { userId: string }[]
-    } | null
+            question: string
+            startDate: string | Date
+            endDate: string | Date
+            options: {
+                id: string
+                text: string
+                votes?: { id: string }[]
+                _count?: { votes: number }
+            }[]
+            votes: { userId: string }[]
+        } | null
+    }
     isLiked?: boolean
     onLike?: (id: string) => void
     isSaved?: boolean
@@ -55,6 +56,7 @@ export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave }: T
     const [isLightboxOpen, setIsLightboxOpen] = useState(false)
     const [votingLoading, setVotingLoading] = useState<string | null>(null)
     const [pollData, setPollData] = useState(topic.poll)
+    const [alertState, setAlertState] = useState<{ isOpen: boolean, message: string }>({ isOpen: false, message: '' })
 
     // Check if current user has voted (client-side approximation if we don't have user ID handy easily, 
     // but the API response includes votes by user. Ideally we need current User ID.
@@ -190,7 +192,7 @@ export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave }: T
                                                                 window.location.reload()
                                                             } else {
                                                                 const err = await res.json()
-                                                                alert(err.error)
+                                                                setAlertState({ isOpen: true, message: err.error || 'Hata oluştu' })
                                                             }
                                                         } catch (e) {
                                                             console.error(e)
@@ -276,6 +278,17 @@ export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave }: T
                     </div>
                 </div>
             )}
+
+            <ConfirmationModal
+                isOpen={alertState.isOpen}
+                onClose={() => setAlertState({ isOpen: false, message: '' })}
+                onConfirm={() => setAlertState({ isOpen: false, message: '' })}
+                title="Hata"
+                message={alertState.message}
+                confirmText="Tamam"
+                showCancelButton={false}
+                isDanger={true}
+            />
         </>
     )
 }

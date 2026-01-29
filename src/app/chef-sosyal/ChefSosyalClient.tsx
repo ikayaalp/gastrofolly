@@ -48,6 +48,14 @@ interface Topic {
   _count: {
     posts: number
   }
+  poll?: {
+    id: string
+    question: string
+    options: any[]
+    startDate: string
+    endDate: string
+    votes: any[]
+  } | null
 }
 
 interface Session {
@@ -419,10 +427,13 @@ export default function ChefSosyalClient({
       } else {
         const error = await response.json()
         console.error('Topic creation failed:', error)
+        // Clean up error message if it helps
+        const cleanMessage = error.error ? error.error.replace('Hata: ', '') : 'Bilinmeyen hata'
+
         setAlertModal({
           isOpen: true,
-          title: 'İşlem Başarısız',
-          message: error.error || 'Bilinmeyen hata',
+          title: 'Hata',
+          message: cleanMessage,
           type: 'error'
         });
       }

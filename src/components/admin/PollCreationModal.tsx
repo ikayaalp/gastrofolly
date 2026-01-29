@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { X, Plus, Trash2, Calendar } from 'lucide-react'
+import ConfirmationModal from '@/components/ui/ConfirmationModal'
 
 interface PollCreationModalProps {
     isOpen: boolean
@@ -16,6 +17,7 @@ export default function PollCreationModal({ isOpen, onClose, onSuccess }: PollCr
     const [options, setOptions] = useState<string[]>(['', ''])
     const [days, setDays] = useState(1)
     const [loading, setLoading] = useState(false)
+    const [alertState, setAlertState] = useState<{ isOpen: boolean, message: string }>({ isOpen: false, message: '' })
 
     if (!isOpen) return null
 
@@ -39,9 +41,9 @@ export default function PollCreationModal({ isOpen, onClose, onSuccess }: PollCr
         e.preventDefault()
 
         // Validation
-        if (!question.trim()) return alert('Soru zorunludur')
-        if (options.some(o => !o.trim())) return alert('Tüm seçenekleri doldurun')
-        if (options.length < 2) return alert('En az 2 seçenek gerekli')
+        if (!question.trim()) return setAlertState({ isOpen: true, message: 'Soru zorunludur' })
+        if (options.some(o => !o.trim())) return setAlertState({ isOpen: true, message: 'Tüm seçenekleri doldurun' })
+        if (options.length < 2) return setAlertState({ isOpen: true, message: 'En az 2 seçenek gerekli' })
 
         setLoading(true)
 
@@ -67,11 +69,11 @@ export default function PollCreationModal({ isOpen, onClose, onSuccess }: PollCr
                 setTitle('')
             } else {
                 const data = await res.json()
-                alert(data.error || 'Bir hata oluştu')
+                setAlertState({ isOpen: true, message: data.error || 'Bir hata oluştu' })
             }
         } catch (error) {
             console.error(error)
-            alert('Bağlantı hatası')
+            setAlertState({ isOpen: true, message: 'Bağlantı hatası' })
         } finally {
             setLoading(false)
         }
@@ -143,8 +145,8 @@ export default function PollCreationModal({ isOpen, onClose, onSuccess }: PollCr
                                         type="button"
                                         onClick={() => setDays(d)}
                                         className={`p-2 rounded-lg text-sm border transition-all ${days === d
-                                                ? 'bg-orange-600 border-orange-600 text-white'
-                                                : 'bg-black/50 border-neutral-800 text-gray-400 hover:border-gray-600'
+                                            ? 'bg-orange-600 border-orange-600 text-white'
+                                            : 'bg-black/50 border-neutral-800 text-gray-400 hover:border-gray-600'
                                             }`}
                                     >
                                         {d} Gün
@@ -165,6 +167,17 @@ export default function PollCreationModal({ isOpen, onClose, onSuccess }: PollCr
                     </form>
                 </div>
             </div>
+
+            <ConfirmationModal
+                isOpen={alertState.isOpen}
+                onClose={() => setAlertState({ isOpen: false, message: '' })}
+                onConfirm={() => setAlertState({ isOpen: false, message: '' })}
+                title="Hata"
+                message={alertState.message}
+                confirmText="Tamam"
+                showCancelButton={false}
+                isDanger={true}
+            />
         </div>
     )
 }
