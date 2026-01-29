@@ -13,7 +13,8 @@ import {
     Bell,
     ChefHat,
     LogOut,
-    Camera
+    Camera,
+    MessageCircle
 } from "lucide-react"
 
 const sidebarItems = [
@@ -27,6 +28,11 @@ const sidebarItems = [
         title: "Kurs Yönetimi",
         href: "/admin/courses",
         icon: BookOpen
+    },
+    {
+        title: "Chef Sosyal",
+        href: "/admin/social",
+        icon: MessageCircle
     },
 
     {
