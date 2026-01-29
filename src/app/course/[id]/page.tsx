@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation"
+import { Metadata } from "next"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
@@ -62,6 +63,29 @@ async function getCourse(id: string) {
       }
     }
   })
+}
+
+export async function generateMetadata({ params }: CoursePageProps): Promise<Metadata> {
+  const { id } = await params
+  const course = await getCourse(id)
+
+  if (!course) {
+    return {
+      title: "Kurs Bulunamadı - Culinora",
+    }
+  }
+
+  return {
+    title: `${course.title} | Culinora`,
+    description: course.description?.substring(0, 160) || "Bu kurs hakkında detaylı bilgi edinin.",
+    openGraph: {
+      title: course.title,
+      description: course.description?.substring(0, 160),
+      images: course.imageUrl ? [course.imageUrl] : [],
+      url: `https://culinora.net/course/${course.id}`,
+      type: 'website',
+    },
+  }
 }
 
 export default async function CoursePage({ params }: CoursePageProps) {
