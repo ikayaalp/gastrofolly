@@ -8,7 +8,7 @@ const securityHeaders = {
     'X-XSS-Protection': '1; mode=block',
     'Referrer-Policy': 'strict-origin-when-cross-origin',
     'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
-    'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.googletagmanager.com https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data: https://res.cloudinary.com https://images.unsplash.com https://via.placeholder.com https://firebasestorage.googleapis.com https://lh3.googleusercontent.com; connect-src 'self' https://vitals.vercel-insights.com https://www.google-analytics.com https://api.cloudinary.com; font-src 'self'; object-src 'none'; media-src 'self' blob: https://res.cloudinary.com;",
+    'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.googletagmanager.com https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data: https://*.cloudinary.com https://res.cloudinary.com https://images.unsplash.com https://via.placeholder.com https://firebasestorage.googleapis.com https://lh3.googleusercontent.com; connect-src 'self' https://vitals.vercel-insights.com https://www.google-analytics.com https://*.cloudinary.com https://api.cloudinary.com; font-src 'self'; object-src 'none'; media-src 'self' blob: https://*.cloudinary.com https://res.cloudinary.com;",
 }
 
 export function middleware(request: NextRequest) {
@@ -37,9 +37,13 @@ export function middleware(request: NextRequest) {
 
 export const config = {
     matcher: [
-        // Match all API routes
-        '/api/:path*',
-        // Match admin routes
-        '/admin/:path*',
-    ]
+        /*
+         * Match all request paths except for the ones starting with:
+         * - _next/static (static files)
+         * - _next/image (image optimization files)
+         * - favicon.ico (favicon file)
+         * - public files (images, etc)
+         */
+        '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    ],
 }
