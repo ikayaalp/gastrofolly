@@ -134,53 +134,81 @@ export default function AdminStoriesPage() {
             if (!configRes.ok) throw new Error('Cloudinary konfigürasyonu alınamadı');
             const { cloudName, uploadPreset } = await configRes.json();
 
-            // Helper for client-side upload
+            // Helper for client-side chunked upload
             const uploadToCloudinary = async (file: File, type: string) => {
                 const url = `https://api.cloudinary.com/v1_1/${cloudName}/${type === 'video' ? 'video' : 'image'}/upload`;
-                const formData = new FormData();
-                formData.append('file', file);
-                formData.append('upload_preset', uploadPreset);
-                formData.append('folder', 'stories');
+                const chunkSize = 6 * 1024 * 1024; // 6MB chunks
+                const totalChunks = Math.ceil(file.size / chunkSize);
+                const uniqueId = `story_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 
-                // Removed client-side transformation parameter to avoid CORS/Unsigned restriction issues.
-                // We will apply transformations on the viewer side via URL manipulation.
-                // formData.append('transformation', transformation);
+                if (file.size <= chunkSize) {
+                    // Small file - standard upload
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('upload_preset', uploadPreset);
+                    formData.append('folder', 'stories');
 
-                return new Promise<string>((resolve, reject) => {
-                    const xhr = new XMLHttpRequest();
-                    xhr.open('POST', url);
-
-                    xhr.upload.onprogress = (e) => {
-                        if (e.lengthComputable) {
-                            const percentComplete = Math.round((e.loaded / e.total) * 100);
-                            setUploadProgress(percentComplete);
-                        }
-                    };
-
-                    xhr.onload = () => {
-                        if (xhr.status === 200) {
-                            const data = JSON.parse(xhr.responseText);
-                            resolve(data.secure_url);
-                        } else {
-                            try {
-                                const errorData = JSON.parse(xhr.responseText);
-                                console.error('Cloudinary Error Detail:', errorData);
-                                reject(new Error(errorData.error?.message || 'Cloudinary yükleme başarısız'));
-                            } catch (e) {
-                                reject(new Error('Yükleme sırasında hata oluştu'));
+                    return new Promise<string>((resolve, reject) => {
+                        const xhr = new XMLHttpRequest();
+                        xhr.open('POST', url);
+                        xhr.upload.onprogress = (e) => {
+                            if (e.lengthComputable) {
+                                setUploadProgress(Math.round((e.loaded / e.total) * 100));
                             }
-                        }
-                    };
+                        };
+                        xhr.onload = () => {
+                            if (xhr.status === 200) resolve(JSON.parse(xhr.responseText).secure_url);
+                            else reject(new Error('Yükleme başarısız'));
+                        };
+                        xhr.onerror = () => reject(new Error('Ağ hatası'));
+                        xhr.send(formData);
+                    });
+                }
 
-                    xhr.onerror = () => reject(new Error('Ağ hatası oluştu'));
-                    xhr.send(formData);
-                });
+                // Large file - Chunked upload
+                let lastResult = '';
+                for (let i = 0; i < totalChunks; i++) {
+                    const start = i * chunkSize;
+                    const end = Math.min(start + chunkSize, file.size);
+                    const chunk = file.slice(start, end);
+
+                    const formData = new FormData();
+                    formData.append('file', chunk);
+                    formData.append('upload_preset', uploadPreset);
+                    formData.append('folder', 'stories');
+
+                    const result = await new Promise<any>((resolve, reject) => {
+                        const xhr = new XMLHttpRequest();
+                        xhr.open('POST', url);
+                        xhr.setRequestHeader('X-Unique-Upload-Id', uniqueId);
+                        xhr.setRequestHeader('Content-Range', `bytes ${start}-${end - 1}/${file.size}`);
+
+                        xhr.upload.onprogress = (e) => {
+                            if (e.lengthComputable) {
+                                const chunkProgress = e.loaded / e.total;
+                                const totalProgress = Math.round(((i + chunkProgress) / totalChunks) * 100);
+                                setUploadProgress(totalProgress);
+                            }
+                        };
+
+                        xhr.onload = () => {
+                            if (xhr.status === 200) resolve(JSON.parse(xhr.responseText));
+                            else if (xhr.status === 201) resolve(JSON.parse(xhr.responseText)); // Created is also fine for intermediate chunks
+                            else reject(new Error(`Parça ${i + 1} yüklenemedi: ${xhr.status}`));
+                        };
+                        xhr.onerror = () => reject(new Error('Ağ hatası oluştu'));
+                        xhr.send(formData);
+                    });
+                    lastResult = result.secure_url;
+                }
+                return lastResult;
             };
 
             // 2. Upload Files to Cloudinary
             const mediaUrl = await uploadToCloudinary(selectedFile, mediaType.toLowerCase());
             let coverImageUrl = null;
             if (selectedCoverFile) {
+                setUploadProgress(0); // Reset for cover
                 coverImageUrl = await uploadToCloudinary(selectedCoverFile, 'image');
             }
 

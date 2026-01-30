@@ -67,40 +67,67 @@ export default function MediaUploader({ onUploadComplete, onRemove, currentMedia
             const isVideo = ALLOWED_VIDEO_TYPES.includes(file.type)
             const resourceType = isVideo ? 'video' : 'image'
             const url = `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`
+            const chunkSize = 6 * 1024 * 1024; // 6MB chunks
+            const totalChunks = Math.ceil(file.size / chunkSize);
+            const uniqueId = `forum_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 
-            const formData = new FormData()
-            formData.append('file', file)
-            formData.append('upload_preset', uploadPreset)
-            formData.append('folder', 'forum-media')
+            // 3. Upload (Chunked for large files)
+            let result;
+            if (file.size <= chunkSize) {
+                const formData = new FormData()
+                formData.append('file', file)
+                formData.append('upload_preset', uploadPreset)
+                formData.append('folder', 'forum-media')
 
-            // Removed client-side transformation to avoid CORS/Unsigned restriction issues.
-            // if (isVideo) {
-            //     formData.append('transformation', 'c_limit,w_1280,h_720')
-            // }
-
-            // 3. Upload with XHR for accurate progress
-            const result = await new Promise<any>((resolve, reject) => {
-                const xhr = new XMLHttpRequest()
-                xhr.open('POST', url)
-
-                xhr.upload.onprogress = (e) => {
-                    if (e.lengthComputable) {
-                        const percentComplete = Math.round((e.loaded / e.total) * 100)
-                        setUploadProgress(percentComplete)
+                result = await new Promise<any>((resolve, reject) => {
+                    const xhr = new XMLHttpRequest()
+                    xhr.open('POST', url)
+                    xhr.upload.onprogress = (e) => {
+                        if (e.lengthComputable) {
+                            setUploadProgress(Math.round((e.loaded / e.total) * 100))
+                        }
                     }
-                }
-
-                xhr.onload = () => {
-                    if (xhr.status === 200) {
-                        resolve(JSON.parse(xhr.responseText))
-                    } else {
-                        reject(new Error('Yükleme başarısız oldu'))
+                    xhr.onload = () => {
+                        if (xhr.status === 200) resolve(JSON.parse(xhr.responseText))
+                        else reject(new Error('Yükleme başarısız'))
                     }
-                }
+                    xhr.onerror = () => reject(new Error('Ağ hatası oluştu'))
+                    xhr.send(formData)
+                })
+            } else {
+                for (let i = 0; i < totalChunks; i++) {
+                    const start = i * chunkSize;
+                    const end = Math.min(start + chunkSize, file.size);
+                    const chunk = file.slice(start, end);
 
-                xhr.onerror = () => reject(new Error('Ağ hatası oluştu'))
-                xhr.send(formData)
-            })
+                    const formData = new FormData();
+                    formData.append('file', chunk);
+                    formData.append('upload_preset', uploadPreset);
+                    formData.append('folder', 'forum-media');
+
+                    result = await new Promise<any>((resolve, reject) => {
+                        const xhr = new XMLHttpRequest();
+                        xhr.open('POST', url);
+                        xhr.setRequestHeader('X-Unique-Upload-Id', uniqueId);
+                        xhr.setRequestHeader('Content-Range', `bytes ${start}-${end - 1}/${file.size}`);
+
+                        xhr.upload.onprogress = (e) => {
+                            if (e.lengthComputable) {
+                                const chunkProgress = e.loaded / e.total;
+                                const totalProgress = Math.round(((i + chunkProgress) / totalChunks) * 100);
+                                setUploadProgress(totalProgress);
+                            }
+                        };
+
+                        xhr.onload = () => {
+                            if (xhr.status === 200 || xhr.status === 201) resolve(JSON.parse(xhr.responseText));
+                            else reject(new Error(`Parça ${i + 1} yüklenemedi: ${xhr.status}`));
+                        };
+                        xhr.onerror = () => reject(new Error('Ağ hatası oluştu'));
+                        xhr.send(formData);
+                    });
+                }
+            }
 
             setUploadProgress(100)
 
