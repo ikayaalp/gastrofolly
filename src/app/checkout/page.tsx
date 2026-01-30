@@ -121,6 +121,16 @@ function CheckoutContent() {
         })
       })
 
+      // Content-type kontrolü
+      const contentType = response.headers.get("content-type")
+      if (!contentType || !contentType.includes("application/json")) {
+        const text = await response.text()
+        console.error("API non-JSON response:", text.substring(0, 500))
+        toast.error(`Sistem hatası (${response.status}). Lütfen daha sonra tekrar deneyin veya destekle iletişime geçin.`)
+        setLoading(false)
+        return
+      }
+
       const data = await response.json()
 
       if (data.success) {
@@ -139,7 +149,7 @@ function CheckoutContent() {
               document.body.appendChild(script)
             }
           } else {
-            // Fallback: Yeni sayfada aç (içeriği yaz) - Popup blocker takılabilir
+            // Fallback: Yeni sayfada aç
             const paymentWindow = window.open('', '_blank')
             paymentWindow?.document.write(data.checkoutFormContent)
           }
@@ -148,9 +158,9 @@ function CheckoutContent() {
         toast.error(data.error || "Ödeme başlatılamadı")
         setLoading(false)
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Payment error:", error)
-      toast.error("Bir hata oluştu")
+      toast.error(error?.message || "Bir bağlantı hatası oluştu. Lütfen internetinizi kontrol edip tekrar deneyin.")
       setLoading(false)
     }
   }
