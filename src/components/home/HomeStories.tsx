@@ -279,7 +279,7 @@ export default function HomeStories() {
                                 />
                             </div>
                         </div>
-                        <span className="text-xs text-center text-gray-300 truncate w-full">
+                        <span className="text-xs md:text-sm text-center text-gray-300 truncate w-full">
                             {group.user.name}
                         </span>
                     </div>
