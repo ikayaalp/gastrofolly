@@ -46,7 +46,6 @@ interface LearnPageProps {
 async function getCourseWithProgress(courseId: string, userId: string, requestedLessonId?: string) {
   console.log('Learn Page - getCourseWithProgress:', { courseId, userId, requestedLessonId })
 
-  // Önce kursu al ve ilk dersi kontrol et
   const courseForFirstLessonCheck = await prisma.course.findUnique({
     where: { id: courseId },
     include: {
@@ -57,16 +56,16 @@ async function getCourseWithProgress(courseId: string, userId: string, requested
     }
   })
 
+  // Ders bulunamadıysa hemen null dön
   if (!courseForFirstLessonCheck) {
     return null
   }
 
-  const firstLessonId = courseForFirstLessonCheck.lessons[0]?.id
-  const isRequestingFirstLesson = !requestedLessonId || requestedLessonId === firstLessonId
-
+  // Kullanıcı bilgisini çek (rol kontrolü için role eklendi)
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: {
+      role: true,
       subscriptionPlan: true,
       subscriptionEndDate: true,
       payments: {
@@ -78,6 +77,23 @@ async function getCourseWithProgress(courseId: string, userId: string, requested
       }
     }
   })
+
+  // Taslak kontrolü: Yayınlanmamış kursu sadece eğitmen ve admin görebilir
+  if (!courseForFirstLessonCheck.isPublished) {
+    const isInstructor = userId === courseForFirstLessonCheck.instructorId
+    const isAdmin = user?.role === 'ADMIN'
+
+    if (!isInstructor && !isAdmin) {
+      console.log('Learn Page - Access denied: Course is not published')
+      return null
+    }
+  }
+
+  const firstLessonId = courseForFirstLessonCheck.lessons[0]?.id
+  const isRequestingFirstLesson = !requestedLessonId || requestedLessonId === firstLessonId
+
+  // Kullanıcı zaten yukarıda çekildi
+  // const user = await prisma.user.findUnique(...) -> KALDIRILDI
 
   // Abonelik süresi devam ediyor mu? (Plan iptal edilmiş olsa bile tarih bitmediyse devam eder)
   const isSubscriptionValid = user?.subscriptionEndDate && new Date(user.subscriptionEndDate) > new Date()

@@ -100,6 +100,16 @@ export default async function CoursePage({ params }: CoursePageProps) {
     notFound()
   }
 
+  // Taslak kurs kontrolü: Sadece eğitmen ve admin görebilir
+  if (!course.isPublished) {
+    const isInstructor = session?.user?.id === course.instructorId
+    const isAdmin = session?.user?.role === 'ADMIN'
+
+    if (!isInstructor && !isAdmin) {
+      notFound()
+    }
+  }
+
   // Kullanıcının abonelik durumunu kontrol et
   let hasActiveSubscription = false
   let userSubscriptionLevel = 0 // 0: yok, 1: Commis, 2: Chef D party, 3: Executive
