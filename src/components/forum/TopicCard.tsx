@@ -138,11 +138,13 @@ export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave, cur
                         </div>
 
                         {/* Content Preview - Clickable to Detail */}
-                        <Link href={`/chef-sosyal/topic/${topic.id}`}>
-                            <div className="text-sm text-gray-400 line-clamp-3 mb-3 font-normal cursor-pointer hover:text-gray-300 transition-colors">
-                                <HashtagText text={topic.content.substring(0, 300)} />
-                            </div>
-                        </Link>
+                        {!pollData && (
+                            <Link href={`/chef-sosyal/topic/${topic.id}`}>
+                                <div className="text-sm text-gray-400 line-clamp-3 mb-3 font-normal cursor-pointer hover:text-gray-300 transition-colors">
+                                    <HashtagText text={topic.content.substring(0, 300)} />
+                                </div>
+                            </Link>
+                        )}
 
                         {/* Media Preview - Full Width */}
                         {topic.mediaUrl && (
