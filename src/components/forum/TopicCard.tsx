@@ -130,19 +130,19 @@ export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave, cur
                                             <User className="w-3 h-3 text-gray-400" />
                                         </div>
                                     )}
-                                    <span className="font-medium text-gray-400 hover:text-white transition-colors">
+                                    <span className="font-bold text-[#e7e9ea] hover:underline transition-all cursor-pointer">
                                         u/{topic.author.name || 'anonim'}
                                     </span>
                                 </>
                             )}
-                            <span className="text-gray-600">•</span>
-                            <span>{formatTimeAgo(topic.createdAt.toString())}</span>
+                            <span className="text-[#71767b]">•</span>
+                            <span className="text-[#71767b]">{formatTimeAgo(topic.createdAt.toString())}</span>
                         </div>
 
                         {/* Content Preview - Clickable to Detail */}
                         {!internalPollData && (
                             <Link href={`/chef-sosyal/topic/${topic.id}`}>
-                                <div className="text-[15px] text-white line-clamp-6 mb-3 font-normal cursor-pointer hover:text-gray-200 transition-colors leading-relaxed">
+                                <div className="text-[15px] text-[#e7e9ea] line-clamp-6 mb-3 font-normal cursor-pointer transition-colors leading-relaxed">
                                     <HashtagText text={topic.content.substring(0, 500)} />
                                 </div>
                             </Link>
@@ -278,7 +278,7 @@ export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave, cur
                                                     <span className={`text-sm font-medium ${userVotedThisOption ? 'text-white' : 'text-gray-200'}`}>
                                                         {option.text}
                                                     </span>
-                                                    <span className={`text-xs font-mono ${userVotedThisOption ? 'text-white/90' : 'text-gray-400'}`}>
+                                                    <span className={`text-xs font-mono ${userVotedThisOption ? 'text-white/90' : 'text-[#71767b]'}`}>
                                                         {percent}% ({optionVotes})
                                                     </span>
                                                 </button>
@@ -286,7 +286,7 @@ export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave, cur
                                         )
                                     })}
                                 </div>
-                                <div className="mt-3 flex items-center justify-between text-xs text-gray-500">
+                                <div className="mt-3 flex items-center justify-between text-xs text-[#71767b]">
                                     <span>Toplam Oy: {internalPollData._count?.votes ?? (internalPollData.votes?.length || 0)}</span>
                                     <span>
                                         {new Date() > new Date(internalPollData.endDate) ? 'Anket Sona Erdi' : `Bitiş: ${new Date(internalPollData.endDate).toLocaleDateString()}`}
@@ -297,20 +297,20 @@ export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave, cur
 
                         {/* Action Bar */}
                         {!internalPollData && (
-                            <div className="flex items-center space-x-3 text-gray-500 text-xs font-bold pt-1 pb-1">
+                            <div className="flex items-center space-x-3 text-[#71767b] text-xs font-bold pt-1 pb-1">
                                 {/* Vote Button */}
                                 <button
                                     onClick={handleLike}
                                     className={`flex items-center space-x-1.5 px-3 py-2 rounded-full transition-all duration-200 ${isLiked
                                         ? 'bg-orange-500/10 text-orange-500'
-                                        : 'hover:bg-gray-800 text-gray-400 hover:text-orange-500'
+                                        : 'hover:bg-white/5 text-[#71767b] hover:text-[#e7e9ea]'
                                         }`}
                                 >
                                     <ThumbsUp className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
                                     <span className="text-sm">{topic.likeCount}</span>
                                 </button>
 
-                                <Link href={`/chef-sosyal/topic/${topic.id}`} className="flex items-center space-x-1.5 px-3 py-2 hover:bg-gray-800 rounded-full transition-colors group cursor-pointer text-gray-400 hover:text-white">
+                                <Link href={`/chef-sosyal/topic/${topic.id}`} className="flex items-center space-x-1.5 px-3 py-2 hover:bg-white/5 rounded-full transition-colors group cursor-pointer text-[#71767b] hover:text-[#e7e9ea]">
                                     <MessageCircle className="h-4 w-4" />
                                     <span className="text-sm">{topic._count.posts}</span>
                                     <span className="hidden sm:inline">Yorum</span>

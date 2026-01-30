@@ -334,17 +334,17 @@ export default function TopicDetailClient({ session, topic, categories }: TopicD
         <div className="w-full max-w-[640px] px-0 sm:px-4 pb-20">
           <div className="flex bg-[#0a0a0a] border border-gray-800 rounded-md overflow-hidden mb-4">
             <div className="flex-1 p-3 pb-1">
-              <div className="flex items-center text-xs text-gray-500 mb-2 space-x-2">
+              <div className="flex items-center text-xs text-[#71767b] mb-2 space-x-2">
                 {topic.author.image ? <img src={getOptimizedMediaUrl(topic.author.image, 'IMAGE')} className="w-5 h-5 rounded-full object-cover" /> : <div className="w-5 h-5 bg-gray-700 rounded-full flex items-center justify-center"><User className="w-3 h-3 text-gray-400" /></div>}
-                <span className="font-medium text-gray-400">u/{topic.author.name || 'anonim'}</span>
-                <span className="text-gray-600">•</span>
-                <span>{formatTimeAgo(topic.createdAt.toString())}</span>
-                <span className="text-gray-600">•</span>
+                <span className="font-bold text-[#e7e9ea] hover:underline cursor-pointer">u/{topic.author.name || 'anonim'}</span>
+                <span className="text-[#71767b]">•</span>
+                <span className="text-[#71767b]">{formatTimeAgo(topic.createdAt.toString())}</span>
+                <span className="text-[#71767b]">•</span>
                 <span className="font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: `${topic.category.color}20`, color: topic.category.color || 'gray' }}>{topic.category.name}</span>
               </div>
 
               {topic.content && (
-                <div className="text-sm text-white font-normal whitespace-pre-wrap mb-4 leading-relaxed">
+                <div className="text-[16px] text-[#e7e9ea] font-normal whitespace-pre-wrap mb-4 leading-relaxed">
                   <HashtagText text={topic.content} />
                 </div>
               )}
@@ -373,12 +373,12 @@ export default function TopicDetailClient({ session, topic, categories }: TopicD
                 </div>
               )}
 
-              <div className="flex items-center space-x-3 text-gray-500 text-xs font-bold pt-1 border-t border-gray-800/50 mt-2">
-                <button onClick={handleLike} className={`flex items-center space-x-1.5 px-3 py-2 rounded-full transition-all duration-200 ${isLiked ? 'bg-orange-500/10 text-orange-500' : 'hover:bg-gray-800 text-gray-400 hover:text-orange-500'}`}>
+              <div className="flex items-center space-x-3 text-[#71767b] text-xs font-bold pt-1 border-t border-gray-800/50 mt-2">
+                <button onClick={handleLike} className={`flex items-center space-x-1.5 px-3 py-2 rounded-full transition-all duration-200 ${isLiked ? 'bg-orange-500/10 text-orange-500' : 'hover:bg-white/5 text-[#71767b] hover:text-[#e7e9ea]'}`}>
                   <ThumbsUp className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
                   <span className="text-sm">{likeCount}</span>
                 </button>
-                <div className="flex items-center space-x-1.5 px-3 py-2 hover:bg-gray-800 rounded-full transition-colors cursor-pointer text-gray-400 hover:text-white">
+                <div className="flex items-center space-x-1.5 px-3 py-2 hover:bg-white/5 rounded-full transition-colors cursor-pointer text-[#71767b] hover:text-[#e7e9ea]">
                   <MessageCircle className="h-4 w-4" />
                   <span className="text-sm">{comments.length} Yorum</span>
                 </div>
@@ -439,10 +439,10 @@ export default function TopicDetailClient({ session, topic, categories }: TopicD
                       {comment.author.image ? <img src={getOptimizedMediaUrl(comment.author.image, 'IMAGE')} className="w-8 h-8 rounded-full object-cover" /> : <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center"><User className="h-4 w-4 text-gray-400" /></div>}
                     </div>
                     <div className="flex-1">
-                      <div className="flex items-center space-x-2 text-xs text-gray-400 mb-1">
-                        <span className="font-bold text-gray-200">{comment.author.name}</span><span>•</span><span className="text-gray-500">{formatTimeAgo(comment.createdAt.toString())}</span>
+                      <div className="flex items-center space-x-2 text-xs text-[#71767b] mb-1">
+                        <span className="font-bold text-[#e7e9ea]">{comment.author.name}</span><span>•</span><span className="text-[#71767b]">{formatTimeAgo(comment.createdAt.toString())}</span>
                       </div>
-                      <div className="text-sm text-white mb-2 whitespace-pre-wrap">{comment.content}</div>
+                      <div className="text-sm text-[#e7e9ea] mb-2 whitespace-pre-wrap">{comment.content}</div>
                       <div className="flex items-center space-x-4">
                         <button onClick={() => handleCommentLike(comment.id)} className={`flex items-center space-x-1 text-xs font-bold ${likedComments.has(comment.id) ? 'text-orange-500' : 'text-gray-500 hover:text-gray-300'}`}><ThumbsUp className={`h-3 w-3 ${likedComments.has(comment.id) ? 'fill-current' : ''}`} /><span>{comment.likeCount || 0}</span></button>
                         <button onClick={() => handleReplyTo(comment.id, comment.author.name || 'anonim')} className={`flex items-center space-x-1 text-xs font-bold ${replyingTo === comment.id ? 'text-orange-500' : 'text-gray-500 hover:text-gray-300'}`}><MessageCircle className="h-3 w-3" /><span>Yanıtla</span></button>
@@ -456,8 +456,8 @@ export default function TopicDetailClient({ session, topic, categories }: TopicD
                                 {reply.author.image ? <img src={getOptimizedMediaUrl(reply.author.image, 'IMAGE')} className="w-6 h-6 rounded-full object-cover" /> : <div className="w-6 h-6 bg-gray-700 rounded-full flex items-center justify-center"><User className="h-3 w-3 text-gray-400" /></div>}
                               </div>
                               <div className="flex-1">
-                                <div className="flex items-center space-x-2 text-xs text-gray-400 mb-1"><span className="font-bold text-gray-200">{reply.author.name}</span><span>•</span><span className="text-gray-500">{formatTimeAgo(reply.createdAt.toString())}</span></div>
-                                <div className="text-sm text-white mb-2 whitespace-pre-wrap">{reply.content}</div>
+                                <div className="flex items-center space-x-2 text-xs text-[#71767b] mb-1"><span className="font-bold text-[#e7e9ea]">{reply.author.name}</span><span>•</span><span className="text-[#71767b]">{formatTimeAgo(reply.createdAt.toString())}</span></div>
+                                <div className="text-sm text-[#e7e9ea] mb-2 whitespace-pre-wrap">{reply.content}</div>
                                 <div className="flex items-center space-x-4">
                                   <button onClick={() => handleCommentLike(reply.id)} className={`flex items-center space-x-1 text-xs font-bold ${likedComments.has(reply.id) ? 'text-orange-500' : 'text-gray-500 hover:text-gray-300'}`}><ThumbsUp className={`h-3 w-3 ${likedComments.has(reply.id) ? 'fill-current' : ''}`} /><span>{reply.likeCount || 0}</span></button>
                                   <button onClick={() => handleReplyTo(comment.id, reply.author.name || 'anonim')} className="flex items-center space-x-1 text-xs font-bold text-gray-500 hover:text-gray-300"><MessageCircle className="h-3 w-3" /><span>Yanıtla</span></button>

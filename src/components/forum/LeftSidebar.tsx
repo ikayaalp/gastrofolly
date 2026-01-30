@@ -34,8 +34,8 @@ export default function LeftSidebar({ categories, selectedCategory, trendingHash
                     <Link
                         href="/chef-sosyal"
                         className={`flex items-center px-2 py-2 rounded-lg text-sm font-medium transition-colors ${selectedCategory === 'all'
-                            ? 'bg-gray-800 text-white'
-                            : 'text-gray-400 hover:bg-gray-800/50 hover:text-white'
+                            ? 'bg-white/10 text-[#e7e9ea]'
+                            : 'text-[#e7e9ea] hover:bg-white/5'
                             }`}
                     >
                         <Home className="h-5 w-5 mr-3" />
@@ -43,7 +43,7 @@ export default function LeftSidebar({ categories, selectedCategory, trendingHash
                     </Link>
                     <Link
                         href="/chef-sosyal?sort=popular"
-                        className="flex items-center px-2 py-2 rounded-lg text-sm font-medium text-gray-400 hover:bg-gray-800/50 hover:text-white transition-colors"
+                        className="flex items-center px-2 py-2 rounded-lg text-sm font-medium text-[#e7e9ea] hover:bg-white/5 transition-colors"
                     >
                         <TrendingUp className="h-5 w-5 mr-3" />
                         Popüler
@@ -64,13 +64,13 @@ export default function LeftSidebar({ categories, selectedCategory, trendingHash
                             <Link
                                 key={hashtag.id}
                                 href={`/chef-sosyal?search=${encodeURIComponent('#' + hashtag.name)}`}
-                                className="flex items-center justify-between px-2 py-1.5 rounded-lg text-sm font-medium text-gray-400 hover:bg-gray-800/50 hover:text-white transition-colors group"
+                                className="flex items-center justify-between px-2 py-1.5 rounded-lg text-sm font-medium text-[#e7e9ea] hover:bg-white/5 transition-colors group"
                             >
                                 <span className="truncate flex items-center mr-2">
                                     <span className="text-orange-500 mr-1.5 opacity-70 group-hover:opacity-100 italic transition-opacity font-bold">#</span>
                                     {hashtag.name}
                                 </span>
-                                <span className="text-[10px] bg-gray-800 px-1.5 py-0.5 rounded text-gray-500 group-hover:bg-gray-700 transition-colors">
+                                <span className="text-[10px] bg-white/5 px-1.5 py-0.5 rounded text-[#71767b] group-hover:bg-white/10 transition-colors">
                                     {hashtag.count}
                                 </span>
                             </Link>

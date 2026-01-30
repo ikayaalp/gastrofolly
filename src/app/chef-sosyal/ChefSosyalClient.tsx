@@ -474,7 +474,7 @@ export default function ChefSosyalClient({
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyDown={handleSearch}
-                className="block w-full pl-10 pr-3 py-2 border border-gray-800 rounded-full leading-5 bg-[#1a1a1a] text-gray-300 placeholder-gray-500 focus:outline-none focus:bg-black focus:border-orange-500 sm:text-sm transition-colors"
+                className="block w-full pl-10 pr-3 py-2 border border-gray-800 rounded-full leading-5 bg-[#1a1a1a] text-[#e7e9ea] placeholder-[#71767b] focus:outline-none focus:bg-black focus:border-[#e7e9ea]/30 sm:text-sm transition-colors"
                 placeholder="Chef Sosyal'de ara..."
               />
             </div>
@@ -513,8 +513,8 @@ export default function ChefSosyalClient({
 
           {/* Mobile Header */}
           <div className="md:hidden pt-2 pb-4 px-4">
-            <h1 className="text-2xl font-bold text-white">Chef Sosyal</h1>
-            <p className="text-gray-400 text-sm">Gastronomi tutkunlarının buluşma noktası</p>
+            <h1 className="text-2xl font-bold text-[#e7e9ea]">Chef Sosyal</h1>
+            <p className="text-[#71767b] text-sm">Gastronomi tutkunlarının buluşma noktası</p>
           </div>
 
           {/* Create Post Input Trigger (Desktop) */}
@@ -530,10 +530,10 @@ export default function ChefSosyalClient({
               <input
                 type="text"
                 placeholder="Bir şeyler paylaş..."
-                className="flex-1 bg-[#1a1a1a] border border-gray-700 hover:border-white hover:bg-[#0a0a0a] rounded py-2 px-4 text-sm text-white placeholder-gray-500 transition-colors cursor-text focus:outline-none"
+                className="flex-1 bg-[#1a1a1a] border border-gray-700 hover:border-gray-500 hover:bg-[#0a0a0a] rounded py-2 px-4 text-sm text-[#e7e9ea] placeholder-[#71767b] transition-colors cursor-text focus:outline-none"
                 onClick={() => setShowNewTopicModal(true)}
               />
-              <button onClick={() => { setActiveTab('image'); setShowNewTopicModal(true); }} className="p-2 hover:bg-gray-800 rounded text-gray-400 hover:text-white transition-colors">
+              <button onClick={() => { setActiveTab('image'); setShowNewTopicModal(true); }} className="p-2 hover:bg-white/5 rounded text-[#71767b] hover:text-[#e7e9ea] transition-all">
                 <ImageIcon className="h-6 w-6" />
               </button>
             </div>
@@ -569,7 +569,7 @@ export default function ChefSosyalClient({
             </button>
             <button
               onClick={() => handleSortChange('saved')}
-              className={`flex items-center space-x-2 px-3 py-1.5 rounded-full font-bold text-sm transition-colors whitespace-nowrap ${sortBy === 'saved' ? 'bg-orange-600 text-white shadow-lg shadow-orange-900/20' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}`}
+              className={`flex items-center space-x-2 px-3 py-1.5 rounded-full font-bold text-sm transition-colors whitespace-nowrap ${sortBy === 'saved' ? 'bg-orange-600 text-white shadow-lg shadow-orange-900/20' : 'text-[#71767b] hover:bg-gray-800 hover:text-[#e7e9ea]'}`}
             >
               <Bookmark className="h-4 w-4" />
               <span>Kaydedilenler</span>
