@@ -279,8 +279,12 @@ export default function ChefAIClient() {
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         placeholder="Bir şeyler sor (örn: Lazanya tarifi)..."
-                        className="flex-1 bg-transparent text-white text-[15px] max-h-24 py-3 focus:outline-none resize-none placeholder-gray-500"
+                        className="flex-1 bg-transparent text-white text-[15px] max-h-24 py-3 focus:outline-none resize-none placeholder-gray-500 appearance-none"
                         rows={1}
+                        autoComplete="off"
+                        autoCorrect="off"
+                        spellCheck={false}
+                        autoCapitalize="none"
                         onFocus={() => {
                             setIsFocused(true);
                             const nav = document.getElementById('mobile-bottom-nav');
@@ -300,6 +304,7 @@ export default function ChefAIClient() {
                                 sendMessage(input);
                             }
                         }}
+                        style={{ WebkitAppearance: 'none' }}
                     />
                     <button
                         onClick={() => sendMessage(input)}
