@@ -220,9 +220,9 @@ export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave, cur
                                                     className="relative w-full text-left px-4 py-3 flex justify-between items-center z-10 hover:bg-white/5 transition-colors rounded-lg"
                                                 >
                                                     <span className={`text-sm font-medium ${userVotedThisOption ? 'text-white' : 'text-gray-200'}`}>
-                                                        {option.text} {userVotedThisOption && '(Senin Seçimin)'}
+                                                        {option.text}
                                                     </span>
-                                                    <span className="text-xs text-gray-400 font-mono">
+                                                    <span className={`text-xs font-mono ${userVotedThisOption ? 'text-white/90' : 'text-gray-400'}`}>
                                                         {percent}% ({option.votes?.length || 0})
                                                     </span>
                                                 </button>
