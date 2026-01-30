@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Helper to upload to Cloudinary
-        const uploadToCloudinary = async (fileToUpload: File, resourceType: 'image' | 'video' = 'image') => {
+        const uploadToCloudinary = async (fileToUpload: File, resourceType: 'image' | 'video' = 'image', transformation?: string) => {
             const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`;
             const uploadFormData = new FormData();
             uploadFormData.append('file', fileToUpload);
@@ -91,6 +91,9 @@ export async function POST(request: NextRequest) {
             }
             uploadFormData.append('folder', folder);
             uploadFormData.append('public_id', `story_${Date.now()}_${Math.random().toString(36).substring(7)}`);
+            if (transformation) {
+                uploadFormData.append('transformation', transformation);
+            }
 
             const res = await fetch(cloudinaryUrl, {
                 method: 'POST',
@@ -106,7 +109,8 @@ export async function POST(request: NextRequest) {
         };
 
         const resourceType = type === 'VIDEO' ? 'video' : 'image';
-        const mediaUrl = await uploadToCloudinary(file, resourceType);
+        const transformation = type === 'VIDEO' ? 'c_limit,w_1280,h_720' : undefined;
+        const mediaUrl = await uploadToCloudinary(file, resourceType, transformation);
 
         let coverImageUrl = null;
         if (coverFile) {

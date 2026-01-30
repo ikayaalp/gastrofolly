@@ -109,6 +109,10 @@ export async function POST(request: NextRequest) {
         uploadFormData.append('folder', folder)
         uploadFormData.append('public_id', `forum_${Date.now()}_${Math.random().toString(36).substring(7)}`)
 
+        if (isVideo) {
+            uploadFormData.append('transformation', 'c_limit,w_1280,h_720')
+        }
+
         // Video için thumbnail oluşturma ayarı
         // Unsigned upload'da eager parametresi kullanılamıyor, bu yüzden fallback mekanizması kullanılacak
         /* 

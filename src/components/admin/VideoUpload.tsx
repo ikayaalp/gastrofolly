@@ -49,6 +49,7 @@ export default function VideoUpload({ onVideoUploaded, lessonId }: VideoUploadPr
       // Eğer lessonId varsa o klasöre, yoksa genel klasöre
       const folder = lessonId ? `chef-courses/lessons` : 'chef-courses/general'
       formData.append('folder', folder)
+      formData.append('transformation', 'c_limit,w_1280,h_720')
 
       // 3. Upload with XHR for progress
       await new Promise<void>((resolve, reject) => {
