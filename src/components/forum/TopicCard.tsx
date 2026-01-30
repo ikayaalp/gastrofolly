@@ -142,7 +142,10 @@ export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave, cur
                         {/* Content Preview - Clickable to Detail */}
                         {!internalPollData && (
                             <Link href={`/chef-sosyal/topic/${topic.id}`}>
-                                <div className="text-sm text-gray-400 line-clamp-3 mb-3 font-normal cursor-pointer hover:text-gray-300 transition-colors">
+                                <h2 className="text-base font-bold text-white mb-1 hover:text-orange-500 transition-colors">
+                                    {topic.title}
+                                </h2>
+                                <div className="text-sm text-white line-clamp-3 mb-3 font-normal cursor-pointer hover:text-gray-200 transition-colors">
                                     <HashtagText text={topic.content.substring(0, 300)} />
                                 </div>
                             </Link>

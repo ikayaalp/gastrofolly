@@ -344,7 +344,7 @@ export default function TopicDetailClient({ session, topic, categories }: TopicD
               </div>
 
               {topic.content && (
-                <div className="text-sm text-gray-300 font-normal whitespace-pre-wrap mb-4 leading-relaxed">
+                <div className="text-sm text-white font-normal whitespace-pre-wrap mb-4 leading-relaxed">
                   <HashtagText text={topic.content} />
                 </div>
               )}
@@ -440,9 +440,9 @@ export default function TopicDetailClient({ session, topic, categories }: TopicD
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 text-xs text-gray-400 mb-1">
-                        <span className="font-bold text-gray-300">{comment.author.name}</span><span>•</span><span>{formatTimeAgo(comment.createdAt.toString())}</span>
+                        <span className="font-bold text-gray-200">{comment.author.name}</span><span>•</span><span className="text-gray-500">{formatTimeAgo(comment.createdAt.toString())}</span>
                       </div>
-                      <div className="text-sm text-gray-200 mb-2 whitespace-pre-wrap">{comment.content}</div>
+                      <div className="text-sm text-white mb-2 whitespace-pre-wrap">{comment.content}</div>
                       <div className="flex items-center space-x-4">
                         <button onClick={() => handleCommentLike(comment.id)} className={`flex items-center space-x-1 text-xs font-bold ${likedComments.has(comment.id) ? 'text-orange-500' : 'text-gray-500 hover:text-gray-300'}`}><ThumbsUp className={`h-3 w-3 ${likedComments.has(comment.id) ? 'fill-current' : ''}`} /><span>{comment.likeCount || 0}</span></button>
                         <button onClick={() => handleReplyTo(comment.id, comment.author.name || 'anonim')} className={`flex items-center space-x-1 text-xs font-bold ${replyingTo === comment.id ? 'text-orange-500' : 'text-gray-500 hover:text-gray-300'}`}><MessageCircle className="h-3 w-3" /><span>Yanıtla</span></button>
