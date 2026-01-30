@@ -107,11 +107,29 @@ async function makeIyzicoRequest<T>(endpoint: string, requestBody: unknown): Pro
     body: bodyString
   })
 
-  const result = await response.json() as T
+  const contentType = response.headers.get("content-type")
+  const text = await response.text()
 
-  console.log('İyzico API Response:', result)
+  if (!contentType || !contentType.includes("application/json")) {
+    console.error("Iyzico API non-JSON response:", {
+      status: response.status,
+      statusText: response.statusText,
+      contentType,
+      body: text.substring(0, 500)
+    })
+    throw new Error(`Iyzico API HTML cevabı döndürdü (Kod: ${response.status}). Muhtemelen yanlış endpoint veya servis hatası.`)
+  }
 
-  return result
+  try {
+    const result = JSON.parse(text) as T
+    console.log('İyzico API Response:', result)
+    return result
+  } catch (e) {
+    console.error("Iyzico API JSON parse error:", {
+      text: text.substring(0, 500)
+    })
+    throw e
+  }
 }
 
 /* ---------- (Aşağıdaki export ve tip tanımları senin orijinal dosyandan alındı) ---------- */

@@ -19,17 +19,33 @@ export async function POST(request: NextRequest) {
 
         if (!session?.user?.email) {
             return NextResponse.json(
-                { error: "Oturum açmanız gerekiyor" },
+                { error: "Oturum açmanız gerekiyor. Lütfen tekrar giriş yapın." },
                 { status: 401 }
             )
         }
 
-        const body = await request.json()
+        let body;
+        try {
+            body = await request.json()
+        } catch (e) {
+            return NextResponse.json(
+                { error: "Geçersiz istek gövdesi. Lütfen sayfayı yenileyip tekrar deneyin." },
+                { status: 400 }
+            )
+        }
+
         const { planName, billingPeriod } = body
+
+        if (!planName) {
+            return NextResponse.json(
+                { error: "Plan adı belirtilmedi." },
+                { status: 400 }
+            )
+        }
 
         if (planName !== "Premium") {
             return NextResponse.json(
-                { error: "Şu an sadece Premium plan destekleniyor" },
+                { error: "Şu an sadece Premium plan destekleniyor." },
                 { status: 400 }
             )
         }
@@ -40,7 +56,7 @@ export async function POST(request: NextRequest) {
 
         if (!user) {
             return NextResponse.json(
-                { error: "Kullanıcı bulunamadı" },
+                { error: "Kullanıcı veritabanında bulunamadı." },
                 { status: 404 }
             )
         }
@@ -54,15 +70,14 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        // 1. Önce Ürün ve Planın İyzico'da var olduğundan emin ol (Idempotent)
-        // Gerçek hayatta bunu bir kez yapmak yeterlidir ama garantici olmak için burada "Try Create" yapıyoruz
+        // 1. Önce Ürün ve Planın İyzico'da var olduğundan emin ol
         try {
             await createSubscriptionProduct({
                 name: "Culinora Premium",
                 referenceCode: PRODUCT_REF
             })
         } catch (e) {
-            // Already exists hatası gelebilir, sorun değil devam et
+            console.log("Product already exists or failed to create:", e)
         }
 
         const isYearly = billingPeriod === 'yearly'
@@ -73,7 +88,7 @@ export async function POST(request: NextRequest) {
             await createSubscriptionPricingPlan({
                 productReferenceCode: PRODUCT_REF,
                 name: isYearly ? "Premium Yıllık" : "Premium Aylık",
-                price: price, // Yıllıkta %20 indirimli fiyat: 299 * 12 * 0.8 ~= 2870
+                price: price,
                 currencyCode: "TRY",
                 paymentInterval: isYearly ? "YEARLY" : "MONTHLY",
                 paymentIntervalCount: 1,
@@ -82,7 +97,7 @@ export async function POST(request: NextRequest) {
                 referenceCode: planRef
             })
         } catch (e) {
-            // Already exists hatası yoksayılır
+            console.log("Plan already exists or failed to create:", e)
         }
 
         // 2. Yerel Veritabanına Kayıt (Pending)
@@ -98,11 +113,14 @@ export async function POST(request: NextRequest) {
         })
 
         // 3. İsim soyisim ayrıştırma
-        const nameParts = (user.name || "Misafir Kullanıcı").split(" ")
+        const nameParts = (user.name || "Misafir Kullanıcı").trim().split(/\s+/)
         const surname = nameParts.length > 1 ? nameParts.pop() || "" : ""
         const name = nameParts.join(" ") || "Misafir"
 
-        const origin = request.nextUrl.origin
+        // Daha güvenli origin tespiti
+        const host = request.headers.get("host") || "culinora.net"
+        const protocol = request.headers.get("x-forwarded-proto") || "https"
+        const origin = `${protocol}://${host}`
         const callbackUrl = `${origin}/api/iyzico/subscription-callback`
 
         // 4. Abonelik Başlatma İsteği
@@ -110,13 +128,13 @@ export async function POST(request: NextRequest) {
             locale: "tr",
             conversationId: payment.id,
             pricingPlanReferenceCode: planRef,
-            subscriptionInitialStatus: "ACTIVE", // Ödeme alınca aktif olur
+            subscriptionInitialStatus: "ACTIVE",
             callbackUrl: callbackUrl,
             customer: {
                 name: name,
                 surname: surname || "Kullanıcı",
                 email: user.email,
-                gsmNumber: "+905555555555",
+                gsmNumber: user.phoneNumber || "+905555555555", // Eğer kayıtlıysa telefonunu kullan
                 identityNumber: "11111111111",
                 billingAddress: {
                     contactName: user.name || "Misafir",
@@ -133,38 +151,38 @@ export async function POST(request: NextRequest) {
             }
         }
 
-        console.log("Initializing Subscription Checkout with Request:", JSON.stringify(subscriptionRequest, null, 2))
+        console.log("Initializing Subscription Checkout:", payment.id)
 
         const result = await initializeSubscriptionCheckout(subscriptionRequest)
 
-        console.log("Subscription Checkout Result:", result)
-
-        if (result.status === "success" || result.status === "SUCCESS") {
-            // Token bilgisini kaydedelim, callback'te lazım olacak
+        if (result && (result.status === "success" || result.status === "SUCCESS")) {
             await prisma.payment.update({
                 where: { id: payment.id },
                 data: {
-                    stripePaymentId: result.token // Token'ı buraya kaydediyoruz
+                    stripePaymentId: result.token
                 }
             })
 
             return NextResponse.json({
                 success: true,
-                // Client-side'da bu html içeriği bir sayfaya basılacak
                 checkoutFormContent: result.checkoutFormContent,
                 token: result.token
             })
         } else {
+            console.error("Iyzico rejection:", result)
             return NextResponse.json({
                 success: false,
-                error: result.errorMessage || "Abonelik başlatılamadı"
+                error: result?.errorMessage || "İyzico ödeme formunu oluşturamadı. Lütfen daha sonra tekrar deneyin."
             })
         }
 
-    } catch (error) {
-        console.error("Initialize subscription error:", error)
+    } catch (error: any) {
+        console.error("Initialize subscription fatal error:", error)
         return NextResponse.json(
-            { error: "Bir hata oluştu" },
+            {
+                error: "Sistemde bir hata oluştu.",
+                message: error?.message || "Bilinmeyen hata"
+            },
             { status: 500 }
         )
     }
