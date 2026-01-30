@@ -91,9 +91,10 @@ export default function MediaUploader({ onUploadComplete, onRemove, currentMedia
                         else {
                             try {
                                 const err = JSON.parse(xhr.responseText);
-                                reject(new Error(err.error?.message || 'Yükleme başarısız'));
+                                reject(new Error(err.error?.message || `Yükleme başarısız (${xhr.status})`));
                             } catch {
-                                reject(new Error('Yükleme başarısız (400)'));
+                                const rawMsg = xhr.responseText ? xhr.responseText.substring(0, 100) : xhr.statusText;
+                                reject(new Error(`Yükleme hatası (${xhr.status}): ${rawMsg}`));
                             }
                         }
                     }
@@ -132,7 +133,8 @@ export default function MediaUploader({ onUploadComplete, onRemove, currentMedia
                                     const err = JSON.parse(xhr.responseText);
                                     reject(new Error(`Parça ${i + 1} hatası: ${err.error?.message || xhr.status}`));
                                 } catch {
-                                    reject(new Error(`Parça ${i + 1} yüklenemedi: ${xhr.status}`));
+                                    const rawMsg = xhr.responseText ? xhr.responseText.substring(0, 100) : xhr.statusText;
+                                    reject(new Error(`Parça ${i + 1} hatası (${xhr.status}): ${rawMsg}`));
                                 }
                             }
                         };
