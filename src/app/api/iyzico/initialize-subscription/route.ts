@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        const { planName, billingPeriod } = body
+        const { planName, billingPeriod, phoneNumber } = body
 
         if (!planName) {
             return NextResponse.json(
@@ -60,6 +60,16 @@ export async function POST(request: NextRequest) {
                 { status: 404 }
             )
         }
+
+        // Eğer yeni bir telefon numarası geldiyse veritabanını güncelle
+        if (phoneNumber && phoneNumber !== user.phoneNumber) {
+            await prisma.user.update({
+                where: { id: user.id },
+                data: { phoneNumber: phoneNumber }
+            })
+        }
+
+        const currentPhoneNumber = phoneNumber || user.phoneNumber
 
         // Zaten aktif bir aboneliği var mı kontrol et
         const isSubActive = user.subscriptionPlan === "Premium" && (!user.subscriptionEndDate || new Date(user.subscriptionEndDate) > new Date())
@@ -124,7 +134,7 @@ export async function POST(request: NextRequest) {
         const callbackUrl = `${origin}/api/iyzico/subscription-callback`
 
         // GSM Numarası formatı düzeltme (Must start with +90)
-        let gsmNumber = (user.phoneNumber || "5555555555").replace(/\s+/g, '')
+        let gsmNumber = (currentPhoneNumber || "5555555555").replace(/\s+/g, '')
         if (!gsmNumber.startsWith('+')) {
             if (gsmNumber.startsWith('0')) gsmNumber = gsmNumber.substring(1)
             if (!gsmNumber.startsWith('90')) gsmNumber = '90' + gsmNumber

@@ -17,6 +17,7 @@ function CheckoutContent() {
 
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly")
   const [discountCode, setDiscountCode] = useState("")
+  const [phoneNumber, setPhoneNumber] = useState((session?.user as any)?.phoneNumber || "")
   const [appliedDiscount, setAppliedDiscount] = useState<{ type: string, value: number, code: string } | null>(null)
   const [loading, setLoading] = useState(false)
   const [validatingCode, setValidatingCode] = useState(false)
@@ -107,6 +108,12 @@ function CheckoutContent() {
 
   // Ödemeye devam
   const handleProceedToPayment = async () => {
+    // Telefon numarası kontrolü
+    if (!phoneNumber || phoneNumber.replace(/\D/g, '').length < 10) {
+      toast.error("Lütfen geçerli bir telefon numarası girin.")
+      return
+    }
+
     setLoading(true)
     try {
       const response = await fetch("/api/iyzico/initialize-subscription", {
@@ -117,7 +124,8 @@ function CheckoutContent() {
           price: total.toString(),
           billingPeriod,
           discountCode: appliedDiscount?.code,
-          courseId
+          courseId,
+          phoneNumber // Yeni eklenen telefon numarası
         })
       })
 
@@ -223,6 +231,29 @@ function CheckoutContent() {
                       <h3 className="text-2xl font-bold text-white">{planName}</h3>
                       <p className="text-gray-400">Premium Üyelik</p>
                     </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Billing Information */}
+              <div className="bg-black border border-gray-800 rounded-xl p-6">
+                <h2 className="text-xl font-bold text-white mb-4">Fatura Bilgileri</h2>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-1">
+                      Telefon Numarası
+                    </label>
+                    <input
+                      type="tel"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      placeholder="Örn: 05xx xxx xx xx"
+                      className="w-full bg-black border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500"
+                      required
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Ödeme onayı ve fatura işlemleri için gereklidir.
+                    </p>
                   </div>
                 </div>
               </div>
