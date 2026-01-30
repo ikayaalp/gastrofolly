@@ -267,10 +267,10 @@ export default function HomeStories() {
                 {stories.map((group, index) => (
                     <div
                         key={group.id}
-                        className="flex flex-col items-center space-y-2 min-w-[96px] cursor-pointer"
+                        className="flex flex-col items-center space-y-2 min-w-[96px] md:min-w-[128px] cursor-pointer"
                         onClick={() => openStory(index)}
                     >
-                        <div className={`w-[96px] h-[96px] rounded-full p-[2px] bg-gradient-to-tr from-orange-400 to-orange-600`}>
+                        <div className={`w-[96px] h-[96px] md:w-[128px] md:h-[128px] rounded-full p-[2px] bg-gradient-to-tr from-orange-400 to-orange-600`}>
                             <div className="w-full h-full rounded-full p-[2px] bg-black">
                                 <img
                                     src={getOptimizedMediaUrl(group.user.avatar, 'IMAGE')}
