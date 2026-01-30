@@ -50,9 +50,10 @@ interface TopicCardProps {
     onLike?: (id: string) => void
     isSaved?: boolean
     onSave?: (id: string) => void
+    currentUserId?: string
 }
 
-export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave }: TopicCardProps) {
+export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave, currentUserId }: TopicCardProps) {
     const [isLightboxOpen, setIsLightboxOpen] = useState(false)
     const [votingLoading, setVotingLoading] = useState<string | null>(null)
     const [pollData, setPollData] = useState(topic.poll)
@@ -179,13 +180,20 @@ export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave }: T
                                         const totalVotes = pollData.votes?.length || 0
                                         const percent = totalVotes > 0 ? Math.round((option.votes?.length || 0) / totalVotes * 100) : 0
                                         const isExpired = new Date() > new Date(pollData.endDate)
+                                        const hasVoted = option.votes?.some(v => v.id === currentUserId) || false // Ideally check userId inside votes if available, but let's assume votes list has userIds if included
+                                        // Update: The API returns votes: { userId: string }[] for the poll, but for options it returns votes: true which is PollVote[].
+                                        // Let's check the schema logic again. API route:
+                                        // include: { options: { include: { votes: true } } }
+                                        // So option.votes is PollVote array. PollVote has userId.
+
+                                        const userVotedThisOption = option.votes?.some((v: any) => v.userId === currentUserId)
 
                                         return (
                                             <div key={option.id} className="relative">
                                                 {/* Background Bar */}
                                                 <div className="absolute inset-0 bg-gray-800 rounded-lg overflow-hidden">
                                                     <div
-                                                        className="h-full bg-orange-900/40 transition-all duration-500"
+                                                        className={`h-full transition-all duration-500 ${userVotedThisOption ? 'bg-orange-600' : 'bg-gray-700'}`}
                                                         style={{ width: `${percent}%` }}
                                                     />
                                                 </div>
@@ -216,7 +224,9 @@ export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave }: T
                                                     disabled={!!votingLoading || isExpired}
                                                     className="relative w-full text-left px-4 py-3 flex justify-between items-center z-10 hover:bg-white/5 transition-colors rounded-lg"
                                                 >
-                                                    <span className="text-gray-200 text-sm font-medium">{option.text}</span>
+                                                    <span className={`text-sm font-medium ${userVotedThisOption ? 'text-white' : 'text-gray-200'}`}>
+                                                        {option.text} {userVotedThisOption && '(Senin Seçimin)'}
+                                                    </span>
                                                     <span className="text-xs text-gray-400 font-mono">
                                                         {percent}% ({option.votes?.length || 0})
                                                     </span>
@@ -231,86 +241,78 @@ export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave }: T
                                         {new Date() > new Date(pollData.endDate) ? 'Anket Sona Erdi' : `Bitiş: ${new Date(pollData.endDate).toLocaleDateString()}`}
                                     </span>
                                 </div>
-                            </div>
                         )}
 
-                        {/* Action Bar */}
-                        {pollData ? (
-                            <div className="flex items-center space-x-3 text-gray-500 text-xs font-bold pt-1 pb-1 pl-1">
-                                <span className="flex items-center space-x-1.5 text-orange-500">
-                                    <MessageCircle className="h-4 w-4" />
-                                    <span>Anket</span>
-                                </span>
+                                {/* Action Bar */}
+                                {!pollData && (
+                                    <div className="flex items-center space-x-3 text-gray-500 text-xs font-bold pt-1 pb-1">
+                                        {/* Vote Button */}
+                                        <button
+                                            onClick={handleLike}
+                                            className={`flex items-center space-x-1.5 px-3 py-2 rounded-full transition-all duration-200 ${isLiked
+                                                ? 'bg-orange-500/10 text-orange-500'
+                                                : 'hover:bg-gray-800 text-gray-400 hover:text-orange-500'
+                                                }`}
+                                        >
+                                            <ThumbsUp className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
+                                            <span className="text-sm">{topic.likeCount}</span>
+                                        </button>
+
+                                        <Link href={`/chef-sosyal/topic/${topic.id}`} className="flex items-center space-x-1.5 px-3 py-2 hover:bg-gray-800 rounded-full transition-colors group cursor-pointer text-gray-400 hover:text-white">
+                                            <MessageCircle className="h-4 w-4" />
+                                            <span className="text-sm">{topic._count.posts}</span>
+                                            <span className="hidden sm:inline">Yorum</span>
+                                        </Link>
+
+                                        {/* Save Button */}
+                                        <button
+                                            onClick={handleSave}
+                                            className={`flex items-center space-x-1.5 px-3 py-2 rounded-full transition-all duration-200 ${isSaved
+                                                ? 'bg-orange-500/10 text-orange-500'
+                                                : 'hover:bg-gray-800 text-gray-400 hover:text-orange-500'
+                                                }`}
+                                        >
+                                            <Bookmark className={`h-4 w-4 ${isSaved ? 'fill-current' : ''}`} />
+                                            <span className="hidden sm:inline">{isSaved ? 'Kaydedildi' : 'Kaydet'}</span>
+                                        </button>
+                                    </div>
+                                )}
                             </div>
-                        ) : (
-                            <div className="flex items-center space-x-3 text-gray-500 text-xs font-bold pt-1 pb-1">
-                                {/* Vote Button */}
-                                <button
-                                    onClick={handleLike}
-                                    className={`flex items-center space-x-1.5 px-3 py-2 rounded-full transition-all duration-200 ${isLiked
-                                        ? 'bg-orange-500/10 text-orange-500'
-                                        : 'hover:bg-gray-800 text-gray-400 hover:text-orange-500'
-                                        }`}
-                                >
-                                    <ThumbsUp className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
-                                    <span className="text-sm">{topic.likeCount}</span>
-                                </button>
-
-                                <Link href={`/chef-sosyal/topic/${topic.id}`} className="flex items-center space-x-1.5 px-3 py-2 hover:bg-gray-800 rounded-full transition-colors group cursor-pointer text-gray-400 hover:text-white">
-                                    <MessageCircle className="h-4 w-4" />
-                                    <span className="text-sm">{topic._count.posts}</span>
-                                    <span className="hidden sm:inline">Yorum</span>
-                                </Link>
-
-                                {/* Save Button */}
-                                <button
-                                    onClick={handleSave}
-                                    className={`flex items-center space-x-1.5 px-3 py-2 rounded-full transition-all duration-200 ${isSaved
-                                        ? 'bg-orange-500/10 text-orange-500'
-                                        : 'hover:bg-gray-800 text-gray-400 hover:text-orange-500'
-                                        }`}
-                                >
-                                    <Bookmark className={`h-4 w-4 ${isSaved ? 'fill-current' : ''}`} />
-                                    <span className="hidden sm:inline">{isSaved ? 'Kaydedildi' : 'Kaydet'}</span>
-                                </button>
-                            </div>
-                        )}
-                    </div>
                 </div>
-            </div>
-
-            {/* Lightbox Overlay */}
-            {isLightboxOpen && topic.mediaUrl && topic.mediaType !== 'VIDEO' && (
-                <div
-                    className="fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center p-4 animate-in fade-in duration-200"
-                    onClick={() => setIsLightboxOpen(false)}
-                >
-                    <div className="relative max-w-7xl max-h-screen w-full h-full flex items-center justify-center">
-                        <img
-                            src={topic.mediaUrl}
-                            alt={topic.title}
-                            className="max-w-full max-h-full object-contain"
-                        />
-                        <button
-                            onClick={() => setIsLightboxOpen(false)}
-                            className="absolute top-4 right-4 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                        </button>
-                    </div>
                 </div>
-            )}
 
-            <ConfirmationModal
-                isOpen={alertState.isOpen}
-                onClose={() => setAlertState({ isOpen: false, message: '' })}
-                onConfirm={() => setAlertState({ isOpen: false, message: '' })}
-                title="Hata"
-                message={alertState.message}
-                confirmText="Tamam"
-                showCancelButton={false}
-                isDanger={true}
-            />
-        </>
-    )
+                {/* Lightbox Overlay */}
+                {isLightboxOpen && topic.mediaUrl && topic.mediaType !== 'VIDEO' && (
+                    <div
+                        className="fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center p-4 animate-in fade-in duration-200"
+                        onClick={() => setIsLightboxOpen(false)}
+                    >
+                        <div className="relative max-w-7xl max-h-screen w-full h-full flex items-center justify-center">
+                            <img
+                                src={topic.mediaUrl}
+                                alt={topic.title}
+                                className="max-w-full max-h-full object-contain"
+                            />
+                            <button
+                                onClick={() => setIsLightboxOpen(false)}
+                                className="absolute top-4 right-4 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                <ConfirmationModal
+                    isOpen={alertState.isOpen}
+                    onClose={() => setAlertState({ isOpen: false, message: '' })}
+                    onConfirm={() => setAlertState({ isOpen: false, message: '' })}
+                    title="Hata"
+                    message={alertState.message}
+                    confirmText="Tamam"
+                    showCancelButton={false}
+                    isDanger={true}
+                />
+            </>
+            )
 }
