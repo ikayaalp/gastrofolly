@@ -456,8 +456,8 @@ export default function TopicDetailClient({ session, topic, categories }: TopicD
                                 {reply.author.image ? <img src={getOptimizedMediaUrl(reply.author.image, 'IMAGE')} className="w-6 h-6 rounded-full object-cover" /> : <div className="w-6 h-6 bg-gray-700 rounded-full flex items-center justify-center"><User className="h-3 w-3 text-gray-400" /></div>}
                               </div>
                               <div className="flex-1">
-                                <div className="flex items-center space-x-2 text-xs text-gray-400 mb-1"><span className="font-bold text-gray-300">{reply.author.name}</span><span>•</span><span>{formatTimeAgo(reply.createdAt.toString())}</span></div>
-                                <div className="text-sm text-gray-200 mb-2 whitespace-pre-wrap">{reply.content}</div>
+                                <div className="flex items-center space-x-2 text-xs text-gray-400 mb-1"><span className="font-bold text-gray-200">{reply.author.name}</span><span>•</span><span className="text-gray-500">{formatTimeAgo(reply.createdAt.toString())}</span></div>
+                                <div className="text-sm text-white mb-2 whitespace-pre-wrap">{reply.content}</div>
                                 <div className="flex items-center space-x-4">
                                   <button onClick={() => handleCommentLike(reply.id)} className={`flex items-center space-x-1 text-xs font-bold ${likedComments.has(reply.id) ? 'text-orange-500' : 'text-gray-500 hover:text-gray-300'}`}><ThumbsUp className={`h-3 w-3 ${likedComments.has(reply.id) ? 'fill-current' : ''}`} /><span>{reply.likeCount || 0}</span></button>
                                   <button onClick={() => handleReplyTo(comment.id, reply.author.name || 'anonim')} className="flex items-center space-x-1 text-xs font-bold text-gray-500 hover:text-gray-300"><MessageCircle className="h-3 w-3" /><span>Yanıtla</span></button>
