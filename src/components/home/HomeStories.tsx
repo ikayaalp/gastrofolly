@@ -6,6 +6,7 @@ import { getOptimizedMediaUrl } from '@/lib/utils';
 
 interface Story {
     id: string;
+    title?: string;
     mediaUrl: string;
     mediaType: string;
     duration: number;
@@ -214,22 +215,33 @@ export default function HomeStories() {
                 const data = await res.json();
 
                 if (data.success && Array.isArray(data.stories) && data.stories.length > 0) {
-                    // Group by creator
+                    // Group by title (if exists) or by creator
                     const groupedMap = new Map();
 
-                    data.stories.forEach((story: Story) => {
-                        const creatorName = story.creator.name || "Chef";
-                        if (!groupedMap.has(creatorName)) {
-                            groupedMap.set(creatorName, {
-                                id: Math.random().toString(36).substr(2, 9), // Temp ID
+                    data.stories.forEach((story: any) => {
+                        // Grouping strategy: If title exists, group by title. If not, group by creatorId.
+                        // This allows "Highlights" style grouping if user provides tags/titles.
+                        const groupKey = story.title
+                            ? `title_${story.title.toLowerCase().trim()}`
+                            : `user_${story.creatorId || story.creator?.name || 'anonymous'}`;
+
+                        if (!groupedMap.has(groupKey)) {
+                            // Use the custom title or creator name
+                            const displayName = story.title || story.creator?.name || "Culinora";
+                            // Use custom coverImage, or creator image, or fallback to first story's media
+                            const avatarUrl = story.coverImage || story.creator?.image ||
+                                (story.mediaType === 'IMAGE' ? story.mediaUrl : story.mediaUrl.replace(/\.[^.]+$/, '.jpg'));
+
+                            groupedMap.set(groupKey, {
+                                id: groupKey,
                                 user: {
-                                    name: creatorName,
-                                    avatar: story.creator.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(creatorName)}&background=random`,
+                                    name: displayName,
+                                    avatar: avatarUrl,
                                 },
                                 stories: []
                             });
                         }
-                        groupedMap.get(creatorName).stories.push(story);
+                        groupedMap.get(groupKey).stories.push(story);
                     });
 
                     setStories(Array.from(groupedMap.values()));
