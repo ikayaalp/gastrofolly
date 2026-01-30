@@ -31,7 +31,20 @@ function CheckoutContent() {
   useEffect(() => {
     if (!session) {
       router.push(`/auth/signin?callbackUrl=/checkout${planName ? `?plan=${planName}` : ''}${courseId ? `&courseId=${courseId}` : ''}`)
+      return
     }
+
+    // Eğer zaten aktif bir aboneliği varsa ana sayfaya yönlendir
+    const userSubPlan = (session.user as any)?.subscriptionPlan
+    const userSubEnd = (session.user as any)?.subscriptionEndDate
+    const isSubActive = userSubPlan === "Premium" && (!userSubEnd || new Date(userSubEnd) > new Date())
+
+    if (isSubActive) {
+      toast.error("Zaten aktif bir Premium üyeliğiniz bulunuyor.")
+      router.push('/home')
+      return
+    }
+
     if (!planName || !selectedPlan) {
       router.push('/subscription')
     }

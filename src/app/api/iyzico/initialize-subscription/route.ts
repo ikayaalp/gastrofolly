@@ -45,6 +45,15 @@ export async function POST(request: NextRequest) {
             )
         }
 
+        // Zaten aktif bir aboneliği var mı kontrol et
+        const isSubActive = user.subscriptionPlan === "Premium" && (!user.subscriptionEndDate || new Date(user.subscriptionEndDate) > new Date())
+        if (isSubActive) {
+            return NextResponse.json(
+                { error: "Zaten aktif bir Premium aboneliğiniz bulunuyor." },
+                { status: 400 }
+            )
+        }
+
         // 1. Önce Ürün ve Planın İyzico'da var olduğundan emin ol (Idempotent)
         // Gerçek hayatta bunu bir kez yapmak yeterlidir ama garantici olmak için burada "Try Create" yapıyoruz
         try {
