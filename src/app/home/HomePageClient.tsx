@@ -165,10 +165,7 @@ export default function HomePageClient({
 
       {/* Ana İçerik */}
       <main className="pt-16 md:pt-20 pb-20 md:pb-0">
-        {/* Stories Section */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
-          <HomeStories />
-        </div>
+
 
         {/* Hero Section */}
         {featuredCourses.length > 0 && (
@@ -185,6 +182,11 @@ export default function HomePageClient({
               showProgress={true}
             />
           )}
+
+          {/* Stories Section */}
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+            <HomeStories />
+          </div>
 
           {/* Öne Çıkan Kurslar */}
           <CourseRow
