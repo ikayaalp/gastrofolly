@@ -252,7 +252,7 @@ export default function LandingPageClient({
                                             </h3>
                                         </div>
                                         <p className="text-gray-400 font-light text-base pl-0.5">
-                                            Culinora'deki Tüm Eğitimler!
+                                            Culinora'daki Tüm Eğitimler!
                                         </p>
                                     </div>
 
