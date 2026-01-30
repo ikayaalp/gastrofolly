@@ -25,6 +25,7 @@ export default function AdminStoriesPage() {
     const [stories, setStories] = useState<Story[]>([]);
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
 
     // Form State
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -135,29 +136,49 @@ export default function AdminStoriesPage() {
 
             // Helper for client-side upload
             const uploadToCloudinary = async (file: File, type: string) => {
-                const url = `https://api.cloudinary.com/v1_1/${cloudName}/${type}/upload`;
+                const url = `https://api.cloudinary.com/v1_1/${cloudName}/${type === 'video' ? 'video' : 'image'}/upload`;
                 const formData = new FormData();
                 formData.append('file', file);
                 formData.append('upload_preset', uploadPreset);
                 formData.append('folder', 'stories');
 
-                // Enforce 720p for videos
+                // Enforce 720p and quality optimizations
+                // q_auto,f_auto for both images and videos is a best practice
+                let transformation = 'q_auto,f_auto';
                 if (type === 'video') {
-                    formData.append('transformation', 'c_limit,w_1280,h_720');
+                    transformation += ',c_limit,w_1280,h_720';
                 }
+                formData.append('transformation', transformation);
 
-                const res = await fetch(url, {
-                    method: 'POST',
-                    body: formData
+                return new Promise<string>((resolve, reject) => {
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('POST', url);
+
+                    xhr.upload.onprogress = (e) => {
+                        if (e.lengthComputable) {
+                            const percentComplete = Math.round((e.loaded / e.total) * 100);
+                            setUploadProgress(percentComplete);
+                        }
+                    };
+
+                    xhr.onload = () => {
+                        if (xhr.status === 200) {
+                            const data = JSON.parse(xhr.responseText);
+                            resolve(data.secure_url);
+                        } else {
+                            try {
+                                const errorData = JSON.parse(xhr.responseText);
+                                console.error('Cloudinary Error Detail:', errorData);
+                                reject(new Error(errorData.error?.message || 'Cloudinary yükleme başarısız'));
+                            } catch (e) {
+                                reject(new Error('Yükleme sırasında hata oluştu'));
+                            }
+                        }
+                    };
+
+                    xhr.onerror = () => reject(new Error('Ağ hatası oluştu'));
+                    xhr.send(formData);
                 });
-
-                if (!res.ok) {
-                    const error = await res.json();
-                    throw new Error(error.error?.message || 'Yükleme başarısız');
-                }
-
-                const data = await res.json();
-                return data.secure_url;
             };
 
             // 2. Upload Files to Cloudinary
@@ -202,6 +223,7 @@ export default function AdminStoriesPage() {
             alert(error instanceof Error ? error.message : "Hata oluştu");
         } finally {
             setUploading(false);
+            setUploadProgress(0);
         }
     };
 
@@ -295,17 +317,29 @@ export default function AdminStoriesPage() {
                             </p>
                         </div>
 
+                        {uploading && (
+                            <div className="mt-2 space-y-2">
+                                <div className="w-full bg-gray-800 rounded-full h-2">
+                                    <div
+                                        className="bg-orange-500 h-2 rounded-full transition-all duration-300"
+                                        style={{ width: `${uploadProgress}%` }}
+                                    ></div>
+                                </div>
+                                <p className="text-xs text-center text-gray-400">%{uploadProgress} Yüklendi</p>
+                            </div>
+                        )}
+
                         <button
                             type="submit"
                             disabled={!selectedFile || uploading}
                             className={`w-full py-3 rounded-lg font-bold text-white transition-all
                 ${!selectedFile || uploading
-                                    ? 'bg-gray-700 cursor-not-allowed'
-                                    : 'bg-orange-600 hover:bg-orange-700'}`}
+                                    ? 'bg-gray-700 cursor-not-allowed mt-4'
+                                    : 'bg-orange-600 hover:bg-orange-700 mt-4'}`}
                         >
                             {uploading ? (
                                 <div className="flex items-center justify-center gap-2">
-                                    <Loader2 className="animate-spin w-5 h-5" /> Yükleniyor...
+                                    <Loader2 className="animate-spin w-5 h-5" /> Paylaşılıyor...
                                 </div>
                             ) : "Hikayeyi Paylaş"}
                         </button>
