@@ -286,6 +286,10 @@ model Topic {
   hashtags Hashtag[] @relation("TopicHashtags")
   
   poll Poll?
+
+  @@index([createdAt])
+  @@index([likeCount])
+  @@index([categoryId, createdAt])
 }
 
 // Anket Modeli

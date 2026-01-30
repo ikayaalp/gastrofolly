@@ -40,7 +40,7 @@ interface TopicCardProps {
             options: {
                 id: string
                 text: string
-                votes?: { id: string }[]
+                votes?: { id: string, userId: string }[]
                 _count?: { votes: number }
             }[]
             votes: { userId: string }[]
@@ -57,7 +57,7 @@ interface TopicCardProps {
 export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave, currentUserId }: TopicCardProps) {
     const [isLightboxOpen, setIsLightboxOpen] = useState(false)
     const [votingLoading, setVotingLoading] = useState<string | null>(null)
-    const [pollData, setPollData] = useState(topic.poll)
+    const [internalPollData, setInternalPollData] = useState(topic.poll)
     const [alertState, setAlertState] = useState<{ isOpen: boolean, message: string }>({ isOpen: false, message: '' })
 
     // Check if current user has voted (client-side approximation if we don't have user ID handy easily, 
@@ -111,7 +111,7 @@ export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave, cur
                     <div className="flex-1 p-3 pb-1">
                         {/* Header */}
                         <div className="flex items-center text-xs text-gray-500 mb-2 space-x-2">
-                            {pollData ? (
+                            {internalPollData ? (
                                 <>
                                     <div className="w-5 h-5 bg-orange-600 rounded-full flex items-center justify-center">
                                         <ChefHat className="w-3 h-3 text-white" />
@@ -139,7 +139,7 @@ export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave, cur
                         </div>
 
                         {/* Content Preview - Clickable to Detail */}
-                        {!pollData && (
+                        {!internalPollData && (
                             <Link href={`/chef-sosyal/topic/${topic.id}`}>
                                 <div className="text-sm text-gray-400 line-clamp-3 mb-3 font-normal cursor-pointer hover:text-gray-300 transition-colors">
                                     <HashtagText text={topic.content.substring(0, 300)} />
@@ -175,16 +175,16 @@ export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave, cur
                         )}
 
                         {/* Poll Display */}
-                        {pollData && (
+                        {/* Poll Display */}
+                        {internalPollData && (
                             <div className="mb-3 p-4 bg-gray-900/50 border border-gray-800 rounded-xl">
-                                <h3 className="text-white font-medium mb-3">{pollData.question}</h3>
+                                <h3 className="text-white font-medium mb-3">{internalPollData.question}</h3>
                                 <div className="space-y-2">
-                                    {pollData.options.map((option) => {
-                                        const totalVotes = pollData._count?.votes ?? (pollData.votes?.length || 0)
+                                    {internalPollData.options.map((option) => {
+                                        const totalVotes = internalPollData._count?.votes ?? (internalPollData.votes?.length || 0)
                                         const optionVotes = option._count?.votes ?? (option.votes?.length || 0)
                                         const percent = totalVotes > 0 ? Math.round(optionVotes / totalVotes * 100) : 0
-                                        const isExpired = new Date() > new Date(pollData.endDate)
-                                        const hasVoted = option.votes?.some(v => v.id === currentUserId) || false
+                                        const isExpired = new Date() > new Date(internalPollData.endDate)
                                         const userVotedThisOption = option.votes?.some((v: any) => v.userId === currentUserId)
 
                                         return (
@@ -199,23 +199,75 @@ export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave, cur
 
                                                 <button
                                                     onClick={async () => {
-                                                        if (isExpired) return;
+                                                        if (isExpired || votingLoading) return;
                                                         setVotingLoading(option.id)
+
+                                                        // Optimistic Update
+                                                        const previousPollData = { ...internalPollData }
+
+                                                        // Find previous vote
+                                                        let previousOptionId: string | undefined
+                                                        internalPollData.options.forEach(opt => {
+                                                            if (opt.votes?.some((v: any) => v.userId === currentUserId)) {
+                                                                previousOptionId = opt.id
+                                                            }
+                                                        })
+
+                                                        // Update state
+                                                        setInternalPollData(prev => {
+                                                            if (!prev) return null
+                                                            const newOptions = prev.options.map(opt => {
+                                                                let newVotes = opt.votes ? [...opt.votes] : []
+                                                                let newCount = opt._count?.votes || 0
+
+                                                                // Remove previous vote if exists
+                                                                if (opt.id === previousOptionId) {
+                                                                    newVotes = newVotes.filter((v: any) => v.userId !== currentUserId)
+                                                                    newCount = Math.max(0, newCount - 1)
+                                                                }
+
+                                                                // Add new vote
+                                                                if (opt.id === option.id) {
+                                                                    newVotes.push({ id: 'temp', userId: currentUserId || 'temp' })
+                                                                    newCount++
+                                                                }
+
+                                                                return {
+                                                                    ...opt,
+                                                                    votes: newVotes,
+                                                                    _count: { votes: newCount }
+                                                                }
+                                                            })
+
+                                                            // Update total count
+                                                            let newTotalCount = prev._count?.votes || 0
+                                                            if (!previousOptionId) {
+                                                                newTotalCount++
+                                                            }
+
+                                                            return {
+                                                                ...prev,
+                                                                options: newOptions,
+                                                                _count: { votes: newTotalCount }
+                                                            }
+                                                        })
+
                                                         try {
                                                             const res = await fetch('/api/forum/polls/vote', {
                                                                 method: 'POST',
                                                                 headers: { 'Content-Type': 'application/json' },
-                                                                body: JSON.stringify({ pollId: pollData.id, optionId: option.id })
+                                                                body: JSON.stringify({ pollId: internalPollData.id, optionId: option.id })
                                                             })
 
-                                                            if (res.ok) {
-                                                                window.location.reload()
-                                                            } else {
+                                                            if (!res.ok) {
+                                                                // Revert on failure
+                                                                setInternalPollData(previousPollData)
                                                                 const err = await res.json()
                                                                 setAlertState({ isOpen: true, message: err.error || 'Hata oluştu' })
                                                             }
                                                         } catch (e) {
                                                             console.error(e)
+                                                            setInternalPollData(previousPollData)
                                                         } finally {
                                                             setVotingLoading(null)
                                                         }
@@ -235,16 +287,16 @@ export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave, cur
                                     })}
                                 </div>
                                 <div className="mt-3 flex items-center justify-between text-xs text-gray-500">
-                                    <span>Toplam Oy: {pollData._count?.votes ?? (pollData.votes?.length || 0)}</span>
+                                    <span>Toplam Oy: {internalPollData._count?.votes ?? (internalPollData.votes?.length || 0)}</span>
                                     <span>
-                                        {new Date() > new Date(pollData.endDate) ? 'Anket Sona Erdi' : `Bitiş: ${new Date(pollData.endDate).toLocaleDateString()}`}
+                                        {new Date() > new Date(internalPollData.endDate) ? 'Anket Sona Erdi' : `Bitiş: ${new Date(internalPollData.endDate).toLocaleDateString()}`}
                                     </span>
                                 </div>
                             </div>
                         )}
 
                         {/* Action Bar */}
-                        {!pollData && (
+                        {!internalPollData && (
                             <div className="flex items-center space-x-3 text-gray-500 text-xs font-bold pt-1 pb-1">
                                 {/* Vote Button */}
                                 <button
