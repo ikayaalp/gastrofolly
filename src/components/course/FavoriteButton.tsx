@@ -106,7 +106,7 @@ export default function FavoriteButton({
           ${showAnimation ? 'scale-125' : ''}
         `}
       />
-      {isInFavorites ? 'Favorilerden Çıkar' : 'Favorilere Ekle'}
+      {isInFavorites ? 'Listemden Çıkar' : 'Listeme Ekle'}
     </button>
   )
 }
