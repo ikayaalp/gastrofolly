@@ -123,7 +123,16 @@ async function getLandingData() {
 }
 
 
+import { redirect } from "next/navigation";
+
 export default async function LandingPage() {
+  const session = await getServerSession(authOptions);
+
+  // If user is logged in, redirect to home
+  if (session?.user) {
+    redirect("/home");
+  }
+
   // Server Component Data Fetching
   const { categories, featured, userCourses } = await getLandingData();
 
