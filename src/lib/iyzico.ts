@@ -59,7 +59,7 @@ function generateAuthHeader(endpoint: string, requestBody: string): { authHeader
 function getIyzicoHeaders(endpoint: string, requestBody: string) {
   const { authHeader, randomString } = generateAuthHeader(endpoint, requestBody)
 
-  const headers = {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     'Authorization': authHeader,
     'x-iyzi-rnd': randomString
@@ -78,28 +78,23 @@ function getIyzicoHeaders(endpoint: string, requestBody: string) {
  * İyzico API'ye istek gönderir
  */
 async function makeIyzicoRequest<T>(endpoint: string, requestBody: unknown): Promise<T> {
-  const url = `${IYZICO_CONFIG.baseUrl}${endpoint}`
+  // Base URL ve endpoint arasındaki çift slash (//) hatasını temizle
+  const cleanBaseUrl = IYZICO_CONFIG.baseUrl.replace(/\/$/, '')
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`
+  const url = `${cleanBaseUrl}${cleanEndpoint}`
   const bodyString = JSON.stringify(requestBody)
 
   console.log('İyzico API Request Details:', {
     url,
     endpoint,
     apiKey: IYZICO_CONFIG.apiKey.substring(0, 15) + '...',
-    secretKey: IYZICO_CONFIG.secretKey.substring(0, 15) + '...',
     baseUrl: IYZICO_CONFIG.baseUrl,
     requestBodyLength: bodyString.length
   })
 
-  // Tam request body'yi göster (hata ayıklama için)
-  console.log('TAM REQUEST BODY:', JSON.stringify(JSON.parse(bodyString), null, 2))
-
   const headers = getIyzicoHeaders(endpoint, bodyString)
-
-  console.log('İyzico Headers:', {
-    'Content-Type': headers['Content-Type'],
-    'Authorization': (headers['Authorization'] as string).substring(0, 50) + '...',
-    'x-iyzi-rnd': headers['x-iyzi-rnd']
-  })
+  // V2 API'leri bazen Accept header'ına çok duyarlıdır
+  headers['Accept'] = 'application/json'
 
   const response = await fetch(url, {
     method: 'POST',
@@ -107,17 +102,23 @@ async function makeIyzicoRequest<T>(endpoint: string, requestBody: unknown): Pro
     body: bodyString
   })
 
-  const contentType = response.headers.get("content-type")
   const text = await response.text()
+  const contentType = response.headers.get("content-type")
 
   if (!contentType || !contentType.includes("application/json")) {
     console.error("Iyzico API non-JSON response:", {
       status: response.status,
-      statusText: response.statusText,
+      url,
       contentType,
       body: text.substring(0, 500)
     })
-    throw new Error(`Iyzico API HTML cevabı döndürdü (Kod: ${response.status}). Muhtemelen yanlış endpoint veya servis hatası.`)
+
+    // 404 hatası geliyorsa, endpoint yanlış olabilir
+    if (text.includes("404") || response.status === 404) {
+      throw new Error(`Iyzico Endpoint bulunamadı (404). Kullandığınız Base URL (${IYZICO_CONFIG.baseUrl}) veya endpoint (${endpoint}) Sandbox için geçerli olmayabilir. Lütfen Iyzico panelinizden yeni sandbox anahtarları alıp deneyin.`)
+    }
+
+    throw new Error(`Iyzico API HTML cevabı döndürdü (Kod: ${response.status}).`)
   }
 
   try {
@@ -126,9 +127,10 @@ async function makeIyzicoRequest<T>(endpoint: string, requestBody: unknown): Pro
     return result
   } catch (e) {
     console.error("Iyzico API JSON parse error:", {
+      status: response.status,
       text: text.substring(0, 500)
     })
-    throw e
+    throw new Error(`Iyzico API cevabı parse edilemedi: ${text.substring(0, 100)}`)
   }
 }
 

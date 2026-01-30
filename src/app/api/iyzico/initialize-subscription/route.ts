@@ -123,6 +123,14 @@ export async function POST(request: NextRequest) {
         const origin = `${protocol}://${host}`
         const callbackUrl = `${origin}/api/iyzico/subscription-callback`
 
+        // GSM Numarası formatı düzeltme (Must start with +90)
+        let gsmNumber = (user.phoneNumber || "5555555555").replace(/\s+/g, '')
+        if (!gsmNumber.startsWith('+')) {
+            if (gsmNumber.startsWith('0')) gsmNumber = gsmNumber.substring(1)
+            if (!gsmNumber.startsWith('90')) gsmNumber = '90' + gsmNumber
+            gsmNumber = '+' + gsmNumber
+        }
+
         // 4. Abonelik Başlatma İsteği
         const subscriptionRequest: IyzicoSubscriptionCheckoutRequest = {
             locale: "tr",
@@ -134,7 +142,7 @@ export async function POST(request: NextRequest) {
                 name: name,
                 surname: surname || "Kullanıcı",
                 email: user.email,
-                gsmNumber: user.phoneNumber || "+905555555555", // Eğer kayıtlıysa telefonunu kullan
+                gsmNumber: gsmNumber,
                 identityNumber: "11111111111",
                 billingAddress: {
                     contactName: user.name || "Misafir",
@@ -151,7 +159,12 @@ export async function POST(request: NextRequest) {
             }
         }
 
-        console.log("Initializing Subscription Checkout:", payment.id)
+        console.log("Initializing Subscription Checkout:", {
+            paymentId: payment.id,
+            plan: planRef,
+            email: user.email,
+            origin: origin
+        })
 
         const result = await initializeSubscriptionCheckout(subscriptionRequest)
 
