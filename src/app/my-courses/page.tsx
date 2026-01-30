@@ -187,7 +187,7 @@ export default function MyCoursesPage() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-20 md:pt-24 pb-20 md:pb-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-6">Listem</h1>
+          <h1 className="text-3xl font-bold text-white mb-6">Kurslarım</h1>
 
           <div className="flex overflow-x-auto pb-2 no-scrollbar gap-2">
             <button
@@ -212,7 +212,7 @@ export default function MyCoursesPage() {
               onClick={() => setActiveFilter('favorites')}
               className={`px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all ${activeFilter === 'favorites' ? 'bg-orange-600 text-white shadow-lg shadow-orange-900/20' : 'bg-[#111] text-gray-400 border border-gray-800 hover:border-gray-600'}`}
             >
-              Favorilerim
+              Listem
             </button>
           </div>
         </div>
