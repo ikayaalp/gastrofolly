@@ -106,32 +106,38 @@ export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave, cur
     return (
         <>
             <div className="block">
-                <div className="flex bg-black border border-gray-800 rounded-md hover:border-gray-700 transition-colors overflow-hidden mb-3">
+                <div className="flex bg-black border border-gray-800 rounded-md hover:border-gray-700 transition-colors overflow-hidden mb-3 p-3">
 
-                    {/* Content Area */}
-                    <div className="flex-1 p-3 pb-1">
-                        {/* Header */}
-                        <div className="flex items-center text-xs text-gray-500 mb-2 space-x-2">
+                    {/* Left: Avatar Column */}
+                    <div className="flex-shrink-0 mr-3">
+                        {internalPollData ? (
+                            <div className="w-10 h-10 bg-orange-600 rounded-full flex items-center justify-center">
+                                <ChefHat className="w-6 h-6 text-white" />
+                            </div>
+                        ) : (
+                            topic.author.image ? (
+                                <img src={getOptimizedMediaUrl(topic.author.image, 'IMAGE')} alt={topic.author.name || ''} className="w-10 h-10 rounded-full object-cover" />
+                            ) : (
+                                <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center">
+                                    <User className="w-6 h-6 text-gray-400" />
+                                </div>
+                            )
+                        )}
+                    </div>
+
+                    {/* Right: Content Column */}
+                    <div className="flex-1 min-w-0">
+                        {/* Header metadata line */}
+                        <div className="flex items-center text-sm mb-0.5 space-x-1 flex-wrap">
                             {internalPollData ? (
-                                <>
-                                    <div className="w-5 h-5 bg-orange-600 rounded-full flex items-center justify-center">
-                                        <ChefHat className="w-3 h-3 text-white" />
-                                    </div>
-                                    <span className="font-bold text-white">
-                                        Culinora Anket
-                                    </span>
-                                </>
+                                <span className="font-bold text-[#e7e9ea]">Culinora Anket</span>
                             ) : (
                                 <>
-                                    {topic.author.image ? (
-                                        <img src={getOptimizedMediaUrl(topic.author.image, 'IMAGE')} alt={topic.author.name || ''} className="w-5 h-5 rounded-full object-cover" />
-                                    ) : (
-                                        <div className="w-5 h-5 bg-gray-700 rounded-full flex items-center justify-center">
-                                            <User className="w-3 h-3 text-gray-400" />
-                                        </div>
-                                    )}
-                                    <span className="font-bold text-[#e7e9ea] hover:underline transition-all cursor-pointer">
-                                        u/{topic.author.name || 'anonim'}
+                                    <span className="font-bold text-[#e7e9ea] hover:underline cursor-pointer">
+                                        {topic.author.name || 'anonim'}
+                                    </span>
+                                    <span className="text-[#71767b]">
+                                        @{topic.author.name?.replace(/\s+/g, '').toLowerCase() || 'anonim'}
                                     </span>
                                 </>
                             )}
@@ -321,7 +327,7 @@ export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave, cur
                                     onClick={handleSave}
                                     className={`flex items-center space-x-1.5 px-3 py-2 rounded-full transition-all duration-200 ${isSaved
                                         ? 'bg-orange-500/10 text-orange-500'
-                                        : 'hover:bg-gray-800 text-gray-400 hover:text-orange-500'
+                                        : 'hover:bg-white/5 text-[#71767b] hover:text-[#e7e9ea]'
                                         }`}
                                 >
                                     <Bookmark className={`h-4 w-4 ${isSaved ? 'fill-current' : ''}`} />

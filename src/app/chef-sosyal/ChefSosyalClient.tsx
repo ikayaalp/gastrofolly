@@ -519,21 +519,29 @@ export default function ChefSosyalClient({
 
           {/* Create Post Input Trigger (Desktop) */}
           {session?.user && (
-            <div className="hidden md:flex bg-[#0a0a0a] border border-gray-800 rounded-md p-3 mb-4 items-center space-x-3">
-              {session.user.image ? (
-                <img src={session.user.image} alt={session.user.name || ''} className="w-9 h-9 rounded-full object-cover" />
-              ) : (
-                <div className="w-9 h-9 rounded-full bg-orange-600 flex items-center justify-center">
-                  <User className="h-5 w-5 text-white" />
-                </div>
-              )}
-              <input
-                type="text"
-                placeholder="Bir şeyler paylaş..."
-                className="flex-1 bg-[#1a1a1a] border border-gray-700 hover:border-gray-500 hover:bg-[#0a0a0a] rounded py-2 px-4 text-sm text-[#e7e9ea] placeholder-[#71767b] transition-colors cursor-text focus:outline-none"
-                onClick={() => setShowNewTopicModal(true)}
-              />
-              <button onClick={() => { setActiveTab('image'); setShowNewTopicModal(true); }} className="p-2 hover:bg-white/5 rounded text-[#71767b] hover:text-[#e7e9ea] transition-all">
+            <div className="hidden md:flex bg-[#0a0a0a] border border-gray-800 rounded-md p-4 mb-4 items-start space-x-4">
+              <div className="flex-shrink-0">
+                {session.user.image ? (
+                  <img src={session.user.image} alt={session.user.name || ''} className="w-10 h-10 rounded-full object-cover" />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-orange-600 flex items-center justify-center">
+                    <User className="h-6 w-6 text-white" />
+                  </div>
+                )}
+              </div>
+              <div className="flex-1 min-w-0 mt-0.5">
+                <input
+                  type="text"
+                  placeholder="Bir şeyler paylaş..."
+                  className="w-full bg-[#1a1a1a] border border-gray-700 hover:border-gray-500 rounded py-2 px-4 text-sm text-[#e7e9ea] placeholder-[#71767b] transition-colors cursor-text focus:outline-none"
+                  onClick={() => setShowNewTopicModal(true)}
+                  readOnly
+                />
+              </div>
+              <button
+                onClick={() => { setActiveTab('image'); setShowNewTopicModal(true); }}
+                className="mt-0.5 p-2 hover:bg-white/5 rounded text-[#71767b] hover:text-[#e7e9ea] transition-all"
+              >
                 <ImageIcon className="h-6 w-6" />
               </button>
             </div>
