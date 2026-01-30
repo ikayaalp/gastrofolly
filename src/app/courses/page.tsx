@@ -1,6 +1,5 @@
-import { redirect } from 'next/navigation'
+import CoursesPageClient from './CoursesPageClient'
 
 export default function CoursesPage() {
-  // Bu sayfa şu anda kullanılmıyor, ana sayfaya yönlendir
-  redirect('/')
+  return <CoursesPageClient />
 }
