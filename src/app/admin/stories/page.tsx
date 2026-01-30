@@ -11,6 +11,8 @@ interface Course {
 
 interface Story {
     id: string;
+    title?: string;
+    coverImage?: string;
     mediaUrl: string;
     mediaType: string;
     duration: number;
@@ -425,6 +427,11 @@ export default function AdminStoriesPage() {
 
                                     {/* Info Overlay */}
                                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/80 to-transparent p-3">
+                                        {story.title && (
+                                            <span className="text-sm font-bold block truncate">
+                                                {story.title}
+                                            </span>
+                                        )}
                                         {story.course && (
                                             <span className="text-xs text-orange-400 font-medium block mb-1 truncate">
                                                 {story.course.title}
