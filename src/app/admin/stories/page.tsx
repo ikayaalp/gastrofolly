@@ -135,8 +135,8 @@ export default function AdminStoriesPage() {
             const { cloudName, uploadPreset } = await configRes.json();
 
             // Helper for client-side chunked upload
-            const uploadToCloudinary = async (file: File, type: string) => {
-                const url = `https://api.cloudinary.com/v1_1/${cloudName}/${type === 'video' ? 'video' : 'image'}/upload`;
+            const uploadToCloudinary = async (file: File) => {
+                const url = `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`;
                 const chunkSize = 6 * 1024 * 1024; // 6MB chunks
                 const totalChunks = Math.ceil(file.size / chunkSize);
                 const uniqueId = `story_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
@@ -158,7 +158,14 @@ export default function AdminStoriesPage() {
                         };
                         xhr.onload = () => {
                             if (xhr.status === 200) resolve(JSON.parse(xhr.responseText).secure_url);
-                            else reject(new Error('Yükleme başarısız'));
+                            else {
+                                try {
+                                    const err = JSON.parse(xhr.responseText);
+                                    reject(new Error(err.error?.message || 'Yükleme başarısız'));
+                                } catch {
+                                    reject(new Error('Yükleme başarısız (400)'));
+                                }
+                            }
                         };
                         xhr.onerror = () => reject(new Error('Ağ hatası'));
                         xhr.send(formData);
@@ -192,9 +199,15 @@ export default function AdminStoriesPage() {
                         };
 
                         xhr.onload = () => {
-                            if (xhr.status === 200) resolve(JSON.parse(xhr.responseText));
-                            else if (xhr.status === 201) resolve(JSON.parse(xhr.responseText)); // Created is also fine for intermediate chunks
-                            else reject(new Error(`Parça ${i + 1} yüklenemedi: ${xhr.status}`));
+                            if (xhr.status === 200 || xhr.status === 201) resolve(JSON.parse(xhr.responseText));
+                            else {
+                                try {
+                                    const err = JSON.parse(xhr.responseText);
+                                    reject(new Error(`Parça ${i + 1} hatası: ${err.error?.message || xhr.status}`));
+                                } catch {
+                                    reject(new Error(`Parça ${i + 1} yüklenemedi: ${xhr.status}`));
+                                }
+                            }
                         };
                         xhr.onerror = () => reject(new Error('Ağ hatası oluştu'));
                         xhr.send(formData);
@@ -205,11 +218,11 @@ export default function AdminStoriesPage() {
             };
 
             // 2. Upload Files to Cloudinary
-            const mediaUrl = await uploadToCloudinary(selectedFile, mediaType.toLowerCase());
+            const mediaUrl = await uploadToCloudinary(selectedFile);
             let coverImageUrl = null;
             if (selectedCoverFile) {
                 setUploadProgress(0); // Reset for cover
-                coverImageUrl = await uploadToCloudinary(selectedCoverFile, 'image');
+                coverImageUrl = await uploadToCloudinary(selectedCoverFile);
             }
 
             // 3. Save to Database via our API

@@ -65,8 +65,7 @@ export default function MediaUploader({ onUploadComplete, onRemove, currentMedia
 
             // 2. Prepare Cloudinary Upload
             const isVideo = ALLOWED_VIDEO_TYPES.includes(file.type)
-            const resourceType = isVideo ? 'video' : 'image'
-            const url = `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`
+            const url = `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`
             const chunkSize = 6 * 1024 * 1024; // 6MB chunks
             const totalChunks = Math.ceil(file.size / chunkSize);
             const uniqueId = `forum_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
@@ -89,7 +88,14 @@ export default function MediaUploader({ onUploadComplete, onRemove, currentMedia
                     }
                     xhr.onload = () => {
                         if (xhr.status === 200) resolve(JSON.parse(xhr.responseText))
-                        else reject(new Error('Yükleme başarısız'))
+                        else {
+                            try {
+                                const err = JSON.parse(xhr.responseText);
+                                reject(new Error(err.error?.message || 'Yükleme başarısız'));
+                            } catch {
+                                reject(new Error('Yükleme başarısız (400)'));
+                            }
+                        }
                     }
                     xhr.onerror = () => reject(new Error('Ağ hatası oluştu'))
                     xhr.send(formData)
@@ -121,7 +127,14 @@ export default function MediaUploader({ onUploadComplete, onRemove, currentMedia
 
                         xhr.onload = () => {
                             if (xhr.status === 200 || xhr.status === 201) resolve(JSON.parse(xhr.responseText));
-                            else reject(new Error(`Parça ${i + 1} yüklenemedi: ${xhr.status}`));
+                            else {
+                                try {
+                                    const err = JSON.parse(xhr.responseText);
+                                    reject(new Error(`Parça ${i + 1} hatası: ${err.error?.message || xhr.status}`));
+                                } catch {
+                                    reject(new Error(`Parça ${i + 1} yüklenemedi: ${xhr.status}`));
+                                }
+                            }
                         };
                         xhr.onerror = () => reject(new Error('Ağ hatası oluştu'));
                         xhr.send(formData);
