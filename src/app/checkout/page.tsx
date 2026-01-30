@@ -9,7 +9,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { toast } from "react-hot-toast"
 
 function CheckoutContent() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const router = useRouter()
   const searchParams = useSearchParams()
   const planName = searchParams.get("plan")
@@ -17,10 +17,17 @@ function CheckoutContent() {
 
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly")
   const [discountCode, setDiscountCode] = useState("")
-  const [phoneNumber, setPhoneNumber] = useState((session?.user as any)?.phoneNumber || "")
+  const [phoneNumber, setPhoneNumber] = useState("")
   const [appliedDiscount, setAppliedDiscount] = useState<{ type: string, value: number, code: string } | null>(null)
   const [loading, setLoading] = useState(false)
   const [validatingCode, setValidatingCode] = useState(false)
+
+  // Telefon numarasını session yüklenince güncelle
+  useEffect(() => {
+    if (session?.user && !phoneNumber) {
+      setPhoneNumber((session.user as any).phoneNumber || "")
+    }
+  }, [session, phoneNumber])
 
   // Plan bilgileri
   const plans: Record<string, { price: number, icon: LucideIcon, color: string }> = {
@@ -30,6 +37,8 @@ function CheckoutContent() {
   const selectedPlan = planName && plans[planName] ? plans[planName] : null
 
   useEffect(() => {
+    if (status === "loading") return
+
     if (!session) {
       router.push(`/auth/signin?callbackUrl=/checkout${planName ? `?plan=${planName}` : ''}${courseId ? `&courseId=${courseId}` : ''}`)
       return
@@ -49,7 +58,7 @@ function CheckoutContent() {
     if (!planName || !selectedPlan) {
       router.push('/subscription')
     }
-  }, [session, planName, selectedPlan, router, courseId])
+  }, [session, status, planName, selectedPlan, router, courseId])
 
   // Fiyat hesaplamaları
   const basePrice = selectedPlan?.price || 0
