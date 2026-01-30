@@ -44,6 +44,7 @@ interface TopicCardProps {
                 _count?: { votes: number }
             }[]
             votes: { userId: string }[]
+            _count?: { votes: number }
         } | null
     }
     isLiked?: boolean
@@ -179,8 +180,9 @@ export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave, cur
                                 <h3 className="text-white font-medium mb-3">{pollData.question}</h3>
                                 <div className="space-y-2">
                                     {pollData.options.map((option) => {
-                                        const totalVotes = pollData.votes?.length || 0
-                                        const percent = totalVotes > 0 ? Math.round((option.votes?.length || 0) / totalVotes * 100) : 0
+                                        const totalVotes = pollData._count?.votes ?? (pollData.votes?.length || 0)
+                                        const optionVotes = option._count?.votes ?? (option.votes?.length || 0)
+                                        const percent = totalVotes > 0 ? Math.round(optionVotes / totalVotes * 100) : 0
                                         const isExpired = new Date() > new Date(pollData.endDate)
                                         const hasVoted = option.votes?.some(v => v.id === currentUserId) || false
                                         const userVotedThisOption = option.votes?.some((v: any) => v.userId === currentUserId)
@@ -225,7 +227,7 @@ export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave, cur
                                                         {option.text}
                                                     </span>
                                                     <span className={`text-xs font-mono ${userVotedThisOption ? 'text-white/90' : 'text-gray-400'}`}>
-                                                        {percent}% ({option.votes?.length || 0})
+                                                        {percent}% ({optionVotes})
                                                     </span>
                                                 </button>
                                             </div>
@@ -233,7 +235,7 @@ export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave, cur
                                     })}
                                 </div>
                                 <div className="mt-3 flex items-center justify-between text-xs text-gray-500">
-                                    <span>Toplam Oy: {pollData.votes?.length || 0}</span>
+                                    <span>Toplam Oy: {pollData._count?.votes ?? (pollData.votes?.length || 0)}</span>
                                     <span>
                                         {new Date() > new Date(pollData.endDate) ? 'Anket Sona Erdi' : `Bitiş: ${new Date(pollData.endDate).toLocaleDateString()}`}
                                     </span>

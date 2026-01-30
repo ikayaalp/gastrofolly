@@ -54,6 +54,14 @@ export async function GET(request: NextRequest) {
       ]
     }
 
+    // Get current user if logged in (for poll vote check)
+    let user = null
+    try {
+      user = await getAuthUser(request)
+    } catch (e) {
+      // Ignore auth error for public feed
+    }
+
     const [topics, totalCount] = await Promise.all([
       prisma.topic.findMany({
         where,
@@ -85,10 +93,20 @@ export async function GET(request: NextRequest) {
             include: {
               options: {
                 include: {
-                  votes: true
+                  votes: user?.id ? {
+                    where: { userId: user.id }
+                  } : false,
+                  _count: {
+                    select: { votes: true }
+                  }
                 }
               },
-              votes: true
+              votes: user?.id ? {
+                where: { userId: user.id }
+              } : false,
+              _count: {
+                select: { votes: true }
+              }
             }
           },
           _count: {
