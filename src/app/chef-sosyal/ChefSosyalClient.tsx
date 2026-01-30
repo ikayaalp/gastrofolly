@@ -620,7 +620,6 @@ export default function ChefSosyalClient({
                     topic={topic}
                     isLiked={likedTopics.has(topic.id)}
                     onLike={handleLike}
-                    onLike={handleLike}
                     isSaved={savedTopics.has(topic.id)}
                     onSave={handleSave}
                     currentUserId={session?.user?.id}
