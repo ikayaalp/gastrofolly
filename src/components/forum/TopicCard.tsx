@@ -136,9 +136,6 @@ export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave, cur
                                     <span className="font-bold text-[#e7e9ea] hover:underline cursor-pointer">
                                         {topic.author.name || 'anonim'}
                                     </span>
-                                    <span className="text-[#71767b]">
-                                        @{topic.author.name?.replace(/\s+/g, '').toLowerCase() || 'anonim'}
-                                    </span>
                                 </>
                             )}
                             <span className="text-[#71767b]">•</span>

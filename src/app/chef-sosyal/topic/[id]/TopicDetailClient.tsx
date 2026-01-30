@@ -342,7 +342,6 @@ export default function TopicDetailClient({ session, topic, categories }: TopicD
             <div className="flex-1 min-w-0">
               <div className="flex items-center text-sm text-[#71767b] mb-1 space-x-1 flex-wrap">
                 <span className="font-bold text-[#e7e9ea] hover:underline cursor-pointer">{topic.author.name || 'anonim'}</span>
-                <span className="text-[#71767b]">@{topic.author.name?.replace(/\s+/g, '').toLowerCase() || 'anonim'}</span>
                 <span className="text-[#71767b]">•</span>
                 <span className="text-[#71767b]">{formatTimeAgo(topic.createdAt.toString())}</span>
                 <span className="text-[#71767b]">•</span>
@@ -447,7 +446,6 @@ export default function TopicDetailClient({ session, topic, categories }: TopicD
                     <div className="flex-1">
                       <div className="flex items-center space-x-1 text-sm text-[#71767b] mb-1 flex-wrap">
                         <span className="font-bold text-[#e7e9ea]">{comment.author.name}</span>
-                        <span className="text-[#71767b]">@{comment.author.name?.replace(/\s+/g, '').toLowerCase() || 'anonim'}</span>
                         <span className="text-[#71767b]">•</span>
                         <span className="text-[#71767b]">{formatTimeAgo(comment.createdAt.toString())}</span>
                       </div>
@@ -467,7 +465,6 @@ export default function TopicDetailClient({ session, topic, categories }: TopicD
                               <div className="flex-1">
                                 <div className="flex items-center space-x-1 text-sm text-[#71767b] mb-1 flex-wrap">
                                   <span className="font-bold text-[#e7e9ea]">{reply.author.name}</span>
-                                  <span className="text-[#71767b]">@{reply.author.name?.replace(/\s+/g, '').toLowerCase() || 'anonim'}</span>
                                   <span className="text-[#71767b]">•</span>
                                   <span className="text-[#71767b]">{formatTimeAgo(reply.createdAt.toString())}</span>
                                 </div>
