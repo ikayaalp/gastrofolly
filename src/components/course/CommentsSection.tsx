@@ -185,7 +185,7 @@ export default function CommentsSection({
               </div>
               <button
                 onClick={() => setShowChefModal(false)}
-                className="text-gray-400 hover:text-white hover:bg-gray-800 p-2 rounded-lg transition-all"
+                className="text-gray-400 hover:text-white hover:bg-gray-800 p-2 rounded-lg transition-all mr-12 lg:mr-0"
               >
                 <X className="h-5 w-5" />
               </button>
