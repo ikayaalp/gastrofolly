@@ -274,12 +274,12 @@ export default function ChefAIClient() {
 
             {/* Input Area */}
             <div className={`bg-[#09090b] p-3 border-t border-[#27272a] shrink-0 transition-all duration-200 ${isFocused ? 'pb-2' : 'pb-24 md:pb-3'}`}>
-                <div className="flex items-end bg-[#18181b] border border-[#3f3f46] rounded-[28px] p-1 px-4 relative">
+                <div className="flex items-end bg-[#18181b] border border-[#3f3f46] rounded-[28px] p-1 px-4 relative overflow-hidden">
                     <textarea
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         placeholder="Bir şeyler sor (örn: Lazanya tarifi)..."
-                        className="flex-1 bg-transparent text-white text-[15px] max-h-24 py-3 focus:outline-none resize-none placeholder-gray-500 appearance-none"
+                        className="flex-1 bg-transparent text-white text-[15px] max-h-24 py-3 focus:outline-none resize-none placeholder-gray-500 appearance-none pr-12 min-w-0"
                         rows={1}
                         autoComplete="off"
                         autoCorrect="off"
@@ -309,7 +309,7 @@ export default function ChefAIClient() {
                     <button
                         onClick={() => sendMessage(input)}
                         disabled={!input.trim() || isLoading}
-                        className={`mb-1 p-2 rounded-full flex-shrink-0 transition-all ${!input.trim() || isLoading
+                        className={`absolute right-2 bottom-1.5 p-2 rounded-full flex-shrink-0 transition-all z-10 ${!input.trim() || isLoading
                             ? 'bg-[#27272a] text-gray-500'
                             : 'bg-gradient-to-br from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-900/30'
                             }`}
