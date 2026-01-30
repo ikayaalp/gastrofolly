@@ -7,7 +7,6 @@ import UserDropdown from "@/components/ui/UserDropdown";
 import HeaderSearch from "@/components/layout/HeaderSearch";
 import { useRouter } from "next/navigation";
 import Footer from "@/components/layout/Footer";
-import HomeStories from "@/components/home/HomeStories";
 import AutoScrollCourses from "@/components/home/AutoScrollCourses";
 import FAQSection from "@/components/home/FAQSection";
 import { Crown } from "lucide-react";
@@ -341,8 +340,7 @@ export default function LandingPageClient({
                 </section>
             )}
 
-            {/* Stories Section (Mobile Only) */}
-            <HomeStories />
+
 
             {/* Auto Scrolling Courses */}
             {initialFeatured.length > 0 && (

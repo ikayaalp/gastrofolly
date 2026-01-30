@@ -175,9 +175,8 @@ export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave, cur
                         )}
 
                         {/* Poll Display */}
-                        {/* Poll Display */}
                         {internalPollData && (
-                            <div className="mb-3 p-4 bg-gray-900/50 border border-gray-800 rounded-xl">
+                            <div className="mb-3 p-4 bg-black border border-gray-800 rounded-xl">
                                 <h3 className="text-white font-medium mb-3">{internalPollData.question}</h3>
                                 <div className="space-y-2">
                                     {internalPollData.options.map((option) => {

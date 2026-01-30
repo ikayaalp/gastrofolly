@@ -59,7 +59,7 @@ export default function LinksPage() {
                     Gastrofolly <span className="text-gray-500 text-sm font-normal">x</span> Culinora
                 </h1>
                 <p className="text-gray-400 text-sm px-6">
-                    Gastrofolly takipçilerine özel fırsatlarla gastronomi dünyasına adım at.
+                    Gastrofolly takipçilerine özel %20 indirim fırsatıyla gastronomi dünyasına adım at.
                 </p>
             </div>
 

@@ -16,6 +16,7 @@ import HeroSection from "@/components/home/HeroSection"
 import UserDropdown from "@/components/ui/UserDropdown"
 import NotificationDropdown from "@/components/ui/NotificationDropdown"
 import SearchModal from "@/components/ui/SearchModal"
+import HomeStories from "@/components/home/HomeStories"
 
 interface Course {
   id: string
@@ -164,6 +165,11 @@ export default function HomePageClient({
 
       {/* Ana İçerik */}
       <main className="pt-16 md:pt-20 pb-20 md:pb-0">
+        {/* Stories Section */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+          <HomeStories />
+        </div>
+
         {/* Hero Section */}
         {featuredCourses.length > 0 && (
           <HeroSection courses={featuredCourses} />

@@ -249,8 +249,8 @@ export default function HomeStories() {
     if (stories.length === 0) return null;
 
     return (
-        <div className="md:hidden py-8 pl-4 overflow-x-auto scrollbar-hide">
-            <div className="flex space-x-6">
+        <div className="py-4 md:py-8 overflow-x-auto scrollbar-hide">
+            <div className="flex space-x-4 md:space-x-8">
                 {stories.map((group, index) => (
                     <div
                         key={group.id}
