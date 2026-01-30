@@ -58,33 +58,61 @@ export default function MediaUploader({ onUploadComplete, onRemove, currentMedia
         setUploadProgress(10)
 
         try {
+            // 1. Get Cloudinary Config
+            const configRes = await fetch('/api/admin/cloudinary-config')
+            if (!configRes.ok) throw new Error('Cloudinary konfigürasyonu alınamadı')
+            const { cloudName, uploadPreset } = await configRes.json()
+
+            // 2. Prepare Cloudinary Upload
+            const isVideo = ALLOWED_VIDEO_TYPES.includes(file.type)
+            const resourceType = isVideo ? 'video' : 'image'
+            const url = `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`
+
             const formData = new FormData()
             formData.append('file', file)
+            formData.append('upload_preset', uploadPreset)
+            formData.append('folder', 'forum-media')
 
-            // Simüle edilmiş progress
-            const progressInterval = setInterval(() => {
-                setUploadProgress(prev => Math.min(prev + 10, 90))
-            }, 200)
-
-            const response = await fetch('/api/forum/upload-media', {
-                method: 'POST',
-                body: formData
-            })
-
-            clearInterval(progressInterval)
-
-            if (!response.ok) {
-                const data = await response.json()
-                throw new Error(data.error || 'Yükleme başarısız')
+            if (isVideo) {
+                formData.append('transformation', 'c_limit,w_1280,h_720')
             }
 
-            const result = await response.json()
+            // 3. Upload with XHR for accurate progress
+            const result = await new Promise<any>((resolve, reject) => {
+                const xhr = new XMLHttpRequest()
+                xhr.open('POST', url)
+
+                xhr.upload.onprogress = (e) => {
+                    if (e.lengthComputable) {
+                        const percentComplete = Math.round((e.loaded / e.total) * 100)
+                        setUploadProgress(percentComplete)
+                    }
+                }
+
+                xhr.onload = () => {
+                    if (xhr.status === 200) {
+                        resolve(JSON.parse(xhr.responseText))
+                    } else {
+                        reject(new Error('Yükleme başarısız oldu'))
+                    }
+                }
+
+                xhr.onerror = () => reject(new Error('Ağ hatası oluştu'))
+                xhr.send(formData)
+            })
+
             setUploadProgress(100)
 
+            // Fallback for thumbnailUrl if not provided by Cloudinary directly in unsigned upload
+            let thumbnailUrl = result.secure_url
+            if (isVideo) {
+                thumbnailUrl = result.secure_url.replace(/\.[^.]+$/, '.jpg')
+            }
+
             onUploadComplete({
-                mediaUrl: result.mediaUrl,
-                mediaType: result.mediaType,
-                thumbnailUrl: result.thumbnailUrl
+                mediaUrl: result.secure_url,
+                mediaType: isVideo ? 'VIDEO' : 'IMAGE',
+                thumbnailUrl: thumbnailUrl
             })
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Yükleme sırasında hata oluştu')

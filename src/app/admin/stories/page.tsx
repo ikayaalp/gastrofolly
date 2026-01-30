@@ -127,26 +127,58 @@ export default function AdminStoriesPage() {
 
         try {
             setUploading(true);
-            const formData = new FormData();
-            formData.append("media", selectedFile);
+
+            // 1. Get Cloudinary Config
+            const configRes = await fetch('/api/admin/cloudinary-config');
+            if (!configRes.ok) throw new Error('Cloudinary konfigürasyonu alınamadı');
+            const { cloudName, uploadPreset } = await configRes.json();
+
+            // Helper for client-side upload
+            const uploadToCloudinary = async (file: File, type: string) => {
+                const url = `https://api.cloudinary.com/v1_1/${cloudName}/${type}/upload`;
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', uploadPreset);
+                formData.append('folder', 'stories');
+
+                // Enforce 720p for videos
+                if (type === 'video') {
+                    formData.append('transformation', 'c_limit,w_1280,h_720');
+                }
+
+                const res = await fetch(url, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!res.ok) {
+                    const error = await res.json();
+                    throw new Error(error.error?.message || 'Yükleme başarısız');
+                }
+
+                const data = await res.json();
+                return data.secure_url;
+            };
+
+            // 2. Upload Files to Cloudinary
+            const mediaUrl = await uploadToCloudinary(selectedFile, mediaType.toLowerCase());
+            let coverImageUrl = null;
             if (selectedCoverFile) {
-                formData.append("coverImage", selectedCoverFile);
-            }
-            formData.append("title", title);
-            formData.append("mediaType", mediaType);
-
-            // Default duration: 5000ms for image, 15000ms for video if not specified
-            // For video, optimally we would extract actual duration, but for MVP:
-            const duration = mediaType === "VIDEO" ? "15000" : "5000";
-            formData.append("duration", duration);
-
-            if (selectedCourse) {
-                formData.append("courseId", selectedCourse);
+                coverImageUrl = await uploadToCloudinary(selectedCoverFile, 'image');
             }
 
+            // 3. Save to Database via our API
             const res = await fetch("/api/stories", {
                 method: "POST",
-                body: formData,
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    mediaUrl,
+                    mediaType,
+                    title,
+                    coverImage: coverImageUrl,
+                    courseId: selectedCourse,
+                    duration: mediaType === "VIDEO" ? 15000 : 5000
+                }),
             });
 
             const data = await res.json();
@@ -162,12 +194,12 @@ export default function AdminStoriesPage() {
                 // Refresh list
                 fetchData();
             } else {
-                alert(data.error || "Yükleme başarısız");
+                alert(data.error || "Veritabanı kaydı başarısız");
             }
 
         } catch (error) {
             console.error("Upload error:", error);
-            alert("Hata oluştu");
+            alert(error instanceof Error ? error.message : "Hata oluştu");
         } finally {
             setUploading(false);
         }

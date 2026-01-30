@@ -53,69 +53,11 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Yetkilendirme gerekli' }, { status: 401 });
         }
 
-        const formData = await request.formData();
-        const file = formData.get("media") as File;
-        const type = formData.get("mediaType") as string; // 'IMAGE' or 'VIDEO'
-        const duration = parseInt(formData.get("duration") as string) || 5000;
-        const courseId = formData.get("courseId") as string;
+        const body = await request.json();
+        const { mediaUrl, mediaType, title, coverImage, courseId, duration } = body;
 
-        const title = formData.get("title") as string;
-        const coverFile = formData.get("coverImage") as File;
-
-        console.log("---- DEBUG STORY UPLOAD ----");
-        console.log("Received Title:", title);
-        console.log("Received CoverFile:", coverFile ? coverFile.name : "None");
-        console.log("FormData Keys:", Array.from(formData.keys()));
-        console.log("----------------------------");
-
-        if (!file) {
-            return NextResponse.json({ error: "Medya dosyası bulunamadı" }, { status: 400 });
-        }
-
-        // Cloudinary Upload Logic for Main Media
-        const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-        const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET || 'chef-courses-unsigned';
-        const folder = 'stories'; // Separate folder for stories
-
-        if (!cloudName) {
-            return NextResponse.json({ error: "Server konfigürasyon hatası (Cloudinary)" }, { status: 500 });
-        }
-
-        // Helper to upload to Cloudinary
-        const uploadToCloudinary = async (fileToUpload: File, resourceType: 'image' | 'video' = 'image', transformation?: string) => {
-            const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`;
-            const uploadFormData = new FormData();
-            uploadFormData.append('file', fileToUpload);
-            if (uploadPreset) {
-                uploadFormData.append('upload_preset', uploadPreset);
-            }
-            uploadFormData.append('folder', folder);
-            uploadFormData.append('public_id', `story_${Date.now()}_${Math.random().toString(36).substring(7)}`);
-            if (transformation) {
-                uploadFormData.append('transformation', transformation);
-            }
-
-            const res = await fetch(cloudinaryUrl, {
-                method: 'POST',
-                body: uploadFormData
-            });
-
-            if (!res.ok) {
-                const errData = await res.json();
-                throw new Error(errData.error?.message || 'Cloudinary upload failed');
-            }
-            const data = await res.json();
-            return data.secure_url;
-        };
-
-        const resourceType = type === 'VIDEO' ? 'video' : 'image';
-        const transformation = type === 'VIDEO' ? 'c_limit,w_1280,h_720' : undefined;
-        const mediaUrl = await uploadToCloudinary(file, resourceType, transformation);
-
-        let coverImageUrl = null;
-        if (coverFile) {
-            // Upload cover image
-            coverImageUrl = await uploadToCloudinary(coverFile, 'image');
+        if (!mediaUrl) {
+            return NextResponse.json({ error: "Medya URL bulunamadı" }, { status: 400 });
         }
 
         // Expiry: Süresiz (100 yıl)
@@ -124,13 +66,13 @@ export async function POST(request: NextRequest) {
         const story = await prisma.story.create({
             data: {
                 mediaUrl,
-                mediaType: type || 'IMAGE',
-                duration,
+                mediaType: mediaType || 'IMAGE',
+                duration: duration || (mediaType === 'VIDEO' ? 15000 : 5000),
                 expiresAt,
                 courseId: courseId || null,
                 creatorId: user.id,
                 title: title || null,
-                coverImage: coverImageUrl || null,
+                coverImage: coverImage || null,
             },
         });
 
