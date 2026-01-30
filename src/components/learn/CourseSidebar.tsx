@@ -57,14 +57,14 @@ export default function CourseSidebar({ course, progress, currentLessonId, hasFu
       {/* Mobile Toggle Button */}
       <button
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className="lg:hidden fixed top-20 right-4 z-50 bg-orange-600 hover:bg-orange-700 text-white p-3 rounded-full shadow-lg transition-colors"
+        className="lg:hidden fixed top-20 right-4 z-[100] bg-orange-600 hover:bg-orange-700 text-white p-3 rounded-full shadow-lg transition-colors"
       >
         {isCollapsed ? <Menu className="h-5 w-5" /> : <X className="h-5 w-5" />}
       </button>
 
       {/* Sidebar */}
       <div className={`
-        fixed lg:relative top-0 right-0 h-screen bg-[#0a0a0a] border-l border-gray-800 shadow-2xl z-40 transition-transform duration-300
+        fixed lg:relative top-0 right-0 h-screen bg-[#0a0a0a] border-l border-gray-800 shadow-2xl z-[100] transition-transform duration-300
         ${isCollapsed ? 'translate-x-full lg:translate-x-0' : 'translate-x-0'}
         w-80 lg:w-96 flex flex-col
       `}>
@@ -238,7 +238,7 @@ export default function CourseSidebar({ course, progress, currentLessonId, hasFu
       {/* Overlay for mobile */}
       {!isCollapsed && (
         <div
-          className="lg:hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-30"
+          className="lg:hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-[90]"
           onClick={() => setIsCollapsed(true)}
         />
       )}
