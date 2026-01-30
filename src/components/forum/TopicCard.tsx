@@ -105,7 +105,7 @@ export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave, cur
     return (
         <>
             <div className="block">
-                <div className="flex bg-[#0a0a0a] border border-gray-800 rounded-md hover:border-gray-700 transition-colors overflow-hidden mb-3">
+                <div className="flex bg-black border border-gray-800 rounded-md hover:border-gray-700 transition-colors overflow-hidden mb-3">
 
                     {/* Content Area */}
                     <div className="flex-1 p-3 pb-1">
