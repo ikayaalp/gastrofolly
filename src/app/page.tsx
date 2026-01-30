@@ -71,16 +71,27 @@ async function getLandingData() {
       },
       include: {
         instructor: true,
+        _count: {
+          select: { lessons: true }
+        },
         progress: {
-          where: { userId: userId },
-          select: { percentage: true }
+          where: {
+            userId: userId,
+            isCompleted: true
+          }
         }
       },
       take: 5
-    }).then(courses => courses.map(course => ({
-      ...course,
-      progress: course.progress[0]?.percentage || 0
-    })) as any);
+    }).then(courses => courses.map(course => {
+      const totalLessons = course._count.lessons || 0;
+      const completedLessons = course.progress.length;
+      const percentage = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+
+      return {
+        ...course,
+        progress: percentage
+      };
+    }) as any);
   }
 
   // Execute all queries in parallel
@@ -90,6 +101,16 @@ async function getLandingData() {
     userCoursesPromise
   ]);
 
+  // Format featured courses to match interface (handle nulls)
+  const formattedFeatured = featured.map(course => ({
+    ...course,
+    instructor: {
+      ...course.instructor,
+      name: course.instructor.name || 'Eğitmen',
+      image: course.instructor.image || undefined
+    }
+  }));
+
   // Format categories
   const categories = categoriesData.map(c => ({
     id: c.id,
@@ -98,7 +119,7 @@ async function getLandingData() {
     courseCount: c._count.courses
   }));
 
-  return { categories, featured, userCourses };
+  return { categories, featured: formattedFeatured, userCourses };
 }
 
 
