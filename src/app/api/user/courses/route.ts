@@ -63,7 +63,8 @@ export async function GET(request: NextRequest) {
     // 3. Fetch Course Details
     const courses = await prisma.course.findMany({
       where: {
-        id: { in: allCourseIds }
+        id: { in: allCourseIds },
+        isPublished: true // Sadece yayınlananları göster
       },
       include: {
         instructor: true,
