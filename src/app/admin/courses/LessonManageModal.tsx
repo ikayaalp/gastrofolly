@@ -185,39 +185,56 @@ export default function LessonManageModal({ course, onClose }: LessonManageModal
 
   // Video upload handler for lesson form
   const handleVideoUploadInForm = async (file: File) => {
+    // Video type check
+    if (!file.type.startsWith('video/')) {
+      alert("Lütfen geçerli bir video dosyası seçin")
+      return
+    }
+
     setUploadingVideo(true)
     try {
-      // Firebase Storage'a yükle
-      const { storage } = await import('@/lib/firebase')
-      const { ref, uploadBytesResumable, getDownloadURL } = await import('firebase/storage')
+      // 1. Get Cloudinary Config
+      const configRes = await fetch('/api/admin/cloudinary-config')
+      if (!configRes.ok) throw new Error('Cloudinary konfigürasyonu alınamadı')
+      const { cloudName, uploadPreset } = await configRes.json()
 
-      const timestamp = Date.now()
-      const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
-      const path = `videos/form/${timestamp}_${safeFileName}`
-      const storageRef = ref(storage, path)
+      // 2. Prepare Upload
+      const url = `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('upload_preset', uploadPreset)
+      formData.append('folder', 'chef-courses/general')
 
+      // 3. Upload with XHR
       await new Promise<void>((resolve, reject) => {
-        const uploadTask = uploadBytesResumable(storageRef, file, { contentType: file.type || 'video/mp4' })
-        uploadTask.on('state_changed', () => { }, reject, async () => {
-          try {
-            const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref)
+        const xhr = new XMLHttpRequest()
+        xhr.open('POST', url)
+
+        xhr.onload = () => {
+          if (xhr.status === 200) {
+            const data = JSON.parse(xhr.responseText)
+
             // URL'i forma yaz
-            setLessonForm(prev => ({ ...prev, videoUrl: downloadUrl }))
+            setLessonForm(prev => ({ ...prev, videoUrl: data.secure_url }))
 
             // Süreyi hesapla
             const video = document.createElement('video')
-            video.src = downloadUrl
+            video.src = data.secure_url
             video.onloadedmetadata = () => {
               const durationInMinutes = Math.round(video.duration / 60)
               setLessonForm(prev => ({ ...prev, duration: durationInMinutes }))
               resolve()
             }
             video.onerror = () => resolve() // süre alınamazsa devam et
-          } catch (e) {
-            reject(e)
+          } else {
+            reject(new Error('Cloudinary upload failed'))
           }
-        })
+        }
+
+        xhr.onerror = () => reject(new Error('Network error during upload'))
+        xhr.send(formData)
       })
+
     } catch (error) {
       console.error('Video upload error:', error)
       alert('Video yüklenirken hata oluştu')

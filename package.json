@@ -16,8 +16,6 @@
     "create-admin": "node scripts/create-admin.js"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.916.0",
-    "@aws-sdk/s3-request-presigner": "^3.916.0",
     "@google/genai": "^1.38.0",
     "@google/generative-ai": "^0.24.1",
     "@headlessui/react": "^2.2.8",
@@ -32,7 +30,6 @@
     "cloudinary": "^2.7.0",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
-    "firebase": "^12.4.0",
     "framer-motion": "^12.29.0",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.544.0",
