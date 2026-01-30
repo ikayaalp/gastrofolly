@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, ChevronUp, Plus, Video } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { getOptimizedMediaUrl } from '@/lib/utils';
 
 interface Story {
     id: string;
@@ -118,7 +119,7 @@ const StoryViewer = ({ stories, initialIndex, onClose }: StoryViewerProps) => {
             <div className="absolute inset-0 bg-black flex items-center justify-center">
                 {currentStory.mediaType === 'VIDEO' ? (
                     <video
-                        src={currentStory.mediaUrl}
+                        src={getOptimizedMediaUrl(currentStory.mediaUrl, 'VIDEO')}
                         className="w-full h-full object-contain"
                         autoPlay
                         playsInline
@@ -128,7 +129,7 @@ const StoryViewer = ({ stories, initialIndex, onClose }: StoryViewerProps) => {
                     />
                 ) : (
                     <img
-                        src={currentStory.mediaUrl}
+                        src={getOptimizedMediaUrl(currentStory.mediaUrl, 'IMAGE')}
                         className="w-full h-full object-contain"
                         alt="Story"
                     />
@@ -155,7 +156,7 @@ const StoryViewer = ({ stories, initialIndex, onClose }: StoryViewerProps) => {
                     {/* User Info */}
                     <div className="flex items-center">
                         <img
-                            src={currentGroup.user.avatar}
+                            src={getOptimizedMediaUrl(currentGroup.user.avatar, 'IMAGE')}
                             alt={currentGroup.user.name}
                             className="w-8 h-8 rounded-full border border-white/20 mr-3"
                         />
@@ -260,7 +261,7 @@ export default function HomeStories() {
                         <div className={`w-[96px] h-[96px] rounded-full p-[2px] bg-gradient-to-tr from-orange-400 to-orange-600`}>
                             <div className="w-full h-full rounded-full p-[2px] bg-black">
                                 <img
-                                    src={group.user.avatar}
+                                    src={getOptimizedMediaUrl(group.user.avatar, 'IMAGE')}
                                     alt={group.user.name}
                                     className="w-full h-full rounded-full object-cover"
                                 />

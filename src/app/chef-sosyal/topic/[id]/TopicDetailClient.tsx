@@ -9,6 +9,7 @@ import LeftSidebar from "@/components/forum/LeftSidebar"
 import RightSidebar from "@/components/forum/RightSidebar"
 import HashtagText from "@/components/forum/HashtagText"
 import ConfirmationModal from "@/components/ui/ConfirmationModal"
+import { getOptimizedMediaUrl } from "@/lib/utils"
 
 interface Author {
   id: string
@@ -334,7 +335,7 @@ export default function TopicDetailClient({ session, topic, categories }: TopicD
           <div className="flex bg-[#0a0a0a] border border-gray-800 rounded-md overflow-hidden mb-4">
             <div className="flex-1 p-3 pb-1">
               <div className="flex items-center text-xs text-gray-500 mb-2 space-x-2">
-                {topic.author.image ? <img src={topic.author.image} className="w-5 h-5 rounded-full object-cover" /> : <div className="w-5 h-5 bg-gray-700 rounded-full flex items-center justify-center"><User className="w-3 h-3 text-gray-400" /></div>}
+                {topic.author.image ? <img src={getOptimizedMediaUrl(topic.author.image, 'IMAGE')} className="w-5 h-5 rounded-full object-cover" /> : <div className="w-5 h-5 bg-gray-700 rounded-full flex items-center justify-center"><User className="w-3 h-3 text-gray-400" /></div>}
                 <span className="font-medium text-gray-400">u/{topic.author.name || 'anonim'}</span>
                 <span className="text-gray-600">•</span>
                 <span>{formatTimeAgo(topic.createdAt.toString())}</span>
@@ -363,11 +364,11 @@ export default function TopicDetailClient({ session, topic, categories }: TopicD
                         className="w-full h-full object-contain bg-black"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <source src={topic.mediaUrl} type="video/mp4" />
+                        <source src={getOptimizedMediaUrl(topic.mediaUrl, 'VIDEO')} type="video/mp4" />
                       </video>
                     </div>
                   ) : (
-                    <img src={topic.mediaUrl} alt={topic.title} className="max-w-full max-h-[700px] object-contain" />
+                    <img src={getOptimizedMediaUrl(topic.mediaUrl, 'IMAGE')} alt={topic.title} className="max-w-full max-h-[700px] object-contain" />
                   )}
                 </div>
               )}
@@ -392,7 +393,7 @@ export default function TopicDetailClient({ session, topic, categories }: TopicD
               {session?.user ? (
                 <div className="mt-6 mb-8 flex gap-3" id="comment-form">
                   <div className="flex-shrink-0">
-                    {session.user.image ? <img src={session.user.image} className="w-8 h-8 rounded-full object-cover" alt={session.user.name || ''} /> : <div className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center"><User className="w-4 h-4 text-gray-400" /></div>}
+                    {session.user.image ? <img src={getOptimizedMediaUrl(session.user.image, 'IMAGE')} className="w-8 h-8 rounded-full object-cover" alt={session.user.name || ''} /> : <div className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center"><User className="w-4 h-4 text-gray-400" /></div>}
                   </div>
                   <form onSubmit={handleAddComment} className="flex-1 relative group">
                     {replyingTo && (
@@ -435,7 +436,7 @@ export default function TopicDetailClient({ session, topic, categories }: TopicD
                 {comments.map(comment => (
                   <div key={comment.id} className="flex space-x-2">
                     <div className="flex-shrink-0">
-                      {comment.author.image ? <img src={comment.author.image} className="w-8 h-8 rounded-full object-cover" /> : <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center"><User className="h-4 w-4 text-gray-400" /></div>}
+                      {comment.author.image ? <img src={getOptimizedMediaUrl(comment.author.image, 'IMAGE')} className="w-8 h-8 rounded-full object-cover" /> : <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center"><User className="h-4 w-4 text-gray-400" /></div>}
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 text-xs text-gray-400 mb-1">
@@ -452,7 +453,7 @@ export default function TopicDetailClient({ session, topic, categories }: TopicD
                           {comment.replies.map(reply => (
                             <div key={reply.id} className="flex space-x-2 relative">
                               <div className="flex-shrink-0">
-                                {reply.author.image ? <img src={reply.author.image} className="w-6 h-6 rounded-full object-cover" /> : <div className="w-6 h-6 bg-gray-700 rounded-full flex items-center justify-center"><User className="h-3 w-3 text-gray-400" /></div>}
+                                {reply.author.image ? <img src={getOptimizedMediaUrl(reply.author.image, 'IMAGE')} className="w-6 h-6 rounded-full object-cover" /> : <div className="w-6 h-6 bg-gray-700 rounded-full flex items-center justify-center"><User className="h-3 w-3 text-gray-400" /></div>}
                               </div>
                               <div className="flex-1">
                                 <div className="flex items-center space-x-2 text-xs text-gray-400 mb-1"><span className="font-bold text-gray-300">{reply.author.name}</span><span>•</span><span>{formatTimeAgo(reply.createdAt.toString())}</span></div>
@@ -485,7 +486,7 @@ export default function TopicDetailClient({ session, topic, categories }: TopicD
         >
           <div className="relative max-w-7xl max-h-screen w-full h-full flex items-center justify-center">
             <img
-              src={topic.mediaUrl}
+              src={getOptimizedMediaUrl(topic.mediaUrl, 'IMAGE')}
               alt={topic.title}
               className="max-w-full max-h-full object-contain"
             />

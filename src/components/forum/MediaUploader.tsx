@@ -73,9 +73,10 @@ export default function MediaUploader({ onUploadComplete, onRemove, currentMedia
             formData.append('upload_preset', uploadPreset)
             formData.append('folder', 'forum-media')
 
-            if (isVideo) {
-                formData.append('transformation', 'c_limit,w_1280,h_720')
-            }
+            // Removed client-side transformation to avoid CORS/Unsigned restriction issues.
+            // if (isVideo) {
+            //     formData.append('transformation', 'c_limit,w_1280,h_720')
+            // }
 
             // 3. Upload with XHR for accurate progress
             const result = await new Promise<any>((resolve, reject) => {

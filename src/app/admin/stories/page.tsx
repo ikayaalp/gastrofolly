@@ -142,13 +142,9 @@ export default function AdminStoriesPage() {
                 formData.append('upload_preset', uploadPreset);
                 formData.append('folder', 'stories');
 
-                // Enforce 720p and quality optimizations
-                // q_auto,f_auto for both images and videos is a best practice
-                let transformation = 'q_auto,f_auto';
-                if (type === 'video') {
-                    transformation += ',c_limit,w_1280,h_720';
-                }
-                formData.append('transformation', transformation);
+                // Removed client-side transformation parameter to avoid CORS/Unsigned restriction issues.
+                // We will apply transformations on the viewer side via URL manipulation.
+                // formData.append('transformation', transformation);
 
                 return new Promise<string>((resolve, reject) => {
                     const xhr = new XMLHttpRequest();

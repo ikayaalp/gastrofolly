@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { ThumbsUp, MessageCircle, MoreHorizontal, User, Play, Clock, Bookmark, ChefHat } from 'lucide-react'
 import HashtagText from './HashtagText'
 import ConfirmationModal from '@/components/ui/ConfirmationModal'
+import { getOptimizedMediaUrl } from '@/lib/utils'
 
 interface TopicCardProps {
     topic: {
@@ -123,7 +124,7 @@ export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave, cur
                             ) : (
                                 <>
                                     {topic.author.image ? (
-                                        <img src={topic.author.image} alt={topic.author.name || ''} className="w-5 h-5 rounded-full object-cover" />
+                                        <img src={getOptimizedMediaUrl(topic.author.image, 'IMAGE')} alt={topic.author.name || ''} className="w-5 h-5 rounded-full object-cover" />
                                     ) : (
                                         <div className="w-5 h-5 bg-gray-700 rounded-full flex items-center justify-center">
                                             <User className="w-3 h-3 text-gray-400" />
@@ -156,7 +157,7 @@ export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave, cur
                                 {topic.mediaType === 'VIDEO' ? (
                                     <div className="relative w-full aspect-video">
                                         <video
-                                            src={topic.mediaUrl}
+                                            src={getOptimizedMediaUrl(topic.mediaUrl, 'VIDEO')}
                                             className="w-full h-full object-contain bg-black"
                                             controls
                                             controlsList="nodownload"
@@ -166,7 +167,7 @@ export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave, cur
                                     </div>
                                 ) : (
                                     <img
-                                        src={topic.mediaUrl}
+                                        src={getOptimizedMediaUrl(topic.mediaUrl, 'IMAGE')}
                                         alt={topic.title}
                                         className="object-contain max-h-[500px] w-full bg-black"
                                     />
