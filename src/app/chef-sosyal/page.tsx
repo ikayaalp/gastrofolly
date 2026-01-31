@@ -1,4 +1,5 @@
 import { getServerSession } from "next-auth/next"
+import { Metadata } from "next"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import ChefSosyalClient from "./ChefSosyalClient"
@@ -6,6 +7,12 @@ import ChefSosyalClient from "./ChefSosyalClient"
 // Next.js 13/14 App Router Page Props Interface
 interface PageProps {
   searchParams: { [key: string]: string | string[] | undefined }
+}
+
+
+export const metadata: Metadata = {
+  title: "Culinora - Chef Sosyal",
+  description: "Chef Sosyal ile yemek tutkunları ve profesyonel şeflerle etkileşime geçin. Deneyimlerinizi paylaşın, sorular sorun ve gastronomi dünyasındaki en son trendleri keşfedin.",
 }
 
 export default async function ChefSosyalPage({ searchParams }: PageProps) {
