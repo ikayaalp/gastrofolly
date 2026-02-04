@@ -125,7 +125,7 @@ export async function sendPushToAllUsers(
     title: string,
     body: string,
     data?: Record<string, unknown>
-): Promise<{ success: number; failed: number }> {
+): Promise<{ success: number; failed: number; errors?: string[] }> {
     // Push token'ı olan tüm kullanıcıları getir
     const usersWithTokens = await prisma.user.findMany({
         where: {
@@ -151,12 +151,22 @@ export async function sendPushToAllUsers(
 
 
     const tickets = await sendPushNotifications(pushTokens, title, body, data)
-    console.log('Expo returned tickets:', tickets)
+    console.log('Expo returned tickets:', JSON.stringify(tickets, null, 2))
 
     const success = tickets.filter(t => t.status === 'ok').length
     const failed = tickets.filter(t => t.status === 'error').length
 
-    console.log(`Push notification results: ${success} success, ${failed} failed`)
+    // Hataları topla
+    const errors = tickets
+        .filter(t => t.status === 'error')
+        .map(t => t.message || t.details?.error || 'Unknown error')
+        // Benzersiz hataları al
+        .filter((value, index, self) => self.indexOf(value) === index)
 
-    return { success, failed }
+    console.log(`Push notification results: ${success} success, ${failed} failed`)
+    if (errors.length > 0) {
+        console.log('Push errors:', errors)
+    }
+
+    return { success, failed, errors }
 }

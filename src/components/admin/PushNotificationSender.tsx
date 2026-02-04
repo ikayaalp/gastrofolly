@@ -35,10 +35,24 @@ export default function PushNotificationSender({ courses }: PushNotificationSend
             const data = await response.json()
 
             if (response.ok) {
+                let successMsg = `Bildirim gönderildi! (${data.inAppCount} kişiye uygulama içi, ${data.result.success} kişiye push)`
+
+                if (data.result.errors && data.result.errors.length > 0) {
+                    successMsg += `\n\nHatalar: ${data.result.errors.join(', ')}`
+                }
+
                 setStatus({
                     type: 'success',
-                    message: `Bildirim gönderildi! (${data.inAppCount} kişiye uygulama içi, ${data.result.success} kişiye push)`
+                    message: successMsg
                 })
+
+                if (data.result.failed > 0 && (!data.result.errors || data.result.errors.length === 0)) {
+                    setStatus({
+                        type: 'error',
+                        message: `Bazı bildirimler gönderilemedi. (${data.result.failed} başarısız)`
+                    })
+                }
+
                 setTitle("")
                 setMessage("")
                 setCourseId("")
