@@ -35,7 +35,10 @@ export default function PushNotificationSender({ courses }: PushNotificationSend
             const data = await response.json()
 
             if (response.ok) {
-                setStatus({ type: 'success', message: `Bildirim başarıyla gönderildi! (${data.result.success} başarılı)` })
+                setStatus({
+                    type: 'success',
+                    message: `Bildirim gönderildi! (${data.inAppCount} kişiye uygulama içi, ${data.result.success} kişiye push)`
+                })
                 setTitle("")
                 setMessage("")
                 setCourseId("")

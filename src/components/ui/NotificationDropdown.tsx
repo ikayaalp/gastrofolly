@@ -21,6 +21,7 @@ export default function NotificationDropdown() {
     const [notifications, setNotifications] = useState<Notification[]>([])
     const [unreadCount, setUnreadCount] = useState(0)
     const [loading, setLoading] = useState(false)
+    const [error, setError] = useState<string | null>(null)
     const dropdownRef = useRef<HTMLDivElement>(null)
 
     // Dışarı tıklandığında kapat
@@ -42,15 +43,20 @@ export default function NotificationDropdown() {
         if (!session?.user) return
 
         setLoading(true)
+        setError(null)
         try {
             const response = await fetch('/api/notifications')
             if (response.ok) {
                 const data = await response.json()
                 setNotifications(data.notifications)
                 setUnreadCount(data.unreadCount)
+            } else {
+                console.error('Failed to fetch notifications:', response.status, response.statusText)
+                setError('Bildirimler yüklenemedi')
             }
         } catch (error) {
             console.error('Error loading notifications:', error)
+            setError('Bir bağlantı hatası oluştu')
         } finally {
             setLoading(false)
         }
@@ -172,6 +178,16 @@ export default function NotificationDropdown() {
                         {loading ? (
                             <div className="flex items-center justify-center py-8">
                                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500"></div>
+                            </div>
+                        ) : error ? (
+                            <div className="text-center py-8 px-4">
+                                <p className="text-red-400 text-sm mb-2">{error}</p>
+                                <button
+                                    onClick={() => loadNotifications()}
+                                    className="text-xs text-blue-400 hover:text-blue-300 underline"
+                                >
+                                    Tekrar Dene
+                                </button>
                             </div>
                         ) : notifications.length === 0 ? (
                             <div className="text-center py-8 px-4">

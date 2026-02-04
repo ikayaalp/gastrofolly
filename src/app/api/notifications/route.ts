@@ -6,18 +6,26 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 // GET - Kullanıcının bildirimlerini getir
+// GET - Kullanıcının bildirimlerini getir
 export async function GET(request: NextRequest) {
     try {
+        console.log('GET /api/notifications called');
         const user = await getAuthUser(request)
+
         if (!user) {
+            console.log('GET /api/notifications: User not authenticated');
             return NextResponse.json({ error: 'Yetkilendirme gerekli' }, { status: 401 })
         }
+
+        console.log(`GET /api/notifications: Fetching for user ${user.id}`);
 
         const notifications = await prisma.notification.findMany({
             where: { userId: user.id },
             orderBy: { createdAt: 'desc' },
             take: 30
         })
+
+        console.log(`GET /api/notifications: Found ${notifications.length} notifications`);
 
         // Okunmamış bildirim sayısı
         const unreadCount = await prisma.notification.count({

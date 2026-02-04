@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
             select: { id: true }
         })
 
-        await prisma.notification.createMany({
+        const inAppResult = await prisma.notification.createMany({
             data: allUsers.map(u => ({
                 type: 'SYSTEM' as const, // Veya uygun bir tip
                 title,
@@ -51,6 +51,7 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({
             success: true,
+            inAppCount: inAppResult.count,
             result
         })
 
