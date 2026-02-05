@@ -1,6 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from './config';
+import notificationService from './notificationService';
 
 const api = axios.create({
     baseURL: config.API_BASE_URL,
@@ -71,6 +72,12 @@ const authService = {
             // Save token if provided
             if (response.data.token) {
                 await AsyncStorage.setItem('authToken', response.data.token);
+
+                // Push token'ı backend'e gönder
+                const pushToken = await AsyncStorage.getItem('expoPushToken');
+                if (pushToken) {
+                    await notificationService.sendTokenToBackend(pushToken);
+                }
             }
 
             // Save user data if provided
@@ -143,6 +150,12 @@ const authService = {
             // Save token if provided
             if (response.data.token) {
                 await AsyncStorage.setItem('authToken', response.data.token);
+
+                // Push token'ı backend'e gönder
+                const pushToken = await AsyncStorage.getItem('expoPushToken');
+                if (pushToken) {
+                    await notificationService.sendTokenToBackend(pushToken);
+                }
             }
 
             // Save user data if provided
