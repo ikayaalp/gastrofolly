@@ -82,7 +82,8 @@ export default {
                     "sounds": []
                 }
             ],
-            "expo-web-browser"
+            "expo-web-browser",
+            "expo-font"
         ],
         "extra": {
             "eas": {

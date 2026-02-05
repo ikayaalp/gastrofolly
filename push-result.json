@@ -1,0 +1,21 @@
+{
+  "errors": [
+    {
+      "code": "PUSH_TOO_MANY_EXPERIENCE_IDS",
+      "type": "USER",
+      "message": "All push notification messages in the same request must be for the same project; check the details field to investigate conflicting tokens.",
+      "details": {
+        "@ikayaalp/chef-2-0": [
+          "ExponentPushToken[ySgnxNFLKf_rR3jIYcW0TV]",
+          "ExponentPushToken[j6kYM4BF0ormWOraNGb8m6]",
+          "ExponentPushToken[wPPpEqCQxsjFMKi_amaKxH]"
+        ],
+        "@ismailkayaalp/chef-2-0": [
+          "ExponentPushToken[EP3n7qPbvY47PULaRpwESv]"
+        ]
+      },
+      "isTransient": false,
+      "requestId": "7d9d4c35-2bb9-4403-8fdf-9ac7da48cdeb"
+    }
+  ]
+}

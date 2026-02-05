@@ -61,6 +61,7 @@ export async function sendPushNotification(
 
 /**
  * Birden fazla kullanıcıya push notification gönder
+ * Token'ları tek tek gönderir - farklı project ID'leri desteklemek için
  */
 export async function sendPushNotifications(
     pushTokens: string[],
@@ -68,24 +69,17 @@ export async function sendPushNotifications(
     body: string,
     data?: Record<string, unknown>
 ): Promise<ExpoPushTicket[]> {
-    // Expo push API'si en fazla 100 mesaj kabul eder, parçalara böl
-    const chunkSize = 100
-    const chunks: string[][] = []
-
-    for (let i = 0; i < pushTokens.length; i += chunkSize) {
-        chunks.push(pushTokens.slice(i, i + chunkSize))
-    }
-
     const allTickets: ExpoPushTicket[] = []
 
-    for (const chunk of chunks) {
-        const messages: PushMessage[] = chunk.map(token => ({
+    // Her token için ayrı istek gönder (farklı project ID'leri desteklemek için)
+    for (const token of pushTokens) {
+        const message: PushMessage = {
             to: token,
             sound: 'default',
             title,
             body,
             data: data || {},
-        }))
+        }
 
         try {
             const response = await fetch('https://exp.host/--/api/v2/push/send', {
@@ -95,23 +89,24 @@ export async function sendPushNotifications(
                     'Accept-encoding': 'gzip, deflate',
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(messages),
+                body: JSON.stringify(message),
             })
 
             const result = await response.json()
 
-            // Expo API returns { data: [...] }
-            if (result.data && Array.isArray(result.data)) {
-                allTickets.push(...(result.data as ExpoPushTicket[]))
-            } else if (Array.isArray(result)) {
-                // Fallback if it returns array directly (rare but possible in some error cases or old api)
-                allTickets.push(...(result as ExpoPushTicket[]))
-            } else {
-                // Single object or unexpected structure
-                allTickets.push(result as unknown as ExpoPushTicket)
+            // Expo API tek mesaj için { data: ticket } döndürür
+            if (result.data) {
+                allTickets.push(result.data as ExpoPushTicket)
+            } else if (result.status) {
+                // Doğrudan ticket döndüyse
+                allTickets.push(result as ExpoPushTicket)
+            } else if (result.errors) {
+                console.error('Push error for token:', token, result.errors)
+                allTickets.push({ status: 'error', message: result.errors[0]?.message || 'Unknown error' })
             }
         } catch (error) {
-            console.error('Error sending batch push notifications:', error)
+            console.error('Error sending push notification to token:', token, error)
+            allTickets.push({ status: 'error', message: 'Network error' })
         }
     }
 
