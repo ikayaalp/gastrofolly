@@ -138,24 +138,7 @@ export default function CoursesPageClient() {
                         {/* Sidebar */}
                         <aside className="lg:w-64 flex-shrink-0">
                             {/* Sorting */}
-                            <div className="mb-8">
-                                <h3 className="text-white text-sm font-bold mb-4 uppercase tracking-wider">Sıralama</h3>
-                                <div className="flex flex-col gap-2">
-                                    {[
-                                        { id: "newest", label: "Yeni Eklenenler" },
-                                        { id: "popular", label: "En Popüler" },
-                                        { id: "rating", label: "En Yüksek Puanlı" }
-                                    ].map(option => (
-                                        <button
-                                            key={option.id}
-                                            onClick={() => setSortBy(option.id as any)}
-                                            className={`text-left text-sm py-1 transition-colors ${sortBy === option.id ? "text-orange-500 font-bold" : "text-gray-400 hover:text-gray-200"}`}
-                                        >
-                                            {option.label}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
+
 
                             {/* Category Filter */}
                             <div>
