@@ -54,6 +54,22 @@ export async function GET(request: NextRequest) {
             }
         })
 
+        // 1.5. Enrollment kayıtlarını da sil (ücretsiz kurslar hariç)
+        // Önce ücretsiz olmayan kursların enrollment'larını bul ve sil
+        const enrollmentsToDelete = await prisma.enrollment.findMany({
+            where: {
+                userId: { in: userIds },
+                course: { isFree: false }
+            },
+            select: { id: true }
+        })
+
+        const deletedEnrollments = await prisma.enrollment.deleteMany({
+            where: {
+                id: { in: enrollmentsToDelete.map(e => e.id) }
+            }
+        })
+
         // 2. Abonelik bilgilerini temizle
         const updatedUsers = await prisma.user.updateMany({
             where: {
@@ -69,13 +85,14 @@ export async function GET(request: NextRequest) {
             }
         })
 
-        console.log(`[Cron] ${updatedUsers.count} abonelik temizlendi, ${deletedProgress.count} progress kaydı silindi`)
+        console.log(`[Cron] ${updatedUsers.count} abonelik temizlendi, ${deletedProgress.count} progress kaydı silindi, ${deletedEnrollments.count} enrollment kaydı silindi`)
 
         return NextResponse.json({
             success: true,
             message: `${updatedUsers.count} abonelik başarıyla temizlendi`,
             cleanedCount: updatedUsers.count,
             deletedProgressCount: deletedProgress.count,
+            deletedEnrollmentCount: deletedEnrollments.count,
             cleanedUsers: expiredSubscriptions.map(u => ({
                 email: u.email,
                 plan: u.subscriptionPlan,

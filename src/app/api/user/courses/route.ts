@@ -33,90 +33,110 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // 1. Get Course IDs from Progress (Courses user has started watching)
-    const progressRecords = await prisma.progress.findMany({
+    // 1. Enrollment kayıtlarından kursları al (kullanıcının "Kursa Başla" dediği kurslar)
+    const enrollments = await prisma.enrollment.findMany({
       where: { userId },
-      select: { courseId: true, isCompleted: true, lessonId: true },
+      select: { courseId: true, createdAt: true },
     })
 
-    const progressCourseIds = new Set(progressRecords.map(p => p.courseId))
+    const enrolledCourseIds = enrollments.map(e => e.courseId)
 
-    // 2. Get Course IDs from Payments (Courses user explicitly purchased)
+    if (enrolledCourseIds.length === 0) {
+      return NextResponse.json({ courses: [], enrollments: [] })
+    }
+
+    // 2. Kullanıcı bilgilerini al (abonelik durumu ve satın alma kayıtları)
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        subscriptionPlan: true,
+        subscriptionEndDate: true,
+      }
+    })
+
+    const isSubscriptionActive = !!(
+      user?.subscriptionPlan &&
+      user?.subscriptionEndDate &&
+      new Date(user.subscriptionEndDate) > new Date()
+    )
+
+    // 3. Satın alınan kursları çek (abonelik bitse bile erişimi devam eden kurslar)
     const paymentRecords = await prisma.payment.findMany({
       where: {
         userId,
         status: 'COMPLETED',
-        courseId: { not: null } // Only course payments
+        courseId: { not: null }
       },
       select: { courseId: true }
     })
 
-    const purchasedCourseIds = new Set(paymentRecords.map(p => p.courseId).filter(id => id !== null) as string[])
+    const purchasedCourseIds = new Set(
+      paymentRecords.map(p => p.courseId).filter(id => id !== null) as string[]
+    )
 
-    // Combine all IDs
-    const allCourseIds = Array.from(new Set([...progressCourseIds, ...purchasedCourseIds]))
+    // 4. Progress kayıtlarını al (ilerleme hesaplaması için)
+    const progressRecords = await prisma.progress.findMany({
+      where: { userId, courseId: { in: enrolledCourseIds } },
+      select: { courseId: true, isCompleted: true, lessonId: true },
+    })
 
-    if (allCourseIds.length === 0) {
-      return NextResponse.json({ courses: [], enrollments: [] })
-    }
-
-    // 3. Fetch Course Details
+    // 5. Kurs detaylarını çek
     const courses = await prisma.course.findMany({
       where: {
-        id: { in: allCourseIds },
-        isPublished: true // Sadece yayınlananları göster
+        id: { in: enrolledCourseIds },
+        isPublished: true
       },
       include: {
         instructor: true,
         category: true,
-        lessons: true, // Need lessons to count total for progress
+        lessons: true,
         reviews: true,
         _count: { select: { lessons: true } }
       },
       orderBy: { updatedAt: 'desc' }
     })
 
-    // 4. Calculate Progress for each course
-    const formattedCourses = courses.map(course => {
-      // Find progress records for this course
-      const courseProgress = progressRecords.filter(p => p.courseId === course.id)
-      const completedLessonsCount = courseProgress.filter(p => p.isCompleted).length
+    // 6. Abonelik durumuna göre filtrele ve ilerleme hesapla
+    const formattedCourses = courses
+      .filter(course => {
+        // Ücretsiz kurslar her zaman gösterilsin
+        if (course.isFree) return true
+        // Satın alınan kurslar her zaman gösterilsin
+        if (purchasedCourseIds.has(course.id)) return true
+        // Abonelik aktifse göster
+        if (isSubscriptionActive) return true
+        // Abonelik bitmişse gösterme
+        return false
+      })
+      .map(course => {
+        const courseProgress = progressRecords.filter(p => p.courseId === course.id)
+        const completedLessonsCount = courseProgress.filter(p => p.isCompleted).length
+        const totalLessons = course.lessons.length
+        let progressPercentage = 0
 
-      const totalLessons = course.lessons.length
-      let progressPercentage = 0
+        if (totalLessons > 0) {
+          progressPercentage = Math.round((completedLessonsCount / totalLessons) * 100)
+        }
 
-      if (totalLessons > 0) {
-        progressPercentage = Math.round((completedLessonsCount / totalLessons) * 100)
-      }
+        const isPurchased = purchasedCourseIds.has(course.id)
+        const enrollmentRecord = enrollments.find(e => e.courseId === course.id)
 
-      // Check if purchased
-      const isPurchased = purchasedCourseIds.has(course.id)
+        return {
+          ...course,
+          progress: progressPercentage,
+          isPurchased,
+          enrolledAt: enrollmentRecord?.createdAt?.toISOString() || new Date().toISOString()
+        }
+      })
 
-      // Use structure compatible with both direct course list and { course: ... } wrapper expectation
-      // The mobile app handles `item.course || item`. We will return valid course objects.
-      // We also attach `progress` property directly to the course object (or wrapper).
-
-      return {
-        ...course,
-        progress: progressPercentage,
-        isPurchased,
-        // Mock enrollment date for compatibility if needed
-        enrolledAt: new Date().toISOString()
-      }
-    })
-
-    // 5. Respond
-    // The simplified API returns a list of courses which now represent "My Courses"
-    // We wrap it in { courses: ... } as expected by mobile app
+    // 7. Yanıt
     return NextResponse.json({
       courses: formattedCourses,
-      // 'enrollments' key kept for backward compatibility if any other component relies strictly on it, 
-      // mapping it to look like old enrollment structure
       enrollments: formattedCourses.map(c => ({
         course: c,
         courseId: c.id,
         userId: userId!,
-        createdAt: new Date(), // Mock
+        createdAt: c.enrolledAt,
         progress: c.progress
       }))
     })
