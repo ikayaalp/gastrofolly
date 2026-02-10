@@ -23,6 +23,10 @@ export async function generateMetadata({ params }: TopicDetailPageProps): Promis
   return {
     title: topic?.title || "Konu Detayı",
     description: topic ? `Chef Sosyal'de "${topic.title}" konusunu keşfedin ve tartışmaya katılın.` : "Chef Sosyal konu detayı.",
+    robots: {
+      index: false,
+      follow: true,
+    },
   }
 }
 
