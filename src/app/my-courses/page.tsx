@@ -277,10 +277,7 @@ export default function MyCoursesPage() {
                           <BookOpen className="w-3 h-3 mr-1" />
                           <span>{course._count.lessons} Ders</span>
                         </div>
-                        <div className="flex items-center text-[11px] text-gray-400">
-                          <Users className="w-3 h-3 mr-1" />
-                          <span>{course._count.enrollments} Öğrenci</span>
-                        </div>
+
                       </div>
                     </div>
                   </div>
