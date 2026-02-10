@@ -137,11 +137,7 @@ export default function RecommendedCourses({ courses, currentCourseId }: Recomme
                         </div>
                       )}
 
-                      {/* Öğrenci Sayısı */}
-                      <div className="flex items-center space-x-1 text-gray-400">
-                        <Users className="h-4 w-4" />
-                        <span>{course._count.enrollments}</span>
-                      </div>
+
                     </div>
 
                     {/* Süre */}
