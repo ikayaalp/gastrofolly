@@ -173,13 +173,7 @@ function SubscriptionContent() {
                                 borderColor: "border-gray-700",
                                 buttonColor: "bg-gray-700 hover:bg-gray-600",
                                 popular: false,
-                                discount: null,
-                                features: [
-                                    "Tüm kurslara erişim",
-                                    "Sertifika desteği",
-                                    "Mobil uygulama erişimi",
-                                    "İstediğin zaman iptal et"
-                                ]
+                                discount: null
                             },
                             {
                                 name: "6 Aylık",
@@ -190,16 +184,8 @@ function SubscriptionContent() {
                                 color: "from-orange-900 to-red-900",
                                 borderColor: "border-orange-500/50",
                                 buttonColor: "bg-orange-600 hover:bg-orange-700",
-                                popular: true, // Highlight middle option
-                                discount: "%10 İndirim",
-                                features: [
-                                    "Tüm kurslara sınırsız erişim",
-                                    "Yeni içeriklere anında erişim",
-                                    "Premium topluluk erişimi",
-                                    "Eğitmenlerle doğrudan iletişim",
-                                    "Öncelikli destek",
-                                    "Sertifika desteği"
-                                ]
+                                popular: true, // Highlight middle option (Badge only now)
+                                discount: "%10 İndirim"
                             },
                             {
                                 name: "Yıllık",
@@ -211,23 +197,26 @@ function SubscriptionContent() {
                                 borderColor: "border-yellow-500/50",
                                 buttonColor: "bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-500 hover:to-orange-500",
                                 popular: false,
-                                discount: "%20 İndirim",
-                                features: [
-                                    "Tüm özelliklere tam erişim",
-                                    "En avantajlı fiyat",
-                                    "1-1 Mentorluk hakkı",
-                                    "Kariyer danışmanlığı",
-                                    "Özel etkinliklere davetiye",
-                                    "Sertifika desteği"
-                                ]
+                                discount: "%20 İndirim"
                             }
                         ].map((plan) => {
                             const Icon = plan.icon
                             const isLoading = loading === plan.name
+                            // Standard features list for all plans
+                            const commonFeatures = [
+                                "Tüm kurslara sınırsız erişim",
+                                "Yeni içeriklere anında erişim",
+                                "Premium topluluk erişimi",
+                                "Eğitmenlerle doğrudan iletişim",
+                                "Mobil ve masaüstü erişim",
+                                "Öncelikli destek",
+                                "Sertifika desteği"
+                            ];
+
                             return (
                                 <div
                                     key={plan.name}
-                                    className={`relative w-full bg-gradient-to-br ${plan.color.replace('from-', 'from-').replace('to-', 'to-')}/40 border-2 ${plan.borderColor} rounded-2xl p-6 transition-all duration-300 hover:scale-105 ${plan.popular ? 'transform scale-105 shadow-2xl shadow-orange-900/40 z-10' : 'opacity-90 hover:opacity-100'}`}
+                                    className={`relative w-full bg-gradient-to-br ${plan.color.replace('from-', 'from-').replace('to-', 'to-')}/40 border-2 ${plan.borderColor} rounded-2xl p-6 transition-all duration-300 hover:scale-105 hover:opacity-100 opacity-90`}
                                 >
                                     {plan.popular && (
                                         <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-1 rounded-full text-sm font-bold shadow-lg">
@@ -283,7 +272,7 @@ function SubscriptionContent() {
 
                                     {/* Features */}
                                     <div className="space-y-3 border-t border-white/5 pt-6">
-                                        {plan.features.map((feature, index) => (
+                                        {commonFeatures.map((feature, index) => (
                                             <div key={index} className="flex items-start gap-3">
                                                 <div className="bg-green-500/10 rounded-full p-0.5 flex-shrink-0 mt-0.5">
                                                     <Check className="h-3.5 w-3.5 text-green-400" />
