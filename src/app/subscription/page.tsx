@@ -159,50 +159,21 @@ function SubscriptionContent() {
                         </p>
                     </div>
 
-                    {/* Pricing Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16 items-start">
-                        {/* Aylık Plan */}
-                        {[
-                            {
+                    {/* Pricing Card */}
+                    <div className="flex justify-center mb-16">
+                        {(() => {
+                            const plan = {
                                 name: "Aylık",
                                 price: "299",
                                 period: "Ay",
                                 total: "299 ₺ / Ay",
-                                icon: Star,
-                                color: "from-gray-800 to-gray-900",
-                                borderColor: "border-gray-700",
-                                buttonColor: "bg-gray-700 hover:bg-gray-600",
-                                popular: false,
-                                discount: null
-                            },
-                            {
-                                name: "6 Aylık",
-                                price: "1615",
-                                period: "6 Ay",
-                                total: "Ortalama 269 ₺ / Ay",
                                 icon: Crown,
                                 color: "from-orange-900 to-red-900",
                                 borderColor: "border-orange-500/50",
                                 buttonColor: "bg-orange-600 hover:bg-orange-700",
-                                popular: true, // Highlight middle option (Badge only now)
-                                discount: "%10 İndirim"
-                            },
-                            {
-                                name: "Yıllık",
-                                price: "2870",
-                                period: "Yıl",
-                                total: "Ortalama 239 ₺ / Ay",
-                                icon: Award,
-                                color: "from-yellow-900 to-orange-900",
-                                borderColor: "border-yellow-500/50",
-                                buttonColor: "bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-500 hover:to-orange-500",
-                                popular: false,
-                                discount: "%20 İndirim"
                             }
-                        ].map((plan) => {
                             const Icon = plan.icon
                             const isLoading = loading === plan.name
-                            // Standard features list for all plans
                             const commonFeatures = [
                                 "Tüm kurslara sınırsız erişim",
                                 "Yeni içeriklere anında erişim",
@@ -211,33 +182,18 @@ function SubscriptionContent() {
                                 "Mobil ve masaüstü erişim",
                                 "Öncelikli destek",
                                 "Sertifika desteği"
-                            ];
+                            ]
 
                             return (
-                                <div
-                                    key={plan.name}
-                                    className={`relative w-full bg-gradient-to-br ${plan.color.replace('from-', 'from-').replace('to-', 'to-')}/40 border-2 ${plan.borderColor} rounded-2xl p-6 transition-all duration-300 hover:scale-105 hover:opacity-100 opacity-90`}
-                                >
-                                    {plan.popular && (
-                                        <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-1 rounded-full text-sm font-bold shadow-lg">
-                                            En Popüler
-                                        </div>
-                                    )}
-
-                                    {plan.discount && (
-                                        <div className="absolute top-4 right-4 bg-green-500/20 text-green-400 border border-green-500/50 px-2 py-0.5 rounded text-xs font-bold">
-                                            {plan.discount}
-                                        </div>
-                                    )}
-
+                                <div className="relative w-full max-w-md bg-gradient-to-br from-orange-900/40 to-red-900/40 border-2 border-orange-500/50 rounded-2xl p-8 transition-all duration-300 hover:scale-105">
                                     {/* Plan Name */}
-                                    <div className="text-center mb-4 mt-2">
-                                        <h3 className="text-xl font-bold text-white">{plan.name} Plan</h3>
+                                    <div className="text-center mb-4">
+                                        <h3 className="text-2xl font-bold text-white">Premium Aylık Plan</h3>
                                     </div>
 
                                     {/* Icon */}
                                     <div className="flex justify-center mb-4">
-                                        <div className={`bg-gradient-to-br ${plan.color} rounded-full p-3 ring-1 ring-white/10`}>
+                                        <div className="bg-gradient-to-br from-orange-900 to-red-900 rounded-full p-3 ring-1 ring-white/10">
                                             <Icon className="h-8 w-8 text-white" />
                                         </div>
                                     </div>
@@ -245,20 +201,17 @@ function SubscriptionContent() {
                                     {/* Price */}
                                     <div className="text-center mb-6">
                                         <div className="flex items-center justify-center gap-1">
-                                            <span className="text-4xl font-bold text-white">{plan.price}</span>
-                                            <span className="text-xl font-bold text-orange-500">₺</span>
+                                            <span className="text-5xl font-bold text-white">{plan.price}</span>
+                                            <span className="text-2xl font-bold text-orange-500">₺</span>
                                         </div>
-                                        <div className="text-gray-400 text-sm mt-1 font-medium">/ {plan.period}</div>
-                                        <div className="text-xs text-gray-500 mt-2 bg-black/30 py-1 px-2 rounded inline-block">
-                                            {plan.total}
-                                        </div>
+                                        <div className="text-gray-400 text-sm mt-1 font-medium">/ Ay</div>
                                     </div>
 
                                     {/* CTA Button */}
                                     <button
                                         onClick={() => handleSubscription(plan.name)}
                                         disabled={!!loading}
-                                        className={`w-full ${plan.buttonColor} text-white text-base font-bold py-3 rounded-xl transition-all duration-300 mb-6 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg`}
+                                        className="w-full bg-orange-600 hover:bg-orange-700 text-white text-base font-bold py-3 rounded-xl transition-all duration-300 mb-6 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
                                     >
                                         {isLoading ? (
                                             <>
@@ -283,7 +236,7 @@ function SubscriptionContent() {
                                     </div>
                                 </div>
                             )
-                        })}
+                        })()}
                     </div>
 
                     {/* Benefits Grid */}
