@@ -110,6 +110,13 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
     const handleFullscreenChange = () => {
       const isFs = document.fullscreenElement === playerContainerRef.current;
       setIsFullscreen(isFs);
+      // Fullscreen geçişinden sonra video durmuşsa tekrar oynat
+      const video = videoRef.current;
+      if (video && video.paused && wasPlayingRef.current) {
+        setTimeout(() => {
+          video.play().catch(() => { });
+        }, 150);
+      }
     };
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => {
@@ -218,9 +225,13 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
     video.currentTime = Math.max(0, Math.min(duration, video.currentTime + seconds))
   }
 
-  const toggleFullscreen = () => {
+  const toggleFullscreen = async () => {
     const video = videoRef.current;
     const playerContainer = playerContainerRef.current;
+
+    // Videonun o anki oynatma durumunu kaydet
+    const wasPlaying = video ? !video.paused : false;
+    wasPlayingRef.current = wasPlaying;
 
     // iOS Safari native fullscreen support
     if (video && (video as any).webkitEnterFullscreen) {
@@ -231,9 +242,17 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
     if (!playerContainer) return;
 
     if (document.fullscreenElement) {
-      document.exitFullscreen();
+      await document.exitFullscreen();
     } else {
-      playerContainer.requestFullscreen();
+      await playerContainer.requestFullscreen();
+    }
+
+    // Fullscreen geçişinden sonra önceki oynatma durumunu koru
+    if (video && wasPlaying) {
+      // Kısa bir gecikme ile videonun oynamaya devam etmesini sağla
+      setTimeout(() => {
+        video.play().catch(() => { });
+      }, 100);
     }
   };
 
