@@ -148,7 +148,7 @@ export default function CourseSidebar({ course, progress, currentLessonId, hasFu
                   key={lesson.id}
                   onClick={() => {
                     if (canAccessLesson) {
-                      router.push(`/learn/${course.id}?lesson=${lesson.id}`)
+                      window.location.href = `/learn/${course.id}?lesson=${lesson.id}`
                       setIsCollapsed(true)
                     }
                   }}
