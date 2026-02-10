@@ -175,7 +175,7 @@ export default function FavoritesPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-16 md:pt-24 pb-20 md:pb-8">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-white">Favorilerim</h1>
+          <h1 className="text-3xl font-bold text-white">Listem</h1>
           <button
             onClick={clearFavorites}
             className="text-red-400 hover:text-red-300 transition-colors"
