@@ -15,7 +15,7 @@ function CheckoutContent() {
   const planName = searchParams.get("plan")
   const courseId = searchParams.get("courseId")
 
-  const [billingPeriod, setBillingPeriod] = useState<"monthly" | "6monthly">("monthly")
+  const [billingPeriod, setBillingPeriod] = useState<"monthly" | "6monthly" | "yearly">("monthly")
   const [discountCode, setDiscountCode] = useState("")
   const [phoneNumber, setPhoneNumber] = useState("")
   const [appliedDiscount, setAppliedDiscount] = useState<{ type: string, value: number, code: string } | null>(null)
@@ -64,7 +64,8 @@ function CheckoutContent() {
   const basePrice = selectedPlan?.price || 0
   const monthlyPrice = basePrice
   const sixMonthlyPrice = basePrice * 6 * 0.9 // %10 indirim
-  const subtotal = billingPeriod === "monthly" ? monthlyPrice : sixMonthlyPrice
+  const yearlyPrice = basePrice * 12 * 0.8 // %20 indirim
+  const subtotal = billingPeriod === "monthly" ? monthlyPrice : billingPeriod === "6monthly" ? sixMonthlyPrice : yearlyPrice
 
   // İndirim hesaplama
   let discountAmount = 0
@@ -231,7 +232,7 @@ function CheckoutContent() {
               {/* Billing Period - EN ÜSTTE */}
               <div className="bg-black border border-gray-800 rounded-xl p-6">
                 <h2 className="text-xl font-bold text-white mb-4">Ödeme Dönemi</h2>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                   <button
                     onClick={() => setBillingPeriod("monthly")}
                     className={`p-4 rounded-xl border-2 transition-all ${billingPeriod === "monthly"
@@ -255,28 +256,32 @@ function CheckoutContent() {
                       %10 İndirim
                     </div>
                     <div className="text-white font-semibold mb-1">6 Aylık</div>
+                    <div className="text-sm text-gray-500 line-through">{Math.round(basePrice * 6)}₺</div>
                     <div className="text-2xl font-bold text-white">{Math.round(sixMonthlyPrice)}₺</div>
                     <div className="text-sm text-gray-400">/ 6 ay</div>
                     <div className="text-xs text-green-400 mt-1">
                       {Math.round(basePrice * 6 - sixMonthlyPrice)}₺ tasarruf
                     </div>
                   </button>
-                </div>
-              </div>
 
-              {/* Selected Plan */}
-              <div className="bg-black border border-gray-800 rounded-xl p-6">
-                <h2 className="text-xl font-bold text-white mb-4">Seçili Plan</h2>
-                <div className={`bg-gradient-to-br ${selectedPlan.color}/20 border-2 border-gray-700 rounded-xl p-6`}>
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className={`bg-gradient-to-br ${selectedPlan.color} rounded-full p-3`}>
-                      <Icon className="h-8 w-8 text-white" />
+                  <button
+                    onClick={() => setBillingPeriod("yearly")}
+                    className={`p-4 rounded-xl border-2 transition-all relative ${billingPeriod === "yearly"
+                      ? "border-orange-500 bg-orange-500/10"
+                      : "border-gray-700 hover:border-gray-600"
+                      }`}
+                  >
+                    <div className="absolute -top-2 -right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                      %20 İndirim
                     </div>
-                    <div>
-                      <h3 className="text-2xl font-bold text-white">{planName}</h3>
-                      <p className="text-gray-400">Premium Üyelik</p>
+                    <div className="text-white font-semibold mb-1">Yıllık</div>
+                    <div className="text-sm text-gray-500 line-through">{Math.round(basePrice * 12)}₺</div>
+                    <div className="text-2xl font-bold text-white">{Math.round(yearlyPrice)}₺</div>
+                    <div className="text-sm text-gray-400">/ yıl</div>
+                    <div className="text-xs text-green-400 mt-1">
+                      {Math.round(basePrice * 12 - yearlyPrice)}₺ tasarruf
                     </div>
-                  </div>
+                  </button>
                 </div>
               </div>
 
@@ -373,6 +378,13 @@ function CheckoutContent() {
                     </div>
                   )}
 
+                  {billingPeriod === "yearly" && (
+                    <div className="flex justify-between text-green-400">
+                      <span>Yıllık İndirim (%20)</span>
+                      <span>-{Math.round(basePrice * 12 * 0.2)}₺</span>
+                    </div>
+                  )}
+
                   {appliedDiscount && (
                     <div className="flex justify-between text-green-400">
                       <span>İndirim Kodu</span>
@@ -386,7 +398,7 @@ function CheckoutContent() {
                       <span>{Math.round(total)}₺</span>
                     </div>
                     <p className="text-sm text-gray-400 mt-1">
-                      {billingPeriod === "monthly" ? "Aylık" : "6 Aylık"} ödeme
+                      {billingPeriod === "monthly" ? "Aylık" : billingPeriod === "6monthly" ? "6 Aylık" : "Yıllık"} ödeme
                     </p>
                   </div>
                 </div>
