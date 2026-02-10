@@ -15,7 +15,7 @@ function CheckoutContent() {
   const planName = searchParams.get("plan")
   const courseId = searchParams.get("courseId")
 
-  const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly")
+  const [billingPeriod, setBillingPeriod] = useState<"monthly" | "6monthly">("monthly")
   const [discountCode, setDiscountCode] = useState("")
   const [phoneNumber, setPhoneNumber] = useState("")
   const [appliedDiscount, setAppliedDiscount] = useState<{ type: string, value: number, code: string } | null>(null)
@@ -63,8 +63,8 @@ function CheckoutContent() {
   // Fiyat hesaplamaları
   const basePrice = selectedPlan?.price || 0
   const monthlyPrice = basePrice
-  const yearlyPrice = basePrice * 12 * 0.8 // %20 indirim
-  const subtotal = billingPeriod === "monthly" ? monthlyPrice : yearlyPrice
+  const sixMonthlyPrice = basePrice * 6 * 0.9 // %10 indirim
+  const subtotal = billingPeriod === "monthly" ? monthlyPrice : sixMonthlyPrice
 
   // İndirim hesaplama
   let discountAmount = 0
@@ -228,6 +228,42 @@ function CheckoutContent() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left Column - Plan & Billing */}
             <div className="lg:col-span-2 space-y-6">
+              {/* Billing Period - EN ÜSTTE */}
+              <div className="bg-black border border-gray-800 rounded-xl p-6">
+                <h2 className="text-xl font-bold text-white mb-4">Ödeme Dönemi</h2>
+                <div className="grid grid-cols-2 gap-4">
+                  <button
+                    onClick={() => setBillingPeriod("monthly")}
+                    className={`p-4 rounded-xl border-2 transition-all ${billingPeriod === "monthly"
+                      ? "border-orange-500 bg-orange-500/10"
+                      : "border-gray-700 hover:border-gray-600"
+                      }`}
+                  >
+                    <div className="text-white font-semibold mb-1">Aylık</div>
+                    <div className="text-2xl font-bold text-white">{monthlyPrice}₺</div>
+                    <div className="text-sm text-gray-400">/ ay</div>
+                  </button>
+
+                  <button
+                    onClick={() => setBillingPeriod("6monthly")}
+                    className={`p-4 rounded-xl border-2 transition-all relative ${billingPeriod === "6monthly"
+                      ? "border-orange-500 bg-orange-500/10"
+                      : "border-gray-700 hover:border-gray-600"
+                      }`}
+                  >
+                    <div className="absolute -top-2 -right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                      %10 İndirim
+                    </div>
+                    <div className="text-white font-semibold mb-1">6 Aylık</div>
+                    <div className="text-2xl font-bold text-white">{Math.round(sixMonthlyPrice)}₺</div>
+                    <div className="text-sm text-gray-400">/ 6 ay</div>
+                    <div className="text-xs text-green-400 mt-1">
+                      {Math.round(basePrice * 6 - sixMonthlyPrice)}₺ tasarruf
+                    </div>
+                  </button>
+                </div>
+              </div>
+
               {/* Selected Plan */}
               <div className="bg-black border border-gray-800 rounded-xl p-6">
                 <h2 className="text-xl font-bold text-white mb-4">Seçili Plan</h2>
@@ -264,42 +300,6 @@ function CheckoutContent() {
                       Ödeme onayı ve fatura işlemleri için gereklidir.
                     </p>
                   </div>
-                </div>
-              </div>
-
-              {/* Billing Period */}
-              <div className="bg-black border border-gray-800 rounded-xl p-6">
-                <h2 className="text-xl font-bold text-white mb-4">Ödeme Dönemi</h2>
-                <div className="grid grid-cols-2 gap-4">
-                  <button
-                    onClick={() => setBillingPeriod("monthly")}
-                    className={`p-4 rounded-xl border-2 transition-all ${billingPeriod === "monthly"
-                      ? "border-orange-500 bg-orange-500/10"
-                      : "border-gray-700 hover:border-gray-600"
-                      }`}
-                  >
-                    <div className="text-white font-semibold mb-1">Aylık</div>
-                    <div className="text-2xl font-bold text-white">{monthlyPrice}₺</div>
-                    <div className="text-sm text-gray-400">/ ay</div>
-                  </button>
-
-                  <button
-                    onClick={() => setBillingPeriod("yearly")}
-                    className={`p-4 rounded-xl border-2 transition-all relative ${billingPeriod === "yearly"
-                      ? "border-orange-500 bg-orange-500/10"
-                      : "border-gray-700 hover:border-gray-600"
-                      }`}
-                  >
-                    <div className="absolute -top-2 -right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                      %20 İndirim
-                    </div>
-                    <div className="text-white font-semibold mb-1">Yıllık</div>
-                    <div className="text-2xl font-bold text-white">{Math.round(yearlyPrice)}₺</div>
-                    <div className="text-sm text-gray-400">/ yıl</div>
-                    <div className="text-xs text-green-400 mt-1">
-                      {Math.round(basePrice * 12 - yearlyPrice)}₺ tasarruf
-                    </div>
-                  </button>
                 </div>
               </div>
 
@@ -366,10 +366,10 @@ function CheckoutContent() {
                     <span>{Math.round(subtotal)}₺</span>
                   </div>
 
-                  {billingPeriod === "yearly" && (
+                  {billingPeriod === "6monthly" && (
                     <div className="flex justify-between text-green-400">
-                      <span>Yıllık İndirim (%20)</span>
-                      <span>-{Math.round(basePrice * 12 * 0.2)}₺</span>
+                      <span>6 Aylık İndirim (%10)</span>
+                      <span>-{Math.round(basePrice * 6 * 0.1)}₺</span>
                     </div>
                   )}
 
@@ -386,7 +386,7 @@ function CheckoutContent() {
                       <span>{Math.round(total)}₺</span>
                     </div>
                     <p className="text-sm text-gray-400 mt-1">
-                      {billingPeriod === "monthly" ? "Aylık" : "Yıllık"} ödeme
+                      {billingPeriod === "monthly" ? "Aylık" : "6 Aylık"} ödeme
                     </p>
                   </div>
                 </div>
