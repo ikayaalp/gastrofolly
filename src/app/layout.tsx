@@ -17,7 +17,10 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://culinora.net"),
-  title: "Culinora - Gastronomi Kursları",
+  title: {
+    default: "Culinora - Gastronomi Kursları",
+    template: "%s | Culinora",
+  },
   description: "Profesyonel şeflerden sertifikalı gastronomi ve aşçılık kursları. Video dersler, uygulamalı projeler ve kariyer odaklı eğitimlerle mutfakta ustalaşın.",
   keywords: ["Culinora", "gastronomi", "edtech", "online kurs", "aşçılık eğitimi", "şef eğitimi", "sertifikalı yemek kursları", "mutfak okulu"],
   openGraph: {

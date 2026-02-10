@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { Metadata } from "next"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { ChefHat, Search, Bell, ArrowLeft, MessageCircle, ThumbsUp, Clock, User, Plus } from "lucide-react"
@@ -10,6 +11,19 @@ interface TopicDetailPageProps {
   params: Promise<{
     id: string
   }>
+}
+
+export async function generateMetadata({ params }: TopicDetailPageProps): Promise<Metadata> {
+  const { id } = await params
+  const topic = await prisma.topic.findUnique({
+    where: { id },
+    select: { title: true }
+  })
+
+  return {
+    title: topic?.title || "Konu Detayı",
+    description: topic ? `Chef Sosyal'de "${topic.title}" konusunu keşfedin ve tartışmaya katılın.` : "Chef Sosyal konu detayı.",
+  }
 }
 
 export default async function TopicDetailPage({ params }: TopicDetailPageProps) {

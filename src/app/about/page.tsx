@@ -1,4 +1,10 @@
+import { Metadata } from "next"
 import Link from "next/link"
+
+export const metadata: Metadata = {
+  title: "Hakkımızda",
+  description: "Culinora'nın misyonu, vizyonu ve ekibi. Gastronomi eğitimini demokratikleştiren platformumuzu tanıyın.",
+}
 import { ChefHat, Award, Target, Heart, Mail, Linkedin, Twitter } from "lucide-react"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"

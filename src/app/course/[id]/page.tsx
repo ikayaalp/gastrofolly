@@ -72,12 +72,12 @@ export async function generateMetadata({ params }: CoursePageProps): Promise<Met
 
   if (!course) {
     return {
-      title: "Kurs Bulunamadı - Culinora",
+      title: "Kurs Bulunamadı",
     }
   }
 
   return {
-    title: `${course.title} | Culinora`,
+    title: course.title,
     description: course.description?.substring(0, 160) || "Bu kurs hakkında detaylı bilgi edinin.",
     openGraph: {
       title: course.title,

@@ -2,7 +2,7 @@ import { Metadata } from "next"
 import SignInClient from "./SignInClient"
 
 export const metadata: Metadata = {
-  title: "Giriş Yap - Culinora",
+  title: "Giriş Yap",
   description: "Culinora hesabınıza giriş yapın ve gastronomi eğitimlerinize kaldığınız yerden devam edin.",
 }
 

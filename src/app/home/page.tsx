@@ -1,9 +1,15 @@
+import { Metadata } from "next"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import HomePageClient from "./HomePageClient"
 import AIAssistantWidget from "@/components/ai/AIAssistantWidget"
+
+export const metadata: Metadata = {
+  title: "Ana Sayfa",
+  description: "Culinora'da gastronomi kurslarınızı keşfedin. Profesyonel şeflerden video dersler, kişiselleştirilmiş öneriler.",
+}
 
 async function getHomeData(userId?: string) {
   // Kullanıcı bilgilerini ve ödemelerini al (Erişim kontrolü için)

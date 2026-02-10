@@ -1,4 +1,10 @@
+import { Metadata } from "next"
 import Link from "next/link"
+
+export const metadata: Metadata = {
+  title: "İletişim",
+  description: "Culinora ile iletişime geçin. Sorularınız, önerileriniz veya işbirliği teklifleriniz için bize ulaşın.",
+}
 import { ChefHat, Mail, Phone, Clock, MapPin, Send, Headphones, Building2, Globe, Home, BookOpen, Users, MessageCircle } from "lucide-react"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"

@@ -1,4 +1,10 @@
+import { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+    title: "Sıkça Sorulan Sorular",
+    description: "Culinora hakkında merak ettiğiniz her şey. Kurslar, üyelik, ödeme ve sertifikalar hakkında sıkça sorulan sorular.",
+};
 import { ChefHat, HelpCircle, ChevronDown, MessageSquare, BookOpen, ShieldCheck } from "lucide-react";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";

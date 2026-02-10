@@ -1,4 +1,10 @@
+import { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+    title: "Eğitmenler",
+    description: "Culinora'nın profesyonel şef eğitmenleriyle tanışın. Ödüllü mutfaklardan gelen deneyimli eğitmenler.",
+};
 import { ChefHat, Star, Award, Users, BookOpen, ArrowRight } from "lucide-react";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
