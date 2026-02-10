@@ -216,11 +216,7 @@ export default function CoursesPageClient() {
                                                     {course.title}
                                                 </h3>
                                                 <div className="flex items-center gap-4 text-xs text-gray-400 font-medium">
-                                                    <span className="flex items-center gap-1">
-                                                        <Star className="w-3 h-3 text-orange-500 fill-current" />
-                                                        {course.averageRating?.toFixed(1) || "4.8"}
-                                                    </span>
-                                                    <span>u/{course.instructor?.name || "culinora"}</span>
+                                                    <span>{course.instructor?.name || "culinora"}</span>
                                                 </div>
                                             </div>
                                         </Link>
