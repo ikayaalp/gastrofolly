@@ -160,40 +160,116 @@ function SubscriptionContent() {
                     </div>
 
                     {/* Pricing Cards */}
-                    <div className="flex justify-center mb-16">
-                        {plans.map((plan) => {
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16 items-start">
+                        {/* Aylık Plan */}
+                        {[
+                            {
+                                name: "Aylık",
+                                price: "299",
+                                period: "Ay",
+                                total: "299 ₺ / Ay",
+                                icon: Star,
+                                color: "from-gray-800 to-gray-900",
+                                borderColor: "border-gray-700",
+                                buttonColor: "bg-gray-700 hover:bg-gray-600",
+                                popular: false,
+                                discount: null,
+                                features: [
+                                    "Tüm kurslara erişim",
+                                    "Sertifika desteği",
+                                    "Mobil uygulama erişimi",
+                                    "İstediğin zaman iptal et"
+                                ]
+                            },
+                            {
+                                name: "6 Aylık",
+                                price: "1615",
+                                period: "6 Ay",
+                                total: "Ortalama 269 ₺ / Ay",
+                                icon: Crown,
+                                color: "from-orange-900 to-red-900",
+                                borderColor: "border-orange-500/50",
+                                buttonColor: "bg-orange-600 hover:bg-orange-700",
+                                popular: true, // Highlight middle option
+                                discount: "%10 İndirim",
+                                features: [
+                                    "Tüm kurslara sınırsız erişim",
+                                    "Yeni içeriklere anında erişim",
+                                    "Premium topluluk erişimi",
+                                    "Eğitmenlerle doğrudan iletişim",
+                                    "Öncelikli destek",
+                                    "Sertifika desteği"
+                                ]
+                            },
+                            {
+                                name: "Yıllık",
+                                price: "2870",
+                                period: "Yıl",
+                                total: "Ortalama 239 ₺ / Ay",
+                                icon: Award,
+                                color: "from-yellow-900 to-orange-900",
+                                borderColor: "border-yellow-500/50",
+                                buttonColor: "bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-500 hover:to-orange-500",
+                                popular: false,
+                                discount: "%20 İndirim",
+                                features: [
+                                    "Tüm özelliklere tam erişim",
+                                    "En avantajlı fiyat",
+                                    "1-1 Mentorluk hakkı",
+                                    "Kariyer danışmanlığı",
+                                    "Özel etkinliklere davetiye",
+                                    "Sertifika desteği"
+                                ]
+                            }
+                        ].map((plan) => {
                             const Icon = plan.icon
                             const isLoading = loading === plan.name
                             return (
                                 <div
                                     key={plan.name}
-                                    className={`relative w-full max-w-md bg-gradient-to-br ${plan.color.replace('from-', 'from-').replace('to-', 'to-')}/20 border-2 ${plan.borderColor} rounded-2xl p-8 transition-all duration-300 hover:scale-105`}
+                                    className={`relative w-full bg-gradient-to-br ${plan.color.replace('from-', 'from-').replace('to-', 'to-')}/40 border-2 ${plan.borderColor} rounded-2xl p-6 transition-all duration-300 hover:scale-105 ${plan.popular ? 'transform scale-105 shadow-2xl shadow-orange-900/40 z-10' : 'opacity-90 hover:opacity-100'}`}
                                 >
+                                    {plan.popular && (
+                                        <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-1 rounded-full text-sm font-bold shadow-lg">
+                                            En Popüler
+                                        </div>
+                                    )}
 
+                                    {plan.discount && (
+                                        <div className="absolute top-4 right-4 bg-green-500/20 text-green-400 border border-green-500/50 px-2 py-0.5 rounded text-xs font-bold">
+                                            {plan.discount}
+                                        </div>
+                                    )}
+
+                                    {/* Plan Name */}
+                                    <div className="text-center mb-4 mt-2">
+                                        <h3 className="text-xl font-bold text-white">{plan.name} Plan</h3>
+                                    </div>
 
                                     {/* Icon */}
-                                    <div className="flex justify-center mb-6">
-                                        <div className={`bg-gradient-to-br ${plan.color} rounded-full p-4`}>
-                                            <Icon className="h-10 w-10 text-white" />
+                                    <div className="flex justify-center mb-4">
+                                        <div className={`bg-gradient-to-br ${plan.color} rounded-full p-3 ring-1 ring-white/10`}>
+                                            <Icon className="h-8 w-8 text-white" />
                                         </div>
                                     </div>
 
-                                    {/* Plan Name */}
-                                    <h3 className="text-2xl font-bold text-white text-center mb-2">{plan.name}</h3>
-
                                     {/* Price */}
                                     <div className="text-center mb-6">
-                                        <div className="text-5xl font-bold text-white mb-1">
-                                            {plan.price} ₺
+                                        <div className="flex items-center justify-center gap-1">
+                                            <span className="text-4xl font-bold text-white">{plan.price}</span>
+                                            <span className="text-xl font-bold text-orange-500">₺</span>
                                         </div>
-                                        <p className="text-gray-300">/ {plan.period}</p>
+                                        <div className="text-gray-400 text-sm mt-1 font-medium">/ {plan.period}</div>
+                                        <div className="text-xs text-gray-500 mt-2 bg-black/30 py-1 px-2 rounded inline-block">
+                                            {plan.total}
+                                        </div>
                                     </div>
 
                                     {/* CTA Button */}
                                     <button
                                         onClick={() => handleSubscription(plan.name)}
                                         disabled={!!loading}
-                                        className={`w-full ${plan.buttonColor} text-white text-lg font-bold py-3 rounded-xl transition-all duration-300 mb-6 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed`}
+                                        className={`w-full ${plan.buttonColor} text-white text-base font-bold py-3 rounded-xl transition-all duration-300 mb-6 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg`}
                                     >
                                         {isLoading ? (
                                             <>
@@ -201,18 +277,18 @@ function SubscriptionContent() {
                                                 İşleniyor...
                                             </>
                                         ) : (
-                                            "Başlat"
+                                            "Hemen Başla"
                                         )}
                                     </button>
 
                                     {/* Features */}
-                                    <div className="space-y-3">
+                                    <div className="space-y-3 border-t border-white/5 pt-6">
                                         {plan.features.map((feature, index) => (
                                             <div key={index} className="flex items-start gap-3">
-                                                <div className="bg-green-500/20 rounded-full p-1 flex-shrink-0 mt-0.5">
-                                                    <Check className="h-4 w-4 text-green-400" />
+                                                <div className="bg-green-500/10 rounded-full p-0.5 flex-shrink-0 mt-0.5">
+                                                    <Check className="h-3.5 w-3.5 text-green-400" />
                                                 </div>
-                                                <span className="text-gray-300 text-sm">{feature}</span>
+                                                <span className="text-gray-300 text-sm leading-tight">{feature}</span>
                                             </div>
                                         ))}
                                     </div>
