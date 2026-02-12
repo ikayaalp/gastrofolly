@@ -22,7 +22,7 @@ function CheckoutContent() {
   const [loading, setLoading] = useState(false)
   const [validatingCode, setValidatingCode] = useState(false)
 
-  // Telefon numarasını session yüklenince güncelle
+  // Telefon numarasını session yüklenince güncelle allah allah öyle mi
   useEffect(() => {
     if (session?.user && !phoneNumber) {
       setPhoneNumber((session.user as any).phoneNumber || "")
