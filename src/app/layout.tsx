@@ -23,6 +23,11 @@ export const metadata: Metadata = {
   },
   description: "Profesyonel şeflerden sertifikalı gastronomi ve aşçılık kursları. Video dersler, uygulamalı projeler ve kariyer odaklı eğitimlerle mutfakta ustalaşın.",
   keywords: ["Culinora", "gastronomi", "edtech", "online kurs", "aşçılık eğitimi", "şef eğitimi", "sertifikalı yemek kursları", "mutfak okulu"],
+  icons: {
+    icon: "/logo.jpeg",
+    shortcut: "/logo.jpeg",
+    apple: "/logo.jpeg",
+  },
   openGraph: {
     title: "Culinora - Gastronomi Kursları",
     description: "Profesyonel şeflerden sertifikalı gastronomi kursları.",
@@ -30,11 +35,20 @@ export const metadata: Metadata = {
     siteName: "Culinora",
     locale: "tr_TR",
     type: "website",
+    images: [
+      {
+        url: "https://culinora.net/logo.jpeg",
+        width: 800,
+        height: 600,
+        alt: "Culinora Logo",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Culinora - Gastronomi Kursları",
     description: "Profesyonel şeflerden sertifikalı gastronomi kursları.",
+    images: ["https://culinora.net/logo.jpeg"],
   },
   robots: {
     index: true,
@@ -54,7 +68,7 @@ export default async function RootLayout({
     "@type": "Organization",
     "name": "Culinora",
     "url": "https://culinora.net",
-    "logo": "https://culinora.net/logo.png", // Ensure this exists or update path
+    "logo": "https://culinora.net/logo.jpeg", // Ensure this exists or update path
     "description": "Profesyonel şeflerden sertifikalı online gastronomi eğitimi platformu.",
     "sameAs": [
       "https://www.instagram.com/culinora", // Placeholder - user should verify
