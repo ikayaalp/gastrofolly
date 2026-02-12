@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { ChefHat } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -43,9 +44,19 @@ export default function Footer() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                     <div>
-                        <Link href="/" className="flex items-center space-x-2 mb-4">
-                            <ChefHat className="h-8 w-8 text-orange-500" />
-                            <span className="text-2xl font-bold text-white uppercase italic tracking-tighter">Culinora</span>
+                        <Link href="/" className="flex items-center gap-1 mb-4">
+                            <div className="relative h-8 w-8">
+                                <Image
+                                    src="/logo.jpeg"
+                                    alt="C"
+                                    fill
+                                    className="object-contain"
+                                />
+                            </div>
+                            <span className="text-2xl font-bold uppercase italic tracking-tighter">
+                                <span className="text-orange-500">ulin</span>
+                                <span className="text-white">ora</span>
+                            </span>
                         </Link>
                         <p className="text-gray-400">
                             Gastronomi dünyasında kendinizi geliştirin ve profesyonel bir şef olun.
