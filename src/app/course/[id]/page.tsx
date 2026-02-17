@@ -539,17 +539,6 @@ export default async function CoursePage({ params }: CoursePageProps) {
                 />
               </div>
 
-              <div className="mt-6 space-y-4 text-sm text-gray-300">
-
-                <div className="flex items-center justify-between">
-                  <span>Ders Sayısı:</span>
-                  <span className="font-semibold text-white">{course._count.lessons}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Sertifika:</span>
-                  <span className="font-semibold text-white">Evet</span>
-                </div>
-              </div>
 
               <div className="mt-6 pt-6 border-t border-orange-500/20">
                 <h3 className="font-semibold text-white mb-3">
