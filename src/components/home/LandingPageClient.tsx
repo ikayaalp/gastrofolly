@@ -174,33 +174,32 @@ export default function LandingPageClient({
             </header>
 
             {/* Hero Section */}
-            <section className="pt-32 pb-12 relative z-20 overflow-hidden">
-                {/* Background Grid */}
+            <section className="pt-32 pb-12 relative z-20 overflow-hidden min-h-[70vh] flex items-center">
+                {/* Background Grid - Absolutely Positioned */}
                 <div className="absolute inset-0 z-0">
+                    {/* Course Images Grid */}
+                    <div className="grid grid-cols-3 md:grid-cols-6 gap-1 md:gap-2 h-full">
+                        {initialFeatured.length > 0 && initialFeatured.slice(0, 12).map((course, index) => (
+                            <div key={index} className="aspect-square overflow-hidden">
+                                <img
+                                    src={course.imageUrl || 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&q=80'}
+                                    alt=""
+                                    className="w-full h-full object-cover"
+                                />
+                            </div>
+                        ))}
+                        {initialFeatured.length < 12 && Array.from({ length: 12 - initialFeatured.length }).map((_, index) => (
+                            <div key={`placeholder-${index}`} className="aspect-square overflow-hidden bg-gray-900">
+                                <img
+                                    src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&q=80"
+                                    alt=""
+                                    className="w-full h-full object-cover"
+                                />
+                            </div>
+                        ))}
+                    </div>
                     {/* Overlay */}
                     <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/60 to-black z-10"></div>
-                </div>
-
-                {/* Course Images Grid - Responsive: 3 cols mobile, 6 cols desktop */}
-                <div className="grid grid-cols-3 md:grid-cols-6 gap-1 md:gap-2 opacity-90">
-                    {initialFeatured.length > 0 && initialFeatured.slice(0, 12).map((course, index) => (
-                        <div key={index} className="aspect-square overflow-hidden">
-                            <img
-                                src={course.imageUrl || 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&q=80'}
-                                alt=""
-                                className="w-full h-full object-cover"
-                            />
-                        </div>
-                    ))}
-                    {initialFeatured.length < 12 && Array.from({ length: 12 - initialFeatured.length }).map((_, index) => (
-                        <div key={`placeholder-${index}`} className="aspect-square overflow-hidden bg-gray-900">
-                            <img
-                                src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&q=80"
-                                alt=""
-                                className="w-full h-full object-cover"
-                            />
-                        </div>
-                    ))}
                 </div>
 
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20">
