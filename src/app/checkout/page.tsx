@@ -307,13 +307,13 @@ function CheckoutContent() {
                       value={referralCode}
                       onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
                       placeholder="Referans kodunu girin"
-                      className="flex-1 bg-black border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 font-mono"
+                      className="flex-1 bg-black border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 font-mono"
                       disabled={validatingCode}
                     />
                     <button
                       onClick={handleApplyReferral}
                       disabled={validatingCode || !referralCode.trim()}
-                      className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
                       {validatingCode ? (
                         <>
@@ -358,7 +358,7 @@ function CheckoutContent() {
                   )}
 
                   {appliedReferral && (
-                    <div className="flex justify-between text-purple-400">
+                    <div className="flex justify-between text-green-400">
                       <span>Referans İndirimi (%{appliedReferral.discountPercent})</span>
                       <span>-{Math.round(discountAmount)}₺</span>
                     </div>
