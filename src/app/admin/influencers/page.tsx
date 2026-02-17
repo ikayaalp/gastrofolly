@@ -10,6 +10,7 @@ interface Influencer {
     email: string
     image: string | null
     referralCode: string
+    discountPercent: number
     createdAt: string
     totalReferrals: number
     totalEarnings: number
@@ -29,10 +30,12 @@ export default function AdminInfluencersPage() {
     const [showAddModal, setShowAddModal] = useState(false)
     const [addEmail, setAddEmail] = useState("")
     const [addCode, setAddCode] = useState("")
+    const [addDiscount, setAddDiscount] = useState("10")
     const [adding, setAdding] = useState(false)
     const [selectedInfluencer, setSelectedInfluencer] = useState<Influencer | null>(null)
     const [editingInfluencer, setEditingInfluencer] = useState<Influencer | null>(null)
     const [editCode, setEditCode] = useState("")
+    const [editDiscount, setEditDiscount] = useState("10")
     const [saving, setSaving] = useState(false)
 
     useEffect(() => {
@@ -63,7 +66,7 @@ export default function AdminInfluencersPage() {
             const res = await fetch("/api/admin/influencers", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: addEmail.trim(), referralCode: addCode.trim() || undefined })
+                body: JSON.stringify({ email: addEmail.trim(), referralCode: addCode.trim() || undefined, discountPercent: parseInt(addDiscount) || 10 })
             })
             const data = await res.json()
             if (data.success) {
@@ -71,6 +74,7 @@ export default function AdminInfluencersPage() {
                 setShowAddModal(false)
                 setAddEmail("")
                 setAddCode("")
+                setAddDiscount("10")
                 fetchInfluencers()
             } else {
                 toast.error(data.error || "Bir hata oluştu")
@@ -101,7 +105,7 @@ export default function AdminInfluencersPage() {
             const res = await fetch("/api/admin/influencers", {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ influencerId: editingInfluencer.id, newReferralCode: editCode.trim() })
+                body: JSON.stringify({ influencerId: editingInfluencer.id, newReferralCode: editCode.trim(), discountPercent: parseInt(editDiscount) || 10 })
             })
             const data = await res.json()
             if (data.success) {
@@ -202,6 +206,7 @@ export default function AdminInfluencersPage() {
                             <tr>
                                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Fenomen</th>
                                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Referral Kodu</th>
+                                <th className="px-6 py-3 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">İndirim</th>
                                 <th className="px-6 py-3 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">Getirilen Abone</th>
                                 <th className="px-6 py-3 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">Toplam Gelir</th>
                                 <th className="px-6 py-3 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">Komisyon</th>
@@ -211,7 +216,7 @@ export default function AdminInfluencersPage() {
                         <tbody className="divide-y divide-gray-800">
                             {influencers.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                                    <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
                                         Henüz fenomen eklenmemiş
                                     </td>
                                 </tr>
@@ -240,10 +245,13 @@ export default function AdminInfluencersPage() {
                                             <button onClick={() => copyCode(inf.referralCode)} className="text-gray-500 hover:text-white transition-colors" title="Kopyala">
                                                 <Copy className="h-4 w-4" />
                                             </button>
-                                            <button onClick={() => { setEditingInfluencer(inf); setEditCode(inf.referralCode); }} className="text-gray-500 hover:text-purple-400 transition-colors" title="Kodu Düzenle">
+                                            <button onClick={() => { setEditingInfluencer(inf); setEditCode(inf.referralCode); setEditDiscount(String(inf.discountPercent || 10)); }} className="text-gray-500 hover:text-purple-400 transition-colors" title="Düzenle">
                                                 <Pencil className="h-4 w-4" />
                                             </button>
                                         </div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                                        <span className="bg-purple-500/20 text-purple-400 px-2 py-1 rounded-lg text-sm font-semibold">%{inf.discountPercent || 10}</span>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-center">
                                         <span className="text-white font-semibold">{inf.totalReferrals}</span>
@@ -301,6 +309,19 @@ export default function AdminInfluencersPage() {
                                 />
                                 <p className="text-xs text-gray-500 mt-1">Boş bırakılırsa otomatik oluşturulur</p>
                             </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-400 mb-1">İndirim Oranı (%)</label>
+                                <input
+                                    type="number"
+                                    value={addDiscount}
+                                    onChange={(e) => setAddDiscount(e.target.value)}
+                                    placeholder="10"
+                                    min="1"
+                                    max="100"
+                                    className="w-full bg-black border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">Kullanıcıların alacağı indirim yüzdesi</p>
+                            </div>
                             <button
                                 onClick={handleAdd}
                                 disabled={adding}
@@ -328,7 +349,7 @@ export default function AdminInfluencersPage() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
                     <div className="bg-neutral-900 border border-gray-800 rounded-2xl p-8 max-w-md w-full mx-4">
                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-bold text-white">Referral Kodu Düzenle</h3>
+                            <h3 className="text-xl font-bold text-white">Fenomen Düzenle</h3>
                             <button onClick={() => setEditingInfluencer(null)} className="text-gray-400 hover:text-white">
                                 <X className="h-5 w-5" />
                             </button>
@@ -348,6 +369,19 @@ export default function AdminInfluencersPage() {
                                     className="w-full bg-black border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 font-mono text-lg tracking-wider"
                                 />
                                 <p className="text-xs text-gray-500 mt-1">En az 3 karakter, otomatik büyük harfe çevrilir</p>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-400 mb-1">İndirim Oranı (%)</label>
+                                <input
+                                    type="number"
+                                    value={editDiscount}
+                                    onChange={(e) => setEditDiscount(e.target.value)}
+                                    placeholder="10"
+                                    min="1"
+                                    max="100"
+                                    className="w-full bg-black border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">Kullanıcıların alacağı indirim yüzdesi</p>
                             </div>
                             <button
                                 onClick={handleEditCode}

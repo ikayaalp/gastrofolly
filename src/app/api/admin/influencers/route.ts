@@ -28,6 +28,7 @@ export async function GET() {
                 email: true,
                 image: true,
                 referralCode: true,
+                discountPercent: true,
                 createdAt: true,
                 referralEarnings: {
                     select: {
@@ -54,6 +55,7 @@ export async function GET() {
             email: inf.email,
             image: inf.image,
             referralCode: inf.referralCode,
+            discountPercent: (inf as any).discountPercent || 10,
             createdAt: inf.createdAt,
             totalReferrals: inf.referralEarnings.length,
             totalEarnings: inf.referralEarnings.reduce((sum, r) => sum + r.commission, 0),
@@ -85,7 +87,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "Forbidden" }, { status: 403 })
         }
 
-        const { email, referralCode } = await request.json()
+        const { email, referralCode, discountPercent } = await request.json()
 
         if (!email) {
             return NextResponse.json({ error: "Email gerekli" }, { status: 400 })
@@ -124,8 +126,9 @@ export async function POST(request: NextRequest) {
         const updatedUser = await prisma.user.update({
             where: { id: user.id },
             data: {
-                role: "INFLUENCER",
-                referralCode: code
+                role: "INFLUENCER" as any,
+                referralCode: code,
+                discountPercent: discountPercent || 10
             },
             select: {
                 id: true,
@@ -160,7 +163,7 @@ export async function PATCH(request: NextRequest) {
             return NextResponse.json({ error: "Forbidden" }, { status: 403 })
         }
 
-        const { influencerId, newReferralCode } = await request.json()
+        const { influencerId, newReferralCode, discountPercent } = await request.json()
 
         if (!influencerId || !newReferralCode) {
             return NextResponse.json({ error: "Fenomen ID ve yeni referral kodu gerekli" }, { status: 400 })
@@ -186,7 +189,7 @@ export async function PATCH(request: NextRequest) {
 
         const updatedUser = await prisma.user.update({
             where: { id: influencerId },
-            data: { referralCode: code },
+            data: { referralCode: code, discountPercent: discountPercent || 10 },
             select: {
                 id: true,
                 name: true,

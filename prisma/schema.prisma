@@ -70,6 +70,7 @@ model User {
   subscriptionCancelled Boolean   @default(false) // Abonelik iptal edildi mi (dönem sonunda silinecek)
   pushToken             String?   // Expo Push Notification token
   referralCode          String?   @unique // Fenomen referral kodu
+  discountPercent       Int       @default(10) // Fenomen indirim oranı (%)
   referredBy            String?   // Bu kullanıcıyı getiren fenomenin ID'si
 
   referredByUser User?  @relation("UserReferrals", fields: [referredBy], references: [id])
