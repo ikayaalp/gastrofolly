@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { MessageCircle, X, Send, Bot, User, Loader2, ChefHat } from 'lucide-react'
+import { X, Send, Loader2, ChefHat } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 
@@ -28,16 +28,11 @@ export default function AIAssistantWidget() {
     }, [messages])
 
     // Visibility Logic
-    // Kesinlikle giriş yapılmamışsa gösterme (Loading durumunda da gösterme)
     if (status === 'loading' || status === 'unauthenticated' || !session?.user) return null
 
-    // Sadece Home (/, /home) ve Kurs Detay (/courses/[slug]) sayfalarında göster
-    // /learn sayfalarında veya diğerlerinde gösterme
     const isHomePage = pathname === '/' || pathname === '/home'
-    // Kurs detay sayfası kontrolü: /courses/ veya /course/ ile başlıyorsa ve devamı varsa
     const isCourseDetailPage = (pathname?.startsWith('/courses/') || pathname?.startsWith('/course/')) && pathname.split('/').length > 2
 
-    // Eğer izin verilen sayfalarda değilse null döndür
     if (!isHomePage && !isCourseDetailPage) return null
 
     const sendMessage = async () => {
@@ -77,60 +72,101 @@ export default function AIAssistantWidget() {
         }
     }
 
+    const userName = session?.user?.name?.split(' ')[0] || 'Kullanıcı'
+
     return (
         <>
             {/* Chat Window */}
             {isOpen && (
-                <div className="hidden md:flex fixed bottom-36 md:bottom-28 right-6 w-[350px] md:w-[400px] h-[450px] md:h-[550px] bg-[#0a0a0a] border border-gray-800 rounded-2xl shadow-2xl flex-col z-[9999] overflow-hidden animate-in slide-in-from-bottom-5 duration-300">
+                <div className="hidden md:flex fixed bottom-28 right-6 w-[400px] h-[600px] bg-[#111111] border border-gray-800 rounded-2xl shadow-2xl flex-col z-[9999] overflow-hidden animate-in slide-in-from-bottom-5 duration-300">
                     {/* Header */}
-                    <div className="bg-gradient-to-r from-orange-600 to-orange-500 px-4 py-3 flex items-center justify-between">
+                    <div className="bg-[#111111] px-5 py-4 flex items-center justify-between border-b border-gray-800">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                                <ChefHat className="w-6 h-6 text-white" />
+                            <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
+                                <ChefHat className="w-5 h-5 text-white" />
                             </div>
                             <div>
-                                <h3 className="text-white font-bold text-sm">Culi</h3>
-                                <p className="text-white/80 text-xs">Gastronomi Asistanınız</p>
+                                <h3 className="text-white font-bold text-base">Culi</h3>
+                                <div className="flex items-center gap-1.5">
+                                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                    <p className="text-gray-400 text-xs">Çevrimiçi</p>
+                                </div>
                             </div>
                         </div>
                         <button
                             onClick={() => setIsOpen(false)}
-                            className="p-2 hover:bg-white/20 rounded-full transition-colors"
+                            className="p-2 hover:bg-gray-800 rounded-full transition-colors"
                         >
-                            <X className="w-5 h-5 text-white" />
+                            <X className="w-5 h-5 text-gray-400" />
                         </button>
                     </div>
 
                     {/* Messages */}
-                    <div className="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
+                    <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 no-scrollbar bg-[#0a0a0a]">
                         {messages.length === 0 && (
-                            <div className="text-center py-8">
-                                <ChefHat className="w-16 h-16 text-orange-500 mx-auto mb-3" />
-                                <p className="text-gray-400 text-sm">Merhaba! 👋</p>
-                                <p className="text-gray-500 text-xs mt-1">Gastronomi hakkında soru sorabilirsiniz.</p>
+                            <div className="flex flex-col items-center justify-center h-full text-center px-4">
+                                <div className="w-20 h-20 bg-orange-500/10 rounded-full flex items-center justify-center mb-4">
+                                    <ChefHat className="w-10 h-10 text-orange-500" />
+                                </div>
+                                <h4 className="text-white font-semibold text-lg mb-1">Merhaba {userName}! 👋</h4>
+                                <p className="text-gray-500 text-sm leading-relaxed">
+                                    Ben Culi, gastronomi asistanınız. Yemek tarifleri, mutfak teknikleri ve kurslar hakkında bana her şeyi sorabilirsiniz.
+                                </p>
+
+                                {/* Quick suggestions */}
+                                <div className="mt-6 space-y-2 w-full">
+                                    {[
+                                        "🍕 Ev yapımı pizza hamuru nasıl yapılır?",
+                                        "🔪 Bıçak teknikleri nelerdir?",
+                                        "🎓 Hangi kursu seçmeliyim?"
+                                    ].map((suggestion, i) => (
+                                        <button
+                                            key={i}
+                                            onClick={() => {
+                                                setInput(suggestion)
+                                            }}
+                                            className="w-full text-left text-sm bg-gray-800/50 hover:bg-gray-800 text-gray-300 px-4 py-3 rounded-xl border border-gray-800 hover:border-gray-700 transition-all"
+                                        >
+                                            {suggestion}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
                         )}
 
                         {messages.map((msg, i) => (
                             <div
                                 key={i}
-                                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                                className={`flex items-end gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                             >
+                                {/* Assistant avatar */}
+                                {msg.role === 'assistant' && (
+                                    <div className="w-7 h-7 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <ChefHat className="w-4 h-4 text-white" />
+                                    </div>
+                                )}
                                 <div
-                                    className={`max-w-[80%] px-4 py-2.5 rounded-2xl text-sm ${msg.role === 'user'
-                                        ? 'bg-orange-600 text-white rounded-br-sm'
-                                        : 'bg-gray-800 text-gray-200 rounded-bl-sm'
+                                    className={`max-w-[75%] px-4 py-2.5 text-sm leading-relaxed ${msg.role === 'user'
+                                        ? 'bg-orange-600 text-white rounded-2xl rounded-br-md'
+                                        : 'bg-[#1a1a1a] text-gray-200 rounded-2xl rounded-bl-md border border-gray-800'
                                         }`}
                                 >
-                                    {msg.content}
+                                    <p className="whitespace-pre-wrap">{msg.content}</p>
                                 </div>
                             </div>
                         ))}
 
                         {isLoading && (
-                            <div className="flex justify-start">
-                                <div className="bg-gray-800 px-4 py-3 rounded-2xl rounded-bl-sm">
-                                    <Loader2 className="w-5 h-5 text-orange-500 animate-spin" />
+                            <div className="flex items-end gap-2 justify-start">
+                                <div className="w-7 h-7 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <ChefHat className="w-4 h-4 text-white" />
+                                </div>
+                                <div className="bg-[#1a1a1a] px-4 py-3 rounded-2xl rounded-bl-md border border-gray-800">
+                                    <div className="flex items-center gap-1.5">
+                                        <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                                        <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                                        <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -139,7 +175,7 @@ export default function AIAssistantWidget() {
                     </div>
 
                     {/* Input */}
-                    <div className="p-3 border-t border-gray-800 bg-[#0a0a0a]">
+                    <div className="px-4 py-3 border-t border-gray-800 bg-[#111111]">
                         <div className="flex items-center gap-2">
                             <input
                                 type="text"
@@ -147,13 +183,13 @@ export default function AIAssistantWidget() {
                                 onChange={(e) => setInput(e.target.value)}
                                 onKeyPress={handleKeyPress}
                                 placeholder="Mesajınızı yazın..."
-                                className="flex-1 bg-gray-900 border border-gray-700 rounded-full px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 transition-colors"
+                                className="flex-1 bg-[#1a1a1a] border border-gray-800 rounded-full px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-orange-500/50 transition-colors"
                                 disabled={isLoading}
                             />
                             <button
                                 onClick={sendMessage}
                                 disabled={!input.trim() || isLoading}
-                                className="p-2.5 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-700 disabled:cursor-not-allowed rounded-full transition-colors"
+                                className="p-2.5 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-800 disabled:cursor-not-allowed rounded-full transition-colors"
                             >
                                 <Send className="w-5 h-5 text-white" />
                             </button>
@@ -165,15 +201,15 @@ export default function AIAssistantWidget() {
             {/* Toggle Button */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className={`hidden md:flex fixed bottom-24 md:bottom-8 right-6 w-14 h-14 md:w-16 md:h-16 rounded-full shadow-lg items-center justify-center z-[9999] transition-colors duration-300 ${isOpen
-                    ? 'bg-gray-800 hover:bg-gray-700'
-                    : 'bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600'
+                className={`hidden md:flex fixed bottom-8 right-6 w-16 h-16 rounded-full shadow-lg items-center justify-center z-[9999] transition-all duration-300 ${isOpen
+                    ? 'bg-gray-800 hover:bg-gray-700 scale-90'
+                    : 'bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 shadow-orange-500/30'
                     }`}
             >
                 {isOpen ? (
-                    <X className="w-6 h-6 md:w-8 md:h-8 text-white" />
+                    <X className="w-7 h-7 text-white" />
                 ) : (
-                    <ChefHat className="w-7 h-7 md:w-9 md:h-9 text-white" />
+                    <ChefHat className="w-8 h-8 text-white" />
                 )}
             </button>
         </>
