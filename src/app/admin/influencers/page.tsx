@@ -50,7 +50,7 @@ export default function AdminInfluencersPage() {
                 setInfluencers(data.influencers)
             }
         } catch (error) {
-            toast.error("Fenomenler yüklenemedi")
+            toast.error("Influencer'lar yüklenemedi")
         } finally {
             setLoading(false)
         }
@@ -70,7 +70,7 @@ export default function AdminInfluencersPage() {
             })
             const data = await res.json()
             if (data.success) {
-                toast.success(`${data.influencer.name || data.influencer.email} fenomen olarak atandı!`)
+                toast.success(`${data.influencer.name || data.influencer.email} influencer olarak atandı!`)
                 setShowAddModal(false)
                 setAddEmail("")
                 setAddCode("")
@@ -140,15 +140,15 @@ export default function AdminInfluencersPage() {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-800 pb-6">
                 <div>
-                    <h1 className="text-3xl font-bold text-white">Fenomen Yönetimi</h1>
-                    <p className="text-gray-400 mt-1">Fenomenleri yönetin ve performanslarını takip edin</p>
+                    <h1 className="text-3xl font-bold text-white">Influencer Yönetimi</h1>
+                    <p className="text-gray-400 mt-1">Influencer'ları yönetin ve performanslarını takip edin</p>
                 </div>
                 <button
                     onClick={() => setShowAddModal(true)}
                     className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white px-5 py-2.5 rounded-xl font-semibold transition-colors"
                 >
                     <Plus className="h-5 w-5" />
-                    Yeni Fenomen Ekle
+                    Yeni Influencer Ekle
                 </button>
             </div>
 
@@ -160,7 +160,7 @@ export default function AdminInfluencersPage() {
                             <Star className="h-6 w-6 text-purple-400" />
                         </div>
                     </div>
-                    <p className="text-gray-400 text-sm font-medium">Toplam Fenomen</p>
+                    <p className="text-gray-400 text-sm font-medium">Toplam Influencer</p>
                     <p className="text-3xl font-bold text-white mt-1">{influencers.length}</p>
                 </div>
 
@@ -198,13 +198,13 @@ export default function AdminInfluencersPage() {
             {/* Influencer Table */}
             <div className="bg-neutral-900/30 border border-gray-800 rounded-xl overflow-hidden">
                 <div className="px-6 py-4 border-b border-gray-800">
-                    <h2 className="text-lg font-bold text-white">Fenomen Listesi</h2>
+                    <h2 className="text-lg font-bold text-white">Influencer Listesi</h2>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full">
                         <thead className="bg-black/40">
                             <tr>
-                                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Fenomen</th>
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Influencer</th>
                                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Referral Kodu</th>
                                 <th className="px-6 py-3 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">İndirim</th>
                                 <th className="px-6 py-3 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">Getirilen Abone</th>
@@ -217,7 +217,7 @@ export default function AdminInfluencersPage() {
                             {influencers.length === 0 ? (
                                 <tr>
                                     <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
-                                        Henüz fenomen eklenmemiş
+                                        Henüz influencer eklenmemiş
                                     </td>
                                 </tr>
                             ) : influencers.map((inf) => (
@@ -282,7 +282,7 @@ export default function AdminInfluencersPage() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
                     <div className="bg-neutral-900 border border-gray-800 rounded-2xl p-8 max-w-md w-full mx-4">
                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-bold text-white">Yeni Fenomen Ekle</h3>
+                            <h3 className="text-xl font-bold text-white">Yeni Influencer Ekle</h3>
                             <button onClick={() => setShowAddModal(false)} className="text-gray-400 hover:text-white">
                                 <X className="h-5 w-5" />
                             </button>
@@ -294,7 +294,7 @@ export default function AdminInfluencersPage() {
                                     type="email"
                                     value={addEmail}
                                     onChange={(e) => setAddEmail(e.target.value)}
-                                    placeholder="fenomen@email.com"
+                                    placeholder="influencer@email.com"
                                     className="w-full bg-black border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500"
                                 />
                             </div>
@@ -335,7 +335,7 @@ export default function AdminInfluencersPage() {
                                 ) : (
                                     <>
                                         <Plus className="h-5 w-5" />
-                                        Fenomen Olarak Ata
+                                        Influencer Olarak Ata
                                     </>
                                 )}
                             </button>
@@ -349,14 +349,14 @@ export default function AdminInfluencersPage() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
                     <div className="bg-neutral-900 border border-gray-800 rounded-2xl p-8 max-w-md w-full mx-4">
                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-bold text-white">Fenomen Düzenle</h3>
+                            <h3 className="text-xl font-bold text-white">Influencer Düzenle</h3>
                             <button onClick={() => setEditingInfluencer(null)} className="text-gray-400 hover:text-white">
                                 <X className="h-5 w-5" />
                             </button>
                         </div>
                         <div className="space-y-4">
                             <div>
-                                <p className="text-sm text-gray-400 mb-1">Fenomen</p>
+                                <p className="text-sm text-gray-400 mb-1">Influencer</p>
                                 <p className="text-white font-medium">{editingInfluencer.name || editingInfluencer.email}</p>
                             </div>
                             <div>
@@ -411,7 +411,7 @@ export default function AdminInfluencersPage() {
                     <div className="bg-neutral-900 border border-gray-800 rounded-2xl p-8 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
                         <div className="flex justify-between items-center mb-6">
                             <div>
-                                <h3 className="text-xl font-bold text-white">{selectedInfluencer.name || "İsimsiz Fenomen"}</h3>
+                                <h3 className="text-xl font-bold text-white">{selectedInfluencer.name || "İsimsiz Influencer"}</h3>
                                 <p className="text-sm text-gray-400">{selectedInfluencer.email}</p>
                             </div>
                             <button onClick={() => setSelectedInfluencer(null)} className="text-gray-400 hover:text-white">
