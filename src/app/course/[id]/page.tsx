@@ -546,17 +546,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
                   <span className="font-semibold text-white">{course._count.lessons}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span>Toplam Süre:</span>
-                  <span className="font-semibold text-white">
-                    {Math.round(totalDuration / 60)} saat
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
                   <span>Sertifika:</span>
-                  <span className="font-semibold text-white">Evet</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Yaşam Boyu Erişim:</span>
                   <span className="font-semibold text-white">Evet</span>
                 </div>
               </div>
@@ -570,10 +560,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
                     <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
                     {course._count.lessons} video ders
                   </li>
-                  <li className="flex items-center">
-                    <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                    Yaşam boyu erişim
-                  </li>
+
                   <li className="flex items-center">
                     <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
                     Tamamlama sertifikası
