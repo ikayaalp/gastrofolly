@@ -206,6 +206,42 @@ async function handlePayment(token: string, request: NextRequest) {
                 subscriptionCancelled: false // Yeni abonelik, iptal durumu sıfırla
             }
         })
+
+        // Referral komisyon kaydı oluştur
+        if (paymentRecord.discountCode) {
+            try {
+                const influencer = await prisma.user.findFirst({
+                    where: {
+                        referralCode: paymentRecord.discountCode,
+                        role: 'INFLUENCER' as any
+                    }
+                })
+
+                if (influencer && influencer.id !== paymentRecord.userId) {
+                    const commission = paymentRecord.amount * 0.10 // %10 komisyon
+
+                    await (prisma as any).referral.create({
+                        data: {
+                            influencerId: influencer.id,
+                            referredUserId: paymentRecord.userId,
+                            paymentId: paymentRecord.id,
+                            amount: paymentRecord.amount,
+                            commission: commission
+                        }
+                    })
+
+                    // Kullanıcının referredBy alanını güncelle
+                    await prisma.user.update({
+                        where: { id: paymentRecord.userId },
+                        data: { referredBy: influencer.id } as any
+                    })
+
+                    console.log(`✅ Referral commission created: ₺${commission} for influencer ${influencer.id}`)
+                }
+            } catch (refError) {
+                console.error('Referral processing error:', refError)
+            }
+        }
     }
 
     // Yönlendirme

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Camera, User, Mail, Save, Loader2 } from 'lucide-react';
+import { Camera, User, Mail, Save, Loader2, Copy, Star } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import ConfirmationModal from '@/components/ui/ConfirmationModal';
 
@@ -284,6 +284,41 @@ export default function ProfilePage() {
                                 </div>
                             )}
                         </div>
+
+                        {/* Influencer Section */}
+                        {(session?.user as any)?.role === 'INFLUENCER' && (session?.user as any)?.referralCode && (
+                            <div className="pt-6 border-t border-zinc-800">
+                                <h3 className="text-lg font-medium text-white mb-4 flex items-center gap-2">
+                                    <Star className="h-5 w-5 text-purple-400" />
+                                    Fenomen Paneli
+                                </h3>
+                                <div className="bg-gradient-to-r from-purple-900/20 to-orange-900/20 border border-purple-500/20 rounded-xl p-4">
+                                    <p className="text-zinc-400 text-sm mb-2">Referral Kodunuz</p>
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <code className="bg-black/50 text-orange-400 px-4 py-2 rounded-lg text-lg font-mono font-bold tracking-wider flex-1">
+                                            {(session?.user as any).referralCode}
+                                        </code>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                navigator.clipboard.writeText((session?.user as any).referralCode);
+                                                toast.success('Referral kodu kopyalandı!');
+                                            }}
+                                            className="bg-purple-600 hover:bg-purple-700 text-white p-2 rounded-lg transition-colors"
+                                        >
+                                            <Copy className="h-5 w-5" />
+                                        </button>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => router.push('/influencer-dashboard')}
+                                        className="w-full py-2 bg-purple-600/20 hover:bg-purple-600/30 text-purple-400 border border-purple-500/20 rounded-lg transition-colors text-sm font-medium"
+                                    >
+                                        Fenomen Paneline Git →
+                                    </button>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Submit Button */}
                         <div className="pt-4">

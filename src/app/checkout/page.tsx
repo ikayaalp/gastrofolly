@@ -14,10 +14,12 @@ function CheckoutContent() {
   const searchParams = useSearchParams()
   const planName = searchParams.get("plan")
   const courseId = searchParams.get("courseId")
+  const refParam = searchParams.get("ref")
 
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "6monthly" | "yearly">("monthly")
   const [discountCode, setDiscountCode] = useState("")
   const [phoneNumber, setPhoneNumber] = useState("")
+  const [referralCode, setReferralCode] = useState(refParam || "")
   const [appliedDiscount, setAppliedDiscount] = useState<{ type: string, value: number, code: string } | null>(null)
   const [loading, setLoading] = useState(false)
   const [validatingCode, setValidatingCode] = useState(false)
@@ -135,7 +137,8 @@ function CheckoutContent() {
           billingPeriod,
           discountCode: appliedDiscount?.code,
           courseId,
-          phoneNumber // Yeni eklenen telefon numarası
+          phoneNumber,
+          referralCode: referralCode.trim() || undefined
         })
       })
 
@@ -357,6 +360,23 @@ function CheckoutContent() {
                     </button>
                   </div>
                 )}
+              </div>
+
+              {/* Referral Code */}
+              <div className="bg-black border border-gray-800 rounded-xl p-6">
+                <h2 className="text-xl font-bold text-white mb-4">Fenomen Kodu</h2>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={referralCode}
+                    onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                    placeholder="Fenomen kodunu girin (opsiyonel)"
+                    className="flex-1 bg-black border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 font-mono"
+                  />
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  Bir fenomenin referral kodu varsa buraya girin
+                </p>
               </div>
             </div>
 

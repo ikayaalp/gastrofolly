@@ -90,7 +90,8 @@ export const authOptions: NextAuthOptions = {
             subscriptionPlan: true,
             subscriptionEndDate: true,
             subscriptionCancelled: true,
-            phoneNumber: true
+            phoneNumber: true,
+            referralCode: true,
           }
         })
 
@@ -99,6 +100,7 @@ export const authOptions: NextAuthOptions = {
           (session.user as any).subscriptionEndDate = user.subscriptionEndDate;
           (session.user as any).subscriptionCancelled = user.subscriptionCancelled;
           (session.user as any).phoneNumber = user.phoneNumber;
+          (session.user as any).referralCode = user.referralCode;
         }
       }
       return session

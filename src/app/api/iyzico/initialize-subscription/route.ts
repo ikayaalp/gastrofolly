@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        const { planName, billingPeriod, phoneNumber } = body
+        const { planName, billingPeriod, phoneNumber, referralCode } = body
 
         if (!planName) {
             return NextResponse.json(
@@ -119,6 +119,7 @@ export async function POST(request: NextRequest) {
                 userId: user.id,
                 subscriptionPlan: planName,
                 billingPeriod: billingPeriod || "monthly",
+                discountCode: referralCode?.toUpperCase() || null,
             }
         })
 

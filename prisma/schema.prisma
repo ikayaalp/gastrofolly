@@ -69,6 +69,11 @@ model User {
   subscriptionReferenceCode String? // Iyzico Abonelik Referans Kodu (İptal için gerekli)
   subscriptionCancelled Boolean   @default(false) // Abonelik iptal edildi mi (dönem sonunda silinecek)
   pushToken             String?   // Expo Push Notification token
+  referralCode          String?   @unique // Fenomen referral kodu
+  referredBy            String?   // Bu kullanıcıyı getiren fenomenin ID'si
+
+  referredByUser User?  @relation("UserReferrals", fields: [referredBy], references: [id])
+  referrals      User[] @relation("UserReferrals")
 
   accounts      Account[]
   sessions      Session[]
@@ -86,12 +91,15 @@ model User {
   notifications Notification[]
   stories       Story[]
   pollVotes     PollVote[]
+  referralEarnings Referral[] @relation("InfluencerReferrals")
+  referredPayments Referral[] @relation("ReferredUserReferrals")
 }
 
 enum UserRole {
   STUDENT
   INSTRUCTOR
   ADMIN
+  INFLUENCER
 }
 
 // Kategori modeli
@@ -245,6 +253,23 @@ model DiscountCode {
   isActive      Boolean  @default(true)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+}
+
+// Fenomen Referral Komisyon modeli
+model Referral {
+  id             String   @id @default(cuid())
+  influencerId   String
+  referredUserId String
+  paymentId      String?
+  amount         Float    // Ödeme tutarı
+  commission     Float    // Kazanılan komisyon (%10)
+  createdAt      DateTime @default(now())
+
+  influencer   User     @relation("InfluencerReferrals", fields: [influencerId], references: [id], onDelete: Cascade)
+  referredUser User     @relation("ReferredUserReferrals", fields: [referredUserId], references: [id], onDelete: Cascade)
+
+  @@index([influencerId])
+  @@index([referredUserId])
 }
 
 // Forum Kategori modeli

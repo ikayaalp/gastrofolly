@@ -14,7 +14,8 @@ import {
     ChefHat,
     LogOut,
     Camera,
-    MessageCircle
+    MessageCircle,
+    Star
 } from "lucide-react"
 
 const sidebarItems = [
@@ -44,6 +45,11 @@ const sidebarItems = [
         title: "Kullanıcılar",
         href: "/admin/users",
         icon: Users
+    },
+    {
+        title: "Fenomenler",
+        href: "/admin/influencers",
+        icon: Star
     },
     {
         title: "Havuz & Finans",
