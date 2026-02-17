@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react"
 import Link from "next/link"
-import { ChefHat, Check, Crown, BookOpen, Zap, Home, Users, MessageCircle, Loader2, Tag, X, LucideIcon } from "lucide-react"
+import { ChefHat, Check, Crown, BookOpen, Home, Users, MessageCircle, Loader2, Tag, X, LucideIcon } from "lucide-react"
 import UserDropdown from "@/components/ui/UserDropdown"
 import { useState, Suspense, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -17,19 +17,10 @@ function CheckoutContent() {
   const refParam = searchParams.get("ref")
 
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "6monthly" | "yearly">("monthly")
-  const [discountCode, setDiscountCode] = useState("")
-  const [phoneNumber, setPhoneNumber] = useState("")
   const [referralCode, setReferralCode] = useState(refParam || "")
-  const [appliedDiscount, setAppliedDiscount] = useState<{ type: string, value: number, code: string } | null>(null)
+  const [appliedReferral, setAppliedReferral] = useState<{ code: string, discountPercent: number, influencerName: string } | null>(null)
   const [loading, setLoading] = useState(false)
   const [validatingCode, setValidatingCode] = useState(false)
-
-  // Telefon numarasını session yüklenince güncelle allah allah öyle mi
-  useEffect(() => {
-    if (session?.user && !phoneNumber) {
-      setPhoneNumber((session.user as any).phoneNumber || "")
-    }
-  }, [session, phoneNumber])
 
   // Plan bilgileri
   const plans: Record<string, { price: number, icon: LucideIcon, color: string }> = {
@@ -46,7 +37,6 @@ function CheckoutContent() {
       return
     }
 
-    // Eğer zaten aktif bir aboneliği varsa ana sayfaya yönlendir
     const userSubPlan = (session.user as any)?.subscriptionPlan
     const userSubEnd = (session.user as any)?.subscriptionEndDate
     const isSubActive = userSubPlan === "Premium" && (!userSubEnd || new Date(userSubEnd) > new Date())
@@ -62,47 +52,57 @@ function CheckoutContent() {
     }
   }, [session, status, planName, selectedPlan, router, courseId])
 
+  // URL'den gelen referral kodu varsa otomatik doğrula
+  useEffect(() => {
+    if (refParam && !appliedReferral) {
+      handleApplyReferral()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refParam])
+
   // Fiyat hesaplamaları
   const basePrice = selectedPlan?.price || 0
   const monthlyPrice = basePrice
-  const sixMonthlyPrice = basePrice * 6 * 0.9 // %10 indirim
-  const yearlyPrice = basePrice * 12 * 0.8 // %20 indirim
+  const sixMonthlyPrice = basePrice * 6 * 0.9
+  const yearlyPrice = basePrice * 12 * 0.8
   const subtotal = billingPeriod === "monthly" ? monthlyPrice : billingPeriod === "6monthly" ? sixMonthlyPrice : yearlyPrice
 
-  // İndirim hesaplama
+  // Referral indirim hesaplama
   let discountAmount = 0
-  if (appliedDiscount) {
-    if (appliedDiscount.type === "PERCENTAGE") {
-      discountAmount = (subtotal * appliedDiscount.value) / 100
-    } else if (appliedDiscount.type === "FIXED") {
-      discountAmount = appliedDiscount.value
-    }
+  if (appliedReferral) {
+    discountAmount = (subtotal * appliedReferral.discountPercent) / 100
   }
 
   const total = Math.max(0, subtotal - discountAmount)
 
-  // İndirim kodu uygula
-  const handleApplyDiscount = async () => {
-    if (!discountCode.trim()) {
-      toast.error("Lütfen bir indirim kodu girin")
+  // Referral kodu uygula
+  const handleApplyReferral = async () => {
+    const codeToValidate = referralCode.trim()
+    if (!codeToValidate) {
+      toast.error("Lütfen bir referans kodu girin")
       return
     }
 
     setValidatingCode(true)
     try {
-      const response = await fetch("/api/discount/validate", {
+      const response = await fetch("/api/referral/validate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: discountCode.toUpperCase() })
+        body: JSON.stringify({ code: codeToValidate.toUpperCase() })
       })
 
       const data = await response.json()
 
       if (data.valid) {
-        setAppliedDiscount(data.discount)
-        toast.success("İndirim kodu uygulandı!")
+        setAppliedReferral({
+          code: data.code,
+          discountPercent: data.discountPercent,
+          influencerName: data.influencerName
+        })
+        setReferralCode(data.code)
+        toast.success(`%${data.discountPercent} indirim uygulandı!`)
       } else {
-        toast.error(data.error || "Geçersiz indirim kodu")
+        toast.error(data.error || "Geçersiz referans kodu")
       }
     } catch (error) {
       toast.error("Bir hata oluştu")
@@ -111,21 +111,15 @@ function CheckoutContent() {
     }
   }
 
-  // İndirim kodunu kaldır
-  const handleRemoveDiscount = () => {
-    setAppliedDiscount(null)
-    setDiscountCode("")
-    toast.success("İndirim kodu kaldırıldı")
+  // Referral kodunu kaldır
+  const handleRemoveReferral = () => {
+    setAppliedReferral(null)
+    setReferralCode("")
+    toast.success("Referans kodu kaldırıldı")
   }
 
   // Ödemeye devam
   const handleProceedToPayment = async () => {
-    // Telefon numarası kontrolü
-    if (!phoneNumber || phoneNumber.replace(/\D/g, '').length < 10) {
-      toast.error("Lütfen geçerli bir telefon numarası girin.")
-      return
-    }
-
     setLoading(true)
     try {
       const response = await fetch("/api/iyzico/initialize-subscription", {
@@ -135,19 +129,16 @@ function CheckoutContent() {
           planName,
           price: total.toString(),
           billingPeriod,
-          discountCode: appliedDiscount?.code,
           courseId,
-          phoneNumber,
-          referralCode: referralCode.trim() || undefined
+          referralCode: appliedReferral?.code || undefined
         })
       })
 
-      // Content-type kontrolü
       const contentType = response.headers.get("content-type")
       if (!contentType || !contentType.includes("application/json")) {
         const text = await response.text()
         console.error("API non-JSON response:", text.substring(0, 500))
-        toast.error(`Sistem hatası (${response.status}). Lütfen daha sonra tekrar deneyin veya destekle iletişime geçin.`)
+        toast.error(`Sistem hatası (${response.status}). Lütfen daha sonra tekrar deneyin.`)
         setLoading(false)
         return
       }
@@ -158,11 +149,9 @@ function CheckoutContent() {
         if (data.paymentPageUrl) {
           window.location.href = data.paymentPageUrl
         } else if (data.checkoutFormContent) {
-          // Iyzico Subscription v2 formunu render et
           const checkoutContainer = document.getElementById('iyzico-checkout-form')
           if (checkoutContainer) {
             checkoutContainer.innerHTML = data.checkoutFormContent
-            // Scriptleri manuel çalıştır
             const scripts = checkoutContainer.getElementsByTagName('script')
             for (let i = 0; i < scripts.length; i++) {
               const script = document.createElement('script')
@@ -170,7 +159,6 @@ function CheckoutContent() {
               document.body.appendChild(script)
             }
           } else {
-            // Fallback: Yeni sayfada aç
             const paymentWindow = window.open('', '_blank')
             paymentWindow?.document.write(data.checkoutFormContent)
           }
@@ -181,7 +169,7 @@ function CheckoutContent() {
       }
     } catch (error: any) {
       console.error("Payment error:", error)
-      toast.error(error?.message || "Bir bağlantı hatası oluştu. Lütfen internetinizi kontrol edip tekrar deneyin.")
+      toast.error(error?.message || "Bir bağlantı hatası oluştu.")
       setLoading(false)
     }
   }
@@ -230,9 +218,9 @@ function CheckoutContent() {
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-8">Ödeme Bilgileri</h1>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left Column - Plan & Billing */}
+            {/* Left Column */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Billing Period - EN ÜSTTE */}
+              {/* Billing Period */}
               <div className="bg-black border border-gray-800 rounded-xl p-6">
                 <h2 className="text-xl font-bold text-white mb-4">Ödeme Dönemi</h2>
                 <div className="grid grid-cols-3 gap-4">
@@ -288,47 +276,25 @@ function CheckoutContent() {
                 </div>
               </div>
 
-              {/* Billing Information */}
+              {/* Referans Kodu */}
               <div className="bg-black border border-gray-800 rounded-xl p-6">
-                <h2 className="text-xl font-bold text-white mb-4">Fatura Bilgileri</h2>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-1">
-                      Telefon Numarası
-                    </label>
-                    <input
-                      type="tel"
-                      value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value)}
-                      placeholder="Örn: 05xx xxx xx xx"
-                      className="w-full bg-black border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500"
-                      required
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Ödeme onayı ve fatura işlemleri için gereklidir.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Discount Code */}
-              <div className="bg-black border border-gray-800 rounded-xl p-6">
-                <h2 className="text-xl font-bold text-white mb-4">İndirim Kodu</h2>
-                {appliedDiscount ? (
+                <h2 className="text-xl font-bold text-white mb-4">Referans Kodu</h2>
+                {appliedReferral ? (
                   <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <Tag className="h-5 w-5 text-green-400" />
                       <div>
-                        <div className="text-white font-semibold">{appliedDiscount.code}</div>
+                        <div className="text-white font-semibold">{appliedReferral.code}</div>
                         <div className="text-sm text-green-400">
-                          {appliedDiscount.type === "PERCENTAGE"
-                            ? `%${appliedDiscount.value} indirim`
-                            : `${appliedDiscount.value}₺ indirim`}
+                          %{appliedReferral.discountPercent} indirim uygulandı
+                          {appliedReferral.influencerName && (
+                            <span className="text-gray-400"> • {appliedReferral.influencerName}</span>
+                          )}
                         </div>
                       </div>
                     </div>
                     <button
-                      onClick={handleRemoveDiscount}
+                      onClick={handleRemoveReferral}
                       className="text-gray-400 hover:text-white transition-colors"
                     >
                       <X className="h-5 w-5" />
@@ -338,21 +304,21 @@ function CheckoutContent() {
                   <div className="flex gap-2">
                     <input
                       type="text"
-                      value={discountCode}
-                      onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
-                      placeholder="İndirim kodunu girin"
-                      className="flex-1 bg-black border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500"
+                      value={referralCode}
+                      onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                      placeholder="Referans kodunu girin"
+                      className="flex-1 bg-black border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 font-mono"
                       disabled={validatingCode}
                     />
                     <button
-                      onClick={handleApplyDiscount}
-                      disabled={validatingCode || !discountCode.trim()}
-                      className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      onClick={handleApplyReferral}
+                      disabled={validatingCode || !referralCode.trim()}
+                      className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
                       {validatingCode ? (
                         <>
                           <Loader2 className="h-4 w-4 animate-spin" />
-                          Kontrol ediliyor...
+                          Kontrol...
                         </>
                       ) : (
                         "Uygula"
@@ -360,22 +326,8 @@ function CheckoutContent() {
                     </button>
                   </div>
                 )}
-              </div>
-
-              {/* Referral Code */}
-              <div className="bg-black border border-gray-800 rounded-xl p-6">
-                <h2 className="text-xl font-bold text-white mb-4">Fenomen Kodu</h2>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={referralCode}
-                    onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
-                    placeholder="Fenomen kodunu girin (opsiyonel)"
-                    className="flex-1 bg-black border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 font-mono"
-                  />
-                </div>
                 <p className="text-xs text-gray-500 mt-2">
-                  Bir fenomenin referral kodu varsa buraya girin
+                  Bir referans kodunuz varsa buraya girerek indirimden yararlanın
                 </p>
               </div>
             </div>
@@ -405,9 +357,9 @@ function CheckoutContent() {
                     </div>
                   )}
 
-                  {appliedDiscount && (
-                    <div className="flex justify-between text-green-400">
-                      <span>İndirim Kodu</span>
+                  {appliedReferral && (
+                    <div className="flex justify-between text-purple-400">
+                      <span>Referans İndirimi (%{appliedReferral.discountPercent})</span>
                       <span>-{Math.round(discountAmount)}₺</span>
                     </div>
                   )}
