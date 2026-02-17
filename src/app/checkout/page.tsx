@@ -65,15 +65,20 @@ function CheckoutContent() {
   const monthlyPrice = basePrice
   const sixMonthlyPrice = basePrice * 6 * 0.9
   const yearlyPrice = basePrice * 12 * 0.8
-  const subtotal = billingPeriod === "monthly" ? monthlyPrice : billingPeriod === "6monthly" ? sixMonthlyPrice : yearlyPrice
 
-  // Referral indirim hesaplama
-  let discountAmount = 0
+  // Ara toplam = indirimsiz orijinal fiyat
+  const originalPrice = billingPeriod === "monthly" ? monthlyPrice : billingPeriod === "6monthly" ? basePrice * 6 : basePrice * 12
+  // Dönem indirimi
+  const periodDiscountedPrice = billingPeriod === "monthly" ? monthlyPrice : billingPeriod === "6monthly" ? sixMonthlyPrice : yearlyPrice
+  const periodDiscount = originalPrice - periodDiscountedPrice
+
+  // Referral indirim hesaplama (dönem indirimli fiyat üzerinden)
+  let referralDiscount = 0
   if (appliedReferral) {
-    discountAmount = (subtotal * appliedReferral.discountPercent) / 100
+    referralDiscount = (periodDiscountedPrice * appliedReferral.discountPercent) / 100
   }
 
-  const total = Math.max(0, subtotal - discountAmount)
+  const total = Math.max(0, periodDiscountedPrice - referralDiscount)
 
   // Referral kodu uygula
   const handleApplyReferral = async () => {
@@ -340,27 +345,27 @@ function CheckoutContent() {
                 <div className="space-y-4 mb-6">
                   <div className="flex justify-between text-gray-300">
                     <span>Ara Toplam</span>
-                    <span>{Math.round(subtotal)}₺</span>
+                    <span>{Math.round(originalPrice)}₺</span>
                   </div>
 
                   {billingPeriod === "6monthly" && (
                     <div className="flex justify-between text-green-400">
                       <span>6 Aylık İndirim (%10)</span>
-                      <span>-{Math.round(basePrice * 6 * 0.1)}₺</span>
+                      <span>-{Math.round(periodDiscount)}₺</span>
                     </div>
                   )}
 
                   {billingPeriod === "yearly" && (
                     <div className="flex justify-between text-green-400">
                       <span>Yıllık İndirim (%20)</span>
-                      <span>-{Math.round(basePrice * 12 * 0.2)}₺</span>
+                      <span>-{Math.round(periodDiscount)}₺</span>
                     </div>
                   )}
 
                   {appliedReferral && (
                     <div className="flex justify-between text-green-400">
                       <span>Referans İndirimi (%{appliedReferral.discountPercent})</span>
-                      <span>-{Math.round(discountAmount)}₺</span>
+                      <span>-{Math.round(referralDiscount)}₺</span>
                     </div>
                   )}
 
