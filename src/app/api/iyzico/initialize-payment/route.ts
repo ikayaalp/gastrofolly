@@ -127,79 +127,100 @@ export async function POST(request: NextRequest) {
         const conversationId = payment.id
 
         // GSM Numarası formatı
-        let gsmNumber = (user.phoneNumber || "5555555555").replace(/\s+/g, '')
-        if (!gsmNumber.startsWith('+')) {
-            if (gsmNumber.startsWith('0')) gsmNumber = gsmNumber.substring(1)
-            if (!gsmNumber.startsWith('90')) gsmNumber = '90' + gsmNumber
+        // GSM Numarasını Formatla (+90 ile başlamalı)
+        let gsmNumber = user.phoneNumber || ''
+        gsmNumber = gsmNumber.replace(/[^0-9]/g, '') // Sadece rakamları al
+        if (gsmNumber.startsWith('90')) {
             gsmNumber = '+' + gsmNumber
+        } else if (gsmNumber.startsWith('0')) {
+            gsmNumber = '+90' + gsmNumber.substring(1)
+        } else if (gsmNumber.length === 10) {
+            gsmNumber = '+90' + gsmNumber
+        } else {
+            // Geçersiz veya boş numara ise varsayılan test numarası
+            gsmNumber = '+905555555555'
         }
 
-        // Iyzico Checkout Form (Tekil Ödeme)
+        const addressText = 'Dijital Teslimat, Turkiye'
+        const city = 'Istanbul'
+        const country = 'Turkey'
+
+        // İsim Soyisim Kontrolü
+        const fullName = user.name || 'Misafir Kullanici'
+        const namePartsNew = fullName.trim().split(' ')
+        const surnameNew = namePartsNew.length > 1 ? namePartsNew.pop() || 'Kullanici' : 'Kullanici'
+        const nameNew = namePartsNew.join(' ') || fullName
+
         const paymentRequest: IyzicoPaymentRequest = {
             locale: 'tr',
-            conversationId: conversationId,
+            conversationId: payment.id,
             price: totalPrice.toFixed(2),
             paidPrice: totalPrice.toFixed(2),
             currency: 'TRY',
-            basketId: conversationId,
+            basketId: payment.id,
             paymentGroup: 'PRODUCT',
-            callbackUrl: callbackUrl,
-            enabledInstallments: [1, 2, 3, 6, 9],
+            callbackUrl: `${process.env.NEXTAUTH_URL}/api/iyzico/subscription-callback`,
+            enabledInstallments: [1],
             buyer: {
                 id: user.id,
-                name: firstName,
-                surname: surname,
+                name: nameNew,
+                surname: surnameNew,
                 gsmNumber: gsmNumber,
                 email: user.email,
                 identityNumber: '11111111111',
                 lastLoginDate: new Date().toISOString().replace('T', ' ').substring(0, 19),
                 registrationDate: (user.createdAt ? new Date(user.createdAt) : new Date()).toISOString().replace('T', ' ').substring(0, 19),
-                registrationAddress: 'Dijital Teslimat',
+                registrationAddress: addressText,
                 ip: userIp,
-                city: 'Istanbul',
-                country: 'Turkey',
+                city: city,
+                country: country,
                 zipCode: '34732'
             },
             shippingAddress: {
-                contactName: `${firstName} ${surname}`,
-                city: 'Istanbul',
-                country: 'Turkey',
-                address: 'Dijital Teslimat',
+                contactName: fullName,
+                city: city,
+                country: country,
+                address: addressText,
                 zipCode: '34732'
             },
             billingAddress: {
-                contactName: `${firstName} ${surname}`,
-                city: 'Istanbul',
-                country: 'Turkey',
-                address: 'Dijital Teslimat',
+                contactName: fullName,
+                city: city,
+                country: country,
+                address: addressText,
                 zipCode: '34732'
             },
-            basketItems: [{
-                id: `premium_${billingPeriod}`,
-                name: `Culinora Premium ${periodLabel}`,
-                category1: 'Abonelik',
-                category2: 'Premium Üyelik',
-                itemType: 'VIRTUAL',
-                price: totalPrice.toFixed(2)
-            }]
+            basketItems: [
+                {
+                    id: planName,
+                    name: `Culinora Premium ${periodLabel}`,
+                    category1: 'Abonelik',
+                    itemType: 'VIRTUAL',
+                    price: totalPrice.toFixed(2)
+                }
+            ]
         }
 
-        console.log("Initializing Single Payment Checkout:", {
-            paymentId: payment.id,
+        console.log('Initializing Single Payment Checkout:', {
             plan: planName,
-            period: billingPeriod,
             price: totalPrice,
-            email: user.email
+            paymentId: payment.id,
+            buyer: {
+                gsm: paymentRequest.buyer.gsmNumber,
+                email: paymentRequest.buyer.email,
+                identity: paymentRequest.buyer.identityNumber,
+                address: paymentRequest.buyer.registrationAddress
+            }
         })
 
         const result = await createCheckoutForm(paymentRequest)
 
-        if (result && (result.status === "success" || result.status === "SUCCESS")) {
-            // Token'ı ödeme kaydına ekle
+        if (result.status === 'success' && result.checkoutFormContent) {
+            // Başarılı - token'ı kaydet
             await prisma.payment.update({
                 where: { id: payment.id },
                 data: {
-                    stripePaymentId: result.token || conversationId
+                    stripePaymentId: result.token
                 }
             })
 
