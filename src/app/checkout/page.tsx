@@ -128,7 +128,7 @@ function CheckoutContent() {
   const handleProceedToPayment = async () => {
     setLoading(true)
     try {
-      const response = await fetch("/api/iyzico/initialize-subscription", {
+      const response = await fetch("/api/iyzico/initialize-payment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

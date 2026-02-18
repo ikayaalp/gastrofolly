@@ -178,6 +178,8 @@ async function handlePayment(token: string, request: NextRequest) {
 
         if (paymentRecord.billingPeriod === 'yearly') {
             endDate.setFullYear(endDate.getFullYear() + 1)
+        } else if (paymentRecord.billingPeriod === '6monthly') {
+            endDate.setMonth(endDate.getMonth() + 6)
         } else {
             endDate.setMonth(endDate.getMonth() + 1)
         }
