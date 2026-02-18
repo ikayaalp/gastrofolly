@@ -2,6 +2,7 @@
 
 import { useSession } from "next-auth/react"
 import Link from "next/link"
+import Image from "next/image"
 import { ChefHat, Check, Crown, BookOpen, Home, Users, MessageCircle, Loader2, Tag, X, LucideIcon } from "lucide-react"
 import UserDropdown from "@/components/ui/UserDropdown"
 import { useState, Suspense, useEffect } from "react"
@@ -398,9 +399,29 @@ function CheckoutContent() {
                   )}
                 </button>
 
-                <p className="text-xs text-gray-500 text-center mt-4">
-                  Güvenli ödeme Iyzico ile yapılmaktadır
-                </p>
+                <div className="mt-4 flex flex-col items-center gap-3">
+                  <div className="relative h-10 w-48">
+                    <Image
+                      src="/iyzico-logo-pack/checkout_iyzico_ile_ode/TR/Tr_White_Horizontal/iyzico_ile_ode_horizontal_white.svg"
+                      alt="iyzico ile Öde"
+                      fill
+                      className="object-contain"
+                    />
+                  </div>
+                  <div className="relative h-6 w-56">
+                    <Image
+                      src="/iyzico-logo-pack/footer_iyzico_ile_ode/White/logo_band_white.svg"
+                      alt="Visa, MasterCard, Troy"
+                      fill
+                      className="object-contain"
+                    />
+                  </div>
+                  <div className="flex gap-3 text-xs text-gray-500">
+                    <Link href="/iptal-iade" className="hover:text-gray-300 transition-colors underline">İptal ve İade</Link>
+                    <span>•</span>
+                    <Link href="/teslimat-iade" className="hover:text-gray-300 transition-colors underline">Teslimat ve İade</Link>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

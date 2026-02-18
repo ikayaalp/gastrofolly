@@ -87,12 +87,23 @@ export default function Footer() {
                         <ul className="space-y-2 text-gray-400">
                             <li><Link href="/privacy" className="hover:text-white transition-colors">Gizlilik</Link></li>
                             <li><Link href="/terms" className="hover:text-white transition-colors">Şartlar</Link></li>
+                            <li><Link href="/iptal-iade" className="hover:text-white transition-colors">İptal ve İade</Link></li>
+                            <li><Link href="/teslimat-iade" className="hover:text-white transition-colors">Teslimat ve İade</Link></li>
                             <li><Link href="/faq" className="hover:text-white transition-colors">SSS</Link></li>
                         </ul>
                     </div>
                 </div>
-                <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-500 text-sm">
-                    <p>&copy; 2026 Culinora. Tüm hakları saklıdır.</p>
+                {/* Payment Logos */}
+                <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col items-center gap-4">
+                    <div className="relative h-8 w-64">
+                        <Image
+                            src="/iyzico-logo-pack/footer_iyzico_ile_ode/White/logo_band_white.svg"
+                            alt="iyzico ile Öde - Visa, MasterCard, Troy"
+                            fill
+                            className="object-contain"
+                        />
+                    </div>
+                    <p className="text-gray-500 text-sm">&copy; 2026 Culinora. Tüm hakları saklıdır.</p>
                 </div>
             </div>
         </footer>
