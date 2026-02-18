@@ -195,8 +195,8 @@ export async function POST(request: NextRequest) {
                 {
                     id: planName,
                     name: `Culinora Premium ${periodLabel}`,
-                    category1: 'Gida',
-                    itemType: 'PHYSICAL',
+                    category1: 'Online Egitim',
+                    itemType: 'VIRTUAL',
                     price: totalPrice.toFixed(2)
                 }
             ]
