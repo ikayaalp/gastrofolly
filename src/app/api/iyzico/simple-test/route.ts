@@ -60,8 +60,12 @@ export async function GET() {
         const result = await createCheckoutForm(request)
         console.log('Simple Test Result:', result)
 
+        if (result.status === 'success' && result.paymentPageUrl) {
+            return NextResponse.redirect(result.paymentPageUrl)
+        }
+
         return NextResponse.json({
-            success: result.status === 'success',
+            success: false,
             result: result,
             request: request
         })
