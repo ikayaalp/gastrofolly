@@ -91,6 +91,49 @@ async function handlePayment(token: string, request: NextRequest) {
         console.error("Retrieve checkout form error:", e)
     }
 
+    // 2. Eğer Token sorgusu başarısızsa (5122 hatası gibi), Conversation ID (Sepet ID) ile sorgula
+    if (result.status !== "success" || result.errorCode === "5122") {
+        console.log("Token verification failed, trying fallback with Conversation ID/Basket ID...", { errorCode: result.errorCode })
+
+        let paymentIdToQuery = null
+        // DB'de kayıt varsa onun ID'sini kullan
+        let paymentRecord = await prisma.payment.findFirst({
+            where: { stripePaymentId: token }
+        })
+        if (paymentRecord) {
+            paymentIdToQuery = paymentRecord.id
+        } else {
+            // DB'de yoksa, token'dan önceki sepet ID'yi bulmaya çalış (zaten basketId dönmüyorsa buradan bulamayız ama yine de)
+            // Bu durumda callback url'den parametre olarak conversationId almak lazım ama Iyzico bunu query stringde gönderiyor mu?
+            // Standart callback'te conversationId POST bodyde gelir. 
+            // Ancak burası GET callback.
+            // URL searchParams'da conversationId var mı?
+            const conversationId = new URL(request.url).searchParams.get('conversationId')
+            if (conversationId) paymentIdToQuery = conversationId
+        }
+
+        if (paymentIdToQuery) {
+            try {
+                // retrievePaymentDetails paymentId değil conversationId ile sorgular (bizim conversationId = payment.id)
+                // Ama Iyzico'da paymentId farklı, conversationId bizim gönderdiğimiz ID.
+                const fallbackResult = await retrievePaymentDetails(null, paymentIdToQuery)
+
+                console.log("Fallback Verification Result:", {
+                    originalStatus: result.status,
+                    fallbackStatus: fallbackResult.status,
+                    paymentStatus: fallbackResult.paymentStatus,
+                    id: paymentIdToQuery
+                })
+
+                if (fallbackResult.status === "success") {
+                    result = fallbackResult
+                }
+            } catch (e) {
+                console.error("Fallback verification error:", e)
+            }
+        }
+    }
+
     // 2. Ödeme başarısız ise - abonelik verme!
     if (result.status !== "success" || result.paymentStatus !== "SUCCESS") {
         console.error('❌ PAYMENT FAILED:', {

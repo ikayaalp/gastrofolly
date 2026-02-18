@@ -250,15 +250,31 @@ export const createCheckoutForm = async (paymentRequest: IyzicoPaymentRequest): 
  * Iyzico ödeme sonucunu kontrol eder
  * Doğru endpoint: /payment/iyzipos/checkoutform/auth/ecom/detail
  */
+/**
+ * Iyzico ödeme sonucu sorgulama (Checkout Form Token ile)
+ */
 export const retrieveCheckoutForm = async (token: string): Promise<IyzicoPaymentResult> => {
   const request = {
     locale: 'tr',
     conversationId: Date.now().toString(),
     token: token
   }
-
-  // İyzico dokümantasyonuna göre doğru endpoint
   return makeIyzicoRequest<IyzicoPaymentResult>('/payment/iyzipos/checkoutform/auth/ecom/detail', request)
+}
+
+/**
+ * Ödeme Detayı Sorgulama (Payment ID veya Conversation ID ile)
+ * Token kayıp ise veya 5122 hatası alınıyorsa bu kullanılabilir.
+ */
+export const retrievePaymentDetails = async (paymentId: string | null, conversationId: string | null): Promise<IyzicoPaymentResult> => {
+  const request: any = {
+    locale: 'tr',
+    conversationId: Date.now().toString(),
+  }
+  if (paymentId) request.paymentId = paymentId
+  if (conversationId) request.paymentConversationId = conversationId
+
+  return makeIyzicoRequest<IyzicoPaymentResult>('/payment/detail', request)
 }
 
 /* ---------- SUBSCRIPTION API V2 ---------- */
