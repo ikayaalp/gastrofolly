@@ -157,7 +157,7 @@ export async function POST(request: NextRequest) {
             price: totalPrice.toFixed(2),
             paidPrice: totalPrice.toFixed(2),
             currency: 'TRY',
-            basketId: payment.id,
+            basketId: 'B' + payment.id,
             paymentGroup: 'PRODUCT',
             callbackUrl: `${process.env.NEXTAUTH_URL}/api/iyzico/subscription-callback`,
             enabledInstallments: [1],
