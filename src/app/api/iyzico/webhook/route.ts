@@ -8,8 +8,8 @@ export async function POST(request: NextRequest) {
         const signature = request.headers.get("x-iyzi-signature") || ""
         const body = await request.json()
 
-        // 1. İmza Doğrulama (Şimdilik logluyor, false dönse de işlem yapıyor sandbox kolaylığı için)
-        // Production'da if (!isValid) return NextResponse.error() yapılmalı.
+        // 1. İmza Doğrulama (Production - geçersiz imza reddedilir)
+
         const isValid = validateWebhookSignature(signature, body)
 
         if (!isValid) {

@@ -154,7 +154,7 @@ export async function POST(request: NextRequest) {
                 surname: surname || "Kullanıcı",
                 email: user.email,
                 gsmNumber: gsmNumber,
-                identityNumber: "11111111111",
+                identityNumber: "00000000000",
                 billingAddress: {
                     contactName: user.name || "Misafir",
                     city: "Istanbul",

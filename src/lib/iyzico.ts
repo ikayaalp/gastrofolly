@@ -1,10 +1,14 @@
 import crypto from 'crypto'
 
-// Iyzico yapılandırması
+// Iyzico yapılandırması (Production)
 const IYZICO_CONFIG = {
-  apiKey: process.env.IYZICO_API_KEY || 'sandbox-eq7YZQDpwxzkr9YHnq9xdYoR5OMXEQSu',
-  secretKey: process.env.IYZICO_SECRET_KEY || 'sandbox-QXZ7ogP4KUdnG9OeLV8yIdBr3xwu6M27',
-  baseUrl: process.env.IYZICO_BASE_URL || 'https://sandbox-api.iyzipay.com'
+  apiKey: process.env.IYZICO_API_KEY || '',
+  secretKey: process.env.IYZICO_SECRET_KEY || '',
+  baseUrl: process.env.IYZICO_BASE_URL || 'https://api.iyzipay.com'
+}
+
+if (!IYZICO_CONFIG.apiKey || !IYZICO_CONFIG.secretKey) {
+  console.error('UYARI: IYZICO_API_KEY ve IYZICO_SECRET_KEY environment variable\'ları tanımlanmalıdır!')
 }
 
 /**
@@ -115,7 +119,7 @@ async function makeIyzicoRequest<T>(endpoint: string, requestBody: unknown): Pro
 
     // 404 hatası geliyorsa, endpoint yanlış olabilir
     if (text.includes("404") || response.status === 404) {
-      throw new Error(`Iyzico Endpoint bulunamadı (404). Kullandığınız Base URL (${IYZICO_CONFIG.baseUrl}) veya endpoint (${endpoint}) Sandbox için geçerli olmayabilir. Lütfen Iyzico panelinizden yeni sandbox anahtarları alıp deneyin.`)
+      throw new Error(`Iyzico Endpoint bulunamadı (404). Base URL: ${IYZICO_CONFIG.baseUrl}, Endpoint: ${endpoint}. Lütfen API anahtarlarınızı ve endpoint'i kontrol edin.`)
     }
 
     throw new Error(`Iyzico API HTML cevabı döndürdü (Kod: ${response.status}).`)
@@ -410,7 +414,7 @@ export const validateWebhookSignature = (iyziSignature: string, payload: any): b
     // Ancak Subscription v2 webhook dokümantasyonu bazen farklılık gösterir.
     // Genelde: base64(sha1(secretKey + content))
 
-    // NOT: Iyzico sandbox ortamında webhook tetiklemek zor olabilir.
+    // NOT: Webhook imza doğrulaması aktif.
     // Güvenlik için secretKey kontrolü ekliyoruz.
 
     const calculatedSignature = crypto

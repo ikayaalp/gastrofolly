@@ -24,13 +24,13 @@ function getClientIp(request: NextRequest): string {
   if (realIp) {
     return realIp
   }
-  
+
   // Vercel'den gelen IP'yi kontrol et
   const vercelIp = request.headers.get('x-vercel-forwarded-for')
   if (vercelIp) {
     return vercelIp.split(',')[0].trim()
   }
-  
+
   // Türkiye IP'si kullan
   return '85.34.78.112'
 }
@@ -38,7 +38,7 @@ function getClientIp(request: NextRequest): string {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user?.id || !session?.user?.email) {
       return NextResponse.json(
         { error: "Unauthorized" },
@@ -85,12 +85,12 @@ export async function POST(request: NextRequest) {
 
     // KDV dahil toplam fiyat hesapla
     const totalWithTax = total * 1.18
-    
+
     // Sepet öğelerini Iyzico formatına çevir
     const basketItems = items.map((item: CartItem) => {
       const itemPrice = item.discountedPrice || item.price
       const itemPriceWithTax = itemPrice * 1.18
-      
+
       return {
         id: item.id,
         name: item.title.substring(0, 64), // Iyzico max 64 karakter
@@ -104,19 +104,19 @@ export async function POST(request: NextRequest) {
 
     // Benzersiz conversation ID
     const conversationId = `${session.user.id}_${Date.now()}`
-    
+
     // Kullanıcı adını parçala
     const nameParts = (user.name || 'Kullanıcı').split(' ')
     const firstName = nameParts[0] || 'Kullanıcı'
     const lastName = nameParts.slice(1).join(' ') || 'Soyadı'
-    
+
     // Kullanıcı IP adresini al
     const userIp = getClientIp(request)
-    
+
     // Callback URL'i düzgün oluştur (conversationId ile)
     const baseUrl = process.env.NEXTAUTH_URL?.replace(/\/$/, '') || 'https://culinora.net'
     const callbackUrl = `${baseUrl}/api/iyzico/callback?conversationId=${conversationId}`
-    
+
     console.log('İstek detayları:', {
       userIp,
       conversationId,
@@ -140,12 +140,12 @@ export async function POST(request: NextRequest) {
         id: session.user.id,
         name: firstName,
         surname: lastName,
-        gsmNumber: '+905350000000', // Sandbox test numarası
+        gsmNumber: user.phoneNumber || '+905000000000',
         email: user.email,
-        identityNumber: '11111111111', // Sandbox için sabit
-        lastLoginDate: '2015-10-05 12:43:35',
-        registrationDate: '2013-04-21 15:12:09',
-        registrationAddress: 'Nidakule Göztepe, Merdivenköy Mah. Bora Sok. No:1',
+        identityNumber: '00000000000',
+        lastLoginDate: new Date().toISOString().replace('T', ' ').substring(0, 19),
+        registrationDate: (user.createdAt ? new Date(user.createdAt) : new Date()).toISOString().replace('T', ' ').substring(0, 19),
+        registrationAddress: 'Dijital Teslimat',
         ip: userIp,
         city: 'Istanbul',
         country: 'Turkey',
@@ -176,7 +176,7 @@ export async function POST(request: NextRequest) {
       for (const courseId of courseIds) {
         const courseItem = items.find((item: CartItem) => item.id === courseId)
         const coursePrice = courseItem ? (courseItem.discountedPrice || courseItem.price) * 1.18 : 0
-        
+
         await prisma.payment.create({
           data: {
             userId: session.user.id,
