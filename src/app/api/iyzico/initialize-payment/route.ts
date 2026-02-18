@@ -152,6 +152,12 @@ export async function POST(request: NextRequest) {
         const surnameNew = namePartsNew.length > 1 ? namePartsNew.pop() || 'Kullanici' : 'Kullanici'
         const nameNew = namePartsNew.join(' ') || fullName
 
+        // IP Kontrolü (Zorunlu)
+        const validIp = userIp && (userIp.includes('.') || userIp.includes(':')) ? userIp : '127.0.0.1'
+
+        // Ürün Adı Temizliği
+        const safePlanName = planName.replace(/[^a-zA-Z0-9 ]/g, '')
+
         const paymentRequest: IyzicoPaymentRequest = {
             locale: 'tr',
             conversationId: payment.id,
@@ -172,7 +178,7 @@ export async function POST(request: NextRequest) {
                 lastLoginDate: new Date().toISOString().replace('T', ' ').substring(0, 19),
                 registrationDate: (user.createdAt ? new Date(user.createdAt) : new Date()).toISOString().replace('T', ' ').substring(0, 19),
                 registrationAddress: addressText,
-                ip: userIp,
+                ip: validIp,
                 city: city,
                 country: country,
                 zipCode: zipCode
@@ -193,7 +199,7 @@ export async function POST(request: NextRequest) {
             },
             basketItems: [
                 {
-                    id: planName,
+                    id: safePlanName,
                     name: `Culinora Premium ${periodLabel}`,
                     category1: 'Online Egitim',
                     itemType: 'VIRTUAL',
