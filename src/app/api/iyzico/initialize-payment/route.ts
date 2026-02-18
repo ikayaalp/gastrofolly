@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Fiyat hesaplama
-        const basePrice = 299
+        const basePrice = 5
         let totalPrice: number
         let periodLabel: string
 
