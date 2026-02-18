@@ -195,8 +195,8 @@ export async function POST(request: NextRequest) {
                 {
                     id: planName,
                     name: `Culinora Premium ${periodLabel}`,
-                    category1: 'Abonelik',
-                    itemType: 'VIRTUAL',
+                    category1: 'Gida',
+                    itemType: 'PHYSICAL',
                     price: totalPrice.toFixed(2)
                 }
             ]
