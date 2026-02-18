@@ -141,9 +141,10 @@ export async function POST(request: NextRequest) {
             gsmNumber = '+905555555555'
         }
 
-        const addressText = 'Dijital Teslimat, Turkiye'
+        const addressText = 'Ataturk Mah. Cumhuriyet Cad. No:1 D:1'
         const city = 'Istanbul'
         const country = 'Turkey'
+        const zipCode = '34000'
 
         // İsim Soyisim Kontrolü
         const fullName = user.name || 'Misafir Kullanici'
@@ -174,21 +175,21 @@ export async function POST(request: NextRequest) {
                 ip: userIp,
                 city: city,
                 country: country,
-                zipCode: '34732'
+                zipCode: zipCode
             },
             shippingAddress: {
                 contactName: fullName,
                 city: city,
                 country: country,
                 address: addressText,
-                zipCode: '34732'
+                zipCode: zipCode
             },
             billingAddress: {
                 contactName: fullName,
                 city: city,
                 country: country,
                 address: addressText,
-                zipCode: '34732'
+                zipCode: zipCode
             },
             basketItems: [
                 {
