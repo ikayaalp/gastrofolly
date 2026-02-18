@@ -117,8 +117,8 @@ export async function GET(request: NextRequest) {
             basketItems: [{
                 id: 'test_item',
                 name: 'Test Urun',
-                category1: 'Koleksiyon',
-                itemType: 'PHYSICAL',
+                category1: 'Online Egitim',
+                itemType: 'VIRTUAL',
                 price: '1.00'
             }]
         }

@@ -49,8 +49,8 @@ export async function GET() {
                 {
                     id: 'BI101',
                     name: 'Binocular',
-                    category1: 'Collectibles',
-                    itemType: 'PHYSICAL',
+                    category1: 'Online Egitim',
+                    itemType: 'VIRTUAL',
                     price: price
                 }
             ]
