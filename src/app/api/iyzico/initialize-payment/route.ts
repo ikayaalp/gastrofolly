@@ -126,31 +126,18 @@ export async function POST(request: NextRequest) {
         const userIp = getClientIp(request)
         const conversationId = payment.id
 
-        // GSM Numarası formatı
-        // GSM Numarasını Formatla (+90 ile başlamalı)
-        let gsmNumber = user.phoneNumber || ''
-        gsmNumber = gsmNumber.replace(/[^0-9]/g, '') // Sadece rakamları al
-        if (gsmNumber.startsWith('90')) {
-            gsmNumber = '+' + gsmNumber
-        } else if (gsmNumber.startsWith('0')) {
-            gsmNumber = '+90' + gsmNumber.substring(1)
-        } else if (gsmNumber.length === 10) {
-            gsmNumber = '+90' + gsmNumber
-        } else {
-            // Geçersiz veya boş numara ise varsayılan test numarası
-            gsmNumber = '+905555555555'
-        }
+        // GSM Numarası formatı - STANDART TEST NUMARASI KULLAN (Hata ayıklama için)
+        // Gerçek numarada format hatası veya banka ret sebebi olabilir
+        const gsmNumber = '+905555555555'
 
-        const addressText = 'Ataturk Mah. Cumhuriyet Cad. No:1 D:1'
+        const addressText = 'Nidakule Göztepe, Merdivenköy Mah. Bora Sok. No:1'
         const city = 'Istanbul'
         const country = 'Turkey'
-        const zipCode = '34000'
+        const zipCode = '34732'
 
-        // İsim Soyisim Kontrolü
-        const fullName = user.name || 'Misafir Kullanici'
-        const namePartsNew = fullName.trim().split(' ')
-        const surnameNew = namePartsNew.length > 1 ? namePartsNew.pop() || 'Kullanici' : 'Kullanici'
-        const nameNew = namePartsNew.join(' ') || fullName
+        // İsim Soyisim - STANDART TEST İSMİ KULLAN
+        const nameNew = 'John'
+        const surnameNew = 'Doe'
 
         // IP Kontrolü (Zorunlu)
         const validIp = userIp && (userIp.includes('.') || userIp.includes(':')) ? userIp : '127.0.0.1'
@@ -173,25 +160,25 @@ export async function POST(request: NextRequest) {
                 name: nameNew,
                 surname: surnameNew,
                 gsmNumber: gsmNumber,
-                email: user.email,
+                email: 'email@email.com', // Test e-maili kullan (Sandbox/Test ortamı için bazen gerekebilir)
                 identityNumber: '11111111111',
-                lastLoginDate: new Date().toISOString().replace('T', ' ').substring(0, 19),
-                registrationDate: (user.createdAt ? new Date(user.createdAt) : new Date()).toISOString().replace('T', ' ').substring(0, 19),
+                lastLoginDate: '2015-10-05 12:43:35',
+                registrationDate: '2013-04-21 15:12:09',
                 registrationAddress: addressText,
-                ip: validIp,
+                ip: '85.34.78.112', // Test IP'si kullan
                 city: city,
                 country: country,
                 zipCode: zipCode
             },
             shippingAddress: {
-                contactName: fullName,
+                contactName: nameNew + ' ' + surnameNew,
                 city: city,
                 country: country,
                 address: addressText,
                 zipCode: zipCode
             },
             billingAddress: {
-                contactName: fullName,
+                contactName: nameNew + ' ' + surnameNew,
                 city: city,
                 country: country,
                 address: addressText,

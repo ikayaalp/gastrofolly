@@ -170,12 +170,13 @@ function CheckoutContent() {
           }
         }
       } else {
-        toast.error(data.error || "Ödeme başlatılamadı")
+        console.error("Payment initiation failed:", data)
+        toast.error(data.error || data.errorMessage || data.message || "Ödeme başlatılamadı. Lütfen bilgilerinizi kontrol edip tekrar deneyiniz.")
         setLoading(false)
       }
     } catch (error: any) {
       console.error("Payment error:", error)
-      toast.error(error?.message || "Bir bağlantı hatası oluştu.")
+      toast.error(error?.message || "Bir bağlantı hatası oluştu. Lütfen internet bağlantınızı kontrol ediniz.")
       setLoading(false)
     }
   }
