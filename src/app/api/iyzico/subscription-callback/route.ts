@@ -76,32 +76,86 @@ async function handleCallback(request: NextRequest) {
 }
 
 async function handlePayment(token: string, request: NextRequest) {
-    // 1. Önce Token ile DB'de ödeme var mı ona bak (V2 Subscription)
+    // 1. İyzico'dan ödeme sonucunu doğrula (HER ZAMAN)
+    let result: any = { status: "failure" }
+    try {
+        result = await retrieveCheckoutForm(token)
+        console.log('Iyzico Payment Verification:', {
+            token,
+            status: result.status,
+            paymentStatus: result.paymentStatus,
+            errorCode: result.errorCode,
+            errorMessage: result.errorMessage
+        })
+    } catch (e) {
+        console.error("Retrieve checkout form error:", e)
+    }
+
+    // 2. Ödeme başarısız ise - abonelik verme!
+    if (result.status !== "success" || result.paymentStatus !== "SUCCESS") {
+        console.error('❌ PAYMENT FAILED:', {
+            token,
+            status: result.status,
+            paymentStatus: result.paymentStatus,
+            errorMessage: result.errorMessage
+        })
+
+        // PENDING ödeme kaydını FAILED olarak güncelle
+        const failedPayment = await prisma.payment.findFirst({
+            where: {
+                OR: [
+                    { stripePaymentId: token },
+                    { id: result.basketId || '' }
+                ]
+            }
+        })
+        if (failedPayment && failedPayment.status === 'PENDING') {
+            await prisma.payment.update({
+                where: { id: failedPayment.id },
+                data: { status: 'FAILED' }
+            })
+        }
+
+        const errorMsg = result.errorMessage || 'Ödeme başarısız oldu'
+        const html = `
+            <!DOCTYPE html>
+            <html>
+                <head>
+                    <meta charset="utf-8">
+                    <title>Redirecting...</title>
+                </head>
+                <body>
+                    <script>
+                        window.location.href = '/subscription?error=${encodeURIComponent(errorMsg)}';
+                    </script>
+                    <noscript>
+                        <meta http-equiv="refresh" content="0; url=/subscription?error=${encodeURIComponent(errorMsg)}">
+                    </noscript>
+                </body>
+            </html>
+        `
+        return new NextResponse(html, {
+            status: 200,
+            headers: { 'Content-Type': 'text/html' }
+        })
+    }
+
+    // 3. Ödeme BAŞARILI - DB'deki ödeme kaydını bul
     let paymentRecord = await prisma.payment.findFirst({
         where: { stripePaymentId: token }
     })
 
     let isV2 = !!paymentRecord
-    let result: any = { status: "failure" }
 
-    // 2. Eğer DB'de yoksa, Iyzico'dan sor (V1 - Eski Yöntem veya Standart Checkout)
-    if (!paymentRecord) {
-        try {
-            result = await retrieveCheckoutForm(token)
-            if (result.status === "success" && result.paymentStatus === "SUCCESS") {
-                const basketId = result.basketId
-                paymentRecord = await prisma.payment.findFirst({
-                    where: {
-                        OR: [
-                            { id: basketId },
-                            { stripePaymentId: basketId }
-                        ]
-                    }
-                })
+    if (!paymentRecord && result.basketId) {
+        paymentRecord = await prisma.payment.findFirst({
+            where: {
+                OR: [
+                    { id: result.basketId },
+                    { stripePaymentId: result.basketId }
+                ]
             }
-        } catch (e) {
-            console.error("Retrieve checkout form error:", e)
-        }
+        })
     }
 
     console.log('Payment Resolution:', {
@@ -160,13 +214,12 @@ async function handlePayment(token: string, request: NextRequest) {
         })
     }
 
-    // 3. Başarılı İşlem - Kayıtları Güncelle
-    // V1 ise stripePaymentId'yi güncelle, V2 ise zaten tokendi.
+    // 4. Başarılı İşlem - Kayıtları Güncelle
     await prisma.payment.update({
         where: { id: paymentRecord.id },
         data: {
             status: 'COMPLETED',
-            stripePaymentId: token // Her zaman güncel token/id olsun
+            stripePaymentId: result.paymentId || token
         }
     })
 
