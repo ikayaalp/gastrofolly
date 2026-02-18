@@ -151,7 +151,7 @@ export async function POST(request: NextRequest) {
                 surname: surname,
                 gsmNumber: gsmNumber,
                 email: user.email,
-                identityNumber: '00000000000',
+                identityNumber: '11111111111',
                 lastLoginDate: new Date().toISOString().replace('T', ' ').substring(0, 19),
                 registrationDate: (user.createdAt ? new Date(user.createdAt) : new Date()).toISOString().replace('T', ' ').substring(0, 19),
                 registrationAddress: 'Dijital Teslimat',
