@@ -155,7 +155,7 @@ function CheckoutContent() {
         if (data.paymentPageUrl) {
           window.location.href = data.paymentPageUrl
         } else if (data.checkoutFormContent) {
-          const checkoutContainer = document.getElementById('iyzico-checkout-form')
+          const checkoutContainer = document.getElementById('iyzipay-checkout-form')
           if (checkoutContainer) {
             // Temizle
             checkoutContainer.innerHTML = ''
@@ -463,7 +463,7 @@ export default function CheckoutPage() {
         <Loader2 className="h-8 w-8 text-orange-500 animate-spin" />
       </div>
     }>
-      <div id="iyzico-checkout-form" className="responsive"></div>
+      <div id="iyzipay-checkout-form" className="responsive"></div>
       <CheckoutContent />
     </Suspense>
   )
