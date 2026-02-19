@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { createCheckoutForm, retrieveCheckoutForm } from "@/lib/iyzico"
+import { createCheckoutForm, retrieveCheckoutForm, createSubscriptionProduct } from "@/lib/iyzico"
 import { prisma } from "@/lib/prisma"
 
 /**
@@ -13,6 +13,35 @@ export async function GET(request: NextRequest) {
         const { searchParams } = new URL(request.url)
         const token = searchParams.get('token')
         const checkLast = searchParams.get('last')
+        const checkSubscription = searchParams.get('check_subscription')
+
+        // Abonelik Özelliği Kontrolü
+        if (checkSubscription === 'true') {
+            try {
+                console.log("Testing Subscription API Access...")
+                await createSubscriptionProduct({
+                    name: "Test Subscription Feature",
+                    description: "Diagnostic Test",
+                    referenceCode: "TEST_FEAT_" + Date.now()
+                })
+
+                return NextResponse.json({
+                    mode: 'SUBSCRIPTION_CHECK',
+                    status: 'ACTIVE',
+                    message: '✅ Abonelik özelliği aktif görünüyor. Test ürünü oluşturulabildi.',
+                    timestamp: new Date().toISOString()
+                }, { status: 200 })
+            } catch (e: any) {
+                console.error("Subscription check failed:", e)
+                return NextResponse.json({
+                    mode: 'SUBSCRIPTION_CHECK',
+                    status: 'INACTIVE_OR_ERROR',
+                    message: '❌ Abonelik özelliği çalışmıyor. Muhtemelen hesabınızda aktif değil.',
+                    error: e.message,
+                    timestamp: new Date().toISOString()
+                }, { status: 500 })
+            }
+        }
 
         // Token ile ödeme sonucu sorgula
         if (token) {

@@ -125,6 +125,18 @@ export default function CourseSidebar({ course, progress, currentLessonId, hasFu
           </div>
         </div>
 
+        {/* Premium CTA if not full access */}
+        {!hasFullAccess && (
+          <div className="mt-4">
+            <a
+              href="/subscription?plan=Premium"
+              className="block w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white text-center font-bold py-3 rounded-xl transition-all shadow-lg shadow-orange-500/20"
+            >
+              Premium'a Geç 👑
+            </a>
+          </div>
+        )}
+
         {/* Lessons List */}
         <div className="flex-1 overflow-y-auto p-4 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
           <div className="flex items-center justify-between mb-4">
@@ -233,15 +245,17 @@ export default function CourseSidebar({ course, progress, currentLessonId, hasFu
             })}
           </div>
         </div>
-      </div>
+      </div >
 
       {/* Overlay for mobile */}
-      {!isCollapsed && (
-        <div
-          className="lg:hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-[90]"
-          onClick={() => setIsCollapsed(true)}
-        />
-      )}
+      {
+        !isCollapsed && (
+          <div
+            className="lg:hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-[90]"
+            onClick={() => setIsCollapsed(true)}
+          />
+        )
+      }
     </>
   )
 }

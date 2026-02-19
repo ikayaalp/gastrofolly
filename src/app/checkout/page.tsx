@@ -157,16 +157,18 @@ function CheckoutContent() {
         } else if (data.checkoutFormContent) {
           const checkoutContainer = document.getElementById('iyzico-checkout-form')
           if (checkoutContainer) {
-            checkoutContainer.innerHTML = data.checkoutFormContent
-            const scripts = checkoutContainer.getElementsByTagName('script')
-            for (let i = 0; i < scripts.length; i++) {
-              const script = document.createElement('script')
-              script.text = scripts[i].text
-              document.body.appendChild(script)
-            }
+            // Temizle
+            checkoutContainer.innerHTML = ''
+
+            // Scriptlerin çalışması için Range.createContextualFragment kullanımı
+            const range = document.createRange()
+            range.selectNode(checkoutContainer)
+            const fragment = range.createContextualFragment(data.checkoutFormContent)
+
+            checkoutContainer.appendChild(fragment)
           } else {
-            const paymentWindow = window.open('', '_blank')
-            paymentWindow?.document.write(data.checkoutFormContent)
+            console.error("Iyzico checkout container not found!")
+            toast.error("Ödeme formu yüklenemedi (Container eksik).")
           }
         }
       } else {

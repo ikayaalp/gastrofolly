@@ -19,6 +19,15 @@ export async function POST(request: NextRequest) {
     try {
         const session = await getServerSession(authOptions)
 
+        // API Key Kontrolü
+        if (!process.env.IYZICO_API_KEY || !process.env.IYZICO_SECRET_KEY) {
+            console.error("CRITICAL: Iyzico API Keys are missing in environment variables!")
+            return NextResponse.json(
+                { error: "Ödeme sistemi yapılandırma hatası. (API Keys Missing)" },
+                { status: 500 }
+            )
+        }
+
         if (!session?.user?.email) {
             return NextResponse.json(
                 { error: "Oturum açmanız gerekiyor. Lütfen tekrar giriş yapın." },
@@ -64,6 +73,13 @@ export async function POST(request: NextRequest) {
                 { status: 400 }
             )
         }
+
+        console.log("Starting Subscription Initialization:", {
+            email: user.email,
+            planName,
+            billingPeriod,
+            hasPhone: !!user.phoneNumber
+        })
 
         // 1. İyzico'da Ürün oluştur (zaten varsa hata verir, sessizce yut)
         try {
@@ -217,6 +233,16 @@ export async function POST(request: NextRequest) {
         const result = await initializeSubscriptionCheckout(subscriptionRequest)
 
         if (result && (result.status === "success" || result.status === "SUCCESS")) {
+            console.log("Subscription initialization successful:", { token: result.token })
+
+            if (!result.checkoutFormContent) {
+                console.error("Subscription success but no checkoutFormContent returned!", result)
+                return NextResponse.json({
+                    success: false,
+                    error: "Ödeme formu içeriği oluşturulamadı (İyzico'dan boş veri geldi)."
+                })
+            }
+
             // Token'ı payment kaydına yaz (callback'te eşleşme için)
             await prisma.payment.update({
                 where: { id: payment.id },
@@ -231,7 +257,7 @@ export async function POST(request: NextRequest) {
                 token: result.token
             })
         } else {
-            console.error("Iyzico subscription rejection:", result)
+            console.error("Iyzico subscription rejection:", JSON.stringify(result, null, 2))
             return NextResponse.json({
                 success: false,
                 error: (result as any)?.errorMessage || "İyzico ödeme formunu oluşturamadı. Lütfen daha sonra tekrar deneyin."

@@ -117,10 +117,16 @@ export default function FreeLessonModal({ lesson, courseTitle }: FreeLessonModal
                         </div>
 
                         {/* Footer */}
-                        <div className="p-4 border-t border-gray-800 bg-gradient-to-r from-orange-500/10 to-transparent">
+                        <div className="p-4 border-t border-gray-800 bg-gradient-to-r from-orange-500/10 to-transparent flex items-center justify-between">
                             <p className="text-sm text-gray-300">
                                 🎓 <span className="text-orange-400 font-medium">Tüm derslere erişmek için</span> Premium üye olun.
                             </p>
+                            <a
+                                href="/subscription?plan=Premium"
+                                className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors"
+                            >
+                                Premium Ol
+                            </a>
                         </div>
                     </div>
                 </div >
