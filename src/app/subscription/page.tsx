@@ -57,16 +57,15 @@ function SubscriptionContent() {
         }
     ]
 
-    // URL'den gelen plan parametresi ile otomatik yönlendirme YAPMALIYIZ.
-    // Kullanıcı seçenekleri görmeli.
-    // useEffect(() => {
-    //     if (planParam && session) {
-    //         const plan = plans.find(p => p.name === planParam)
-    //         if (plan) {
-    //             handleSubscription(plan.name)
-    //         }
-    //     }
-    // }, [planParam, session])
+    // URL'den gelen plan parametresi varsa, direkt o planı başlat
+    useEffect(() => {
+        if (planParam && session) {
+            const plan = plans.find(p => p.name === planParam)
+            if (plan) {
+                handleSubscription(plan.name)
+            }
+        }
+    }, [planParam, session])
 
     return (
         <div className="min-h-screen bg-black">
