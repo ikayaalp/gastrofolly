@@ -2,17 +2,18 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { createCheckoutForm, IyzicoPaymentRequest } from "@/lib/iyzico"
+import {
+    createSubscriptionProduct,
+    createSubscriptionPricingPlan,
+    initializeSubscriptionCheckout,
+    IyzicoSubscriptionCheckoutRequest
+} from "@/lib/iyzico"
 
-function getClientIp(request: NextRequest): string {
-    const forwardedFor = request.headers.get('x-forwarded-for')
-    if (forwardedFor) return forwardedFor.split(',')[0].trim()
-    const realIp = request.headers.get('x-real-ip')
-    if (realIp) return realIp
-    const vercelIp = request.headers.get('x-vercel-forwarded-for')
-    if (vercelIp) return vercelIp.split(',')[0].trim()
-    return '85.34.78.112'
-}
+// Subscription API v2 ürün ve plan referans kodları
+const PRODUCT_REF = "CULINORA_PREMIUM_V1"
+const PLAN_M_REF = "PLAN_M_PREMIUM_V1"
+const PLAN_6M_REF = "PLAN_6M_PREMIUM_V1"
+const PLAN_Y_REF = "PLAN_Y_PREMIUM_V1"
 
 export async function POST(request: NextRequest) {
     try {
@@ -35,7 +36,7 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        const { planName, billingPeriod, price, courseId, referralCode } = body
+        const { planName, billingPeriod, courseId, referralCode } = body
 
         if (!planName) {
             return NextResponse.json(
@@ -64,20 +65,43 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        // Fiyat hesaplama
-        const basePrice = 5
-        let totalPrice: number
+        // 1. İyzico'da Ürün oluştur (zaten varsa hata verir, sessizce yut)
+        try {
+            await createSubscriptionProduct({
+                name: "Culinora Premium",
+                description: "Culinora Premium abonelik - tüm kurslara sınırsız erişim",
+                referenceCode: PRODUCT_REF
+            })
+            console.log("Subscription product created successfully")
+        } catch (e) {
+            console.log("Product already exists or creation skipped:", (e as Error).message?.substring(0, 100))
+        }
+
+        // 2. Billing period'a göre plan belirle
+        let planRef: string
+        let price: number
+        let paymentInterval: "MONTHLY" | "WEEKLY" | "YEARLY"
+        let paymentIntervalCount: number
         let periodLabel: string
 
         if (billingPeriod === 'yearly') {
-            totalPrice = basePrice * 12 * 0.8
-            periodLabel = 'Yıllık'
+            planRef = PLAN_Y_REF
+            price = 2870.0 // yıllık (12 ay * 299 * 0.8 = ~2870)
+            paymentInterval = "YEARLY"
+            paymentIntervalCount = 1
+            periodLabel = "Yıllık"
         } else if (billingPeriod === '6monthly') {
-            totalPrice = basePrice * 6 * 0.9
-            periodLabel = '6 Aylık'
+            planRef = PLAN_6M_REF
+            price = 1614.6 // 6 aylık (6 * 299 * 0.9 = ~1614)
+            paymentInterval = "MONTHLY"
+            paymentIntervalCount = 6
+            periodLabel = "6 Aylık"
         } else {
-            totalPrice = basePrice
-            periodLabel = 'Aylık'
+            planRef = PLAN_M_REF
+            price = 299.0
+            paymentInterval = "MONTHLY"
+            paymentIntervalCount = 1
+            periodLabel = "Aylık"
         }
 
         // Referral indirim uygula (eğer varsa)
@@ -91,17 +115,35 @@ export async function POST(request: NextRequest) {
                 })
                 if (influencer) {
                     const discountPercent = (influencer as any).discountPercent || 10
-                    totalPrice = totalPrice * (1 - discountPercent / 100)
+                    price = price * (1 - discountPercent / 100)
                 }
             } catch (e) {
                 console.log("Referral lookup error:", e)
             }
         }
 
-        // Ödeme kaydı oluştur
+        // 3. İyzico'da Plan oluştur (zaten varsa hata verir, sessizce yut)
+        try {
+            await createSubscriptionPricingPlan({
+                productReferenceCode: PRODUCT_REF,
+                name: `Premium ${periodLabel}`,
+                price: price,
+                currencyCode: "TRY",
+                paymentInterval: paymentInterval,
+                paymentIntervalCount: paymentIntervalCount,
+                trialPeriodDays: 0,
+                planPaymentType: "RECURRING",
+                referenceCode: planRef
+            })
+            console.log("Subscription pricing plan created successfully")
+        } catch (e) {
+            console.log("Plan already exists or creation skipped:", (e as Error).message?.substring(0, 100))
+        }
+
+        // 4. Yerel Veritabanına Kayıt (Pending)
         const payment = await prisma.payment.create({
             data: {
-                amount: totalPrice,
+                amount: price,
                 currency: "TRY",
                 status: "PENDING",
                 userId: user.id,
@@ -112,105 +154,70 @@ export async function POST(request: NextRequest) {
             }
         })
 
-        // İsim soyisim ayrıştırma
+        // 5. İsim soyisim ayrıştırma
         const nameParts = (user.name || "Misafir Kullanıcı").trim().split(/\s+/)
         const surname = nameParts.length > 1 ? nameParts.pop() || "Kullanıcı" : "Kullanıcı"
-        const firstName = nameParts.join(" ") || "Misafir"
+        const name = nameParts.join(" ") || "Misafir"
 
-        // Callback URL
+        // 6. Callback URL oluştur
         const host = request.headers.get("host") || "culinora.net"
         const protocol = request.headers.get("x-forwarded-proto") || "https"
         const origin = `${protocol}://${host}`
         const callbackUrl = `${origin}/api/iyzico/subscription-callback`
 
-        const userIp = getClientIp(request)
-        const conversationId = payment.id
-
-        // GSM Numarası formatı - STANDART TEST NUMARASI KULLAN (Hata ayıklama için)
-        // Gerçek numarada format hatası veya banka ret sebebi olabilir
-        const gsmNumber = '+905555555555'
-
-        const addressText = 'Nidakule Göztepe, Merdivenköy Mah. Bora Sok. No:1'
-        const city = 'Istanbul'
-        const country = 'Turkey'
-        const zipCode = '34732'
-
-        // İsim Soyisim - STANDART TEST İSMİ KULLAN
-        const nameNew = 'John'
-        const surnameNew = 'Doe'
-
-        // IP Kontrolü (Zorunlu)
-        const validIp = userIp && (userIp.includes('.') || userIp.includes(':')) ? userIp : '127.0.0.1'
-
-        // Ürün Adı Temizliği
-        const safePlanName = planName.replace(/[^a-zA-Z0-9 ]/g, '')
-
-        const paymentRequest: IyzicoPaymentRequest = {
-            locale: 'tr',
-            conversationId: payment.id,
-            price: totalPrice.toFixed(2),
-            paidPrice: totalPrice.toFixed(2),
-            currency: 'TRY',
-            basketId: 'B' + payment.id,
-            paymentGroup: 'PRODUCT',
-            callbackUrl: `${process.env.NEXTAUTH_URL}/api/iyzico/subscription-callback`,
-            enabledInstallments: [1],
-            buyer: {
-                id: user.id,
-                name: nameNew,
-                surname: surnameNew,
-                gsmNumber: gsmNumber,
-                email: 'email@email.com', // Test e-maili kullan (Sandbox/Test ortamı için bazen gerekebilir)
-                identityNumber: '11111111111',
-                lastLoginDate: '2015-10-05 12:43:35',
-                registrationDate: '2013-04-21 15:12:09',
-                registrationAddress: addressText,
-                ip: '85.34.78.112', // Test IP'si kullan
-                city: city,
-                country: country,
-                zipCode: zipCode
-            },
-            shippingAddress: {
-                contactName: nameNew + ' ' + surnameNew,
-                city: city,
-                country: country,
-                address: addressText,
-                zipCode: zipCode
-            },
-            billingAddress: {
-                contactName: nameNew + ' ' + surnameNew,
-                city: city,
-                country: country,
-                address: addressText,
-                zipCode: zipCode
-            },
-            basketItems: [
-                {
-                    id: safePlanName,
-                    name: `Culinora Premium ${periodLabel}`,
-                    category1: 'Online Egitim',
-                    itemType: 'VIRTUAL',
-                    price: totalPrice.toFixed(2)
-                }
-            ]
+        // GSM Numarası formatı düzeltme (+90 ile başlamalı)
+        const rawPhone = (user.phoneNumber || "5555555555").replace(/\s+/g, '')
+        let gsmNumber = rawPhone
+        if (!gsmNumber.startsWith('+')) {
+            if (gsmNumber.startsWith('0')) gsmNumber = gsmNumber.substring(1)
+            if (!gsmNumber.startsWith('90')) gsmNumber = '90' + gsmNumber
+            gsmNumber = '+' + gsmNumber
         }
 
-        console.log('Initializing Single Payment Checkout:', {
-            plan: planName,
-            price: totalPrice,
-            paymentId: payment.id,
-            buyer: {
-                gsm: paymentRequest.buyer.gsmNumber,
-                email: paymentRequest.buyer.email,
-                identity: paymentRequest.buyer.identityNumber,
-                address: paymentRequest.buyer.registrationAddress
+        // 7. Subscription Checkout Form Başlatma İsteği (API V2)
+        const subscriptionRequest: IyzicoSubscriptionCheckoutRequest = {
+            locale: "tr",
+            conversationId: payment.id,
+            pricingPlanReferenceCode: planRef,
+            subscriptionInitialStatus: "ACTIVE",
+            callbackUrl: callbackUrl,
+            customer: {
+                name: name,
+                surname: surname,
+                email: user.email,
+                gsmNumber: gsmNumber,
+                identityNumber: "11111111111",
+                billingAddress: {
+                    contactName: user.name || "Misafir Kullanıcı",
+                    city: "Istanbul",
+                    district: "Kadikoy",
+                    country: "Turkey",
+                    address: "Dijital Teslimat",
+                    zipCode: "34732"
+                },
+                shippingAddress: {
+                    contactName: user.name || "Misafir Kullanıcı",
+                    city: "Istanbul",
+                    district: "Kadikoy",
+                    country: "Turkey",
+                    address: "Dijital Teslimat",
+                    zipCode: "34732"
+                }
             }
+        }
+
+        console.log('Initializing Subscription Checkout (V2):', {
+            paymentId: payment.id,
+            plan: planRef,
+            price: price,
+            email: user.email,
+            callbackUrl: callbackUrl
         })
 
-        const result = await createCheckoutForm(paymentRequest)
+        const result = await initializeSubscriptionCheckout(subscriptionRequest)
 
-        if (result.status === 'success' && result.checkoutFormContent) {
-            // Başarılı - token'ı kaydet
+        if (result && (result.status === "success" || result.status === "SUCCESS")) {
+            // Token'ı payment kaydına yaz (callback'te eşleşme için)
             await prisma.payment.update({
                 where: { id: payment.id },
                 data: {
@@ -220,20 +227,19 @@ export async function POST(request: NextRequest) {
 
             return NextResponse.json({
                 success: true,
-                paymentPageUrl: result.paymentPageUrl,
                 checkoutFormContent: result.checkoutFormContent,
                 token: result.token
             })
         } else {
-            console.error("Iyzico rejection:", result)
+            console.error("Iyzico subscription rejection:", result)
             return NextResponse.json({
                 success: false,
-                error: result?.errorMessage || "Ödeme formu oluşturulamadı. Lütfen daha sonra tekrar deneyin."
+                error: (result as any)?.errorMessage || "İyzico ödeme formunu oluşturamadı. Lütfen daha sonra tekrar deneyin."
             })
         }
 
     } catch (error: any) {
-        console.error("Initialize payment fatal error:", error)
+        console.error("Initialize subscription payment fatal error:", error)
         return NextResponse.json(
             {
                 error: "Sistemde bir hata oluştu.",

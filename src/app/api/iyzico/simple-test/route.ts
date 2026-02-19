@@ -49,7 +49,7 @@ export async function GET() {
                 {
                     id: 'BI101',
                     name: 'Binocular',
-                    category1: 'Online Egitim',
+                    category1: 'Hizmet',
                     itemType: 'VIRTUAL',
                     price: price
                 }

@@ -80,31 +80,43 @@ function getIyzicoHeaders(endpoint: string, requestBody: string) {
 
 /**
  * İyzico API'ye istek gönderir
+ * @param endpoint API endpoint
+ * @param requestBody İstek gövdesi (GET isteklerinde null olabilir)
+ * @param method HTTP metodu (varsayılan: POST)
  */
-async function makeIyzicoRequest<T>(endpoint: string, requestBody: unknown): Promise<T> {
+async function makeIyzicoRequest<T>(endpoint: string, requestBody: unknown, method: 'GET' | 'POST' = 'POST'): Promise<T> {
   // Base URL ve endpoint arasındaki çift slash (//) hatasını temizle
   const cleanBaseUrl = IYZICO_CONFIG.baseUrl.replace(/\/$/, '')
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`
   const url = `${cleanBaseUrl}${cleanEndpoint}`
-  const bodyString = JSON.stringify(requestBody)
+  // GET isteklerinde body boş string olarak gönderilir (auth header hesaplaması için)
+  const bodyString = method === 'GET' ? '' : JSON.stringify(requestBody)
 
   console.log('İyzico API Request Details:', {
     url,
     endpoint,
+    method,
     apiKey: IYZICO_CONFIG.apiKey.substring(0, 15) + '...',
     baseUrl: IYZICO_CONFIG.baseUrl,
     requestBodyLength: bodyString.length
   })
 
-  const headers = getIyzicoHeaders(endpoint, bodyString)
+  // Auth header'ı endpoint ve body string ile oluştur
+  const headers = getIyzicoHeaders(cleanEndpoint, bodyString)
   // V2 API'leri bazen Accept header'ına çok duyarlıdır
   headers['Accept'] = 'application/json'
 
-  const response = await fetch(url, {
-    method: 'POST',
+  const fetchOptions: RequestInit = {
+    method,
     headers,
-    body: bodyString
-  })
+  }
+
+  // GET isteklerinde body gönderilmez
+  if (method === 'POST') {
+    fetchOptions.body = bodyString
+  }
+
+  const response = await fetch(url, fetchOptions)
 
   const text = await response.text()
   const contentType = response.headers.get("content-type")
@@ -299,24 +311,18 @@ export interface IyzicoSubscriptionCheckoutResultDetail {
 
 /**
  * Abonelik Checkout Form Sonucunu Sorgula (V2)
- * Endpoint: /v2/subscription/checkout-form/{token}
- * NOT: Bu endpoint dökümantasyonda bazen farklı olabiliyor, 
- * ama genelde token ile detay almak için bu yapı kullanılır.
- * Eğer Iyzico dökümanında yoksa, webhook en güvenli yoldur.
- * Ancak basit entegrasyon için token'ı 'active' varsayabiliriz veya
- * en doğrusu: subscription details sorgulamak.
+ * Endpoint: GET /v2/subscription/checkout-form/{token}
+ * İyzico dokümantasyonuna göre bu endpoint GET metodu ile çağrılır.
+ * Token değeri, checkout form initialize sonucunda dönen token'dır.
  */
 export const getSubscriptionCheckoutResult = async (token: string): Promise<IyzicoSubscriptionCheckoutResultDetail> => {
-  // API v2'de token ile direkt sorgu genelde /v2/subscription/checkout-form/{token} şeklindedir
-  // Ancak resmi dökümanda net değilse, 'active' kabul edip, güvenli yol için
-  // ileride webhook kullanmak daha iyidir.
-  // Şimdilik standart bir GET yapısı deneyelim.
-  return makeIyzicoRequest<IyzicoSubscriptionCheckoutResultDetail>(`/v2/subscription/checkout-form/${token}`, {})
+  return makeIyzicoRequest<IyzicoSubscriptionCheckoutResultDetail>(`/v2/subscription/checkout-form/${token}`, null, 'GET')
 }
 
 export interface IyzicoSubscriptionProduct {
   name: string
-  referenceCode: string
+  description?: string
+  referenceCode?: string
 }
 
 export interface IyzicoSubscriptionPricingPlan {
@@ -344,6 +350,7 @@ export interface IyzicoSubscriptionCustomer {
 export interface IyzicoAddress {
   contactName: string
   city: string
+  district?: string
   country: string
   address: string
   zipCode?: string
