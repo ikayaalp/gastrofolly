@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { X, Crown, Sparkles, Check, ArrowRight } from "lucide-react"
 import Link from "next/link"
+import Image from "next/image"
 
 interface SubscriptionPopupProps {
     isVisible: boolean
