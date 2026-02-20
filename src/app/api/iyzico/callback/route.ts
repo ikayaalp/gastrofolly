@@ -73,10 +73,10 @@ export async function GET(request: NextRequest) {
                   </head>
                   <body>
                     <script>
-                      window.location.href = '/cart?error=payment_not_found';
+                      window.location.href = '/checkout?error=payment_not_found';
                     </script>
                     <noscript>
-                      <meta http-equiv="refresh" content="0; url=/cart?error=payment_not_found">
+                      <meta http-equiv="refresh" content="0; url=/checkout?error=payment_not_found">
                     </noscript>
                   </body>
                 </html>
@@ -182,10 +182,10 @@ export async function GET(request: NextRequest) {
                 </head>
                 <body>
                   <script>
-                    window.location.href = '/cart?error=${encodeURIComponent(userFriendlyError)}';
+                    window.location.href = '/checkout?error=${encodeURIComponent(userFriendlyError)}';
                   </script>
                   <noscript>
-                    <meta http-equiv="refresh" content="0; url=/cart?error=${encodeURIComponent(userFriendlyError)}">
+                    <meta http-equiv="refresh" content="0; url=/checkout?error=${encodeURIComponent(userFriendlyError)}">
                   </noscript>
                 </body>
               </html>
@@ -221,10 +221,10 @@ export async function GET(request: NextRequest) {
               </head>
               <body>
                 <script>
-                  window.location.href = '/cart?error=payment_not_found';
+                  window.location.href = '/checkout?error=payment_not_found';
                 </script>
                 <noscript>
-                  <meta http-equiv="refresh" content="0; url=/cart?error=payment_not_found">
+                  <meta http-equiv="refresh" content="0; url=/checkout?error=payment_not_found">
                 </noscript>
               </body>
             </html>
@@ -326,10 +326,10 @@ export async function GET(request: NextRequest) {
           </head>
           <body>
             <script>
-              window.location.href = '/cart?error=payment_token_missing';
+              window.location.href = '/checkout?error=payment_token_missing';
             </script>
             <noscript>
-              <meta http-equiv="refresh" content="0; url=/cart?error=payment_token_missing">
+              <meta http-equiv="refresh" content="0; url=/checkout?error=payment_token_missing">
             </noscript>
           </body>
         </html>
@@ -393,10 +393,10 @@ export async function GET(request: NextRequest) {
             </head>
             <body>
               <script>
-                window.location.href = '/cart?error=payment_not_found';
+                window.location.href = '/checkout?error=payment_not_found';
               </script>
               <noscript>
-                <meta http-equiv="refresh" content="0; url=/cart?error=payment_not_found">
+                <meta http-equiv="refresh" content="0; url=/checkout?error=payment_not_found">
               </noscript>
             </body>
           </html>
@@ -530,10 +530,10 @@ export async function GET(request: NextRequest) {
           </head>
           <body>
             <script>
-              window.location.href = '/cart?error=${encodeURIComponent(userFriendlyError)}';
+              window.location.href = '/checkout?error=${encodeURIComponent(userFriendlyError)}';
             </script>
             <noscript>
-              <meta http-equiv="refresh" content="0; url=/cart?error=${encodeURIComponent(userFriendlyError)}">
+              <meta http-equiv="refresh" content="0; url=/checkout?error=${encodeURIComponent(userFriendlyError)}">
             </noscript>
           </body>
         </html>
@@ -554,10 +554,10 @@ export async function GET(request: NextRequest) {
         </head>
         <body>
           <script>
-            window.location.href = '/cart?error=callback_error';
+            window.location.href = '/checkout?error=callback_error';
           </script>
           <noscript>
-            <meta http-equiv="refresh" content="0; url=/cart?error=callback_error">
+            <meta http-equiv="refresh" content="0; url=/checkout?error=callback_error">
           </noscript>
         </body>
       </html>
