@@ -153,9 +153,10 @@ export async function POST(request: NextRequest) {
             hash = Math.abs(hash)
             // 9 basamaklı bir sayı oluştur (1-9 ile başlayan)
             const base = (hash % 900000000 + 100000000).toString()
-            // Son 2 haneyi yanlış checksum ile doldur (TCKN algoritmasına uymaz)
-            // Böylece gerçek bir kişiye asla ait olamaz
-            return base + '00'
+            // Son haneyi "1" (tek sayı) yaparak bitiriyoruz.
+            // TCKN algoritmasında son hane her zaman çifttir. 
+            // Bu sayede gerçek bir kişiye ait olması MATEMATİKSEL OLARAK İMKANSIZ hale gelir.
+            return (base + '0').slice(0, 10) + '1'
         }
         const identityNumber = generateSafeIdentityNumber(user.id)
 
