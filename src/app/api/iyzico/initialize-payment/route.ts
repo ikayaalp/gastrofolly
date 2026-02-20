@@ -209,9 +209,9 @@ export async function POST(request: NextRequest) {
                 {
                     id: `PREMIUM_${billingPeriod || 'monthly'}`,
                     name: `Culinora Premium ${periodLabel} Üyelik`,
-                    category1: "Hizmet",
+                    category1: "Koleksiyon",
                     category2: "Eğitim",
-                    itemType: "VIRTUAL",
+                    itemType: "PHYSICAL",
                     price: priceStr
                 }
             ]
