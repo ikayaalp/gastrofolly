@@ -149,7 +149,7 @@ export async function POST(request: NextRequest) {
             paidPrice: priceStr,
             currency: "TRY",
             basketId: `BASKET_${payment.id}`,
-            paymentGroup: "SUBSCRIPTION",
+            paymentGroup: "PRODUCT",
             callbackUrl: callbackUrl,
             enabledInstallments: [1, 2, 3, 6],
             buyer: {
