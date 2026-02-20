@@ -171,6 +171,7 @@ export interface IyzicoPaymentRequest {
   currency: string
   basketId: string
   paymentGroup: string
+  paymentChannel?: string
   callbackUrl: string
   enabledInstallments: number[]
   buyer: {
@@ -243,6 +244,7 @@ export interface IyzicoPaymentResult {
   paidPrice?: number
   currency?: string
   basketId?: string
+  mdStatus?: number
   errorCode?: string
   errorMessage?: string
   errorGroup?: string

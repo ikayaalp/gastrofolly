@@ -168,6 +168,7 @@ export async function POST(request: NextRequest) {
             currency: "TRY",
             basketId: `BASKET_${payment.id}`,
             paymentGroup: "PRODUCT",
+            paymentChannel: "WEB",
             callbackUrl: callbackUrl,
             enabledInstallments: [1, 2, 3, 6],
             buyer: {
@@ -177,7 +178,9 @@ export async function POST(request: NextRequest) {
                 gsmNumber: gsmNumber,
                 email: user.email,
                 identityNumber: identityNumber,
-                registrationAddress: "Culinora Dijital Hizmetler Merkezi Istanbul Turkiye",
+                registrationAddress: "Mimar Sinan Mah. Bora Sok. No:1 Uskudar",
+                lastLoginDate: new Date().toISOString().slice(0, 19).replace('T', ' '),
+                registrationDate: user.createdAt.toISOString().slice(0, 19).replace('T', ' '),
                 ip: ip,
                 city: "Istanbul",
                 country: "Turkey",
