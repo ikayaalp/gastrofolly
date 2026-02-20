@@ -138,8 +138,14 @@ export async function POST(request: NextRequest) {
         // IP adresi
         const ip = request.headers.get("x-forwarded-for")?.split(',')[0]?.trim() || "85.34.78.112"
 
-        // Fiyat string formatı (Iyzico kuruş değil, TL ister, noktalı format)
-        const priceStr = price.toFixed(2)
+        // Fiyat formatı (Iyzico SDK'sındaki formatPrice fonksiyonu ile birebir aynı)
+        const formatIyzicoPrice = (p: number): string => {
+            let res = p.toString();
+            if (res.indexOf('.') === -1) return res + '.0';
+            // Eğer .00 gibi bitiyorsa tek sıfıra indir
+            return res;
+        }
+        const priceStr = formatIyzicoPrice(price)
 
         // Geçerli formatta ama TCKN algoritmasına göre geçersiz kimlik numarası oluştur
         // Böylece gerçek birine ait olamaz, ama iyzico formatı kabul eder
@@ -153,9 +159,7 @@ export async function POST(request: NextRequest) {
             hash = Math.abs(hash)
             // 9 basamaklı bir sayı oluştur (1-9 ile başlayan)
             const base = (hash % 900000000 + 100000000).toString()
-            // Son haneyi "1" (tek sayı) yaparak bitiriyoruz.
-            // TCKN algoritmasında son hane her zaman çifttir. 
-            // Bu sayede gerçek bir kişiye ait olması MATEMATİKSEL OLARAK İMKANSIZ hale gelir.
+            // Son haneyi "1" (tek sayı) yaparak bitiriyoruz (TCKN sonu hep çifttir)
             return (base + '0').slice(0, 10) + '1'
         }
         const identityNumber = generateSafeIdentityNumber(user.id)
@@ -191,23 +195,23 @@ export async function POST(request: NextRequest) {
                 contactName: user.name || "Misafir Kullanıcı",
                 city: "Istanbul",
                 country: "Turkey",
-                address: "Dijital Teslimat",
+                address: "Mimar Sinan Mah. Bora Sok. No:1 Uskudar",
                 zipCode: "34732"
             },
             billingAddress: {
                 contactName: user.name || "Misafir Kullanıcı",
                 city: "Istanbul",
                 country: "Turkey",
-                address: "Dijital Teslimat",
+                address: "Mimar Sinan Mah. Bora Sok. No:1 Uskudar",
                 zipCode: "34732"
             },
             basketItems: [
                 {
                     id: `PREMIUM_${billingPeriod || 'monthly'}`,
                     name: `Culinora Premium ${periodLabel} Üyelik`,
-                    category1: "Koleksiyon",
+                    category1: "Hizmet",
                     category2: "Eğitim",
-                    itemType: "PHYSICAL",
+                    itemType: "VIRTUAL",
                     price: priceStr
                 }
             ]
