@@ -18,6 +18,7 @@ import UserDropdown from "@/components/ui/UserDropdown"
 import NotificationDropdown from "@/components/ui/NotificationDropdown"
 import SearchModal from "@/components/ui/SearchModal"
 import HomeStories from "@/components/home/HomeStories"
+import SubscriptionPopup from "@/components/home/SubscriptionPopup"
 
 interface Course {
   id: string
@@ -71,6 +72,9 @@ export default function HomePageClient({
   session
 }: HomePageClientProps) {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+
+  // Premium değilse pop-up'ı göster
+  const showSubscriptionPopup = (session?.user as any)?.subscriptionPlan !== "Premium" && session?.user?.role !== "ADMIN"
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -291,6 +295,9 @@ export default function HomePageClient({
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
       />
+
+      {/* Abonelik Pop-up */}
+      <SubscriptionPopup isVisible={showSubscriptionPopup} />
     </div>
   )
 }
