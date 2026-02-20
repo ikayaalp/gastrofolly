@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
 
         // Billing period'a göre fiyat hesapla
         // TODO: Test sonrası basePrice'ı 299'a geri al!
-        const basePrice = 10 // TEST: Gerçek fiyat 299 TL
+        const basePrice = 299 // Üyelik fiyatı: 299 TL
         let price: number
         let periodLabel: string
 
