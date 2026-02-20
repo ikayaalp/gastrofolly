@@ -141,22 +141,23 @@ export async function POST(request: NextRequest) {
         // Fiyat string formatı (Iyzico kuruş değil, TL ister, noktalı format)
         const priceStr = price.toFixed(2)
 
-        // Geçerli formatta kimlik numarası oluştur (kullanıcı ID'sinden deterministik)
-        // 11111111111 gibi tekrarlayan rakamlar bankalar tarafından şüpheli olarak işaretlenebilir
-        const generateIdentityNumber = (userId: string): string => {
+        // Geçerli formatta ama TCKN algoritmasına göre geçersiz kimlik numarası oluştur
+        // Böylece gerçek birine ait olamaz, ama iyzico formatı kabul eder
+        const generateSafeIdentityNumber = (userId: string): string => {
             let hash = 0
             for (let i = 0; i < userId.length; i++) {
                 const char = userId.charCodeAt(i)
                 hash = ((hash << 5) - hash) + char
-                hash = hash & hash // 32-bit integer
+                hash = hash & hash
             }
             hash = Math.abs(hash)
-            // 11 haneli, 1-9 ile başlayan numara oluştur
-            const base = hash.toString().padStart(10, '3')
-            const digits = ('1' + base).slice(0, 11)
-            return digits
+            // 9 basamaklı bir sayı oluştur (1-9 ile başlayan)
+            const base = (hash % 900000000 + 100000000).toString()
+            // Son 2 haneyi yanlış checksum ile doldur (TCKN algoritmasına uymaz)
+            // Böylece gerçek bir kişiye asla ait olamaz
+            return base + '00'
         }
-        const identityNumber = generateIdentityNumber(user.id)
+        const identityNumber = generateSafeIdentityNumber(user.id)
 
         // İyzico Checkout Form Ödeme İsteği (Tekil Ödeme)
         const paymentRequest: IyzicoPaymentRequest = {
