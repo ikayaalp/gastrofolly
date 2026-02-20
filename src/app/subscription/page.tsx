@@ -209,7 +209,7 @@ function SubscriptionContent() {
 
                                     {/* CTA Button */}
                                     <button
-                                        onClick={() => handleSubscription(plan.name)}
+                                        onClick={() => handleSubscription("Premium")}
                                         disabled={!!loading}
                                         className="w-full bg-orange-600 hover:bg-orange-700 text-white text-base font-bold py-3 rounded-xl transition-all duration-300 mb-6 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
                                     >
