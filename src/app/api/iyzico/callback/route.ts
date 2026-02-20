@@ -570,8 +570,256 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * POST endpoint - İyzico bazen POST request de gönderebilir
+ * POST endpoint - İyzico ödeme sonrası callback
+ * İyzico token'ı POST body'de gönderir (form-encoded veya JSON)
  */
 export async function POST(request: NextRequest) {
-  return GET(request)
+  try {
+    let token: string | null = null
+
+    // 1. URL query params'dan token'ı dene
+    const { searchParams } = new URL(request.url)
+    token = searchParams.get('token')
+
+    // 2. POST body'den token'ı çıkar (iyzico genelde burada gönderir)
+    if (!token) {
+      try {
+        const contentType = request.headers.get('content-type') || ''
+
+        if (contentType.includes('application/x-www-form-urlencoded')) {
+          // Form-encoded body
+          const formData = await request.formData()
+          token = formData.get('token') as string | null
+          console.log('Token from form-data:', token)
+        } else if (contentType.includes('application/json')) {
+          // JSON body
+          const body = await request.json()
+          token = body.token || null
+          console.log('Token from JSON body:', token)
+        } else {
+          // Body'yi text olarak oku ve parse etmeyi dene
+          const bodyText = await request.text()
+          console.log('Raw POST body:', bodyText.substring(0, 500))
+
+          // URL-encoded format: token=xxx&...
+          if (bodyText.includes('token=')) {
+            const params = new URLSearchParams(bodyText)
+            token = params.get('token')
+            console.log('Token from raw body parse:', token)
+          }
+
+          // JSON format
+          if (!token && bodyText.startsWith('{')) {
+            try {
+              const parsed = JSON.parse(bodyText)
+              token = parsed.token || null
+              console.log('Token from raw JSON parse:', token)
+            } catch (e) {
+              // Not JSON
+            }
+          }
+        }
+      } catch (e) {
+        console.error('Error parsing POST body for token:', e)
+      }
+    }
+
+    console.log('POST Callback - Final token:', token)
+    console.log('POST Callback - URL:', request.url)
+    console.log('POST Callback - Content-Type:', request.headers.get('content-type'))
+
+    if (!token) {
+      console.error('❌ No token found in POST callback (neither URL params nor body)')
+
+      // Son çare: En son oluşturulan pending payment'ın token'ını kullan
+      const lastPendingPayment = await prisma.payment.findFirst({
+        where: { status: 'PENDING' },
+        orderBy: { createdAt: 'desc' }
+      })
+
+      if (lastPendingPayment?.stripePaymentId) {
+        console.log('Falling back to last pending payment token:', lastPendingPayment.stripePaymentId)
+        token = lastPendingPayment.stripePaymentId
+      } else {
+        const html = `
+          <!DOCTYPE html>
+          <html>
+            <head><meta charset="utf-8"><title>Redirecting...</title></head>
+            <body>
+              <script>window.location.href = '/checkout?error=payment_token_missing';</script>
+              <noscript><meta http-equiv="refresh" content="0; url=/checkout?error=payment_token_missing"></noscript>
+            </body>
+          </html>
+        `
+        return new NextResponse(html, {
+          status: 200,
+          headers: { 'Content-Type': 'text/html' }
+        })
+      }
+    }
+
+    // Token ile ödeme sonucunu İyzico'dan al
+    const result = await retrieveCheckoutForm(token)
+
+    console.log('Iyzico POST callback result:', {
+      status: result.status,
+      paymentStatus: result.paymentStatus,
+      conversationId: result.conversationId,
+      paymentId: result.paymentId,
+      errorCode: result.errorCode,
+      errorMessage: result.errorMessage
+    })
+
+    // BAŞARILI ÖDEME
+    if (result.status === 'success' && result.paymentStatus === 'SUCCESS') {
+      const conversationId = result.conversationId
+
+      // Payment kayıtlarını bul
+      let payments = await prisma.payment.findMany({
+        where: {
+          OR: [
+            { id: conversationId, status: 'PENDING' },
+            { stripePaymentId: token, status: 'PENDING' },
+            { stripePaymentId: conversationId, status: 'PENDING' }
+          ]
+        }
+      })
+
+      // basketId ile de dene
+      if (payments.length === 0 && result.basketId) {
+        const basketPaymentId = result.basketId.replace('BASKET_', '')
+        payments = await prisma.payment.findMany({
+          where: {
+            OR: [
+              { id: basketPaymentId, status: 'PENDING' },
+              { stripePaymentId: result.basketId, status: 'PENDING' }
+            ]
+          }
+        })
+      }
+
+      if (payments.length === 0) {
+        console.error('Payment records not found for conversationId:', conversationId)
+        const html = `
+          <!DOCTYPE html>
+          <html>
+            <head><meta charset="utf-8"><title>Redirecting...</title></head>
+            <body>
+              <script>window.location.href = '/checkout?error=payment_not_found';</script>
+              <noscript><meta http-equiv="refresh" content="0; url=/checkout?error=payment_not_found"></noscript>
+            </body>
+          </html>
+        `
+        return new NextResponse(html, {
+          status: 200,
+          headers: { 'Content-Type': 'text/html' }
+        })
+      }
+
+      const userId = payments[0].userId
+
+      for (const payment of payments) {
+        await prisma.payment.update({
+          where: { id: payment.id },
+          data: {
+            status: 'COMPLETED',
+            stripePaymentId: result.paymentId || token,
+          }
+        })
+
+        // Abonelik güncelleme
+        if (payment.subscriptionPlan) {
+          const now = new Date()
+          let endDate = new Date(now)
+
+          if (payment.billingPeriod === 'yearly') {
+            endDate.setFullYear(endDate.getFullYear() + 1)
+          } else if (payment.billingPeriod === '6monthly') {
+            endDate.setMonth(endDate.getMonth() + 6)
+          } else {
+            endDate.setMonth(endDate.getMonth() + 1)
+          }
+
+          await prisma.user.update({
+            where: { id: userId },
+            data: {
+              subscriptionPlan: payment.subscriptionPlan,
+              subscriptionStartDate: new Date(),
+              subscriptionEndDate: endDate
+            }
+          })
+          console.log(`✅ Subscription updated: ${userId} -> ${payment.subscriptionPlan} until ${endDate.toISOString()}`)
+        }
+
+        // Enrollment oluştur
+        if (payment.courseId) {
+          const existing = await prisma.enrollment.findFirst({
+            where: { userId, courseId: payment.courseId }
+          })
+          if (!existing) {
+            await prisma.enrollment.create({
+              data: { userId, courseId: payment.courseId }
+            })
+          }
+        }
+      }
+
+      console.log(`✅ SUCCESSFUL PAYMENT (POST): User ${userId}`)
+
+      const html = `
+        <!DOCTYPE html>
+        <html>
+          <head><meta charset="utf-8"><title>Redirecting...</title></head>
+          <body>
+            <script>window.location.href = '/my-courses';</script>
+            <noscript><meta http-equiv="refresh" content="0; url=/my-courses"></noscript>
+          </body>
+        </html>
+      `
+      return new NextResponse(html, {
+        status: 200,
+        headers: { 'Content-Type': 'text/html' }
+      })
+    } else {
+      // BAŞARISIZ ÖDEME
+      console.error('❌ FAILED PAYMENT (POST):', {
+        status: result.status,
+        errorCode: result.errorCode,
+        errorMessage: result.errorMessage
+      })
+
+      let userFriendlyError = result.errorMessage || 'payment_failed'
+
+      const html = `
+        <!DOCTYPE html>
+        <html>
+          <head><meta charset="utf-8"><title>Redirecting...</title></head>
+          <body>
+            <script>window.location.href = '/checkout?error=${encodeURIComponent(userFriendlyError)}';</script>
+            <noscript><meta http-equiv="refresh" content="0; url=/checkout?error=${encodeURIComponent(userFriendlyError)}"></noscript>
+          </body>
+        </html>
+      `
+      return new NextResponse(html, {
+        status: 200,
+        headers: { 'Content-Type': 'text/html' }
+      })
+    }
+  } catch (error) {
+    console.error('❌ POST Callback error:', error)
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head><meta charset="utf-8"><title>Redirecting...</title></head>
+        <body>
+          <script>window.location.href = '/checkout?error=callback_error';</script>
+          <noscript><meta http-equiv="refresh" content="0; url=/checkout?error=callback_error"></noscript>
+        </body>
+      </html>
+    `
+    return new NextResponse(html, {
+      status: 200,
+      headers: { 'Content-Type': 'text/html' }
+    })
+  }
 }
