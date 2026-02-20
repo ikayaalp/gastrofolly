@@ -271,47 +271,9 @@ export default function SettingsClient({ user }: SettingsClientProps) {
   ]
 
   /* 
-     NOTE: This function allows user to cancel subscription.
-     We removed the native confirm dialog and now control it via Modal state.
+     NOTE: Tek seferlik ödeme modeli - iptal fonksiyonu kaldırıldı.
+     Üyelik süresi dolunca otomatik sona erer, yenileme ödeme ile olur.
   */
-  const handleCancelSubscription = async () => {
-    const endDate = user.subscriptionEndDate
-      ? new Date(user.subscriptionEndDate).toLocaleDateString('tr-TR', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      })
-      : null
-
-    setLoading(true)
-
-
-
-    setLoading(true)
-    setMessage("")
-
-    try {
-      const response = await fetch("/api/user/cancel-subscription", {
-        method: "POST",
-      })
-
-      const data = await response.json()
-
-      if (response.ok) {
-        setMessage("Abonelik başarıyla iptal edildi")
-        router.refresh()
-        setTimeout(() => setMessage(""), 3000)
-      } else {
-        setMessage(data.error || "Abonelik iptal edilemedi")
-      }
-    } catch (error) {
-      console.error("Cancel subscription error:", error)
-      setMessage("Bir hata oluştu")
-    } finally {
-      setLoading(false)
-      setShowCancelModal(false)
-    }
-  }
 
   return (
     <div className="space-y-8">
@@ -484,11 +446,8 @@ export default function SettingsClient({ user }: SettingsClientProps) {
                         <p className="text-orange-400 text-sm font-medium">Aktif Premium</p>
                       </div>
                     </div>
-                    <span className={`px-3 py-1 rounded-full text-sm font-semibold ${user.subscriptionCancelled
-                      ? 'bg-yellow-500/20 text-yellow-400'
-                      : 'bg-green-500/20 text-green-400'
-                      }`}>
-                      {user.subscriptionCancelled ? 'İptal Edildi' : 'Aktif'}
+                    <span className="px-3 py-1 rounded-full text-sm font-semibold bg-green-500/20 text-green-400">
+                      Aktif
                     </span>
                   </div>
 
@@ -500,7 +459,7 @@ export default function SettingsClient({ user }: SettingsClientProps) {
                       </p>
                     </div>
                     <div>
-                      <p className="text-gray-400 text-sm mb-1">Yenileme Tarihi</p>
+                      <p className="text-gray-400 text-sm mb-1">Bitiş Tarihi</p>
                       <p className="text-white font-medium">
                         {user.subscriptionEndDate ? formatDate(user.subscriptionEndDate) : '-'}
                       </p>
@@ -509,33 +468,16 @@ export default function SettingsClient({ user }: SettingsClientProps) {
                 </div>
 
                 <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
-                  <h4 className="text-white font-semibold mb-2">Premium Yönetimi</h4>
-                  {user.subscriptionCancelled ? (
-                    <>
-                      <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 mb-4">
-                        <p className="text-yellow-400 text-sm font-medium mb-1">Premium üyeliğiniz iptal edildi</p>
-                        <p className="text-gray-400 text-sm">
-                          Premium erişiminiz {user.subscriptionEndDate ? formatDate(user.subscriptionEndDate) : '-'} tarihine kadar devam edecektir.
-                        </p>
-                      </div>
-                      <p className="text-gray-400 text-sm">
-                        Premium üyeliğinizi yenilemek isterseniz Premium Ol butonunu kullanabilirsiniz.
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <p className="text-gray-400 text-sm mb-4">
-                        Premium üyeliğinizi iptal ederseniz, mevcut dönem sonuna kadar erişiminiz devam edecektir.
-                      </p>
-                      <button
-                        onClick={() => setShowCancelModal(true)}
-                        disabled={loading}
-                        className="text-red-400 hover:text-red-300 text-sm font-medium transition-colors disabled:opacity-50"
-                      >
-                        {loading ? "İşleniyor..." : "İptal Et"}
-                      </button>
-                    </>
-                  )}
+                  <h4 className="text-white font-semibold mb-2">Premium Bilgileri</h4>
+                  <p className="text-gray-400 text-sm mb-4">
+                    Premium üyeliğiniz {user.subscriptionEndDate ? formatDate(user.subscriptionEndDate) : '-'} tarihine kadar geçerlidir. Süre sonunda yeniden ödeme yaparak uzatabilirsiniz.
+                  </p>
+                  <button
+                    onClick={() => router.push('/subscription')}
+                    className="text-orange-400 hover:text-orange-300 text-sm font-medium transition-colors"
+                  >
+                    Üyeliği Uzat →
+                  </button>
                 </div>
               </div>
             ) : (
@@ -798,20 +740,7 @@ export default function SettingsClient({ user }: SettingsClientProps) {
         isLoading={loading}
       />
 
-      {/* Subscription Cancel Modal */}
-      <ConfirmationModal
-        isOpen={showCancelModal}
-        onClose={() => setShowCancelModal(false)}
-        onConfirm={handleCancelSubscription}
-        title="Abonelik İptali"
-        message={user.subscriptionEndDate
-          ? `Aboneliğinizi iptal etmek istediğinizden emin misiniz? Premium erişiminiz ${formatDate(user.subscriptionEndDate)} tarihine kadar devam edecektir.`
-          : "Aboneliğinizi iptal etmek istediğinizden emin misiniz?"
-        }
-        confirmText="Evet, İptal Et"
-        isDanger={true}
-        isLoading={loading}
-      />
+
 
       {/* Photo Remove Modal */}
       <ConfirmationModal
@@ -859,46 +788,7 @@ export default function SettingsClient({ user }: SettingsClientProps) {
         isLoading={loading}
       />
 
-      {/* Subscription Cancel Modal */}
-      <ConfirmationModal
-        isOpen={showCancelModal}
-        onClose={() => setShowCancelModal(false)}
-        onConfirm={async () => {
-          setLoading(true)
-          setMessage("")
-
-          try {
-            const response = await fetch("/api/user/cancel-subscription", {
-              method: "POST",
-            })
-
-            const data = await response.json()
-
-            if (response.ok) {
-              setMessage("Abonelik başarıyla iptal edildi")
-              setShowCancelModal(false)
-              router.refresh()
-              setTimeout(() => setMessage(""), 3000)
-            } else {
-              setMessage(data.error || "Abonelik iptal edilemedi")
-            }
-          } catch (error) {
-            console.error("Cancel subscription error:", error)
-            setMessage("Bir hata oluştu")
-          } finally {
-            setLoading(false)
-          }
-        }}
-        title="Aboneliği İptal Et"
-        message={`Aboneliğinizi iptal etmek istediğinize emin misiniz? Premium erişiminiz ${user.subscriptionEndDate
-          ? new Date(user.subscriptionEndDate).toLocaleDateString('tr-TR')
-          : 'dönem sonuna'
-          } tarihine kadar devam edecektir.`}
-        confirmText="Aboneliği İptal Et"
-        cancelText="Vazgeç"
-        isDanger={true}
-        isLoading={loading}
-      />
     </div >
   )
 }
+

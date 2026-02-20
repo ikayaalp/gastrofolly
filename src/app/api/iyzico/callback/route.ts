@@ -106,6 +106,8 @@ export async function GET(request: NextRequest) {
                 // Ödeme dönemine göre süre ekle
                 if (payment.billingPeriod === 'yearly') {
                   endDate.setFullYear(endDate.getFullYear() + 1)
+                } else if (payment.billingPeriod === '6monthly') {
+                  endDate.setMonth(endDate.getMonth() + 6)
                 } else {
                   endDate.setMonth(endDate.getMonth() + 1)
                 }
@@ -252,6 +254,8 @@ export async function GET(request: NextRequest) {
 
             if (payment.billingPeriod === 'yearly') {
               endDate.setFullYear(endDate.getFullYear() + 1)
+            } else if (payment.billingPeriod === '6monthly') {
+              endDate.setMonth(endDate.getMonth() + 6)
             } else {
               endDate.setMonth(endDate.getMonth() + 1)
             }
@@ -426,6 +430,8 @@ export async function GET(request: NextRequest) {
           // Ödeme dönemine göre süre ekle
           if (payment.billingPeriod === 'yearly') {
             endDate.setFullYear(endDate.getFullYear() + 1)
+          } else if (payment.billingPeriod === '6monthly') {
+            endDate.setMonth(endDate.getMonth() + 6)
           } else {
             endDate.setMonth(endDate.getMonth() + 1) // Default Aylık
           }

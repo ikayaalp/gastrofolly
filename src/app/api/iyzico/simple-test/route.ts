@@ -14,7 +14,7 @@ export async function GET() {
             currency: 'TRY',
             basketId: 'B_' + conversationId,
             paymentGroup: 'PRODUCT',
-            callbackUrl: 'https://culinora.net/api/iyzico/subscription-callback',
+            callbackUrl: 'https://culinora.net/api/iyzico/callback',
             enabledInstallments: [1],
             buyer: {
                 id: 'BY789',

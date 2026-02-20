@@ -19,10 +19,10 @@ export async function GET(request: NextRequest) {
 
         const now = new Date()
 
-        // İptal edilmiş ve süresi dolmuş abonelikleri bul
+        // Süresi dolmuş abonelikleri bul (tek seferlik ödeme - otomatik yenileme yok)
         const expiredSubscriptions = await prisma.user.findMany({
             where: {
-                subscriptionCancelled: true,
+                subscriptionPlan: { not: null },
                 subscriptionEndDate: {
                     lt: now
                 }
