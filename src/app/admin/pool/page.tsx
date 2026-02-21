@@ -35,14 +35,30 @@ export default async function PoolManagementPage() {
         redirect("/dashboard")
     }
 
-    // Aktif premium abone sayısı × 20 TL = gerçek ciro
-    const activePremiumCount = await prisma.user.count({
+    const IYZICO_START = new Date('2026-02-20T00:00:00.000Z')
+
+    // 20 Şubat öncesi: aktif aboneler × 20 TL (iyzico yoktu, tahmine dayalı)
+    const preIyzicoSubscribers = await prisma.user.count({
         where: {
             subscriptionPlan: 'Premium',
-            subscriptionEndDate: { gt: new Date() }
+            subscriptionEndDate: { gt: new Date() },
+            subscriptionStartDate: { lt: IYZICO_START }
         }
     })
-    const TOTAL_REVENUE = activePremiumCount * 20
+    const preIyzicoRevenue = preIyzicoSubscribers * 20
+
+    // 20 Şubat sonrası: gerçek iyzico ödemelerinin toplamı
+    const iyzicoPayments = await prisma.payment.aggregate({
+        where: {
+            status: 'COMPLETED',
+            subscriptionPlan: { not: null },
+            createdAt: { gte: IYZICO_START }
+        },
+        _sum: { amount: true }
+    })
+    const postIyzicoRevenue = iyzicoPayments._sum.amount || 0
+
+    const TOTAL_REVENUE = preIyzicoRevenue + postIyzicoRevenue
     const POOL_TOTAL = TOTAL_REVENUE * 0.25
 
     // Gerçek eğitmenleri veritabanından çek
