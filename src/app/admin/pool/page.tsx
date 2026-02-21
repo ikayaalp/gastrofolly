@@ -53,21 +53,24 @@ export default async function PoolManagementPage() {
 
     const instructorsWithData = await Promise.all(
         instructorUsers.map(async (user, index) => {
-            // Eğitmenin kurslarındaki toplam ders süresi (dakika)
-            const lessonsAgg = await prisma.lesson.aggregate({
+            // Kullanıcıların bu eğitmenin derslerinde tamamladığı dakikaların toplamı
+            const completedProgress = await prisma.progress.findMany({
                 where: {
-                    course: { instructorId: user.id, isPublished: true },
-                    isPublished: true,
-                    duration: { not: null }
+                    isCompleted: true,
+                    lesson: {
+                        course: { instructorId: user.id },
+                        isPublished: true,
+                        duration: { not: null }
+                    }
                 },
-                _sum: { duration: true }
+                include: { lesson: { select: { duration: true } } }
             })
-            const minutes = lessonsAgg._sum.duration || 0
+            const minutes = completedProgress.reduce((sum, p) => sum + (p.lesson.duration || 0), 0)
 
             return {
                 id: user.id,
                 name: user.name || "İsimsiz Şef",
-                courseName: "Toplam Ders Süresi",
+                courseName: "Toplam İzlenme",
                 level: "Eğitmen",
                 minutes,
                 coefficient: 1,
