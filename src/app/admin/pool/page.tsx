@@ -38,7 +38,7 @@ export default async function PoolManagementPage() {
     const TODAY_START = new Date('2026-02-21T00:00:00.000Z')
 
     // Bugünden öncesi: sabit 100 TL (tarihsel kasa)
-    const preRevenue = 100
+    const preRevenue = 85
 
     // Bugünden sonrası: gerçek Iyzico ödemelerinin toplamı
     const iyzicoPayments = await prisma.payment.aggregate({

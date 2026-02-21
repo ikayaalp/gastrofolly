@@ -118,7 +118,7 @@ export default async function AdminPage() {
             </div>
           </div>
           <p className="text-gray-400 text-sm font-medium">Toplam Gelir</p>
-          <p className="text-3xl font-bold text-white mt-1">₺{(100 + (payments._sum.amount || 0)).toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</p>
+          <p className="text-3xl font-bold text-white mt-1">₺{(85 + (payments._sum.amount || 0)).toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</p>
         </div>
       </div>
 
