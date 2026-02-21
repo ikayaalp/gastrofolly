@@ -158,7 +158,7 @@ export default function SubscriptionPopup({ isVisible }: SubscriptionPopupProps)
                                     transition={{ delay: 0.7 }}
                                 >
                                     <Link
-                                        href="/subscription?plan=Premium"
+                                        href="/subscription"
                                         onClick={() => setIsOpen(false)}
                                         className="group relative w-full flex items-center justify-center gap-2 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 text-white h-12 rounded-2xl font-bold text-sm transition-all shadow-[0_10px_30px_-10px_rgba(234,88,12,0.5)] active:scale-[0.98] overflow-hidden"
                                     >
