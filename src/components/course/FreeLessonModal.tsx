@@ -30,32 +30,43 @@ export default function FreeLessonModal({ lesson, courseTitle }: FreeLessonModal
                 onClick={() => setIsOpen(true)}
                 className="w-full text-left"
             >
-                <div className="flex items-center justify-between p-4 border border-black rounded-lg transition-colors hover:border-orange-500/50 cursor-pointer">
-                    <div className="flex items-center">
-                        <div className="bg-orange-500/20 text-orange-500 w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold mr-4">
+                <div className="flex flex-col sm:flex-row justify-between p-4 border border-black rounded-lg transition-colors gap-3 hover:border-orange-500/50 cursor-pointer">
+                    <div className="flex items-start flex-1 min-w-0">
+                        <div className="bg-orange-500/20 text-orange-500 w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold mr-3 shrink-0 mt-0.5">
                             1
                         </div>
-                        <div className="flex items-center">
-                            <Play className="h-4 w-4 text-green-500 mr-2" />
-                            <div>
-                                <h3 className="font-semibold text-white">
-                                    {lesson.title}
-                                </h3>
+                        <div className="flex items-start flex-1 min-w-0">
+                            <div className="shrink-0 mr-2 mt-1">
+                                <Play className="h-4 w-4 text-green-500" />
+                            </div>
+                            <div className="flex-1 min-w-0 pr-0 sm:pr-4">
+                                <div className="flex items-start justify-between gap-2">
+                                    <h3 className="font-semibold text-white text-sm sm:text-base leading-snug break-words">
+                                        {lesson.title}
+                                    </h3>
+                                    {lesson.duration && (
+                                        <span className="text-xs text-gray-400 whitespace-nowrap pt-0.5">
+                                            {lesson.duration || 0} dk
+                                        </span>
+                                    )}
+                                </div>
                                 {lesson.description && (
-                                    <p className="text-sm text-gray-400">
+                                    <p className="hidden sm:block text-xs sm:text-sm text-gray-400 mt-2 line-clamp-3 sm:line-clamp-none leading-relaxed">
                                         {lesson.description}
                                     </p>
                                 )}
+                                {/* Mobile only badge */}
+                                <div className="flex sm:hidden mt-2">
+                                    <span className="bg-green-500/20 text-green-500 px-2 py-1 rounded text-[10px] font-semibold whitespace-nowrap">
+                                        Ücretsiz Önizleme
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div className="flex items-center space-x-4">
-                        {lesson.duration && (
-                            <span className="text-sm text-gray-400">
-                                {lesson.duration || 0} dk
-                            </span>
-                        )}
-                        <span className="bg-green-500/20 text-green-500 px-2 py-1 rounded text-xs font-semibold">
+                    {/* Desktop only badge */}
+                    <div className="hidden sm:flex flex-col justify-center shrink-0">
+                        <span className="bg-green-500/20 text-green-500 px-2 py-1 rounded text-xs font-semibold whitespace-nowrap">
                             Ücretsiz Önizleme
                         </span>
                     </div>

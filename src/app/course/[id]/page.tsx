@@ -453,25 +453,26 @@ export default async function CoursePage({ params }: CoursePageProps) {
                               <Lock className="h-4 w-4 text-orange-500" />
                             )}
                           </div>
-                          <div className="flex-1 min-w-0 pr-0 sm:pr-4 flex justify-between items-start gap-2">
-                            <div className="flex-1 min-w-0">
+                          <div className="flex-1 min-w-0 pr-0 sm:pr-4">
+                            <div className="flex items-start justify-between gap-2">
                               <h3 className="font-semibold text-white text-sm sm:text-base leading-snug break-words">
                                 {lesson.title}
                               </h3>
-                              {lesson.description && (
-                                <p className="hidden sm:block text-xs sm:text-sm text-gray-400 mt-2 line-clamp-3 sm:line-clamp-none leading-relaxed">
-                                  {lesson.description}
-                                </p>
-                              )}
-                            </div>
-
-                            {/* Mobile only duration & badge (Duration moved next to title) */}
-                            <div className="flex sm:hidden flex-col items-end gap-2 shrink-0">
                               {lesson.duration && (
                                 <span className="text-xs text-gray-400 whitespace-nowrap pt-0.5">
                                   {lesson.duration} dk
                                 </span>
                               )}
+                            </div>
+
+                            {lesson.description && (
+                              <p className="hidden sm:block text-xs sm:text-sm text-gray-400 mt-2 line-clamp-3 sm:line-clamp-none leading-relaxed">
+                                {lesson.description}
+                              </p>
+                            )}
+
+                            {/* Mobile only badge */}
+                            <div className="flex sm:hidden mt-2">
                               {!canAccess && (
                                 <>
                                   {isFirstLesson ? (
@@ -494,13 +495,8 @@ export default async function CoursePage({ params }: CoursePageProps) {
                         </div>
                       </div>
 
-                      {/* Desktop only duration & badge */}
-                      <div className="hidden sm:flex flex-col sm:flex-row items-center gap-4 shrink-0">
-                        {lesson.duration && (
-                          <span className="text-sm text-gray-400 whitespace-nowrap">
-                            {lesson.duration} dk
-                          </span>
-                        )}
+                      {/* Desktop only badge */}
+                      <div className="hidden sm:flex flex-col justify-center shrink-0">
                         {!canAccess && (
                           <>
                             {isFirstLesson ? (
