@@ -35,12 +35,12 @@ export default async function PoolManagementPage() {
         redirect("/dashboard")
     }
 
-    // Gerçek havuz tutarı: Tamamlanmış abonelik ödemelerinin toplamı
+    // Gerçek havuz tutarı: Tamamlanmış abonelik ödemelerinin %25'i
     const completedPayments = await prisma.payment.aggregate({
         where: { status: 'COMPLETED', subscriptionPlan: { not: null } },
         _sum: { amount: true }
     })
-    const POOL_TOTAL = completedPayments._sum.amount || 0
+    const POOL_TOTAL = (completedPayments._sum.amount || 0) * 0.25
 
     // Gerçek eğitmenleri veritabanından çek
     const instructorUsers = await prisma.user.findMany({
