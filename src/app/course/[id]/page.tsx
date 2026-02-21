@@ -453,27 +453,29 @@ export default async function CoursePage({ params }: CoursePageProps) {
                               <Lock className="h-4 w-4 text-orange-500" />
                             )}
                           </div>
-                          <div className="flex-1 min-w-0 pr-0 sm:pr-4">
-                            <h3 className="font-semibold text-white text-sm sm:text-base leading-snug break-words">
-                              {lesson.title}
-                            </h3>
-                            {lesson.description && (
-                              <p className="hidden sm:block text-xs sm:text-sm text-gray-400 mt-2 line-clamp-3 sm:line-clamp-none leading-relaxed">
-                                {lesson.description}
-                              </p>
-                            )}
+                          <div className="flex-1 min-w-0 pr-0 sm:pr-4 flex justify-between items-start gap-2">
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-semibold text-white text-sm sm:text-base leading-snug break-words">
+                                {lesson.title}
+                              </h3>
+                              {lesson.description && (
+                                <p className="hidden sm:block text-xs sm:text-sm text-gray-400 mt-2 line-clamp-3 sm:line-clamp-none leading-relaxed">
+                                  {lesson.description}
+                                </p>
+                              )}
+                            </div>
 
-                            {/* Mobile only duration & badge */}
-                            <div className="flex sm:hidden flex-wrap items-center gap-3 mt-3">
+                            {/* Mobile only duration & badge (Duration moved next to title) */}
+                            <div className="flex sm:hidden flex-col items-end gap-2 shrink-0">
                               {lesson.duration && (
-                                <span className="text-xs text-gray-400 whitespace-nowrap">
+                                <span className="text-xs text-gray-400 whitespace-nowrap pt-0.5">
                                   {lesson.duration} dk
                                 </span>
                               )}
                               {!canAccess && (
                                 <>
                                   {isFirstLesson ? (
-                                    <span className="bg-green-500/20 text-green-500 px-2 py-1 rounded text-xs font-semibold whitespace-nowrap">
+                                    <span className="bg-green-500/20 text-green-500 px-2 py-1 rounded text-[10px] font-semibold whitespace-nowrap">
                                       Ücretsiz Önizleme
                                     </span>
                                   ) : lesson.isFree ? (
