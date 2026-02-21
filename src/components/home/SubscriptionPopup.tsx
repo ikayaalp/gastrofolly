@@ -145,7 +145,7 @@ export default function SubscriptionPopup({ isVisible }: SubscriptionPopupProps)
                                         <p className="text-gray-400 text-xs">İstediğin zaman iptal edebilirsin</p>
                                     </div>
                                     <div className="ml-auto text-right">
-                                        <p className="text-orange-400 font-black text-xl">20 ₺</p>
+                                        <p className="text-orange-400 font-black text-xl">299 ₺</p>
                                         <p className="text-gray-500 text-xs">/ay</p>
                                     </div>
                                 </motion.div>
