@@ -369,8 +369,18 @@ export default async function LearnPage({ params, searchParams }: LearnPageProps
             hasFullAccess={hasFullAccess ?? false}
           />
 
-          {/* Comments Section */}
-          <div className="p-6">
+          <div className="p-6 space-y-8">
+            {/* Lesson Description */}
+            {currentLesson.description && (
+              <div className="bg-black border border-gray-800 rounded-xl p-6">
+                <h2 className="text-xl font-bold text-white mb-4">Ders İçeriği</h2>
+                <div className="text-gray-300 whitespace-pre-wrap leading-relaxed">
+                  {currentLesson.description}
+                </div>
+              </div>
+            )}
+
+            {/* Comments Section */}
             <CommentsSection
               reviews={course.reviews}
               courseId={course.id}
