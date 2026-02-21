@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useSession } from "next-auth/react"
 import Link from "next/link"
 import Image from "next/image"
 import {
@@ -72,9 +73,12 @@ export default function HomePageClient({
   session
 }: HomePageClientProps) {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const { data: clientSession } = useSession()
 
-  // Premium değilse pop-up'ı göster
-  const showSubscriptionPopup = (session?.user as any)?.subscriptionPlan !== "Premium" && session?.user?.role !== "ADMIN"
+  // Client-side session'dan abonelik durumunu oku (en güvenilir yöntem)
+  const subscriptionPlan = (clientSession?.user as any)?.subscriptionPlan
+  const userRole = (clientSession?.user as any)?.role || session?.user?.role
+  const showSubscriptionPopup = clientSession !== undefined && subscriptionPlan !== "Premium" && userRole !== "ADMIN"
 
   return (
     <div className="min-h-screen bg-black text-white">
