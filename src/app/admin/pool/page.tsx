@@ -118,23 +118,7 @@ export default async function PoolManagementPage() {
     return (
         <div className="space-y-8">
             {/* Stats Cards - HERKES GÖRÜR */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                {/* Toplam Gelir - Sadece Admin */}
-                {!isInstructor && (
-                    <div className="bg-black border border-gray-800 rounded-xl p-6 relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
-                        <div className="flex items-center space-x-4 relative z-10">
-                            <div className="bg-emerald-500/20 p-3 rounded-xl">
-                                <TrendingUp className="h-6 w-6 text-emerald-400" />
-                            </div>
-                            <div>
-                                <p className="text-3xl font-bold text-white">₺{TOTAL_REVENUE.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</p>
-                                <p className="text-gray-400 text-sm font-medium">Toplam Gelir</p>
-                                <p className="text-gray-600 text-xs">20 Şub 2026 sonrası</p>
-                            </div>
-                        </div>
-                    </div>
-                )}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
                 <div className="bg-black border border-gray-800 rounded-xl p-6 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-green-500/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
@@ -145,7 +129,6 @@ export default async function PoolManagementPage() {
                         <div>
                             <p className="text-3xl font-bold text-white">₺{POOL_TOTAL.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</p>
                             <p className="text-gray-400 text-sm font-medium">Eğitmen Havuzu (%25)</p>
-                            <p className="text-gray-600 text-xs">20 Şub 2026 sonrası</p>
                         </div>
                     </div>
                 </div>
