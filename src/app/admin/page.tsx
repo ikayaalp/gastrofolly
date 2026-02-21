@@ -20,7 +20,7 @@ async function getAdminData() {
       where: {
         status: 'COMPLETED',
         subscriptionPlan: { not: null },
-        createdAt: { gte: new Date('2026-02-21T00:00:00.000Z') }
+        createdAt: { gte: new Date('2026-02-21T10:00:00.000Z') }
       },
       _sum: { amount: true },
       _count: true

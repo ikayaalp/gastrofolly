@@ -35,7 +35,7 @@ export default async function PoolManagementPage() {
         redirect("/dashboard")
     }
 
-    const TODAY_START = new Date('2026-02-21T00:00:00.000Z')
+    const TODAY_START = new Date('2026-02-21T10:00:00.000Z')
 
     // Bugünden öncesi: sabit 100 TL (tarihsel kasa)
     const preRevenue = 85
