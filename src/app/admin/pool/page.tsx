@@ -35,9 +35,14 @@ export default async function PoolManagementPage() {
         redirect("/dashboard")
     }
 
-    // Gerçek havuz tutarı: Tamamlanmış abonelik ödemelerinin %25'i
+    // Gerçek havuz tutarı: 20 Şubat 2026 sonrası tamamlanmış abonelik ödemelerinin %25'i
+    // (Öncesi iyzico test ödemeleriydi, resmi başlangıç: 20.02.2026)
     const completedPayments = await prisma.payment.aggregate({
-        where: { status: 'COMPLETED', subscriptionPlan: { not: null } },
+        where: {
+            status: 'COMPLETED',
+            subscriptionPlan: { not: null },
+            createdAt: { gt: new Date('2026-02-20T00:00:00.000Z') }
+        },
         _sum: { amount: true }
     })
     const POOL_TOTAL = (completedPayments._sum.amount || 0) * 0.25
