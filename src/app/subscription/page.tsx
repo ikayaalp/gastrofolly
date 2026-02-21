@@ -37,7 +37,7 @@ function SubscriptionContent() {
     const plans = [
         {
             name: "Premium",
-            price: "299",
+            price: "20",
             period: "Aylık",
             icon: Crown,
             color: "from-orange-600 to-red-600",
