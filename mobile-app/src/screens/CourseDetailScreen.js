@@ -333,8 +333,10 @@ export default function CourseDetailScreen({ route, navigation }) {
                                             </View>
                                             <View style={styles.lessonIcon}>
                                                 {isAccessAllowed ? (
-                                                    <Play size={16} color="#10b981" />
+                                                    <Play size={16} color="#10b981" fill="#10b981" />
                                                 ) : (
+                                                    // This will only show if the user does NOT have global access
+                                                    // and it's not a free/first lesson.
                                                     <Lock size={16} color="#ea580c" />
                                                 )}
                                             </View>
@@ -350,18 +352,22 @@ export default function CourseDetailScreen({ route, navigation }) {
                                         <View style={styles.lessonRight}>
                                             <Text style={styles.lessonDuration}>{lesson.duration || 0} dk</Text>
 
-                                            {isFirstLesson ? (
-                                                <View style={styles.freeBadge}>
-                                                    <Text style={styles.freeBadgeText}>Önizleme</Text>
-                                                </View>
-                                            ) : lesson.isFree ? (
-                                                <View style={styles.freeBadge}>
-                                                    <Text style={styles.freeBadgeText}>Ücretsiz</Text>
-                                                </View>
-                                            ) : (
-                                                <View style={styles.premiumBadge}>
-                                                    <Text style={styles.premiumBadgeText}>Premium</Text>
-                                                </View>
+                                            {!hasAccess && (
+                                                <>
+                                                    {isFirstLesson ? (
+                                                        <View style={styles.freeBadge}>
+                                                            <Text style={styles.freeBadgeText}>Önizleme</Text>
+                                                        </View>
+                                                    ) : lesson.isFree ? (
+                                                        <View style={styles.freeBadge}>
+                                                            <Text style={styles.freeBadgeText}>Ücretsiz</Text>
+                                                        </View>
+                                                    ) : (
+                                                        <View style={styles.premiumBadge}>
+                                                            <Text style={styles.premiumBadgeText}>Premium</Text>
+                                                        </View>
+                                                    )}
+                                                </>
                                             )}
                                         </View>
                                     </TouchableOpacity>
