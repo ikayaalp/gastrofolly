@@ -147,7 +147,7 @@ export async function sendVerificationEmail(
         <body>
           <div class="container">
             <div class="header">
-              <h1>🍳 Culinora</h1>
+              <h1>Culinora</h1>
             </div>
             <div class="content">
               <div class="greeting">
@@ -240,7 +240,7 @@ export async function sendPasswordResetEmail(
         <body>
           <div class="container">
             <div class="header">
-              <h1>🍳 Culinora</h1>
+              <h1>Culinora</h1>
             </div>
             <div class="content">
               <h2>Merhaba ${name || 'Chef'}! 👋</h2>
@@ -408,7 +408,7 @@ export async function sendSubscriptionStartedEmail(
         <body>
           <div class="container">
             <div class="header">
-              <h1>🍳 Culinora</h1>
+              <h1>Culinora</h1>
             </div>
             <div class="content">
               <div class="welcome-icon">👨‍🍳</div>
