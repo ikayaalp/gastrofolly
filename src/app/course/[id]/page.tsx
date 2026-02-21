@@ -394,7 +394,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
                           {index + 1}
                         </div>
                         <div className="flex items-center">
-                          {isFirstLesson || lesson.isFree ? (
+                          {canAccess ? (
                             <Play className="h-4 w-4 text-green-500 mr-2" />
                           ) : (
                             <Lock className="h-4 w-4 text-orange-500 mr-2" />
@@ -417,18 +417,22 @@ export default async function CoursePage({ params }: CoursePageProps) {
                             {lesson.duration} dk
                           </span>
                         )}
-                        {isFirstLesson ? (
-                          <span className="bg-green-500/20 text-green-500 px-2 py-1 rounded text-xs font-semibold">
-                            Ücretsiz Önizleme
-                          </span>
-                        ) : lesson.isFree ? (
-                          <span className="bg-green-500/20 text-green-500 px-2 py-1 rounded text-xs font-semibold">
-                            Ücretsiz
-                          </span>
-                        ) : (
-                          <span className="bg-black text-gray-300 px-2 py-1 rounded text-xs border border-orange-500/30">
-                            Premium
-                          </span>
+                        {!canAccess && (
+                          <>
+                            {isFirstLesson ? (
+                              <span className="bg-green-500/20 text-green-500 px-2 py-1 rounded text-xs font-semibold">
+                                Ücretsiz Önizleme
+                              </span>
+                            ) : lesson.isFree ? (
+                              <span className="bg-green-500/20 text-green-500 px-2 py-1 rounded text-xs font-semibold">
+                                Ücretsiz
+                              </span>
+                            ) : (
+                              <span className="bg-black text-gray-300 px-2 py-1 rounded text-xs border border-orange-500/30">
+                                Premium
+                              </span>
+                            )}
+                          </>
                         )}
                       </div>
                     </div>
