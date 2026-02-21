@@ -470,14 +470,8 @@ export default function SettingsClient({ user }: SettingsClientProps) {
                 <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
                   <h4 className="text-white font-semibold mb-2">Premium Bilgileri</h4>
                   <p className="text-gray-400 text-sm mb-4">
-                    Premium üyeliğiniz {user.subscriptionEndDate ? formatDate(user.subscriptionEndDate) : '-'} tarihine kadar geçerlidir. Süre sonunda yeniden ödeme yaparak uzatabilirsiniz.
+                    Premium üyeliğiniz {user.subscriptionEndDate ? formatDate(user.subscriptionEndDate) : '-'} tarihine kadar geçerlidir. Süre sonunda iptal etmediğiniz sürece üyeliğiniz yenilenecektir.
                   </p>
-                  <button
-                    onClick={() => router.push('/subscription')}
-                    className="text-orange-400 hover:text-orange-300 text-sm font-medium transition-colors"
-                  >
-                    Üyeliği Uzat →
-                  </button>
                 </div>
               </div>
             ) : (
