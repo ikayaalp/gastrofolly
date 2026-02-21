@@ -376,6 +376,58 @@ export default async function CoursePage({ params }: CoursePageProps) {
               </div>
             </div>
 
+            {/* Mobile Only Action Buttons */}
+            <div className="block lg:hidden mb-8 space-y-4">
+              {isEnrolled ? (
+                <Link
+                  href={`/learn/${course.id}`}
+                  className={`w-full text-white py-3 px-4 rounded-xl font-semibold transition-colors flex items-center justify-center ${hasProgress
+                    ? 'bg-green-600 hover:bg-green-700'
+                    : 'bg-orange-600 hover:bg-orange-700'
+                    }`}
+                >
+                  <CheckCircle className="h-5 w-5 mr-2" />
+                  {hasProgress ? 'Kursa Devam Et' : 'Kursa Başla'}
+                </Link>
+              ) : (
+                <div className="border border-orange-500/30 rounded-xl p-6 text-center bg-orange-900/20">
+                  <div className="rounded-full p-3 w-16 h-16 mx-auto mb-4 flex items-center justify-center bg-orange-600">
+                    <Crown className="h-8 w-8 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2">Premium Üyelik Gerekli</h3>
+                  <p className="text-gray-300 mb-4 text-sm">Bu kursa erişmek için Premium üye olmalısınız.</p>
+                  <div className="text-3xl font-bold text-white mb-4">
+                    299 ₺<span className="text-sm text-gray-400 ml-2 font-normal">/ Aylık</span>
+                  </div>
+                  <Link
+                    href="/subscription?plan=Premium"
+                    className="w-full text-white py-3 px-4 rounded-lg font-semibold transition-colors flex items-center justify-center bg-orange-600 hover:bg-orange-700"
+                  >
+                    <CheckCircle className="h-5 w-5 mr-2" />
+                    Premium Ol
+                  </Link>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-4">
+                <FavoriteButton
+                  courseId={course.id}
+                  title={course.title}
+                  price={course.price}
+                  discountedPrice={course.discountedPrice || undefined}
+                  imageUrl={course.imageUrl || undefined}
+                  instructor={{ name: course.instructor.name || 'Unknown' }}
+                  category={course.category}
+                  level={course.level}
+                  _count={course._count}
+                />
+                <ShareButton
+                  courseId={course.id}
+                  courseTitle={course.title}
+                />
+              </div>
+            </div>
+
             {/* Course Content */}
             <div className="bg-black border border-black rounded-xl shadow-lg p-6 mb-8">
               <h2 className="text-2xl font-bold text-white mb-6">Kurs İçeriği</h2>
@@ -477,7 +529,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
           </div>
 
           {/* Sidebar */}
-          <div className="lg:col-span-1">
+          <div className="hidden lg:block lg:col-span-1">
             <div className="bg-black border border-black rounded-xl shadow-lg p-6 sticky top-8">
               {isEnrolled ? (
                 <>
