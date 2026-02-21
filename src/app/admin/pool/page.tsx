@@ -5,25 +5,17 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { Users, Wallet, TrendingUp, Clock, Info } from "lucide-react"
 
-// Havuz toplam (örnek)
-const POOL_TOTAL = 50000 // ₺50,000
-
-function calculatePoolShare(instructors: any[]) {
-    // Her eğitmen için puan hesapla (1 Dakika = 1 Puan)
+function calculatePoolShare(instructors: any[], poolTotal: number) {
     const instructorsWithPoints = instructors.map(instructor => ({
         ...instructor,
-        points: instructor.minutes // Katsayı kalktı, direkt dakika = puan
+        points: instructor.minutes
     }))
-
-    // Toplam puan
     const totalPoints = instructorsWithPoints.reduce((sum: number, i: any) => sum + i.points, 0)
-
-    // Her eğitmenin oranı ve havuz payı
     return instructorsWithPoints.map(instructor => ({
         ...instructor,
         ratio: totalPoints > 0 ? instructor.points / totalPoints : 0,
         percentage: totalPoints > 0 ? ((instructor.points / totalPoints) * 100).toFixed(1) : "0.0",
-        poolShare: totalPoints > 0 ? (instructor.points / totalPoints) * POOL_TOTAL : 0
+        poolShare: totalPoints > 0 ? (instructor.points / totalPoints) * poolTotal : 0
     }))
 }
 
@@ -34,52 +26,60 @@ export default async function PoolManagementPage() {
         redirect("/auth/signin")
     }
 
-    // Kullanıcı rolünü kontrol et
     const currentUser = await prisma.user.findUnique({
         where: { id: session.user.id },
         select: { id: true, role: true, name: true }
     })
 
-    // Sadece ADMIN ve INSTRUCTOR girebilir
     if (currentUser?.role !== 'ADMIN' && currentUser?.role !== 'INSTRUCTOR') {
         redirect("/dashboard")
     }
 
+    // Gerçek havuz tutarı: Tamamlanmış abonelik ödemelerinin toplamı
+    const completedPayments = await prisma.payment.aggregate({
+        where: { status: 'COMPLETED', subscriptionPlan: { not: null } },
+        _sum: { amount: true }
+    })
+    const POOL_TOTAL = completedPayments._sum.amount || 0
+
     // Gerçek eğitmenleri veritabanından çek
     const instructorUsers = await prisma.user.findMany({
         where: { role: 'INSTRUCTOR' },
-        select: {
-            id: true,
-            name: true,
-            image: true
-        }
+        select: { id: true, name: true, image: true }
     })
 
-    // Her eğitmene örnek veri ata (Gerçek dakika verisi olmadığı için)
-    // Not: Gerçek hayatta burası veri tabanından (LessonProgress) hesaplanmalı
-    const instructorsWithData = instructorUsers.map((user, index) => {
-        // Rastgele veya sabit değerler (Tutarlılık için id'ye göre hash bazlı yapılabilir ama şimdilik statik/random)
-        const limits = [1200, 950, 600, 1500, 1000, 800] // Dakikalar biraz daha gerçekçi duralım
-        const minutes = limits[index % limits.length] || 1000
+    // Her eğitmen için gerçek ders sürelerini hesapla
+    const colors = ["#f97316", "#3b82f6", "#a855f7", "#22c55e", "#ef4444", "#eab308"]
 
-        // Renk ataması (Rastgele)
-        const colors = ["#f97316", "#3b82f6", "#a855f7", "#22c55e", "#ef4444", "#eab308"]
-        const color = colors[index % colors.length]
+    const instructorsWithData = await Promise.all(
+        instructorUsers.map(async (user, index) => {
+            // Eğitmenin kurslarındaki toplam ders süresi (dakika)
+            const lessonsAgg = await prisma.lesson.aggregate({
+                where: {
+                    course: { instructorId: user.id, isPublished: true },
+                    isPublished: true,
+                    duration: { not: null }
+                },
+                _sum: { duration: true }
+            })
+            const minutes = lessonsAgg._sum.duration || 0
 
-        return {
-            id: user.id,
-            name: user.name || "İsimsiz Şef",
-            courseName: "Genel Performans",
-            level: "Eğitmen", // Tek tip
-            minutes,
-            coefficient: 1, // Sabit
-            color
-        }
-    })
+            return {
+                id: user.id,
+                name: user.name || "İsimsiz Şef",
+                courseName: "Toplam Ders Süresi",
+                level: "Eğitmen",
+                minutes,
+                coefficient: 1,
+                color: colors[index % colors.length]
+            }
+        })
+    )
 
-    const poolData = calculatePoolShare(instructorsWithData)
+    const poolData = calculatePoolShare(instructorsWithData, POOL_TOTAL)
     const totalMinutes = instructorsWithData.reduce((sum, i) => sum + i.minutes, 0)
     const totalPoints = poolData.reduce((sum: number, i: any) => sum + i.points, 0)
+
 
     // Pasta grafik (Sadece Admin veya toplamı görmek için)
     let gradientAngle = 0
