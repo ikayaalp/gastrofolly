@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { retrieveCheckoutForm } from "@/lib/iyzico"
 import { prisma } from "@/lib/prisma"
+import { sendSubscriptionStartedEmail } from "@/lib/emailService"
 
 /**
  * Iyzico ödeme callback endpoint
@@ -112,7 +113,7 @@ export async function GET(request: NextRequest) {
                   endDate.setMonth(endDate.getMonth() + 1)
                 }
 
-                await prisma.user.update({
+                const user = await prisma.user.update({
                   where: { id: userId },
                   data: {
                     subscriptionPlan: payment.subscriptionPlan,
@@ -121,6 +122,16 @@ export async function GET(request: NextRequest) {
                   }
                 })
                 console.log(`✅ Subscription updated for user ${userId}: ${payment.subscriptionPlan}`)
+
+                // Hoşgeldin emaili gönder
+                if (user.email) {
+                  await sendSubscriptionStartedEmail(
+                    user.email,
+                    user.name || 'Chef',
+                    payment.subscriptionPlan,
+                    endDate
+                  )
+                }
               }
 
               // Enrollment oluşturma (sadece kurs ödemeleri için)
@@ -260,7 +271,7 @@ export async function GET(request: NextRequest) {
               endDate.setMonth(endDate.getMonth() + 1)
             }
 
-            await prisma.user.update({
+            const user = await prisma.user.update({
               where: { id: userId },
               data: {
                 subscriptionPlan: payment.subscriptionPlan,
@@ -269,6 +280,16 @@ export async function GET(request: NextRequest) {
               }
             })
             console.log(`✅ Subscription updated for user ${userId}: ${payment.subscriptionPlan}`)
+
+            // Hoşgeldin emaili gönder
+            if (user.email) {
+              await sendSubscriptionStartedEmail(
+                user.email,
+                user.name || 'Chef',
+                payment.subscriptionPlan,
+                endDate
+              )
+            }
           }
 
           // Enrollment oluşturma (sadece kurs ödemeleri için)
@@ -436,7 +457,7 @@ export async function GET(request: NextRequest) {
             endDate.setMonth(endDate.getMonth() + 1) // Default Aylık
           }
 
-          await prisma.user.update({
+          const user = await prisma.user.update({
             where: { id: userId },
             data: {
               subscriptionPlan: payment.subscriptionPlan,
@@ -445,6 +466,16 @@ export async function GET(request: NextRequest) {
             }
           })
           console.log(`✅ Subscription updated for user ${userId}: ${payment.subscriptionPlan} (Until: ${endDate.toISOString()})`)
+
+          // Hoşgeldin emaili gönder
+          if (user.email) {
+            await sendSubscriptionStartedEmail(
+              user.email,
+              user.name || 'Chef',
+              payment.subscriptionPlan,
+              endDate
+            )
+          }
         }
 
         // Enrollment kontrolü ve oluşturma (sadece kurs ödemeleri için)
@@ -740,7 +771,7 @@ export async function POST(request: NextRequest) {
             endDate.setMonth(endDate.getMonth() + 1)
           }
 
-          await prisma.user.update({
+          const user = await prisma.user.update({
             where: { id: userId },
             data: {
               subscriptionPlan: payment.subscriptionPlan,
@@ -749,6 +780,16 @@ export async function POST(request: NextRequest) {
             }
           })
           console.log(`✅ Subscription updated: ${userId} -> ${payment.subscriptionPlan} until ${endDate.toISOString()}`)
+
+          // Hoşgeldin emaili gönder
+          if (user.email) {
+            await sendSubscriptionStartedEmail(
+              user.email,
+              user.name || 'Chef',
+              payment.subscriptionPlan,
+              endDate
+            )
+          }
         }
 
         // Enrollment oluştur

@@ -280,6 +280,185 @@ export async function sendPasswordResetEmail(
 }
 
 /**
+ * Abonelik başlangıç e-postası gönder
+ */
+export async function sendSubscriptionStartedEmail(
+  to: string,
+  name: string,
+  planName: string,
+  endDate: Date
+): Promise<boolean> {
+  try {
+    const transporter = createTransporter()
+
+    // Tarihi formatla (21 Şubat 2026 gibi)
+    const formattedDate = endDate.toLocaleDateString('tr-TR', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    })
+
+    const mailOptions = {
+      from: `"Culinora Platform" <${process.env.EMAIL_USER}>`,
+      to: to,
+      subject: '🎉 Mutfaktaki Yeriniz Hazır! - Culinora Aboneliğiniz Başladı',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <style>
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+              line-height: 1.6;
+              color: #333;
+              background-color: #f4f4f4;
+              margin: 0;
+              padding: 0;
+            }
+            .container {
+              max-width: 600px;
+              margin: 40px auto;
+              background: #ffffff;
+              border-radius: 12px;
+              overflow: hidden;
+              box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+            .header {
+              background: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
+              padding: 40px 20px;
+              text-align: center;
+            }
+            .header h1 {
+              margin: 0;
+              color: #ffffff;
+              font-size: 28px;
+              font-weight: 700;
+            }
+            .content {
+              padding: 40px 30px;
+              text-align: center;
+            }
+            .welcome-icon {
+              font-size: 48px;
+              margin-bottom: 20px;
+            }
+            .greeting {
+              font-size: 22px;
+              font-weight: 700;
+              margin-bottom: 20px;
+              color: #1f2937;
+            }
+            .message {
+              font-size: 16px;
+              color: #4b5563;
+              margin-bottom: 30px;
+            }
+            .plan-card {
+              background: #fff7ed;
+              border: 1px solid #ffedd5;
+              border-radius: 12px;
+              padding: 24px;
+              margin: 30px 0;
+            }
+            .plan-label {
+              font-size: 14px;
+              color: #9a3412;
+              text-transform: uppercase;
+              letter-spacing: 1px;
+              font-weight: 600;
+              margin-bottom: 8px;
+            }
+            .plan-name {
+              font-size: 24px;
+              font-weight: 800;
+              color: #ea580c;
+              margin-bottom: 8px;
+            }
+            .plan-expiry {
+              font-size: 14px;
+              color: #9a3412;
+            }
+            .action-button {
+              display: inline-block;
+              background: #ea580c;
+              color: #ffffff;
+              padding: 16px 32px;
+              text-decoration: none;
+              border-radius: 30px;
+              font-weight: 700;
+              font-size: 16px;
+              margin: 20px 0;
+              transition: background 0.2s;
+            }
+            .footer {
+              background: #f9fafb;
+              padding: 30px;
+              text-align: center;
+              border-top: 1px solid #e5e7eb;
+            }
+            .footer-text {
+              font-size: 14px;
+              color: #6b7280;
+              margin: 5px 0;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🍳 Culinora</h1>
+            </div>
+            <div class="content">
+              <div class="welcome-icon">👨‍🍳</div>
+              <div class="greeting">
+                Tebrikler ${name}! 👋
+              </div>
+              <div class="message">
+                Culinora dünyasına hoş geldiniz! Aboneliğiniz başarıyla başlatıldı. Artık tüm kurslara sınırsız erişim sağlayabilir ve gastronomi yolculuğunuza başlayabilirsiniz.
+              </div>
+              
+              <div class="plan-card">
+                <div class="plan-label">Aktif Abonelik Planınız</div>
+                <div class="plan-name">${planName}</div>
+                <div class="plan-expiry">Üyelik Bitiş Tarihi: <strong>${formattedDate}</strong></div>
+              </div>
+              
+              <div class="message">
+                Mutfaktaki yeriniz hazır. Hemen bir kurs seçip öğrenmeye başlayın!
+              </div>
+              
+              <a href="${process.env.NEXTAUTH_URL}/my-courses" class="action-button">Hemen Öğrenmeye Başla</a>
+              
+            </div>
+            <div class="footer">
+              <p class="footer-text">
+                <strong>Culinora Gastronomi Platformu</strong>
+              </p>
+              <p class="footer-text">
+                Profesyonel şeflerden gastronomi öğrenin
+              </p>
+              <p class="footer-text" style="margin-top: 15px; font-size: 12px;">
+                © ${new Date().getFullYear()} Culinora. Tüm hakları saklıdır.
+              </p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+    }
+
+    await transporter.sendMail(mailOptions)
+    console.log(`Subscription email sent to ${to}`)
+    return true
+  } catch (error) {
+    console.error('Error sending subscription email:', error)
+    return false
+  }
+}
+
+/**
  * Kodun geçerlilik süresini kontrol et (10 dakika)
  */
 export function isCodeExpired(expiryDate: Date): boolean {
