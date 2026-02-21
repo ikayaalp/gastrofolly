@@ -36,5 +36,16 @@ export default async function UsersPage() {
     }
   })
 
-  return <UserManagement users={users} />
+  // Toplam Gelir: 85 TL sabit + 21 Şubat sonrası gerçek Iyzico ödemeleri
+  const iyzicoPayments = await prisma.payment.aggregate({
+    where: {
+      status: 'COMPLETED',
+      subscriptionPlan: { not: null },
+      createdAt: { gte: new Date('2026-02-21T00:00:00.000Z') }
+    },
+    _sum: { amount: true }
+  })
+  const totalRevenue = 85 + (iyzicoPayments._sum.amount || 0)
+
+  return <UserManagement users={users} totalRevenue={totalRevenue} />
 }

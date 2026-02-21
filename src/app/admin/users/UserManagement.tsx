@@ -42,6 +42,7 @@ interface User {
 
 interface UserManagementProps {
   users: User[]
+  totalRevenue: number
 }
 
 const SUBSCRIPTION_LABELS: Record<string, { label: string, color: string }> = {
@@ -50,7 +51,7 @@ const SUBSCRIPTION_LABELS: Record<string, { label: string, color: string }> = {
   'EXECUTIVE': { label: 'Executive', color: 'bg-purple-900/40 text-purple-200 border-purple-700/50' }
 }
 
-export default function UserManagement({ users }: UserManagementProps) {
+export default function UserManagement({ users, totalRevenue }: UserManagementProps) {
   const router = useRouter()
   const [searchTerm, setSearchTerm] = useState("")
   const [roleFilter, setRoleFilter] = useState("ALL")
@@ -62,10 +63,6 @@ export default function UserManagement({ users }: UserManagementProps) {
   const premiumUsers = users.filter(u => u.subscriptionPlan).length
   const premiumRatio = totalUsers > 0 ? (premiumUsers / totalUsers) * 100 : 0
 
-  const totalRevenue = users.reduce((sum, user) => {
-    const userTotal = user.payments.reduce((pSum, payment) => pSum + payment.amount, 0)
-    return sum + userTotal
-  }, 0)
 
   // Filtreleme
   const filteredUsers = users.filter(user => {
