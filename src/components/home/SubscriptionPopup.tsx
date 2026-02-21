@@ -56,12 +56,12 @@ export default function SubscriptionPopup({ isVisible }: SubscriptionPopupProps)
                             <div className="absolute top-0 left-0 w-72 h-72 bg-orange-600/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
                             <div className="absolute bottom-0 right-0 w-56 h-56 bg-red-700/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2 pointer-events-none" />
 
-                            {/* Close Button */}
+                            {/* Close Button - always on top */}
                             <button
                                 onClick={() => setIsOpen(false)}
-                                className="absolute top-4 right-4 z-10 p-2 rounded-full text-gray-500 hover:text-white hover:bg-white/10 border border-white/10 transition-all group"
+                                className="absolute top-3 right-3 z-30 p-2 rounded-full bg-black/40 hover:bg-black/70 text-white border border-white/20 transition-all"
                             >
-                                <X className="h-4 w-4 group-hover:rotate-90 transition-transform duration-200" />
+                                <X className="h-5 w-5" />
                             </button>
 
                             {/* Top Header Stripe */}
