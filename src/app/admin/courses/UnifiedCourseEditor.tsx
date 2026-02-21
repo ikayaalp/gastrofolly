@@ -70,6 +70,11 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
     const [loading, setLoading] = useState(false)
     const [currentCourseId, setCurrentCourseId] = useState<string | null>(course?.id || null)
 
+    const [localCategories, setLocalCategories] = useState<Category[]>(categories)
+    const [isCreatingCategory, setIsCreatingCategory] = useState(false)
+    const [newCategoryName, setNewCategoryName] = useState("")
+    const [creatingCategoryLoader, setCreatingCategoryLoader] = useState(false)
+
     // -- GENERAL INFO STATE --
     const [formData, setFormData] = useState({
         title: course?.title || "",
@@ -175,6 +180,34 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
             return false
         } finally {
             setLoading(false)
+        }
+    }
+
+    const handleCreateCategory = async () => {
+        if (!newCategoryName.trim()) return
+        setCreatingCategoryLoader(true)
+        try {
+            const response = await fetch('/api/admin/categories', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: newCategoryName })
+            })
+
+            if (response.ok) {
+                const data = await response.json()
+                setLocalCategories(prev => [...prev, data.category])
+                setFormData(prev => ({ ...prev, categoryId: data.category.id }))
+                setIsCreatingCategory(false)
+                setNewCategoryName("")
+            } else {
+                const err = await response.json()
+                alert(err.error || 'Kategori oluşturulamadı')
+            }
+        } catch (error) {
+            console.error(error)
+            alert('Bağlantı hatası')
+        } finally {
+            setCreatingCategoryLoader(false)
         }
     }
 
@@ -455,16 +488,53 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-300 mb-2">Kategori</label>
-                                            <select
-                                                name="categoryId"
-                                                value={formData.categoryId}
-                                                onChange={handleInputChange}
-                                                className="w-full px-4 py-3 bg-black border border-gray-800 rounded-xl text-white focus:border-orange-500 focus:outline-none"
-                                            >
-                                                <option value="">Seçiniz...</option>
-                                                {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                                            </select>
+                                            <div className="flex items-center justify-between mb-2">
+                                                <label className="block text-sm font-medium text-gray-300">Kategori</label>
+                                                <button
+                                                    onClick={() => setIsCreatingCategory(!isCreatingCategory)}
+                                                    className="text-xs text-orange-500 hover:text-orange-400 font-medium flex items-center space-x-1"
+                                                >
+                                                    <Plus className="h-3 w-3" />
+                                                    <span>Yeni Ekle</span>
+                                                </button>
+                                            </div>
+                                            {isCreatingCategory ? (
+                                                <div className="flex items-center space-x-2 w-full">
+                                                    <input
+                                                        type="text"
+                                                        value={newCategoryName}
+                                                        onChange={(e) => setNewCategoryName(e.target.value)}
+                                                        placeholder="Kategori Adı"
+                                                        className="flex-1 px-4 py-3 bg-black border border-gray-800 rounded-xl text-white focus:border-orange-500 focus:outline-none text-sm"
+                                                    />
+                                                    <button
+                                                        onClick={handleCreateCategory}
+                                                        disabled={creatingCategoryLoader || !newCategoryName.trim()}
+                                                        className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-3 rounded-xl text-sm font-medium disabled:opacity-50 transition-colors"
+                                                    >
+                                                        {creatingCategoryLoader ? '...' : 'Ekle'}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            setIsCreatingCategory(false)
+                                                            setNewCategoryName("")
+                                                        }}
+                                                        className="px-3 py-3 text-gray-400 hover:text-white transition-colors"
+                                                    >
+                                                        <X className="h-4 w-4" />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <select
+                                                    name="categoryId"
+                                                    value={formData.categoryId}
+                                                    onChange={handleInputChange}
+                                                    className="w-full px-4 py-3 bg-black border border-gray-800 rounded-xl text-white focus:border-orange-500 focus:outline-none"
+                                                >
+                                                    <option value="">Seçiniz...</option>
+                                                    {localCategories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                                </select>
+                                            )}
                                         </div>
 
                                     </div>
