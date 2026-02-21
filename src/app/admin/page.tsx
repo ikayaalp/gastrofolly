@@ -17,9 +17,12 @@ async function getAdminData() {
     prisma.course.count(),
     prisma.enrollment.count(),
     prisma.payment.aggregate({
-      _sum: {
-        amount: true
+      where: {
+        status: 'COMPLETED',
+        subscriptionPlan: { not: null },
+        createdAt: { gte: new Date('2026-02-21T00:00:00.000Z') }
       },
+      _sum: { amount: true },
       _count: true
     }),
     prisma.user.findMany({
@@ -115,7 +118,7 @@ export default async function AdminPage() {
             </div>
           </div>
           <p className="text-gray-400 text-sm font-medium">Toplam Gelir</p>
-          <p className="text-3xl font-bold text-white mt-1">₺{payments._sum.amount?.toLocaleString('tr-TR', { maximumFractionDigits: 0 }) || '0'}</p>
+          <p className="text-3xl font-bold text-white mt-1">₺{(100 + (payments._sum.amount || 0)).toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</p>
         </div>
       </div>
 
