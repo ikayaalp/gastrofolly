@@ -56,16 +56,8 @@ export default function SubscriptionPopup({ isVisible }: SubscriptionPopupProps)
                             <div className="absolute top-0 left-0 w-72 h-72 bg-orange-600/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
                             <div className="absolute bottom-0 right-0 w-56 h-56 bg-red-700/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2 pointer-events-none" />
 
-                            {/* Close Button - always on top */}
-                            <button
-                                onClick={() => setIsOpen(false)}
-                                className="absolute top-3 right-3 z-30 p-2 rounded-full bg-black/40 hover:bg-black/70 text-white border border-white/20 transition-all"
-                            >
-                                <X className="h-5 w-5" />
-                            </button>
-
                             {/* Top Header Stripe */}
-                            <div className="bg-gradient-to-r from-orange-600 to-red-600 px-6 py-4 flex items-center gap-3">
+                            <div className="bg-gradient-to-r from-orange-600 to-red-600 px-4 py-3 flex items-center gap-3">
                                 <div className="relative w-9 h-9 flex-shrink-0">
                                     <Image src="/logo.jpeg" alt="Culinora" fill className="object-contain rounded-lg" />
                                 </div>
@@ -77,6 +69,13 @@ export default function SubscriptionPopup({ isVisible }: SubscriptionPopupProps)
                                     <Crown className="h-3 w-3 text-yellow-300" />
                                     <span className="text-white text-[10px] font-bold uppercase tracking-wider">Premium</span>
                                 </div>
+                                {/* Close Button integrated in header */}
+                                <button
+                                    onClick={() => setIsOpen(false)}
+                                    className="flex-shrink-0 ml-2 p-1.5 rounded-full bg-black/25 hover:bg-black/50 text-white transition-all"
+                                >
+                                    <X className="h-4 w-4" />
+                                </button>
                             </div>
 
                             {/* Content */}
