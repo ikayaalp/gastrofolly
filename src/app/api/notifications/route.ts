@@ -19,8 +19,18 @@ export async function GET(request: NextRequest) {
 
         console.log(`GET /api/notifications: Fetching for user ${user.id}`);
 
+        // Kullanıcının kayıt tarihini al
+        const userRecord = await prisma.user.findUnique({
+            where: { id: user.id },
+            select: { createdAt: true }
+        })
+
         const notifications = await prisma.notification.findMany({
-            where: { userId: user.id },
+            where: {
+                userId: user.id,
+                // Sadece kullanıcı kayıt tarihinden sonraki bildirimleri göster
+                createdAt: { gte: userRecord?.createdAt }
+            },
             orderBy: { createdAt: 'desc' },
             take: 30
         })
@@ -29,7 +39,11 @@ export async function GET(request: NextRequest) {
 
         // Okunmamış bildirim sayısı
         const unreadCount = await prisma.notification.count({
-            where: { userId: user.id, isRead: false }
+            where: {
+                userId: user.id,
+                isRead: false,
+                createdAt: { gte: userRecord?.createdAt }
+            }
         })
 
         return NextResponse.json(
