@@ -387,33 +387,34 @@ export default async function CoursePage({ params }: CoursePageProps) {
 
                   const lessonContent = (
                     <div
-                      className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-black rounded-lg transition-colors gap-3 sm:gap-0 ${canAccess ? 'hover:border-orange-500/50 cursor-pointer' : ''}`}
+                      className={`flex flex-row items-center justify-between p-3 sm:p-4 border border-black rounded-lg transition-colors gap-3 ${canAccess ? 'hover:border-orange-500/50 cursor-pointer' : ''}`}
                     >
-                      <div className="flex items-start sm:items-center w-full sm:w-auto flex-1">
+                      <div className="flex items-center flex-1 min-w-0">
                         <div className="bg-orange-500/20 text-orange-500 w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold mr-3 shrink-0">
                           {index + 1}
                         </div>
-                        <div className="flex items-start sm:items-center flex-1">
-                          <div className="mt-1 sm:mt-0">
+                        <div className="flex items-center flex-1 min-w-0">
+                          <div className="shrink-0 mr-2">
                             {canAccess ? (
-                              <Play className="h-4 w-4 text-green-500 mr-2 shrink-0" />
+                              <Play className="h-4 w-4 text-green-500" />
                             ) : (
-                              <Lock className="h-4 w-4 text-orange-500 mr-2 shrink-0" />
+                              <Lock className="h-4 w-4 text-orange-500" />
                             )}
                           </div>
-                          <div className="flex-1 pr-2">
-                            <h3 className="font-semibold text-white text-sm sm:text-base line-clamp-2 sm:line-clamp-none">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-white text-sm sm:text-base truncate">
                               {lesson.title}
                             </h3>
                             {lesson.description && (
-                              <p className="text-xs sm:text-sm text-gray-400 mt-1 line-clamp-2">
+                              <p className="text-xs sm:text-sm text-gray-400 mt-1 truncate">
                                 {lesson.description}
                               </p>
                             )}
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-3 sm:space-x-4 ml-11 sm:ml-0 shrink-0 self-start sm:self-center">
+
+                      <div className="flex flex-col sm:flex-row items-end sm:items-center gap-1 sm:gap-4 shrink-0">
                         {lesson.duration && (
                           <span className="text-xs sm:text-sm text-gray-400 whitespace-nowrap">
                             {lesson.duration} dk
@@ -422,15 +423,15 @@ export default async function CoursePage({ params }: CoursePageProps) {
                         {!canAccess && (
                           <>
                             {isFirstLesson ? (
-                              <span className="bg-green-500/20 text-green-500 px-2 py-1 rounded text-[10px] sm:text-xs font-semibold whitespace-nowrap">
-                                Ücretsiz Önizleme
+                              <span className="bg-green-500/20 text-green-500 px-2 py-1 rounded text-[10px] sm:text-xs font-semibold whitespace-nowrap hidden sm:inline-block">
+                                Önizleme
                               </span>
                             ) : lesson.isFree ? (
-                              <span className="bg-green-500/20 text-green-500 px-2 py-1 rounded text-[10px] sm:text-xs font-semibold whitespace-nowrap">
+                              <span className="bg-green-500/20 text-green-500 px-2 py-1 rounded text-[10px] sm:text-xs font-semibold whitespace-nowrap hidden sm:inline-block">
                                 Ücretsiz
                               </span>
                             ) : (
-                              <span className="bg-black text-gray-300 px-2 py-1 rounded text-[10px] sm:text-xs border border-orange-500/30 whitespace-nowrap">
+                              <span className="bg-black text-gray-300 px-2 py-1 rounded text-[10px] sm:text-xs border border-orange-500/30 whitespace-nowrap hidden sm:inline-block">
                                 Premium
                               </span>
                             )}
