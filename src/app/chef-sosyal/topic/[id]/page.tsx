@@ -97,6 +97,39 @@ export default async function TopicDetailPage({ params }: TopicDetailPageProps) 
     )
   }
 
+  // Fetch initial like status if user is logged in
+  let initialIsLiked = false;
+  let initialLikedComments: string[] = [];
+
+  if (session?.user?.id) {
+    const userId = session.user.id;
+
+    // Check topic like
+    const topicLike = await prisma.topicLike.findUnique({
+      where: {
+        userId_topicId: {
+          userId,
+          topicId: resolvedParams.id
+        }
+      }
+    });
+    initialIsLiked = !!topicLike;
+
+    // Check post likes for this topic
+    const postLikes = await prisma.postLike.findMany({
+      where: {
+        userId,
+        post: {
+          topicId: resolvedParams.id
+        }
+      },
+      select: {
+        postId: true
+      }
+    });
+    initialLikedComments = postLikes.map(pl => pl.postId);
+  }
+
   return (
     <TopicDetailClient
       session={session}
@@ -105,6 +138,8 @@ export default async function TopicDetailPage({ params }: TopicDetailPageProps) 
         mediaType: (topic as any).mediaType as 'IMAGE' | 'VIDEO' | null
       }}
       categories={categories}
+      initialIsLiked={initialIsLiked}
+      initialLikedComments={initialLikedComments}
     />
   )
 }

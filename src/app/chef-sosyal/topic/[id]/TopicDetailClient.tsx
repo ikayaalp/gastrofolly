@@ -90,17 +90,19 @@ interface TopicDetailClientProps {
   session: Session | null
   topic: Topic
   categories: CategoryWithCount[]
+  initialIsLiked?: boolean
+  initialLikedComments?: string[]
 }
 
-export default function TopicDetailClient({ session, topic, categories }: TopicDetailClientProps) {
+export default function TopicDetailClient({ session, topic, categories, initialIsLiked = false, initialLikedComments = [] }: TopicDetailClientProps) {
   const [newComment, setNewComment] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [comments, setComments] = useState(topic.posts)
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
   const [replyingToName, setReplyingToName] = useState<string | null>(null)
-  const [isLiked, setIsLiked] = useState(false)
+  const [isLiked, setIsLiked] = useState(initialIsLiked)
   const [likeCount, setLikeCount] = useState(topic.likeCount)
-  const [likedComments, setLikedComments] = useState<Set<string>>(new Set())
+  const [likedComments, setLikedComments] = useState<Set<string>>(new Set(initialLikedComments))
   const [deleting, setDeleting] = useState(false)
   const [isLightboxOpen, setIsLightboxOpen] = useState(false)
   const router = useRouter()
@@ -135,38 +137,6 @@ export default function TopicDetailClient({ session, topic, categories }: TopicD
     e.preventDefault()
     e.stopPropagation()
     setIsLightboxOpen(true)
-  }
-
-  // Initial Check
-  useEffect(() => {
-    if (session?.user?.id) {
-      checkLikeStatus()
-      loadLikedPosts()
-    }
-  }, [session?.user?.id])
-
-  const loadLikedPosts = async () => {
-    try {
-      const response = await fetch(`/api/forum/liked-posts?topicId=${topic.id}`)
-      if (response.ok) {
-        const data = await response.json()
-        setLikedComments(new Set(data.likedPostIds))
-      }
-    } catch (error) {
-      console.error('Error loading liked posts:', error)
-    }
-  }
-
-  const checkLikeStatus = async () => {
-    try {
-      const response = await fetch(`/api/forum/like?topicId=${topic.id}`)
-      if (response.ok) {
-        const data = await response.json()
-        setIsLiked(data.liked)
-      }
-    } catch (error) {
-      console.error('Error checking like status:', error)
-    }
   }
 
   const handleLike = async () => {
