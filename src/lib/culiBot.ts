@@ -3,7 +3,7 @@ import OpenAI from 'openai';
 
 const CULI_EMAIL = 'culi@culinora.com';
 const CULI_NAME = 'Culi (AI Şef)';
-const CULI_AVATAR = 'https://res.cloudinary.com/dtg20d20d/image/upload/v1740255850/culi_avatar_gkg0tz.png'; // Placeholder for Culi's avatar or logo
+const CULI_AVATAR = '/logo.jpeg'; // Culinora C logo
 
 const SYSTEM_PROMPT = `Sen Culinora platformunun uzman, esprili ve bilgili AI şefi "Culi"sin.
 Şu anda "Chef Sosyal" isimli bir yemek tarifleri ve gastronomi forumunda bir kullanıcıya cevap veriyorsun.

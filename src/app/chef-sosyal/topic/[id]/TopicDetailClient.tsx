@@ -11,6 +11,25 @@ import HashtagText from "@/components/forum/HashtagText"
 import ConfirmationModal from "@/components/ui/ConfirmationModal"
 import { getOptimizedMediaUrl } from "@/lib/utils"
 
+// Helper function to colorize @culi mentions
+const renderCommentContent = (content: string) => {
+  if (!content) return null;
+
+  // Split the content by the @culi keyword (case-insensitive)
+  const parts = content.split(/(@culi)/i);
+
+  return (
+    <>
+      {parts.map((part, index) => {
+        if (part.toLowerCase() === '@culi') {
+          return <span key={index} className="text-orange-500 font-bold">{part}</span>;
+        }
+        return <span key={index}>{part}</span>;
+      })}
+    </>
+  );
+};
+
 interface Author {
   id: string
   name: string | null
@@ -449,7 +468,7 @@ export default function TopicDetailClient({ session, topic, categories }: TopicD
                         <span className="text-[#71767b]">•</span>
                         <span className="text-[#71767b]">{formatTimeAgo(comment.createdAt.toString())}</span>
                       </div>
-                      <div className="text-sm text-[#e7e9ea] mb-2 whitespace-pre-wrap">{comment.content}</div>
+                      <div className="text-sm text-[#e7e9ea] mb-2 whitespace-pre-wrap">{renderCommentContent(comment.content)}</div>
                       <div className="flex items-center space-x-4">
                         <button onClick={() => handleCommentLike(comment.id)} className={`flex items-center space-x-1 text-xs font-bold ${likedComments.has(comment.id) ? 'text-orange-500' : 'text-gray-500 hover:text-gray-300'}`}><ThumbsUp className={`h-3 w-3 ${likedComments.has(comment.id) ? 'fill-current' : ''}`} /><span>{comment.likeCount || 0}</span></button>
                         <button onClick={() => handleReplyTo(comment.id, comment.author.name || 'anonim')} className={`flex items-center space-x-1 text-xs font-bold ${replyingTo === comment.id ? 'text-orange-500' : 'text-gray-500 hover:text-gray-300'}`}><MessageCircle className="h-3 w-3" /><span>Yanıtla</span></button>
@@ -468,7 +487,7 @@ export default function TopicDetailClient({ session, topic, categories }: TopicD
                                   <span className="text-[#71767b]">•</span>
                                   <span className="text-[#71767b]">{formatTimeAgo(reply.createdAt.toString())}</span>
                                 </div>
-                                <div className="text-sm text-[#e7e9ea] mb-2 whitespace-pre-wrap">{reply.content}</div>
+                                <div className="text-sm text-[#e7e9ea] mb-2 whitespace-pre-wrap">{renderCommentContent(reply.content)}</div>
                                 <div className="flex items-center space-x-4">
                                   <button onClick={() => handleCommentLike(reply.id)} className={`flex items-center space-x-1 text-xs font-bold ${likedComments.has(reply.id) ? 'text-orange-500' : 'text-gray-500 hover:text-gray-300'}`}><ThumbsUp className={`h-3 w-3 ${likedComments.has(reply.id) ? 'fill-current' : ''}`} /><span>{reply.likeCount || 0}</span></button>
                                   <button onClick={() => handleReplyTo(comment.id, reply.author.name || 'anonim')} className="flex items-center space-x-1 text-xs font-bold text-gray-500 hover:text-gray-300"><MessageCircle className="h-3 w-3" /><span>Yanıtla</span></button>
