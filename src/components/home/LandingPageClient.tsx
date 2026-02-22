@@ -253,9 +253,6 @@ export default function LandingPageClient({
                                     {/* Left Side: Title & Subtitle */}
                                     <div className="text-center md:text-left mb-5 md:mb-0">
                                         <div className="flex items-center justify-center md:justify-start gap-3 mb-2">
-                                            <div className="bg-orange-600/20 p-2 rounded-lg">
-                                                <Crown className="w-8 h-8 text-orange-500" />
-                                            </div>
                                             <h3 className="text-3xl md:text-4xl font-bold text-white tracking-wide">
                                                 Premium
                                             </h3>
