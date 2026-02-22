@@ -185,26 +185,26 @@ function SubscriptionContent() {
                             ]
 
                             return (
-                                <div className="relative w-full max-w-md bg-gradient-to-br from-orange-900/40 to-red-900/40 border-2 border-orange-500/50 rounded-2xl p-8 transition-all duration-300 hover:scale-105">
+                                <div className="relative w-full max-w-sm bg-gradient-to-br from-[#1a1005] to-[#120505] border border-orange-500/30 rounded-2xl p-6 transition-all duration-300 hover:border-orange-500/60 shadow-2xl">
                                     {/* Plan Name */}
                                     <div className="text-center mb-4">
-                                        <h3 className="text-2xl font-bold text-white">Premium Aylık Plan</h3>
+                                        <h3 className="text-lg font-semibold text-orange-400">Premium Aylık Plan</h3>
                                     </div>
 
                                     {/* Icon */}
                                     <div className="flex justify-center mb-4">
-                                        <div className="bg-gradient-to-br from-orange-900 to-red-900 rounded-full p-3 ring-1 ring-white/10">
-                                            <Icon className="h-8 w-8 text-white" />
+                                        <div className="bg-orange-500/10 rounded-full p-2.5 ring-1 ring-orange-500/20">
+                                            <Icon className="h-5 w-5 text-orange-400" />
                                         </div>
                                     </div>
 
                                     {/* Price */}
                                     <div className="text-center mb-6">
-                                        <div className="flex items-center justify-center gap-1">
-                                            <span className="text-5xl font-bold text-white">{plan.price}</span>
-                                            <span className="text-2xl font-bold text-orange-500">₺</span>
+                                        <div className="flex items-baseline justify-center gap-1">
+                                            <span className="text-4xl font-bold text-white">{plan.price}</span>
+                                            <span className="text-xl font-bold text-orange-500">₺</span>
+                                            <span className="text-gray-400 text-sm font-medium ml-1">/ ay</span>
                                         </div>
-                                        <div className="text-gray-400 text-sm mt-1 font-medium">/ Ay</div>
                                     </div>
 
                                     {/* CTA Button */}
