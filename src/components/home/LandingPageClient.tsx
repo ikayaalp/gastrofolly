@@ -201,8 +201,17 @@ export default function LandingPageClient({
                         </button>
                     </div>
                     <div className="flex-1 overflow-y-auto py-4 px-6 flex flex-col gap-6">
+                        <Link href="/subscription" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium text-white hover:text-orange-500 transition-colors">Planlar</Link>
+                        <Link href="/about" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium text-white hover:text-orange-500 transition-colors">Hakkımızda</Link>
+
+                        <Link href="/courses" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium text-orange-500 hover:text-orange-400 transition-colors">
+                            Tüm Kursları Gör
+                        </Link>
+
+                        <div className="border-t border-gray-800 my-2" />
+
                         {!session && (
-                            <div className="flex flex-col gap-3 mb-2">
+                            <div className="flex flex-col gap-3">
                                 <Link href="/auth/signin" onClick={() => setIsMobileMenuOpen(false)} className="w-full text-center border border-gray-600 text-white font-medium py-3 rounded-lg hover:border-gray-500 transition-colors">
                                     Giriş Yap
                                 </Link>
@@ -211,18 +220,6 @@ export default function LandingPageClient({
                                 </Link>
                             </div>
                         )}
-
-                        <Link href="/subscription" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium text-white hover:text-orange-500 transition-colors">Planlar</Link>
-                        <Link href="/about" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium text-white hover:text-orange-500 transition-colors">Hakkımızda</Link>
-
-                        <div className="border-t border-gray-800 my-2" />
-
-                        <div className="flex flex-col gap-2">
-                            <span className="text-xs text-gray-500 uppercase tracking-wider mb-2">Gözat</span>
-                            <Link href="/courses" onClick={() => setIsMobileMenuOpen(false)} className="text-orange-500 hover:text-orange-400 text-lg font-medium transition-colors">
-                                Tüm Kursları Gör
-                            </Link>
-                        </div>
                     </div>
                 </div>
             </div>
