@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-import { ChefHat, Play, ArrowRight, ChevronDown } from "lucide-react";
+import { ChefHat, Play, ArrowRight, ChevronDown, Menu, X } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import UserDropdown from "@/components/ui/UserDropdown";
@@ -47,6 +47,7 @@ export default function LandingPageClient({
     const router = useRouter();
     const { data: session, status } = useSession();
     const [showBrowseMenu, setShowBrowseMenu] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const browseRef = useRef<HTMLDivElement>(null);
 
     // Close browse menu when clicking outside
@@ -156,22 +157,76 @@ export default function LandingPageClient({
                                     <UserDropdown />
                                 ) : (
                                     <>
-                                        <Link href="/auth/signin" className="text-gray-400 hover:text-white text-sm transition-colors">
+                                        <Link href="/auth/signin" className="hidden lg:block text-gray-400 hover:text-white text-sm transition-colors">
                                             Giriş yap
                                         </Link>
                                         <Link
                                             href="/auth/signup"
-                                            className="bg-orange-600 hover:bg-orange-500 text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors"
+                                            className="hidden lg:block bg-orange-600 hover:bg-orange-500 text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors"
                                         >
                                             Kayıt Ol
                                         </Link>
                                     </>
                                 )}
+
+                                {/* Mobile Menu Button */}
+                                <button
+                                    onClick={() => setIsMobileMenuOpen(true)}
+                                    className="lg:hidden p-2 text-gray-400 hover:text-white transition-colors"
+                                >
+                                    <Menu className="w-6 h-6" />
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
             </header>
+
+            {/* Mobile Navigation Drawer */}
+            <div className={`fixed inset-0 z-[60] transform ${isMobileMenuOpen ? "translate-x-0" : "translate-x-full"} transition-transform duration-300 ease-in-out`}>
+                <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)} />
+                <div className="absolute top-0 right-0 bottom-0 w-64 bg-[#121212] border-l border-gray-800 shadow-2xl flex flex-col">
+                    <div className="p-4 border-b border-gray-800 flex justify-end">
+                        <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-gray-400 hover:text-white">
+                            <X className="w-6 h-6" />
+                        </button>
+                    </div>
+                    <div className="flex-1 overflow-y-auto py-4 px-6 flex flex-col gap-6">
+                        <Link href="/subscription" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium text-white hover:text-orange-500 transition-colors">Planlar</Link>
+                        <Link href="/about" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium text-white hover:text-orange-500 transition-colors">Hakkımızda</Link>
+
+                        <div className="border-t border-gray-800 my-2" />
+
+                        <div className="flex flex-col gap-2">
+                            <span className="text-xs text-gray-500 uppercase tracking-wider mb-2">Gözat</span>
+                            {initialCategories.map((cat) => (
+                                <Link
+                                    key={cat.id}
+                                    href={`/category/${cat.id}`}
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className="text-gray-300 hover:text-white transition-colors"
+                                >
+                                    {cat.name}
+                                </Link>
+                            ))}
+                            <Link href="/courses" onClick={() => setIsMobileMenuOpen(false)} className="text-orange-500 mt-2 hover:text-orange-400 font-medium">
+                                Tüm Kursları Gör
+                            </Link>
+                        </div>
+                    </div>
+
+                    {!session && (
+                        <div className="p-6 border-t border-gray-800 flex flex-col gap-3">
+                            <Link href="/auth/signin" onClick={() => setIsMobileMenuOpen(false)} className="w-full text-center border border-gray-600 text-white font-medium py-3 rounded-lg hover:border-gray-500 transition-colors">
+                                Giriş Yap
+                            </Link>
+                            <Link href="/auth/signup" onClick={() => setIsMobileMenuOpen(false)} className="w-full text-center bg-orange-600 text-white font-medium py-3 rounded-lg hover:bg-orange-700 transition-colors">
+                                Kayıt Ol
+                            </Link>
+                        </div>
+                    )}
+                </div>
+            </div>
 
             {/* Hero Section */}
             <section className="pt-32 pb-12 relative z-20 overflow-hidden min-h-[70vh] flex items-center">
