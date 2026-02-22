@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-import { ChefHat, Play, ArrowRight, ChevronDown, Menu, X } from "lucide-react";
+import { ChefHat, Play, ArrowRight, ChevronDown, User, Menu, X } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import UserDropdown from "@/components/ui/UserDropdown";
@@ -129,9 +129,9 @@ export default function LandingPageClient({
                         </div>
 
                         {/* Center - Logo */}
-                        <div className="flex justify-center flex-1">
+                        <div className="flex justify-center md:flex-1 pl-2 sm:pl-0">
                             <Link href="/" className="flex items-center gap-1">
-                                <div className="relative w-8 h-8">
+                                <div className="relative w-7 h-7 sm:w-8 sm:h-8">
                                     <Image
                                         src="/logo.jpeg"
                                         alt="C"
@@ -139,7 +139,7 @@ export default function LandingPageClient({
                                         className="object-contain"
                                     />
                                 </div>
-                                <span className="text-xl font-bold">
+                                <span className="text-lg sm:text-xl font-bold">
                                     <span className="text-orange-500">ulin</span>
                                     <span className="text-white">ora</span>
                                 </span>
@@ -162,22 +162,26 @@ export default function LandingPageClient({
                             <div className="hidden lg:block w-px h-5 bg-gray-700 mx-2"></div>
 
                             {/* Auth Links / User Profile */}
-                            <div className="flex items-center gap-2 sm:gap-4">
+                            <div className="flex items-center gap-2 sm:gap-4 shrink-0">
                                 {status === "loading" ? (
                                     <div className="w-8 h-8 rounded-full bg-gray-800 animate-pulse "></div>
                                 ) : session ? (
                                     <UserDropdown />
                                 ) : (
-                                    // Make auth links visible on BOTH desktop and mobile
                                     <>
-                                        <Link href="/auth/signin" className="text-gray-400 hover:text-white text-xs sm:text-sm font-medium transition-colors">
-                                            Giriş yap
-                                        </Link>
-                                        <Link
-                                            href="/auth/signup"
-                                            className="bg-orange-600 hover:bg-orange-500 text-white text-xs sm:text-sm font-semibold px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg transition-colors whitespace-nowrap"
-                                        >
-                                            Kayıt Ol
+                                        <div className="hidden lg:flex items-center gap-4">
+                                            <Link href="/auth/signin" className="text-gray-400 hover:text-white text-sm font-medium transition-colors whitespace-nowrap">
+                                                Giriş yap
+                                            </Link>
+                                            <Link
+                                                href="/auth/signup"
+                                                className="bg-orange-600 hover:bg-orange-500 text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors whitespace-nowrap"
+                                            >
+                                                Kayıt Ol
+                                            </Link>
+                                        </div>
+                                        <Link href="/auth/signin" className="lg:hidden text-gray-400 hover:text-white p-2">
+                                            <User className="w-6 h-6" />
                                         </Link>
                                     </>
                                 )}
@@ -204,17 +208,7 @@ export default function LandingPageClient({
 
                         <div className="flex flex-col gap-2">
                             <span className="text-xs text-gray-500 uppercase tracking-wider mb-2">Gözat</span>
-                            {initialCategories.map((cat) => (
-                                <Link
-                                    key={cat.id}
-                                    href={`/category/${cat.id}`}
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                    className="text-gray-300 hover:text-white transition-colors"
-                                >
-                                    {cat.name}
-                                </Link>
-                            ))}
-                            <Link href="/courses" onClick={() => setIsMobileMenuOpen(false)} className="text-orange-500 mt-2 hover:text-orange-400 font-medium">
+                            <Link href="/courses" onClick={() => setIsMobileMenuOpen(false)} className="text-orange-500 hover:text-orange-400 text-lg font-medium transition-colors">
                                 Tüm Kursları Gör
                             </Link>
                         </div>
