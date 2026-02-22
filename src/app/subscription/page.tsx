@@ -15,6 +15,7 @@ function SubscriptionContent() {
     const courseId = searchParams.get("courseId")
     const planParam = searchParams.get("plan") // URL'den plan parametresini al
     const [loading, setLoading] = useState<string | null>(null)
+    const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly")
 
     const handleSubscription = (planName: string) => {
         if (!session) {
@@ -159,21 +160,58 @@ function SubscriptionContent() {
                         </p>
                     </div>
 
+                    {/* Billing Toggle */}
+                    <div className="flex justify-center mb-8">
+                        <div className="bg-[#1a1005] p-1.5 rounded-2xl border border-orange-500/30 inline-flex items-center shadow-xl">
+                            <button
+                                onClick={() => setBillingPeriod("monthly")}
+                                className={`px-6 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 ${billingPeriod === "monthly"
+                                        ? "bg-gradient-to-r from-orange-600 to-red-600 text-white shadow-lg"
+                                        : "text-gray-400 hover:text-white"
+                                    }`}
+                            >
+                                Aylık
+                            </button>
+                            <button
+                                onClick={() => setBillingPeriod("yearly")}
+                                className={`px-6 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 flex items-center gap-2 ${billingPeriod === "yearly"
+                                        ? "bg-gradient-to-r from-orange-600 to-red-600 text-white shadow-lg"
+                                        : "text-gray-400 hover:text-white"
+                                    }`}
+                            >
+                                Yıllık
+                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${billingPeriod === "yearly"
+                                        ? "bg-white/20 text-white"
+                                        : "bg-green-500/20 text-green-400"
+                                    }`}>
+                                    %20 İndirim
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+
                     {/* Pricing Card */}
                     <div className="flex justify-center mb-16">
                         {(() => {
+                            const isYearly = billingPeriod === "yearly"
+                            const basePrice = 299
+                            const yearlyPrice = Math.round(basePrice * 12 * 0.8)
+                            const displayPrice = isYearly ? yearlyPrice.toString() : basePrice.toString()
+                            const displayPeriod = isYearly ? "yıl" : "ay"
+
                             const plan = {
-                                name: "Aylık",
-                                price: "299",
-                                period: "Ay",
-                                total: "299 ₺ / Ay",
+                                name: isYearly ? "Yıllık" : "Aylık",
+                                price: displayPrice,
+                                period: displayPeriod,
+                                total: `${displayPrice} ₺ / ${displayPeriod}`,
+                                planName: isYearly ? "Premium Yıllık" : "Premium",
                                 icon: Crown,
                                 color: "from-orange-900 to-red-900",
                                 borderColor: "border-orange-500/50",
                                 buttonColor: "bg-orange-600 hover:bg-orange-700",
                             }
                             const Icon = plan.icon
-                            const isLoading = loading === plan.name
+                            const isLoading = loading === plan.planName
                             const commonFeatures = [
                                 "Tüm kurslara sınırsız erişim",
                                 "Yeni içeriklere anında erişim",
@@ -188,7 +226,7 @@ function SubscriptionContent() {
                                 <div className="relative w-full max-w-sm bg-gradient-to-br from-[#1a1005] to-[#120505] border border-orange-500/30 rounded-2xl p-6 transition-all duration-300 hover:border-orange-500/60 shadow-2xl">
                                     {/* Plan Name */}
                                     <div className="text-center mb-4">
-                                        <h3 className="text-lg font-semibold text-orange-400">Premium Aylık Plan</h3>
+                                        <h3 className="text-lg font-semibold text-orange-400">Premium {plan.name} Plan</h3>
                                     </div>
 
                                     {/* Icon */}
@@ -203,13 +241,18 @@ function SubscriptionContent() {
                                         <div className="flex items-baseline justify-center gap-1">
                                             <span className="text-4xl font-bold text-white">{plan.price}</span>
                                             <span className="text-xl font-bold text-orange-500">₺</span>
-                                            <span className="text-gray-400 text-sm font-medium ml-1">/ ay</span>
+                                            <span className="text-gray-400 text-sm font-medium ml-1">/ {plan.period}</span>
                                         </div>
+                                        {isYearly && (
+                                            <div className="text-green-400 text-xs font-semibold mt-2">
+                                                Aylık sadece {Math.round(yearlyPrice / 12)} ₺'ye denk gelir!
+                                            </div>
+                                        )}
                                     </div>
 
                                     {/* CTA Button */}
                                     <button
-                                        onClick={() => handleSubscription("Premium")}
+                                        onClick={() => handleSubscription(plan.planName)}
                                         disabled={!!loading}
                                         className="w-full bg-orange-600 hover:bg-orange-700 text-white text-base font-bold py-3 rounded-xl transition-all duration-300 mb-6 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
                                     >
