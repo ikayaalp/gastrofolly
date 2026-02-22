@@ -161,32 +161,39 @@ function SubscriptionContent() {
                     </div>
 
                     {/* Billing Toggle */}
-                    <div className="flex justify-center mb-8">
-                        <div className="bg-[#1a1005] p-1.5 rounded-2xl border border-orange-500/30 inline-flex items-center shadow-xl">
+                    <div className="flex justify-center mb-10 mt-6">
+                        <div className="bg-[#1a1005] p-1.5 rounded-2xl border border-orange-500/30 inline-flex items-center shadow-xl relative">
+                            {/* Option 1: Aylık */}
                             <button
                                 onClick={() => setBillingPeriod("monthly")}
-                                className={`px-6 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 ${billingPeriod === "monthly"
-                                        ? "bg-gradient-to-r from-orange-600 to-red-600 text-white shadow-lg"
-                                        : "text-gray-400 hover:text-white"
+                                className={`w-32 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 relative z-10 ${billingPeriod === "monthly"
+                                    ? "bg-gradient-to-r from-orange-600 to-red-600 text-white shadow-lg"
+                                    : "text-gray-400 hover:text-white"
                                     }`}
                             >
                                 Aylık
                             </button>
-                            <button
-                                onClick={() => setBillingPeriod("yearly")}
-                                className={`px-6 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 flex items-center gap-2 ${billingPeriod === "yearly"
+
+                            {/* Option 2: Yıllık */}
+                            <div className="relative w-32">
+                                {/* Flying Badge */}
+                                <div className="absolute -top-7 left-1/2 -translate-x-1/2 z-20 whitespace-nowrap">
+                                    <span className="bg-green-500/90 backdrop-blur-sm text-white text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider shadow-sm border border-green-400/50">
+                                        %20 İndirim
+                                    </span>
+                                    {/* Small arrow pointing down */}
+                                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-green-500/90 rotate-45 border-r border-b border-green-400/50"></div>
+                                </div>
+                                <button
+                                    onClick={() => setBillingPeriod("yearly")}
+                                    className={`w-full py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 relative z-10 ${billingPeriod === "yearly"
                                         ? "bg-gradient-to-r from-orange-600 to-red-600 text-white shadow-lg"
                                         : "text-gray-400 hover:text-white"
-                                    }`}
-                            >
-                                Yıllık
-                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${billingPeriod === "yearly"
-                                        ? "bg-white/20 text-white"
-                                        : "bg-green-500/20 text-green-400"
-                                    }`}>
-                                    %20 İndirim
-                                </span>
-                            </button>
+                                        }`}
+                                >
+                                    Yıllık
+                                </button>
+                            </div>
                         </div>
                     </div>
 
