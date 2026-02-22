@@ -1,7 +1,7 @@
 'use client'
 
 import Link from "next/link"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { ChefHat, Search, Bell, Plus, MessageCircle, ThumbsUp, Clock, User, Home, BookOpen, Users, Image as ImageIcon, Play, Menu, X, Filter, Type, ArrowDown, Camera, Film, Bookmark } from "lucide-react"
 import UserDropdown from "@/components/ui/UserDropdown"
@@ -229,7 +229,7 @@ export default function ChefSosyalClient({
   }
 
   // Like/Unlike işlemi
-  const handleLike = async (topicId: string) => {
+  const handleLike = useCallback(async (topicId: string) => {
     if (!session?.user?.id) {
       return
     }
@@ -267,10 +267,10 @@ export default function ChefSosyalClient({
     } catch (error) {
       console.error('Error liking topic:', error)
     }
-  }
+  }, [session?.user?.id]);
 
   // Save/Unsave topic
-  const handleSave = (topicId: string) => {
+  const handleSave = useCallback((topicId: string) => {
     setSavedTopics(prev => {
       const newSet = new Set(prev)
       if (newSet.has(topicId)) {
@@ -282,7 +282,7 @@ export default function ChefSosyalClient({
       localStorage.setItem('chef-saved-topics', JSON.stringify([...newSet]))
       return newSet
     })
-  }
+  }, []);
 
   // Client side fetching logic (for actions that don't change URL like refresh button, though mostly we use URL now)
   const loadTopics = async () => {

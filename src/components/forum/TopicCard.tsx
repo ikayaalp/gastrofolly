@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, memo } from 'react'
 import Link from 'next/link'
 import { ThumbsUp, MessageCircle, MoreHorizontal, User, Play, Clock, Bookmark, ChefHat } from 'lucide-react'
 import HashtagText from './HashtagText'
@@ -55,7 +55,7 @@ interface TopicCardProps {
     currentUserId?: string
 }
 
-export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave, currentUserId }: TopicCardProps) {
+const TopicCard = ({ topic, isLiked, onLike, isSaved, onSave, currentUserId }: TopicCardProps) => {
     const [isLightboxOpen, setIsLightboxOpen] = useState(false)
     const [votingLoading, setVotingLoading] = useState<string | null>(null)
     const [internalPollData, setInternalPollData] = useState(topic.poll)
@@ -116,7 +116,7 @@ export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave, cur
                             </div>
                         ) : (
                             topic.author.image ? (
-                                <img src={getOptimizedMediaUrl(topic.author.image, 'IMAGE')} alt={topic.author.name || ''} className="w-10 h-10 rounded-full object-cover" />
+                                <img src={getOptimizedMediaUrl(topic.author.image, 'IMAGE')} alt={topic.author.name || ''} className="w-10 h-10 rounded-full object-cover" loading="lazy" />
                             ) : (
                                 <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center">
                                     <User className="w-6 h-6 text-gray-400" />
@@ -173,6 +173,7 @@ export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave, cur
                                         src={getOptimizedMediaUrl(topic.mediaUrl, 'IMAGE')}
                                         alt={topic.title}
                                         className="object-contain max-h-[500px] w-full bg-black"
+                                        loading="lazy"
                                     />
                                 )}
                             </div>
@@ -349,6 +350,7 @@ export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave, cur
                                 src={topic.mediaUrl}
                                 alt={topic.title}
                                 className="max-w-full max-h-full object-contain"
+                                loading="lazy"
                             />
                             <button
                                 onClick={() => setIsLightboxOpen(false)}
@@ -374,3 +376,12 @@ export default function TopicCard({ topic, isLiked, onLike, isSaved, onSave, cur
         </>
     )
 }
+
+export default memo(TopicCard, (prevProps, nextProps) => {
+    // Custom comparison function for memo
+    if (prevProps.topic !== nextProps.topic) return false;
+    if (prevProps.isLiked !== nextProps.isLiked) return false;
+    if (prevProps.isSaved !== nextProps.isSaved) return false;
+
+    return true;
+});
