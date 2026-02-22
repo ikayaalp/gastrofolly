@@ -201,6 +201,17 @@ export default function LandingPageClient({
                         </button>
                     </div>
                     <div className="flex-1 overflow-y-auto py-4 px-6 flex flex-col gap-6">
+                        {!session && (
+                            <div className="flex flex-col gap-3 mb-2">
+                                <Link href="/auth/signin" onClick={() => setIsMobileMenuOpen(false)} className="w-full text-center border border-gray-600 text-white font-medium py-3 rounded-lg hover:border-gray-500 transition-colors">
+                                    Giriş Yap
+                                </Link>
+                                <Link href="/auth/signup" onClick={() => setIsMobileMenuOpen(false)} className="w-full text-center bg-orange-600 text-white font-medium py-3 rounded-lg hover:bg-orange-700 transition-colors">
+                                    Kayıt Ol
+                                </Link>
+                            </div>
+                        )}
+
                         <Link href="/subscription" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium text-white hover:text-orange-500 transition-colors">Planlar</Link>
                         <Link href="/about" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium text-white hover:text-orange-500 transition-colors">Hakkımızda</Link>
 
@@ -213,17 +224,6 @@ export default function LandingPageClient({
                             </Link>
                         </div>
                     </div>
-
-                    {!session && (
-                        <div className="p-6 border-t border-gray-800 flex flex-col gap-3">
-                            <Link href="/auth/signin" onClick={() => setIsMobileMenuOpen(false)} className="w-full text-center border border-gray-600 text-white font-medium py-3 rounded-lg hover:border-gray-500 transition-colors">
-                                Giriş Yap
-                            </Link>
-                            <Link href="/auth/signup" onClick={() => setIsMobileMenuOpen(false)} className="w-full text-center bg-orange-600 text-white font-medium py-3 rounded-lg hover:bg-orange-700 transition-colors">
-                                Kayıt Ol
-                            </Link>
-                        </div>
-                    )}
                 </div>
             </div>
 
