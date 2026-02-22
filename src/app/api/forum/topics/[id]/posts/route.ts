@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/mobileAuth'
 import { prisma } from '@/lib/prisma'
 import { containsProfanity } from '@/lib/profanity'
+import { processCuliMention } from '@/lib/culiBot'
 
 export async function GET(
   request: NextRequest,
@@ -143,6 +144,19 @@ export async function POST(
         }
       }
     })
+
+    // --- Culi AI Bot Bot Integration ---
+    // Eğer yorumda @culi geçiyorsa arka planda Culi'nin cevap vermesini tetikle
+    if (content.toLowerCase().includes('@culi')) {
+      // Async call - we don't await so it doesn't block the API response
+      processCuliMention(
+        resolvedParams.id,
+        topic.content, // Orijinal topic içeriğini bağlam için gönderiyoruz
+        content,
+        post.id // Culi'nin cevabı kullanıcının yorumunun altına (reply olarak) gelsin
+      ).catch(console.error);
+    }
+    // -----------------------------------
 
     return NextResponse.json(post, { status: 201 })
   } catch (error) {
