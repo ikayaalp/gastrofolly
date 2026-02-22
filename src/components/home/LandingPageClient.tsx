@@ -71,29 +71,21 @@ export default function LandingPageClient({
             <header className="fixed top-0 left-0 right-0 z-50 bg-black border-b border-gray-800/50">
                 <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
                     <div className="flex items-center justify-between h-16">
-                        {/* Left Side - Logo & Browse & Search */}
-                        <div className="flex items-center gap-3">
-                            {/* Logo */}
-                            <Link href="/" className="flex items-center gap-1 mr-2">
-                                <div className="relative w-8 h-8">
-                                    <Image
-                                        src="/logo.jpeg"
-                                        alt="C"
-                                        fill
-                                        className="object-contain"
-                                    />
-                                </div>
-                                <span className="text-xl font-bold">
-                                    <span className="text-orange-500">ulin</span>
-                                    <span className="text-white">ora</span>
-                                </span>
-                            </Link>
+                        {/* Left Side - Mobile Menu, Desktop Browse & Search */}
+                        <div className="flex items-center gap-2 sm:gap-3 flex-1">
+                            {/* Mobile Menu Button - Left Aligned */}
+                            <button
+                                onClick={() => setIsMobileMenuOpen(true)}
+                                className="lg:hidden p-2 -ml-2 text-gray-400 hover:text-white transition-colors"
+                            >
+                                <Menu className="w-6 h-6" />
+                            </button>
 
-                            {/* Browse Button with Dropdown */}
-                            <div className="relative" ref={browseRef}>
+                            {/* Browse Button with Dropdown (Desktop Only) */}
+                            <div className="relative hidden lg:block" ref={browseRef}>
                                 <button
                                     onClick={() => setShowBrowseMenu(!showBrowseMenu)}
-                                    className="hidden md:flex items-center gap-1.5 bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white text-sm font-medium px-4 py-2 rounded-md transition-colors"
+                                    className="flex items-center gap-1.5 bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white text-sm font-medium px-4 py-2 rounded-md transition-colors"
                                 >
                                     Gözat
                                     <ChevronDown className={`w-4 h-4 transition-transform ${showBrowseMenu ? 'rotate-180' : ''}`} />
@@ -130,14 +122,34 @@ export default function LandingPageClient({
                                 )}
                             </div>
 
-                            {/* Search Bar */}
-                            <HeaderSearch />
+                            {/* Search Bar - Hidden on very small screens, visible on md+ */}
+                            <div className="hidden md:block">
+                                <HeaderSearch />
+                            </div>
+                        </div>
+
+                        {/* Center - Logo */}
+                        <div className="flex justify-center flex-1">
+                            <Link href="/" className="flex items-center gap-1">
+                                <div className="relative w-8 h-8">
+                                    <Image
+                                        src="/logo.jpeg"
+                                        alt="C"
+                                        fill
+                                        className="object-contain"
+                                    />
+                                </div>
+                                <span className="text-xl font-bold">
+                                    <span className="text-orange-500">ulin</span>
+                                    <span className="text-white">ora</span>
+                                </span>
+                            </Link>
                         </div>
 
                         {/* Right Side - Links & CTA */}
-                        <div className="flex items-center">
-                            {/* Nav Links with more spacing */}
-                            <nav className="hidden lg:flex items-center gap-8 mr-8">
+                        <div className="flex items-center justify-end gap-2 sm:gap-4 flex-1">
+                            {/* Nav Links with more spacing (Desktop Only) */}
+                            <nav className="hidden lg:flex items-center gap-8 mr-4">
                                 <Link href="/subscription" className="text-gray-400 hover:text-white text-sm transition-colors">
                                     Planlar
                                 </Link>
@@ -146,36 +158,29 @@ export default function LandingPageClient({
                                 </Link>
                             </nav>
 
-                            {/* Divider */}
-                            <div className="hidden lg:block w-px h-5 bg-gray-700 mr-6"></div>
+                            {/* Divider (Desktop Only) */}
+                            <div className="hidden lg:block w-px h-5 bg-gray-700 mx-2"></div>
 
-                            {/* Auth Links */}
-                            <div className="flex items-center gap-4">
+                            {/* Auth Links / User Profile */}
+                            <div className="flex items-center gap-2 sm:gap-4">
                                 {status === "loading" ? (
                                     <div className="w-8 h-8 rounded-full bg-gray-800 animate-pulse "></div>
                                 ) : session ? (
                                     <UserDropdown />
                                 ) : (
+                                    // Make auth links visible on BOTH desktop and mobile
                                     <>
-                                        <Link href="/auth/signin" className="hidden lg:block text-gray-400 hover:text-white text-sm transition-colors">
+                                        <Link href="/auth/signin" className="text-gray-400 hover:text-white text-xs sm:text-sm font-medium transition-colors">
                                             Giriş yap
                                         </Link>
                                         <Link
                                             href="/auth/signup"
-                                            className="hidden lg:block bg-orange-600 hover:bg-orange-500 text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors"
+                                            className="bg-orange-600 hover:bg-orange-500 text-white text-xs sm:text-sm font-semibold px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg transition-colors whitespace-nowrap"
                                         >
                                             Kayıt Ol
                                         </Link>
                                     </>
                                 )}
-
-                                {/* Mobile Menu Button */}
-                                <button
-                                    onClick={() => setIsMobileMenuOpen(true)}
-                                    className="lg:hidden p-2 text-gray-400 hover:text-white transition-colors"
-                                >
-                                    <Menu className="w-6 h-6" />
-                                </button>
                             </div>
                         </div>
                     </div>
@@ -183,9 +188,9 @@ export default function LandingPageClient({
             </header>
 
             {/* Mobile Navigation Drawer */}
-            <div className={`fixed inset-0 z-[60] transform ${isMobileMenuOpen ? "translate-x-0" : "translate-x-full"} transition-transform duration-300 ease-in-out`}>
+            <div className={`fixed inset-0 z-[60] transform ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"} transition-transform duration-300 ease-in-out`}>
                 <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)} />
-                <div className="absolute top-0 right-0 bottom-0 w-64 bg-[#121212] border-l border-gray-800 shadow-2xl flex flex-col">
+                <div className="absolute top-0 left-0 bottom-0 w-64 bg-[#121212] border-r border-gray-800 shadow-2xl flex flex-col">
                     <div className="p-4 border-b border-gray-800 flex justify-end">
                         <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-gray-400 hover:text-white">
                             <X className="w-6 h-6" />
