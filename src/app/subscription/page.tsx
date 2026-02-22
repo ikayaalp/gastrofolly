@@ -236,13 +236,6 @@ function SubscriptionContent() {
                                         <h3 className="text-lg font-semibold text-orange-400">Premium {plan.name} Plan</h3>
                                     </div>
 
-                                    {/* Icon */}
-                                    <div className="flex justify-center mb-4">
-                                        <div className="bg-orange-500/10 rounded-full p-2.5 ring-1 ring-orange-500/20">
-                                            <Icon className="h-5 w-5 text-orange-400" />
-                                        </div>
-                                    </div>
-
                                     {/* Price */}
                                     <div className="text-center mb-6">
                                         <div className="flex items-baseline justify-center gap-1">
