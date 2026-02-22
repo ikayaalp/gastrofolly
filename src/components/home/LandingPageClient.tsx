@@ -204,7 +204,7 @@ export default function LandingPageClient({
                         <Link href="/subscription" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium text-white hover:text-orange-500 transition-colors">Planlar</Link>
                         <Link href="/about" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium text-white hover:text-orange-500 transition-colors">Hakkımızda</Link>
 
-                        <Link href="/courses" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium text-orange-500 hover:text-orange-400 transition-colors">
+                        <Link href="/courses" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium text-white hover:text-orange-500 transition-colors">
                             Tüm Kursları Gör
                         </Link>
 
