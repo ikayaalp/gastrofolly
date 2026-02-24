@@ -301,18 +301,18 @@ export default async function CoursePage({ params }: CoursePageProps) {
             {/* Course Header */}
             <div className="bg-black border border-black rounded-xl shadow-lg overflow-hidden mb-8">
               {course.imageUrl ? (
-                <div className="relative w-full h-64">
+                <div className="relative w-full aspect-video lg:aspect-[2/1] bg-black/50">
                   <Image
                     src={course.imageUrl}
                     alt={course.title}
                     fill
                     priority
-                    className="object-cover"
+                    className="object-contain"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 100vw"
                   />
                 </div>
               ) : (
-                <div className="w-full h-64 bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center">
+                <div className="w-full aspect-video lg:aspect-[2/1] bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center">
                   <ChefHat className="h-24 w-24 text-white" />
                 </div>
               )}
