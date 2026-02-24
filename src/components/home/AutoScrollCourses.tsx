@@ -67,6 +67,10 @@ export default function AutoScrollCourses({ courses, speed = 1, intervalMs = 16 
 
               {/* Golden Ratio Aspect Container */}
               <div className="aspect-[1.618/1] relative overflow-hidden">
+                {/* Yakında Ribbon */}
+                <div className="absolute top-4 left-4 z-20 bg-orange-600 text-white text-[10px] md:text-xs font-bold px-3 py-1 rounded shadow-lg uppercase tracking-wider">
+                  Yakında
+                </div>
                 {course.imageUrl ? (
                   <img
                     src={course.imageUrl}

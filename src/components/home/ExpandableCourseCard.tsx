@@ -194,6 +194,10 @@ export default function ExpandableCourseCard({ course, showProgress, rank, large
                     onMouseLeave={handleMouseLeave}
                 >
                     <Link href={`/course/${course.id}`} className="block w-full h-full relative">
+                        {/* Yakında Ribbon */}
+                        <div className="absolute top-3 left-3 z-30 bg-orange-600 text-white text-[10px] sm:text-xs font-bold px-2 py-1 rounded shadow-lg uppercase tracking-wider">
+                            Yakında
+                        </div>
                         {course.imageUrl ? (
                             <img
                                 src={course.imageUrl}
@@ -277,6 +281,10 @@ export default function ExpandableCourseCard({ course, showProgress, rank, large
                         >
                             {/* Visual Media Area - Matches Aspect Ratio */}
                             <div className="relative w-full h-48 bg-zinc-950 flex-shrink-0">
+                                {/* Yakında Ribbon */}
+                                <div className="absolute top-3 left-3 z-30 bg-orange-600 text-white text-xs font-bold px-2 py-1 rounded shadow-lg uppercase tracking-wider">
+                                    Yakında
+                                </div>
                                 {course.imageUrl && (
                                     <img
                                         src={course.imageUrl}
