@@ -17,7 +17,7 @@ function CheckoutContent() {
   const courseId = searchParams.get("courseId")
   const refParam = searchParams.get("ref")
 
-  const [billingPeriod, setBillingPeriod] = useState<"monthly" | "6monthly" | "yearly">("monthly")
+  const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly")
   const [referralCode, setReferralCode] = useState(refParam || "")
   const [appliedReferral, setAppliedReferral] = useState<{ code: string, discountPercent: number, influencerName: string } | null>(null)
   const [loading, setLoading] = useState(false)
@@ -67,10 +67,9 @@ function CheckoutContent() {
   const sixMonthlyPrice = basePrice * 6 * 0.9
   const yearlyPrice = basePrice * 12 * 0.8
 
-  // Ara toplam = indirimsiz orijinal fiyat
-  const originalPrice = billingPeriod === "monthly" ? monthlyPrice : billingPeriod === "6monthly" ? basePrice * 6 : basePrice * 12
+  const originalPrice = billingPeriod === "monthly" ? monthlyPrice : basePrice * 12
   // Dönem indirimi
-  const periodDiscountedPrice = billingPeriod === "monthly" ? monthlyPrice : billingPeriod === "6monthly" ? sixMonthlyPrice : yearlyPrice
+  const periodDiscountedPrice = billingPeriod === "monthly" ? monthlyPrice : yearlyPrice
   const periodDiscount = originalPrice - periodDiscountedPrice
 
   // Referral indirim hesaplama (dönem indirimli fiyat üzerinden)
@@ -245,24 +244,7 @@ function CheckoutContent() {
                     <div className="text-sm text-gray-400">/ ay</div>
                   </button>
 
-                  <button
-                    onClick={() => setBillingPeriod("6monthly")}
-                    className={`p-4 rounded-xl border-2 transition-all relative ${billingPeriod === "6monthly"
-                      ? "border-orange-500 bg-orange-500/10"
-                      : "border-gray-700 hover:border-gray-600"
-                      }`}
-                  >
-                    <div className="absolute -top-2 -right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                      %10 İndirim
-                    </div>
-                    <div className="text-white font-semibold mb-1">6 Aylık</div>
-                    <div className="text-sm text-gray-500 line-through">{Math.round(basePrice * 6)}₺</div>
-                    <div className="text-2xl font-bold text-white">{Math.round(sixMonthlyPrice)}₺</div>
-                    <div className="text-sm text-gray-400">/ 6 ay</div>
-                    <div className="text-xs text-green-400 mt-1">
-                      {Math.round(basePrice * 6 - sixMonthlyPrice)}₺ tasarruf
-                    </div>
-                  </button>
+
 
                   <button
                     onClick={() => setBillingPeriod("yearly")}
@@ -352,12 +334,7 @@ function CheckoutContent() {
                     <span>{Math.round(originalPrice)}₺</span>
                   </div>
 
-                  {billingPeriod === "6monthly" && (
-                    <div className="flex justify-between text-green-400">
-                      <span>6 Aylık İndirim (%10)</span>
-                      <span>-{Math.round(periodDiscount)}₺</span>
-                    </div>
-                  )}
+
 
                   {billingPeriod === "yearly" && (
                     <div className="flex justify-between text-green-400">
@@ -379,7 +356,7 @@ function CheckoutContent() {
                       <span>{Math.round(total)}₺</span>
                     </div>
                     <p className="text-sm text-gray-400 mt-1">
-                      {billingPeriod === "monthly" ? "Aylık" : billingPeriod === "6monthly" ? "6 Aylık" : "Yıllık"} ödeme
+                      {billingPeriod === "monthly" ? "Aylık" : "Yıllık"} ödeme
                     </p>
                   </div>
                 </div>

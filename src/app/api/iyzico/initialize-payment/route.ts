@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { createCheckoutForm, IyzicoPaymentRequest } from "@/lib/iyzico"
+import { createSubscriptionCheckoutForm, IyzicoSubscriptionCheckoutRequest } from "@/lib/iyzico"
 
 export async function POST(request: NextRequest) {
     try {
@@ -164,68 +164,49 @@ export async function POST(request: NextRequest) {
         }
         const identityNumber = generateSafeIdentityNumber(user.id)
 
-        // İyzico Checkout Form Ödeme İsteği (Tekil Ödeme)
-        const paymentRequest: IyzicoPaymentRequest = {
+        const pricingPlanReferenceCode = billingPeriod === 'yearly'
+            ? "e19ad21b-2975-4441-b980-f2711c925fd6" // Yıllık Plan Kodu
+            : "4fe91e9e-577e-4e75-9ae3-f1bc9776668d" // Aylık Plan Kodu
+
+        // İyzico Abonelik Ödeme İsteği
+        const paymentRequest: IyzicoSubscriptionCheckoutRequest = {
             locale: "tr",
             conversationId: payment.id,
-            price: priceStr,
-            paidPrice: priceStr,
-            currency: "TRY",
-            basketId: `BASKET_${payment.id}`,
-            paymentGroup: "PRODUCT",
-            paymentChannel: "WEB",
             callbackUrl: callbackUrl,
-            enabledInstallments: [1, 2, 3, 6],
-            buyer: {
-                id: user.id,
+            pricingPlanReferenceCode: pricingPlanReferenceCode,
+            subscriptionInitialStatus: "ACTIVE",
+            customer: {
                 name: name,
                 surname: surname,
-                gsmNumber: gsmNumber,
-                email: user.email,
                 identityNumber: identityNumber,
-                registrationAddress: "Mimar Sinan Mah. Bora Sok. No:1 Uskudar",
-                lastLoginDate: new Date().toISOString().slice(0, 19).replace('T', ' '),
-                registrationDate: user.createdAt.toISOString().slice(0, 19).replace('T', ' '),
-                ip: ip,
-                city: "Istanbul",
-                country: "Turkey",
-                zipCode: "34732"
-            },
-            shippingAddress: {
-                contactName: user.name || "Misafir Kullanıcı",
-                city: "Istanbul",
-                country: "Turkey",
-                address: "Mimar Sinan Mah. Bora Sok. No:1 Uskudar",
-                zipCode: "34732"
-            },
-            billingAddress: {
-                contactName: user.name || "Misafir Kullanıcı",
-                city: "Istanbul",
-                country: "Turkey",
-                address: "Mimar Sinan Mah. Bora Sok. No:1 Uskudar",
-                zipCode: "34732"
-            },
-            basketItems: [
-                {
-                    id: `PREMIUM_${billingPeriod || 'monthly'}`,
-                    name: `Culinora Premium ${periodLabel} Üyelik`,
-                    category1: "Koleksiyon",
-                    category2: "Eğitim",
-                    itemType: "PHYSICAL",
-                    price: priceStr
+                email: user.email,
+                gsmNumber: gsmNumber,
+                billingAddress: {
+                    contactName: user.name || "Misafir Kullanıcı",
+                    city: "Istanbul",
+                    country: "Turkey",
+                    address: "Mimar Sinan Mah. Bora Sok. No:1 Uskudar",
+                    zipCode: "34732"
+                },
+                shippingAddress: {
+                    contactName: user.name || "Misafir Kullanıcı",
+                    city: "Istanbul",
+                    country: "Turkey",
+                    address: "Mimar Sinan Mah. Bora Sok. No:1 Uskudar",
+                    zipCode: "34732"
                 }
-            ]
+            }
         }
 
-        console.log('Initializing Checkout Form (Single Payment):', {
+        console.log('Initializing Checkout Form (Subscription):', {
             paymentId: payment.id,
-            price: priceStr,
             billingPeriod,
+            pricingPlanReferenceCode,
             email: user.email,
             callbackUrl: callbackUrl
         })
 
-        const result = await createCheckoutForm(paymentRequest)
+        const result = await createSubscriptionCheckoutForm(paymentRequest)
 
         if (result && result.status === "success") {
             console.log("Checkout Form initialization successful:", {

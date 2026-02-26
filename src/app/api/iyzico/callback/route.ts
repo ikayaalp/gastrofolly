@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
-import { retrieveCheckoutForm } from "@/lib/iyzico"
+import { retrieveSubscriptionCheckoutForm } from "@/lib/iyzico"
 import { prisma } from "@/lib/prisma"
 import { sendSubscriptionStartedEmail } from "@/lib/emailService"
 
 /**
- * Iyzico ödeme callback endpoint
+ * Iyzico abonelik ödeme callback endpoint
  * Ödeme tamamlandığında Iyzico bu endpoint'e yönlendirir
  * Token ile İyzico'dan ödeme sonucunu kontrol eder
  */
@@ -39,12 +39,12 @@ export async function GET(request: NextRequest) {
           console.log('Token found in referer:', refererToken)
           // Token'ı referer'dan al ve tekrar işle
           searchParams.set('token', refererToken)
-          const result = await retrieveCheckoutForm(refererToken)
+          const result = await retrieveSubscriptionCheckoutForm(refererToken)
 
           console.log('Iyzico callback result (from referer):', result)
 
           // Aynı success/fail kontrolünü yap
-          if (result.status === 'success' && result.paymentStatus === 'SUCCESS') {
+          if (result.status === 'success' && result.subscriptionStatus === 'ACTIVE') {
             // Başarılı ödeme akışı (aşağıdaki kodla aynı)
             const conversationId = result.conversationId
 
@@ -55,10 +55,10 @@ export async function GET(request: NextRequest) {
               }
             })
 
-            if (payments.length === 0 && result.basketId) {
+            if (payments.length === 0 && result.referenceCode) {
               payments = await prisma.payment.findMany({
                 where: {
-                  stripePaymentId: result.basketId,
+                  stripePaymentId: result.referenceCode,
                   status: 'PENDING'
                 }
               })
@@ -95,7 +95,7 @@ export async function GET(request: NextRequest) {
                 where: { id: payment.id },
                 data: {
                   status: 'COMPLETED',
-                  stripePaymentId: result.paymentId || conversationId,
+                  stripePaymentId: result.referenceCode || conversationId,
                 }
               })
 
@@ -362,20 +362,19 @@ export async function GET(request: NextRequest) {
     }
 
     // Token ile ödeme sonucunu İyzico'dan al
-    const result = await retrieveCheckoutForm(token)
+    const result = await retrieveSubscriptionCheckoutForm(token)
 
     console.log('Iyzico callback result:', result)
 
     // Debug: Tüm durumları logla
     console.log('Payment Status Check:', {
       status: result.status,
-      paymentStatus: result.paymentStatus,
-      fraudStatus: result.fraudStatus,
-      shouldProceed: result.status === 'success' && result.paymentStatus === 'SUCCESS'
+      subscriptionStatus: result.subscriptionStatus,
+      shouldProceed: result.status === 'success' && result.subscriptionStatus === 'ACTIVE'
     })
 
     // BAŞARILI ÖDEME - Enrollment oluştur ve my-courses'a yönlendir
-    if (result.status === 'success' && result.paymentStatus === 'SUCCESS') {
+    if (result.status === 'success' && result.subscriptionStatus === 'ACTIVE') {
       const conversationId = result.conversationId
 
       // Bu conversationId ile ilişkili tüm pending payment kayıtlarını bul
@@ -386,19 +385,19 @@ export async function GET(request: NextRequest) {
         }
       })
 
-      // Eğer bulunamadıysa, basketId ile de ara
-      if (payments.length === 0 && result.basketId) {
-        console.log('ConversationId ile bulunamadı, basketId ile arayalım:', result.basketId)
+      // Eğer bulunamadıysa, referenceCode ile de ara
+      if (payments.length === 0 && result.referenceCode) {
+        console.log('ConversationId ile bulunamadı, referenceCode ile arayalım:', result.referenceCode)
         payments = await prisma.payment.findMany({
           where: {
-            stripePaymentId: result.basketId,
+            stripePaymentId: result.referenceCode,
             status: 'PENDING'
           }
         })
       }
 
       if (payments.length === 0) {
-        console.error('Payment records not found for conversationId:', conversationId, 'basketId:', result.basketId)
+        console.error('Payment records not found for conversationId:', conversationId, 'referenceCode:', result.referenceCode)
         // Debug için tüm pending payment'ları listele
         const allPendingPayments = await prisma.payment.findMany({
           where: { status: 'PENDING' },
@@ -439,7 +438,7 @@ export async function GET(request: NextRequest) {
           where: { id: payment.id },
           data: {
             status: 'COMPLETED',
-            stripePaymentId: result.paymentId || conversationId,
+            stripePaymentId: result.referenceCode || conversationId,
           }
         })
 
@@ -532,15 +531,12 @@ export async function GET(request: NextRequest) {
         errorMessage: result.errorMessage,
         errorGroup: result.errorGroup,
         conversationId: result.conversationId,
-        paymentId: result.paymentId,
-        fraudStatus: result.fraudStatus
+        referenceCode: result.referenceCode
       })
 
       // Hata mesajını daha kullanıcı dostu hale getir
       let userFriendlyError = 'payment_failed'
-      if (result.fraudStatus === 1) {
-        userFriendlyError = 'Güvenlik kontrolü nedeniyle ödeme reddedildi. Lütfen farklı bir kart deneyin.'
-      } else if (result.errorCode === '1000') {
+      if (result.errorCode === '1000') {
         userFriendlyError = 'Geçersiz kart bilgileri'
       } else if (result.errorCode === '1001') {
         userFriendlyError = 'Kart bilgileri bulunamadı'
@@ -690,19 +686,19 @@ export async function POST(request: NextRequest) {
     }
 
     // Token ile ödeme sonucunu İyzico'dan al
-    const result = await retrieveCheckoutForm(token)
+    const result = await retrieveSubscriptionCheckoutForm(token)
 
     console.log('Iyzico POST callback result:', {
       status: result.status,
-      paymentStatus: result.paymentStatus,
+      subscriptionStatus: result.subscriptionStatus,
       conversationId: result.conversationId,
-      paymentId: result.paymentId,
+      referenceCode: result.referenceCode,
       errorCode: result.errorCode,
       errorMessage: result.errorMessage
     })
 
     // BAŞARILI ÖDEME
-    if (result.status === 'success' && result.paymentStatus === 'SUCCESS') {
+    if (result.status === 'success' && result.subscriptionStatus === 'ACTIVE') {
       const conversationId = result.conversationId
 
       // Payment kayıtlarını bul
@@ -716,14 +712,14 @@ export async function POST(request: NextRequest) {
         }
       })
 
-      // basketId ile de dene
-      if (payments.length === 0 && result.basketId) {
-        const basketPaymentId = result.basketId.replace('BASKET_', '')
+      // referenceCode ile de dene
+      if (payments.length === 0 && result.referenceCode) {
+        const basketPaymentId = result.referenceCode.replace('BASKET_', '')
         payments = await prisma.payment.findMany({
           where: {
             OR: [
               { id: basketPaymentId, status: 'PENDING' },
-              { stripePaymentId: result.basketId, status: 'PENDING' }
+              { stripePaymentId: result.referenceCode, status: 'PENDING' }
             ]
           }
         })
@@ -754,7 +750,7 @@ export async function POST(request: NextRequest) {
           where: { id: payment.id },
           data: {
             status: 'COMPLETED',
-            stripePaymentId: result.paymentId || token,
+            stripePaymentId: result.referenceCode || token,
           }
         })
 
