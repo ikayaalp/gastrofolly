@@ -163,12 +163,18 @@ function CheckoutContent() {
             // Eğer daha önce form açıldıysa veya denendiyse Iyzico global objelerini sil (yenisinin çalışması için)
             // @ts-ignore
             if (typeof window !== 'undefined') {
-              // @ts-ignore
-              delete window.iyziInit;
-              // @ts-ignore
-              delete window.iyziSubscriptionInit;
-              // @ts-ignore
-              delete window.iyziUcsInit;
+              try {
+                // @ts-ignore
+                window.iyziInit = undefined;
+              } catch (e) { }
+              try {
+                // @ts-ignore
+                window.iyziSubscriptionInit = undefined;
+              } catch (e) { }
+              try {
+                // @ts-ignore
+                window.iyziUcsInit = undefined;
+              } catch (e) { }
             }
 
             // HTML stringini bir geçici DOM yapısına at
