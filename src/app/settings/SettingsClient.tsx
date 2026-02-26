@@ -37,6 +37,7 @@ export default function SettingsClient({ user }: SettingsClientProps) {
   const [showCancelModal, setShowCancelModal] = useState(false)
   const [showPhotoModal, setShowPhotoModal] = useState(false)
   const [showAccountDeleteModal, setShowAccountDeleteModal] = useState(false)
+  const [isCancelling, setIsCancelling] = useState(false)
 
   const [activeTab, setActiveTab] = useState("profile")
   const [profileData, setProfileData] = useState({
@@ -270,10 +271,29 @@ export default function SettingsClient({ user }: SettingsClientProps) {
     { id: "account", name: "Hesap Bilgileri", icon: Award }
   ]
 
-  /* 
-     NOTE: Tek seferlik ödeme modeli - iptal fonksiyonu kaldırıldı.
-     Üyelik süresi dolunca otomatik sona erer, yenileme ödeme ile olur.
-  */
+  const handleCancelSubscription = async () => {
+    setIsCancelling(true)
+    try {
+      const response = await fetch('/api/iyzico/cancel-subscription', {
+        method: 'POST'
+      })
+      const data = await response.json()
+      if (response.ok) {
+        setMessage('Aboneliğiniz başarıyla iptal edildi. Dönem sonuna kadar kullanmaya devam edebilirsiniz.')
+        setTimeout(() => {
+          router.refresh()
+        }, 2000)
+      } else {
+        setMessage(data.error || 'Abonelik iptal edilemedi.')
+      }
+    } catch (error) {
+      console.error('Cancel sub error:', error)
+      setMessage('Bir hata oluştu')
+    } finally {
+      setIsCancelling(false)
+      setShowCancelModal(false)
+    }
+  }
 
   return (
     <div className="space-y-8">
@@ -470,8 +490,19 @@ export default function SettingsClient({ user }: SettingsClientProps) {
                 <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
                   <h4 className="text-white font-semibold mb-2">Premium Bilgileri</h4>
                   <p className="text-gray-400 text-sm mb-4">
-                    Premium üyeliğiniz {user.subscriptionEndDate ? formatDate(user.subscriptionEndDate) : '-'} tarihine kadar geçerlidir. Süre sonunda iptal etmediğiniz sürece üyeliğiniz yenilenecektir.
+                    Premium üyeliğiniz {user.subscriptionEndDate ? formatDate(user.subscriptionEndDate) : '-'} tarihine kadar geçerlidir. {user.subscriptionCancelled ? 'Aboneliğiniz iptal edilmiştir. Süre sonunda yenilenmeyecektir.' : 'Süre sonunda iptal etmediğiniz sürece üyeliğiniz yenilenecektir.'}
                   </p>
+
+                  {!user.subscriptionCancelled && (
+                    <div className="mt-6 pt-6 border-t border-gray-800 flex justify-end">
+                      <button
+                        onClick={() => setShowCancelModal(true)}
+                        className="text-red-400 hover:text-red-300 font-medium text-sm transition-colors px-4 py-2 border border-red-900/50 hover:bg-red-900/20 rounded-lg"
+                      >
+                        Aboneliği İptal Et
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             ) : (
@@ -780,6 +811,18 @@ export default function SettingsClient({ user }: SettingsClientProps) {
         confirmText="Evet, Kaldır"
         isDanger={true}
         isLoading={loading}
+      />
+
+      {/* Subscription Cancel Modal */}
+      <ConfirmationModal
+        isOpen={showCancelModal}
+        onClose={() => setShowCancelModal(false)}
+        onConfirm={handleCancelSubscription}
+        title="Aboneliği İptal Et"
+        message="Premium aboneliğinizi iptal etmek istediğinize emin misiniz? Dönem sonuna kadar Premium özelliklerini kullanmaya devam edebileceksiniz."
+        confirmText="Evet, İptal Et"
+        isDanger={true}
+        isLoading={isCancelling}
       />
 
     </div >
