@@ -156,23 +156,47 @@ function CheckoutContent() {
         } else if (data.checkoutFormContent) {
           const checkoutContainer = document.getElementById('iyzipay-checkout-form')
           if (checkoutContainer) {
-            // Temizle
+            // Container'ı Temizle
             checkoutContainer.innerHTML = ''
 
-            // Scriptlerin çalışması için Range.createContextualFragment kullanımı
-            const range = document.createRange()
-            range.selectNode(checkoutContainer)
-            const fragment = range.createContextualFragment(data.checkoutFormContent)
+            // Eğer daha önce form açıldıysa veya denendiyse Iyzico global objelerini sil (yenisinin çalışması için)
+            // @ts-ignore
+            if (typeof window !== 'undefined') {
+              // @ts-ignore
+              delete window.iyziInit;
+              // @ts-ignore
+              delete window.iyziSubscriptionInit;
+              // @ts-ignore
+              delete window.iyziUcsInit;
+            }
 
-            checkoutContainer.appendChild(fragment)
+            // HTML stringini bir geçici DOM yapısına at
+            const wrapper = document.createElement("div")
+            wrapper.innerHTML = data.checkoutFormContent
+
+            // Script etiketlerini güvenli şekilde sayfaya (DOM'a) dahil et ve çalıştır
+            const scripts = wrapper.getElementsByTagName("script")
+            for (let i = 0; i < scripts.length; i++) {
+              const script = document.createElement("script")
+              script.type = "text/javascript"
+              if (scripts[i].src) {
+                script.src = scripts[i].src
+              } else {
+                script.text = scripts[i].text || scripts[i].innerHTML
+              }
+              document.head.appendChild(script)
+            }
+
+            setLoading(false)
           } else {
             console.error("Iyzico checkout container not found!")
             toast.error("Ödeme formu yüklenemedi (Container eksik).")
+            setLoading(false)
           }
         }
       } else {
         console.error("Payment initiation failed:", data)
-        toast.error(data.error || data.errorMessage || data.message || "Ödeme başlatılamadı. Lütfen bilgilerinizi kontrol edip tekrar deneyiniz.")
+        toast.error(data.error || data.errorMessage || data.message || "Ödeme başlatılamadı. Lütfen bilgilerinizi kontrol ediniz.")
         setLoading(false)
       }
     } catch (error: any) {
