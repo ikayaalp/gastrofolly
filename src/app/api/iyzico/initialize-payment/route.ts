@@ -165,8 +165,8 @@ export async function POST(request: NextRequest) {
         const identityNumber = generateSafeIdentityNumber(user.id)
 
         const pricingPlanReferenceCode = billingPeriod === 'yearly'
-            ? "e19ad21b-2975-4441-b980-f2711c925fd6" // Yıllık Plan Kodu
-            : "4fe91e9e-577e-4e75-9ae3-f1bc9776668d" // Aylık Plan Kodu
+            ? "320d1389-1f42-4509-9d71-d250778ef913" // Yıllık Plan Kodu
+            : "b10db468-1d22-440f-80e2-fe53443e05a4" // Aylık Plan Kodu
 
         // İyzico Abonelik Ödeme İsteği
         const paymentRequest: IyzicoSubscriptionCheckoutRequest = {
