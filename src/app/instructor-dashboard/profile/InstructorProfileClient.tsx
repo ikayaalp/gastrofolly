@@ -149,8 +149,25 @@ export default function InstructorProfileClient({ instructorData, session }: Pro
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-8">
               <Link href="/home" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
-                <ChefHat className="h-8 w-8 text-orange-500" />
-                <span className="text-2xl font-bold text-white">Culinora</span>
+                <div className="relative w-10 h-10">
+
+                  <Image
+
+                    src="/logo.jpeg"
+
+                    alt="C"
+
+                    fill
+
+                    className="object-contain"
+
+                  />
+
+                </div>
+                <span className="text-2xl font-bold tracking-tight">
+                  <span className="text-orange-500">ulin</span>
+                  <span className="text-white">ora</span>
+                </span>
               </Link>
               <div className="h-6 w-px bg-gray-600"></div>
               <div className="flex items-center space-x-2">

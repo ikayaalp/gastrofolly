@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { ChefHat, Award, Download, ArrowLeft, Calendar } from "lucide-react"
 
 interface CertificateDisplayProps {
@@ -106,9 +107,26 @@ export default function CertificateDisplay({ certificate }: CertificateDisplayPr
                             <div className="w-48 h-px bg-gray-700 mx-auto mb-2"></div>
                             <p className="text-sm text-gray-500">Culinora Platform</p>
                         </div>
-                        <div className="flex items-center space-x-2">
-                            <ChefHat className="h-8 w-8 text-orange-500" />
-                            <span className="text-xl font-bold text-white">Culinora</span>
+                        <div className="flex items-center gap-0.5">
+                            <div className="relative w-10 h-10">
+
+                              <Image
+
+                                src="/logo.jpeg"
+
+                                alt="C"
+
+                                fill
+
+                                className="object-contain"
+
+                              />
+
+                            </div>
+                            <span className="text-xl font-bold tracking-tight">
+                              <span className="text-orange-500">ulin</span>
+                              <span className="text-white">ora</span>
+                            </span>
                         </div>
                         <div className="text-center flex-1">
                             <div className="w-48 h-px bg-gray-700 mx-auto mb-2"></div>

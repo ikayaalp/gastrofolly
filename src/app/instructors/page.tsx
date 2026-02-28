@@ -1,5 +1,6 @@
 import { Metadata } from "next";
-import Link from "next/link";
+import Link from "next/link"
+import Image from "next/image";
 
 export const metadata: Metadata = {
     title: "Eğitmenler",
@@ -64,9 +65,26 @@ export default async function InstructorsPage() {
             <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center py-4">
-                        <Link href={session?.user ? "/home" : "/"} className="flex items-center space-x-2">
-                            <ChefHat className="h-8 w-8 text-orange-500" />
-                            <span className="text-2xl font-bold text-white uppercase italic tracking-tighter">Culinora</span>
+                        <Link href={session?.user ? "/home" : "/"} className="flex items-center gap-0.5">
+                            <div className="relative w-10 h-10">
+
+                              <Image
+
+                                src="/logo.jpeg"
+
+                                alt="C"
+
+                                fill
+
+                                className="object-contain"
+
+                              />
+
+                            </div>
+                            <span className="text-2xl font-bold tracking-tight">
+                              <span className="text-orange-500">ulin</span>
+                              <span className="text-white">ora</span>
+                            </span>
                         </Link>
                         <nav className="hidden md:flex space-x-8">
                             <Link href={session?.user ? "/home" : "/"} className="text-gray-300 hover:text-orange-500 transition-all">Ana Sayfa</Link>

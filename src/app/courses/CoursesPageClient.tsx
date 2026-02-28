@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "next/link"
+import Image from "next/image";
 import { ChefHat, Search, Star, ArrowLeft, Clock } from "lucide-react";
 import HeaderSearch from "@/components/layout/HeaderSearch";
 import UserDropdown from "@/components/ui/UserDropdown";
@@ -89,8 +90,25 @@ export default function CoursesPageClient() {
                     <div className="flex items-center justify-between h-16">
                         <div className="flex items-center gap-6">
                             <Link href="/" className="flex items-center gap-2">
-                                <ChefHat className="h-7 w-7 text-orange-500" />
-                                <span className="text-xl font-bold text-white tracking-tight">Culinora</span>
+                                <div className="relative w-9 h-9">
+
+                                  <Image
+
+                                    src="/logo.jpeg"
+
+                                    alt="C"
+
+                                    fill
+
+                                    className="object-contain"
+
+                                  />
+
+                                </div>
+                                <span className="text-xl font-bold tracking-tight">
+                                  <span className="text-orange-500">ulin</span>
+                                  <span className="text-white">ora</span>
+                                </span>
                             </Link>
                             <div className="hidden md:block">
                                 <HeaderSearch />

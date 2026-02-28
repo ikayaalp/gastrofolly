@@ -7,6 +7,7 @@ import CourseSidebar from "@/components/learn/CourseSidebar"
 import CommentsSection from "@/components/course/CommentsSection"
 import RecommendedCourses from "@/components/course/RecommendedCourses"
 import Link from "next/link"
+import Image from "next/image"
 import { Home, BookOpen, Users, MessageCircle, ChefHat, CheckCircle } from "lucide-react"
 import UserDropdown from "@/components/ui/UserDropdown"
 
@@ -325,9 +326,26 @@ export default async function LearnPage({ params, searchParams }: LearnPageProps
       {/* Mobile Top Bar */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-[60] bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
         <div className="flex justify-between items-center py-3 px-4">
-          <Link href="/home" className="flex items-center space-x-2">
-            <ChefHat className="h-6 w-6 text-orange-500" />
-            <span className="text-lg font-bold text-white">Culinora</span>
+          <Link href="/home" className="flex items-center gap-0.5">
+            <div className="relative w-8 h-8">
+
+              <Image
+
+                src="/logo.jpeg"
+
+                alt="C"
+
+                fill
+
+                className="object-contain"
+
+              />
+
+            </div>
+            <span className="text-lg font-bold tracking-tight">
+              <span className="text-orange-500">ulin</span>
+              <span className="text-white">ora</span>
+            </span>
           </Link>
           <UserDropdown />
         </div>

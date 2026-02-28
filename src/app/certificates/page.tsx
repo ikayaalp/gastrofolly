@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
+import Image from "next/image"
 import { ChefHat, Award, Download, Calendar, BookOpen } from "lucide-react"
 import UserDropdown from "@/components/ui/UserDropdown"
 
@@ -42,9 +43,26 @@ export default async function CertificatesPage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center py-4">
                         <div className="flex items-center space-x-8">
-                            <Link href="/home" className="flex items-center space-x-2">
-                                <ChefHat className="h-8 w-8 text-orange-500" />
-                                <span className="text-2xl font-bold">Culinora</span>
+                            <Link href="/home" className="flex items-center gap-0.5">
+                                <div className="relative w-10 h-10">
+
+                                  <Image
+
+                                    src="/logo.jpeg"
+
+                                    alt="C"
+
+                                    fill
+
+                                    className="object-contain"
+
+                                  />
+
+                                </div>
+                                <span className="text-2xl font-bold tracking-tight">
+                                  <span className="text-orange-500">ulin</span>
+                                  <span className="text-white">ora</span>
+                                </span>
                             </Link>
 
                             {/* Navigation */}
