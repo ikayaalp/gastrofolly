@@ -147,7 +147,7 @@ export default async function SettingsPage() {
       </div>
 
       {/* Content */}
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-8">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-24 md:pb-8">
         <SettingsClient user={user} />
       </main>
 
