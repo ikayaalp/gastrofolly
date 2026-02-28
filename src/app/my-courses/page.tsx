@@ -119,7 +119,7 @@ export default function MyCoursesPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-8">
-              <Link href="/home" className="flex items-center gap-1.5">
+              <Link href="/home" className="flex items-center gap-0.5">
                 <div className="relative w-10 h-10">
                   <Image
                     src="/logo.jpeg"
@@ -178,7 +178,7 @@ export default function MyCoursesPage() {
       {/* Mobile Top Bar */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-black/30 backdrop-blur-sm border-b border-black">
         <div className="flex justify-between items-center py-3 px-4">
-          <Link href="/home" className="flex items-center gap-1.5">
+          <Link href="/home" className="flex items-center gap-0.5">
             <div className="relative w-8 h-8">
               <Image
                 src="/logo.jpeg"

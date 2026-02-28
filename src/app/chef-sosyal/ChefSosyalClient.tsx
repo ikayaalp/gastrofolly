@@ -458,7 +458,7 @@ export default function ChefSosyalClient({
         <div className="flex items-center justify-between px-4 h-full max-w-[1600px] mx-auto">
           {/* Sol: Logo */}
           <div className="flex items-center space-x-12">
-            <Link href="/home" className="flex items-center gap-1.5">
+            <Link href="/home" className="flex items-center gap-0.5">
               <div className="relative w-9 h-9">
                 <Image
                   src="/logo.jpeg"
