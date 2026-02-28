@@ -1,6 +1,7 @@
 'use client'
 
 import Link from "next/link"
+import Image from "next/image"
 import { useState, useEffect, useCallback } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { ChefHat, Search, Bell, Plus, MessageCircle, ThumbsUp, Clock, User, Home, BookOpen, Users, Image as ImageIcon, Play, Menu, X, Filter, Type, ArrowDown, Camera, Film, Bookmark } from "lucide-react"
@@ -457,9 +458,19 @@ export default function ChefSosyalClient({
         <div className="flex items-center justify-between px-4 h-full max-w-[1600px] mx-auto">
           {/* Sol: Logo */}
           <div className="flex items-center space-x-12">
-            <Link href="/home" className="flex items-center space-x-2">
-              <ChefHat className="h-8 w-8 text-orange-500" />
-              <span className="text-xl font-bold">Culinora</span>
+            <Link href="/home" className="flex items-center gap-1.5">
+              <div className="relative w-9 h-9">
+                <Image
+                  src="/logo.jpeg"
+                  alt="C"
+                  fill
+                  className="object-contain"
+                />
+              </div>
+              <span className="text-xl font-bold tracking-tight">
+                <span className="text-orange-500">ulin</span>
+                <span className="text-white">ora</span>
+              </span>
             </Link>
           </div>
 
