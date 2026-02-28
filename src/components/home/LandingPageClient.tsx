@@ -130,7 +130,7 @@ export default function LandingPageClient({
 
                         {/* Center - Logo */}
                         <div className="flex justify-center md:flex-1 pl-2 sm:pl-0">
-                            <Link href="/" className="flex items-center gap-1.5 mx-auto">
+                            <Link href="/" className="flex items-center gap-0.5 mx-auto">
                                 <div className="relative w-9 h-9 sm:w-10 sm:h-10">
                                     <Image
                                         src="/logo.jpeg"
