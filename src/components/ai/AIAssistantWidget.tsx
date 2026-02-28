@@ -1,9 +1,8 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { X, Send, Loader2 } from 'lucide-react'
+import { X, Send, Loader2, ChefHat } from 'lucide-react'
 import { usePathname } from 'next/navigation'
-import Image from 'next/image'
 import { useSession } from 'next-auth/react'
 
 interface Message {
@@ -83,8 +82,8 @@ export default function AIAssistantWidget() {
                     {/* Header */}
                     <div className="bg-[#111111] px-5 py-4 flex items-center justify-between border-b border-gray-800">
                         <div className="flex items-center gap-3">
-                            <div className="relative w-10 h-10 flex-shrink-0">
-                                <Image src="/logo.jpeg" alt="Culi" fill className="object-contain" />
+                            <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
+                                <ChefHat className="w-5 h-5 text-white" />
                             </div>
                             <div>
                                 <h3 className="text-white font-bold text-base">Culi</h3>
@@ -106,8 +105,8 @@ export default function AIAssistantWidget() {
                     <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 no-scrollbar bg-[#0a0a0a]">
                         {messages.length === 0 && (
                             <div className="flex flex-col items-center justify-center h-full text-center px-4">
-                                <div className="relative w-20 h-20 mb-4">
-                                    <Image src="/logo.jpeg" alt="Culi" fill className="object-contain" />
+                                <div className="w-20 h-20 bg-orange-500/10 rounded-full flex items-center justify-center mb-4">
+                                    <ChefHat className="w-10 h-10 text-orange-500" />
                                 </div>
                                 <h4 className="text-white font-semibold text-lg mb-1">Merhaba {userName}! 👋</h4>
                                 <p className="text-gray-500 text-sm leading-relaxed">
@@ -142,8 +141,8 @@ export default function AIAssistantWidget() {
                             >
                                 {/* Assistant avatar */}
                                 {msg.role === 'assistant' && (
-                                    <div className="relative w-7 h-7 flex-shrink-0">
-                                        <Image src="/logo.jpeg" alt="Culi" fill className="object-contain" />
+                                    <div className="w-7 h-7 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <ChefHat className="w-4 h-4 text-white" />
                                     </div>
                                 )}
                                 <div
@@ -159,8 +158,8 @@ export default function AIAssistantWidget() {
 
                         {isLoading && (
                             <div className="flex items-end gap-2 justify-start">
-                                <div className="relative w-7 h-7 flex-shrink-0">
-                                    <Image src="/logo.jpeg" alt="Culi" fill className="object-contain" />
+                                <div className="w-7 h-7 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <ChefHat className="w-4 h-4 text-white" />
                                 </div>
                                 <div className="bg-[#1a1a1a] px-4 py-3 rounded-2xl rounded-bl-md border border-gray-800">
                                     <div className="flex items-center gap-1.5">
@@ -210,9 +209,7 @@ export default function AIAssistantWidget() {
                 {isOpen ? (
                     <X className="w-7 h-7 text-white" />
                 ) : (
-                    <div className="relative w-8 h-8">
-                        <Image src="/logo.jpeg" alt="Culi" fill className="object-contain" />
-                    </div>
+                    <ChefHat className="w-8 h-8 text-white" />
                 )}
             </button>
         </>
