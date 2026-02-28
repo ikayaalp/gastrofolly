@@ -131,7 +131,7 @@ export default function LandingPageClient({
                         {/* Center - Logo */}
                         <div className="flex justify-center md:flex-1 pl-2 sm:pl-0">
                             <Link href="/" className="flex items-center gap-0.5 mx-auto">
-                                <div className="relative w-9 h-9 sm:w-10 sm:h-10">
+                                <div className="relative w-10 h-10">
                                     <Image
                                         src="/logo.jpeg"
                                         alt="C"
@@ -139,7 +139,7 @@ export default function LandingPageClient({
                                         className="object-contain"
                                     />
                                 </div>
-                                <span className="text-xl sm:text-2xl font-bold tracking-tight">
+                                <span className="text-2xl font-bold tracking-tight">
                                     <span className="text-orange-500">ulin</span>
                                     <span className="text-white">ora</span>
                                 </span>
