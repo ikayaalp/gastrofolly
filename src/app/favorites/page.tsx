@@ -4,6 +4,7 @@ import { useFavorites } from '@/contexts/FavoritesContext'
 import { useSession } from 'next-auth/react'
 import { ChefHat, Heart, Trash2, Home, BookOpen, MessageCircle, Search, Users } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 import UserDropdown from '@/components/ui/UserDropdown'
 
 export default function FavoritesPage() {

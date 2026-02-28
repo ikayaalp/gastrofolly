@@ -22,7 +22,7 @@ export default async function ContactPage() {
           <div className="flex justify-between items-center py-4">
             {session?.user ? (
               <div className="flex items-center space-x-8">
-                <Link href="/home" className="flex items-center gap-0.5">
+                <Link href="/home" className="flex items-center gap-1.5">
                   <div className="relative w-10 h-10">
                     <Image
                       src="/logo.jpeg"
@@ -66,7 +66,7 @@ export default async function ContactPage() {
               </div>
             ) : (
               <>
-                <Link href="/" className="flex items-center gap-0.5">
+                <Link href="/" className="flex items-center gap-1.5">
                   <div className="relative w-10 h-10">
                     <Image
                       src="/logo.jpeg"
@@ -121,7 +121,7 @@ export default async function ContactPage() {
       {/* Mobile Top Bar */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
         <div className="flex justify-between items-center py-3 px-4">
-          <Link href="/home" className="flex items-center gap-0.5">
+          <Link href="/home" className="flex items-center gap-1.5">
             <div className="relative w-8 h-8">
               <Image
                 src="/logo.jpeg"
