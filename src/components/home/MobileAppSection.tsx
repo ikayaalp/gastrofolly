@@ -55,15 +55,7 @@ export default function MobileAppSection() {
                             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-[#222222] rounded-b-2xl z-20" />
                         </div>
 
-                        {/* Floating Badges */}
-                        <motion.div
-                            animate={{ y: [0, -10, 0] }}
-                            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                            className="absolute -top-4 right-1/4 md:right-1/3 bg-orange-600 text-white p-3 rounded-2xl shadow-xl z-20 flex items-center gap-2"
-                        >
-                            <PlayIcon size={20} fill="white" />
-                            <span className="text-sm font-bold">4K Dersler</span>
-                        </motion.div>
+
                     </motion.div>
 
                     {/* Content */}
