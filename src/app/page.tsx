@@ -139,70 +139,37 @@ async function getLandingData() {
     instructorsPromise
   ]);
 
-  // 5. Sample Instructors (Mock - High Quality Images)
+  // 5. Sample Instructors (Mock - High Quality AI Images)
   const sampleInstructors = [
     {
       id: "mock-1",
       name: "Şef Kemal Can",
-      image: "https://images.unsplash.com/photo-1577219491135-ce39a730fbaf?auto=format&fit=crop&q=80&w=600"
+      image: "/instructors/kemal.png"
     },
     {
       id: "mock-2",
       name: "Şef Ömer Faruk",
-      image: "https://images.unsplash.com/photo-1583394828560-ad4807e60744?auto=format&fit=crop&q=80&w=600"
+      image: "/instructors/omer.png"
     },
     {
       id: "mock-3",
       name: "Şef Murat Yıldız",
-      image: "https://images.unsplash.com/photo-1595273670150-db0a3d395797?auto=format&fit=crop&q=80&w=600"
+      image: "/instructors/murat.png"
     },
     {
       id: "mock-4",
       name: "Şef Selin Kaya",
-      image: "https://images.unsplash.com/photo-1583394293214-28ded15ee548?auto=format&fit=crop&q=80&w=600"
+      image: "/instructors/selin.png"
     },
     {
       id: "mock-5",
       name: "Şef Ayşe Demir",
-      image: "https://images.unsplash.com/photo-1541614101331-1a5a3a194e90?auto=format&fit=crop&q=80&w=600"
-    },
-    {
-      id: "mock-6",
-      name: "Şef Zeynep Ak",
-      image: "https://images.unsplash.com/photo-1590604166326-77871694f284?auto=format&fit=crop&q=80&w=600"
-    },
-    {
-      id: "mock-7",
-      name: "Şef Caner Tekin",
-      image: "https://images.unsplash.com/photo-1544145945-f904253db0ad?auto=format&fit=crop&q=80&w=600"
-    },
-    {
-      id: "mock-8",
-      name: "Şef Deniz Bulut",
-      image: "https://images.unsplash.com/photo-1600565193348-f74bd3c7ccdf?auto=format&fit=crop&q=80&w=600"
-    },
-    {
-      id: "mock-9",
-      name: "Şef Burak Güler",
-      image: "https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&q=80&w=600"
-    },
-    {
-      id: "mock-10",
-      name: "Şef Leyla Korkmaz",
-      image: "https://images.unsplash.com/photo-1625631980585-e5faf626f56c?auto=format&fit=crop&q=80&w=600"
+      image: "/instructors/ayse.png"
     }
   ];
 
-  // Combine database instructors with samples (Keep all 10 samples first)
-  // For DB instructors without images, provide a high-quality fallback from the mock list
-  const instructors = [
-    ...sampleInstructors,
-    ...dbInstructors.map((i, idx) => ({
-      ...i,
-      name: i.name || 'Misafir Şef',
-      image: i.image || sampleInstructors[idx % sampleInstructors.length].image
-    }))
-  ].slice(0, 15);
+  // Combine database instructors with samples (Only show 5 AI chefs as requested)
+  const instructors = [...sampleInstructors].slice(0, 5);
 
   // Format featured courses to match interface (handle nulls)
   const formattedFeatured = featured.map(course => ({
