@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { ChefHat, Search, ChevronDown, Play, Users, Star, BookOpen, ArrowLeft, Filter, SlidersHorizontal, Clock } from "lucide-react";
 
 interface Category {
@@ -99,11 +100,19 @@ export default function CategoryPage() {
                 <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
                     <div className="flex items-center justify-between h-16">
                         <Link href="/" className="flex items-center gap-2">
-                            <ChefHat className="h-6 w-6 text-orange-500" />
-                            <span className="text-lg font-extrabold text-white tracking-tight">Culinora</span>
+                            <div className="relative w-9 h-9">
+                                <Image
+                                    src="/logo.jpeg"
+                                    alt="C"
+                                    fill
+                                    className="object-contain"
+                                />
+                            </div>
+                            <span className="text-xl font-bold tracking-tight">
+                                <span className="text-orange-500">ulin</span>
+                                <span className="text-white">ora</span>
+                            </span>
                         </Link>
-
-
 
                         <div className="flex items-center gap-4">
                             <Link href="/auth/signin" className="text-gray-400 hover:text-white text-xs font-medium uppercase tracking-wide transition-colors">

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
+import Image from "next/image"
 import { ChefHat, Mail, CheckCircle, AlertCircle, RefreshCw } from "lucide-react"
 
 function VerifyEmailForm() {
@@ -48,7 +49,7 @@ function VerifyEmailForm() {
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault()
     const pastedData = e.clipboardData.getData('text').replace(/\D/g, '')
-    
+
     if (pastedData.length === 6) {
       const newCode = pastedData.split('')
       setCode(newCode)
@@ -58,7 +59,7 @@ function VerifyEmailForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     const verificationCode = code.join('')
     if (verificationCode.length !== 6) {
       setError('Lütfen 6 haneli kodu giriniz')
@@ -155,7 +156,7 @@ function VerifyEmailForm() {
                 <span>{error}</span>
               </div>
             )}
-            
+
             {success && (
               <div className="bg-green-900/50 border border-green-700 text-green-400 px-4 py-3 rounded-md flex items-start space-x-2">
                 <CheckCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
@@ -251,7 +252,14 @@ function VerifyEmailForm() {
 
         <div className="text-center">
           <Link href="/" className="flex items-center justify-center space-x-2 text-gray-400 hover:text-white">
-            <ChefHat className="h-5 w-5" />
+            <div className="relative w-6 h-6">
+              <Image
+                src="/logo.jpeg"
+                alt="C"
+                fill
+                className="object-contain"
+              />
+            </div>
             <span>Culinora&apos;a Dön</span>
           </Link>
         </div>

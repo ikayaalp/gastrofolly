@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
+import Image from "next/image"
 import { ChefHat, Lock, Eye, EyeOff, CheckCircle, AlertCircle, Check, X } from "lucide-react"
 import { validatePassword, getStrengthColor, getStrengthText } from "@/lib/passwordValidator"
 
@@ -20,7 +21,7 @@ function ResetPasswordForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState(false)
-  
+
   // Şifre validasyonu
   const passwordValidation = validatePassword(formData.password)
 
@@ -123,7 +124,7 @@ function ResetPasswordForm() {
                 <span>{error}</span>
               </div>
             )}
-            
+
             {success && (
               <div className="bg-green-900/50 border border-green-700 text-green-400 px-4 py-3 rounded-md">
                 <div className="flex items-center space-x-2">
@@ -165,25 +166,24 @@ function ResetPasswordForm() {
                   )}
                 </button>
               </div>
-              
+
               {/* Şifre Gücü Göstergesi */}
               {formData.password && (
                 <div className="mt-2 space-y-2">
                   <div className="flex items-center space-x-2">
                     <div className="flex-1 h-2 bg-gray-700 rounded-full overflow-hidden">
-                      <div 
-                        className={`h-full transition-all duration-300 ${
-                          passwordValidation.strength === 'strong' ? 'bg-green-500 w-full' :
-                          passwordValidation.strength === 'medium' ? 'bg-yellow-500 w-2/3' :
-                          'bg-red-500 w-1/3'
-                        }`}
+                      <div
+                        className={`h-full transition-all duration-300 ${passwordValidation.strength === 'strong' ? 'bg-green-500 w-full' :
+                            passwordValidation.strength === 'medium' ? 'bg-yellow-500 w-2/3' :
+                              'bg-red-500 w-1/3'
+                          }`}
                       />
                     </div>
                     <span className={`text-sm font-medium ${getStrengthColor(passwordValidation.strength)}`}>
                       {getStrengthText(passwordValidation.strength)}
                     </span>
                   </div>
-                  
+
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div className={`flex items-center space-x-1 ${formData.password.length >= 8 ? 'text-green-400' : 'text-gray-400'}`}>
                       {formData.password.length >= 8 ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
@@ -251,7 +251,14 @@ function ResetPasswordForm() {
 
         <div className="text-center">
           <Link href="/" className="flex items-center justify-center space-x-2 text-gray-400 hover:text-white">
-            <ChefHat className="h-5 w-5" />
+            <div className="relative w-6 h-6">
+              <Image
+                src="/logo.jpeg"
+                alt="C"
+                fill
+                className="object-contain"
+              />
+            </div>
             <span>Culinora&apos;a Dön</span>
           </Link>
         </div>
