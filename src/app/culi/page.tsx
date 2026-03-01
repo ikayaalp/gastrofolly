@@ -114,6 +114,18 @@ export default function CuliPage() {
                 const createData = await createRes.json()
                 convId = createData.conversation.id
                 setActiveConversationId(convId)
+
+                // Max 10 conversations: delete oldest if exceeded
+                const listRes = await fetch('/api/culi/conversations')
+                const listData = await listRes.json()
+                const allConvs = listData.conversations || []
+                if (allConvs.length > 10) {
+                    // Delete the oldest ones (they're sorted by updatedAt desc)
+                    const toDelete = allConvs.slice(10)
+                    for (const old of toDelete) {
+                        await fetch(`/api/culi/conversations/${old.id}`, { method: 'DELETE' })
+                    }
+                }
             }
 
             const res = await fetch('/api/culi/chat', {
@@ -282,15 +294,6 @@ export default function CuliPage() {
                         )}
                     </div>
 
-                    {/* Sidebar Footer */}
-                    <div className="p-3 border-t border-gray-800">
-                        <div className="flex items-center gap-2 px-2">
-                            <div className="w-8 h-8 rounded-full bg-orange-600 flex items-center justify-center text-white text-sm font-bold">
-                                {session.user.name?.charAt(0) || '?'}
-                            </div>
-                            <span className="text-sm text-gray-300 truncate">{session.user.name}</span>
-                        </div>
-                    </div>
                 </div>
 
                 {/* Chat Area */}
