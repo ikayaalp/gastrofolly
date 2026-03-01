@@ -108,7 +108,7 @@ async function getLandingData() {
         }
       },
       take: 5
-    }).then(courses => courses.map(course => {
+    }).then(courses => courses.map((course: any) => {
       const totalLessons = course._count.lessons || 0;
       const completedLessons = course.progress.length;
       const percentage = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
@@ -120,11 +120,23 @@ async function getLandingData() {
     }) as any);
   }
 
+  // 4. Fetch Instructors
+  const instructorsPromise = prisma.user.findMany({
+    where: { role: 'INSTRUCTOR' },
+    select: {
+      id: true,
+      name: true,
+      image: true
+    },
+    take: 8
+  });
+
   // Execute all queries in parallel
-  const [categoriesData, featured, userCourses] = await Promise.all([
+  const [categoriesData, featured, userCourses, instructors] = await Promise.all([
     categoriesPromise,
     featuredPromise,
-    userCoursesPromise
+    userCoursesPromise,
+    instructorsPromise
   ]);
 
   // Format featured courses to match interface (handle nulls)
@@ -139,17 +151,22 @@ async function getLandingData() {
 
   // Format categories
   const categories = categoriesData
-    .filter(c => c._count.courses > 0)
-    .map(c => ({
+    .filter((c: any) => c._count.courses > 0)
+    .map((c: any) => ({
       id: c.id,
       name: c.name,
       slug: c.slug,
       courseCount: c._count.courses
     }));
 
-  return { categories, featured: formattedFeatured, userCourses };
-}
+  // Format instructors
+  const formattedInstructors = instructors.map(i => ({
+    ...i,
+    name: i.name || 'Misafir Şef'
+  }));
 
+  return { categories, featured: formattedFeatured, userCourses, instructors: formattedInstructors };
+}
 
 import { redirect } from "next/navigation";
 
@@ -161,8 +178,8 @@ export default async function LandingPage() {
     redirect("/home");
   }
 
-  // Server Component Data Fetching (no session needed since user is not logged in)
-  const { categories, featured, userCourses } = await getLandingData();
+  // Server Component Data Fetching
+  const { categories, featured, userCourses, instructors } = await getLandingData();
 
   return (
     <>
@@ -170,6 +187,7 @@ export default async function LandingPage() {
         initialCategories={categories}
         initialFeatured={featured}
         initialUserCourses={userCourses}
+        initialInstructors={instructors}
       />
       <AIAssistantWidget />
     </>

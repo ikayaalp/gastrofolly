@@ -10,7 +10,11 @@ import { useRouter } from "next/navigation";
 import Footer from "@/components/layout/Footer";
 import AutoScrollCourses from "@/components/home/AutoScrollCourses";
 import FAQSection from "@/components/home/FAQSection";
-import { Crown } from "lucide-react";
+import { Crown, Award, BookOpen, Smartphone } from "lucide-react";
+import WhyCulinora from "@/components/home/WhyCulinora";
+import InstructorsSection from "@/components/home/InstructorsSection";
+import ChefAIFeature from "@/components/home/ChefAIFeature";
+import MobileAppSection from "@/components/home/MobileAppSection";
 
 interface Category {
     id: string;
@@ -33,16 +37,24 @@ interface FeaturedCourse {
     };
 }
 
+interface Instructor {
+    id: string;
+    name: string;
+    image?: string | null;
+}
+
 interface LandingPageProps {
     initialFeatured: FeaturedCourse[];
     initialCategories: Category[];
     initialUserCourses: any[];
+    initialInstructors: Instructor[];
 }
 
 export default function LandingPageClient({
     initialFeatured,
     initialCategories,
-    initialUserCourses
+    initialUserCourses,
+    initialInstructors
 }: LandingPageProps) {
     const router = useRouter();
     const { data: session, status } = useSession();
@@ -401,6 +413,18 @@ export default function LandingPageClient({
             {initialFeatured.length > 0 && (
                 <AutoScrollCourses courses={initialFeatured} />
             )}
+
+            {/* Why Culinora Section */}
+            <WhyCulinora />
+
+            {/* Meet the Chefs Section */}
+            <InstructorsSection instructors={initialInstructors} />
+
+            {/* Chef AI Highlight Section */}
+            <ChefAIFeature />
+
+            {/* Mobile App Showcase Section */}
+            <MobileAppSection />
 
             {/* FAQ Section */}
             <FAQSection />
