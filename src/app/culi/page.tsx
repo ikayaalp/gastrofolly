@@ -313,128 +313,157 @@ export default function CuliPage() {
                     </div>
 
                     {/* Messages | Welcome screen */}
-                    <div className="flex-1 overflow-y-auto">
-                        {messages.length === 0 ? (
-                            /* Welcome Screen */
-                            <div className="flex flex-col items-center justify-center h-full text-center px-4">
-                                <div className="relative w-20 h-20 mb-6">
-                                    <Image src="/logo.jpeg" alt="Culi" fill className="object-contain" />
-                                </div>
-                                <h1 className="text-3xl font-bold text-white mb-2">Merhaba {userName}! 👋</h1>
-                                <p className="text-gray-500 text-base max-w-lg mb-8">
-                                    Ben <span className="text-orange-500 font-semibold">Culi</span>, gastronomi asistanınız.
-                                    Yemek tarifleri, mutfak teknikleri ve kurslar hakkında bana her şeyi sorabilirsiniz.
-                                </p>
-
-                                {/* Quick Suggestions */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl w-full">
-                                    {[
-                                        { emoji: '🍕', text: 'Ev yapımı pizza hamuru nasıl yapılır?' },
-                                        { emoji: '🔪', text: 'Temel bıçak teknikleri nelerdir?' },
-                                        { emoji: '🎓', text: 'Hangi kursu seçmeliyim?' },
-                                        { emoji: '🥘', text: 'Türk mutfağından kolay tarifler' },
-                                    ].map((suggestion, i) => (
-                                        <button
-                                            key={i}
-                                            onClick={() => {
-                                                setInput(suggestion.text)
-                                                inputRef.current?.focus()
-                                            }}
-                                            className="flex items-center gap-3 text-left text-sm bg-gray-900 hover:bg-gray-800 text-gray-300 hover:text-white p-4 rounded-xl border border-gray-800 hover:border-orange-500/30 transition-all"
-                                        >
-                                            <span className="text-2xl">{suggestion.emoji}</span>
-                                            <span>{suggestion.text}</span>
-                                        </button>
-                                    ))}
-                                </div>
+                    {messages.length === 0 ? (
+                        /* Gemini-style Welcome Screen — input centered on page */
+                        <div className="flex-1 flex flex-col items-center justify-center px-4">
+                            <div className="relative w-20 h-20 mb-6">
+                                <Image src="/logo.jpeg" alt="Culi" fill className="object-contain" />
                             </div>
-                        ) : (
-                            /* Messages */
-                            <div className="max-w-3xl mx-auto w-full px-4 py-6 space-y-6">
-                                {messages.map((msg, i) => (
-                                    <div key={i} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                        {msg.role === 'assistant' && (
-                                            <div className="w-8 h-8 rounded-full bg-orange-600 flex items-center justify-center flex-shrink-0 mt-1">
-                                                <ChefHat className="w-4 h-4 text-white" />
+                            <h1 className="text-3xl font-bold text-white mb-2">Merhaba {userName}! 👋</h1>
+                            <p className="text-gray-500 text-base max-w-lg mb-8 text-center">
+                                Ben <span className="text-orange-500 font-semibold">Culi</span>, gastronomi asistanınız.
+                                Yemek tarifleri, mutfak teknikleri ve kurslar hakkında bana her şeyi sorabilirsiniz.
+                            </p>
+
+                            {/* Quick Suggestions */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl w-full mb-8">
+                                {[
+                                    { emoji: '🍕', text: 'Ev yapımı pizza hamuru nasıl yapılır?' },
+                                    { emoji: '🔪', text: 'Temel bıçak teknikleri nelerdir?' },
+                                    { emoji: '🎓', text: 'Hangi kursu seçmeliyim?' },
+                                    { emoji: '🥘', text: 'Türk mutfağından kolay tarifler' },
+                                ].map((suggestion, i) => (
+                                    <button
+                                        key={i}
+                                        onClick={() => {
+                                            setInput(suggestion.text)
+                                            inputRef.current?.focus()
+                                        }}
+                                        className="flex items-center gap-3 text-left text-sm bg-gray-900 hover:bg-gray-800 text-gray-300 hover:text-white p-4 rounded-xl border border-gray-800 hover:border-orange-500/30 transition-all"
+                                    >
+                                        <span className="text-2xl">{suggestion.emoji}</span>
+                                        <span>{suggestion.text}</span>
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* Centered Input */}
+                            <div className="w-full max-w-3xl">
+                                <div className="flex items-end gap-3 bg-[#1a1a1a] border border-gray-700 focus-within:border-orange-500/50 rounded-2xl px-4 py-3 transition-colors">
+                                    <textarea
+                                        ref={inputRef}
+                                        value={input}
+                                        onChange={(e) => setInput(e.target.value)}
+                                        onKeyDown={handleKeyPress}
+                                        placeholder="Culi'ye bir şeyler sor..."
+                                        rows={1}
+                                        className="flex-1 bg-transparent text-white placeholder-gray-500 resize-none focus:outline-none text-sm max-h-32"
+                                        style={{ minHeight: '24px' }}
+                                        disabled={isLoading}
+                                    />
+                                    <button
+                                        onClick={sendMessage}
+                                        disabled={!input.trim() || isLoading}
+                                        className="p-2 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-800 disabled:cursor-not-allowed rounded-xl transition-colors flex-shrink-0"
+                                    >
+                                        <Send className="w-4 h-4 text-white" />
+                                    </button>
+                                </div>
+                                <p className="text-center text-xs text-gray-600 mt-2">
+                                    Culi gastronomi konularında yardımcı olabilir. Yanılabilir.
+                                </p>
+                            </div>
+                        </div>
+                    ) : (
+                        /* Active Conversation — messages + bottom input */
+                        <>
+                            <div className="flex-1 overflow-y-auto">
+                                <div className="max-w-3xl mx-auto w-full px-4 py-6 space-y-6">
+                                    {messages.map((msg, i) => (
+                                        <div key={i} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                            {msg.role === 'assistant' && (
+                                                <div className="w-8 h-8 rounded-full bg-orange-600 flex items-center justify-center flex-shrink-0 mt-1">
+                                                    <ChefHat className="w-4 h-4 text-white" />
+                                                </div>
+                                            )}
+                                            <div
+                                                className={`max-w-[80%] px-4 py-3 text-sm leading-relaxed ${msg.role === 'user'
+                                                    ? 'bg-orange-600 text-white rounded-2xl rounded-br-md'
+                                                    : 'bg-[#1a1a1a] text-gray-200 rounded-2xl rounded-bl-md border border-gray-800'
+                                                    }`}
+                                            >
+                                                {msg.role === 'assistant' ? (
+                                                    <div
+                                                        className="prose prose-invert prose-sm max-w-none [&_li]:text-gray-200 [&_strong]:text-white"
+                                                        dangerouslySetInnerHTML={{ __html: formatContent(msg.content) }}
+                                                    />
+                                                ) : (
+                                                    <p className="whitespace-pre-wrap">{msg.content}</p>
+                                                )}
                                             </div>
-                                        )}
-                                        <div
-                                            className={`max-w-[80%] px-4 py-3 text-sm leading-relaxed ${msg.role === 'user'
-                                                ? 'bg-orange-600 text-white rounded-2xl rounded-br-md'
-                                                : 'bg-[#1a1a1a] text-gray-200 rounded-2xl rounded-bl-md border border-gray-800'
-                                                }`}
-                                        >
-                                            {msg.role === 'assistant' ? (
-                                                <div
-                                                    className="prose prose-invert prose-sm max-w-none [&_li]:text-gray-200 [&_strong]:text-white"
-                                                    dangerouslySetInnerHTML={{ __html: formatContent(msg.content) }}
-                                                />
-                                            ) : (
-                                                <p className="whitespace-pre-wrap">{msg.content}</p>
+                                            {msg.role === 'user' && (
+                                                session.user.image ? (
+                                                    <div className="relative w-8 h-8 rounded-full overflow-hidden flex-shrink-0 mt-1">
+                                                        <Image src={session.user.image} alt={session.user.name || ''} fill className="object-cover" />
+                                                    </div>
+                                                ) : (
+                                                    <div className="w-8 h-8 rounded-full bg-orange-600 flex items-center justify-center flex-shrink-0 mt-1">
+                                                        <span className="text-xs font-bold text-white">{session.user.name?.charAt(0) || '?'}</span>
+                                                    </div>
+                                                )
                                             )}
                                         </div>
-                                        {msg.role === 'user' && (
-                                            session.user.image ? (
-                                                <div className="relative w-8 h-8 rounded-full overflow-hidden flex-shrink-0 mt-1">
-                                                    <Image src={session.user.image} alt={session.user.name || ''} fill className="object-cover" />
-                                                </div>
-                                            ) : (
-                                                <div className="w-8 h-8 rounded-full bg-orange-600 flex items-center justify-center flex-shrink-0 mt-1">
-                                                    <span className="text-xs font-bold text-white">{session.user.name?.charAt(0) || '?'}</span>
-                                                </div>
-                                            )
-                                        )}
-                                    </div>
-                                ))}
+                                    ))}
 
-                                {isLoading && (
-                                    <div className="flex gap-3 justify-start">
-                                        <div className="w-8 h-8 rounded-full bg-orange-600 flex items-center justify-center flex-shrink-0">
-                                            <ChefHat className="w-4 h-4 text-white" />
-                                        </div>
-                                        <div className="bg-[#1a1a1a] px-4 py-3 rounded-2xl rounded-bl-md border border-gray-800">
-                                            <div className="flex items-center gap-1.5">
-                                                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                                                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                                                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                                    {isLoading && (
+                                        <div className="flex gap-3 justify-start">
+                                            <div className="w-8 h-8 rounded-full bg-orange-600 flex items-center justify-center flex-shrink-0">
+                                                <ChefHat className="w-4 h-4 text-white" />
+                                            </div>
+                                            <div className="bg-[#1a1a1a] px-4 py-3 rounded-2xl rounded-bl-md border border-gray-800">
+                                                <div className="flex items-center gap-1.5">
+                                                    <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                                                    <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                                                    <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                                                </div>
                                             </div>
                                         </div>
+                                    )}
+
+                                    <div ref={messagesEndRef} />
+                                </div>
+                            </div>
+
+                            {/* Bottom Input — only when in conversation */}
+                            <div className="border-t border-gray-800 bg-black px-4 py-4">
+                                <div className="max-w-3xl mx-auto">
+                                    <div className="flex items-end gap-3 bg-[#1a1a1a] border border-gray-700 focus-within:border-orange-500/50 rounded-2xl px-4 py-3 transition-colors">
+                                        <textarea
+                                            ref={inputRef}
+                                            value={input}
+                                            onChange={(e) => setInput(e.target.value)}
+                                            onKeyDown={handleKeyPress}
+                                            placeholder="Culi'ye bir şeyler sor..."
+                                            rows={1}
+                                            className="flex-1 bg-transparent text-white placeholder-gray-500 resize-none focus:outline-none text-sm max-h-32"
+                                            style={{ minHeight: '24px' }}
+                                            disabled={isLoading}
+                                        />
+                                        <button
+                                            onClick={sendMessage}
+                                            disabled={!input.trim() || isLoading}
+                                            className="p-2 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-800 disabled:cursor-not-allowed rounded-xl transition-colors flex-shrink-0"
+                                        >
+                                            <Send className="w-4 h-4 text-white" />
+                                        </button>
                                     </div>
-                                )}
-
-                                <div ref={messagesEndRef} />
+                                    <p className="text-center text-xs text-gray-600 mt-2">
+                                        Culi gastronomi konularında yardımcı olabilir. Yanılabilir.
+                                    </p>
+                                </div>
                             </div>
-                        )}
-                    </div>
-
-                    {/* Input Area */}
-                    <div className="border-t border-gray-800 bg-black px-4 py-4">
-                        <div className="max-w-3xl mx-auto">
-                            <div className="flex items-end gap-3 bg-[#1a1a1a] border border-gray-700 focus-within:border-orange-500/50 rounded-2xl px-4 py-3 transition-colors">
-                                <textarea
-                                    ref={inputRef}
-                                    value={input}
-                                    onChange={(e) => setInput(e.target.value)}
-                                    onKeyDown={handleKeyPress}
-                                    placeholder="Culi'ye bir şeyler sor..."
-                                    rows={1}
-                                    className="flex-1 bg-transparent text-white placeholder-gray-500 resize-none focus:outline-none text-sm max-h-32"
-                                    style={{ minHeight: '24px' }}
-                                    disabled={isLoading}
-                                />
-                                <button
-                                    onClick={sendMessage}
-                                    disabled={!input.trim() || isLoading}
-                                    className="p-2 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-800 disabled:cursor-not-allowed rounded-xl transition-colors flex-shrink-0"
-                                >
-                                    <Send className="w-4 h-4 text-white" />
-                                </button>
-                            </div>
-                            <p className="text-center text-xs text-gray-600 mt-2">
-                                Culi gastronomi konularında yardımcı olabilir. Yanılabilir.
-                            </p>
-                        </div>
-                    </div>
+                        </>
+                    )}
                 </div>
             </div>
 
