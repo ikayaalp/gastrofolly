@@ -11,7 +11,7 @@ export async function GET(
         const courses = await prisma.course.findMany({
             where: {
                 categoryId: categoryId,
-                // isPublished: true
+                isPublished: true
             },
             include: {
                 instructor: {

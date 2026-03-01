@@ -168,7 +168,7 @@ export default function CoursesPageClient() {
                                     >
                                         Tüm Kategoriler
                                     </button>
-                                    {categories.map((cat) => (
+                                    {categories.filter(cat => courses.some(course => course.category && course.category.id === cat.id)).map((cat) => (
                                         <button
                                             key={cat.id}
                                             onClick={() => setSelectedCategoryId(cat.id)}
@@ -196,7 +196,7 @@ export default function CoursesPageClient() {
                                             href={`/course/${course.id}`}
                                             className="group block"
                                         >
-                                            <div className="relative aspect-video rounded-xl overflow-hidden mb-4 bg-gray-900 border border-gray-800 shadow-xl">
+                                            <div className="relative aspect-[1.45/1] rounded-xl overflow-hidden mb-4 bg-gray-900 border border-gray-800 shadow-xl">
                                                 <img
                                                     src={getOptimizedMediaUrl(course.imageUrl || 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&q=80', 'IMAGE')}
                                                     alt={course.title}

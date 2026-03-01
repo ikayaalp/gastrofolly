@@ -199,7 +199,7 @@ export default function CategoryPage() {
                                             className="group block"
                                         >
                                             {/* Image Container */}
-                                            <div className="relative aspect-[16/9] rounded-lg overflow-hidden mb-4 bg-gray-800">
+                                            <div className="relative aspect-[1.45/1] rounded-xl overflow-hidden mb-4 bg-gray-900 border border-gray-800 shadow-xl">
                                                 <img
                                                     src={course.imageUrl || 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&q=80'}
                                                     alt={course.title}
