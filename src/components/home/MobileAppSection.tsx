@@ -68,34 +68,20 @@ export default function MobileAppSection() {
                         <h2 className="text-4xl md:text-6xl font-bold text-white mb-8 leading-tight">
                             Mutfakta Her An <span className="text-orange-500">Yanınızda</span>
                         </h2>
-                        <p className="text-gray-400 text-lg mb-10 leading-relaxed">
-                            Culinora mobil uygulaması ile eğitimlerinizi yanınıza alın. Mutfakta tezgah başında, pazarda alışveriş yaparken veya internetin çekmediği anlarda derslerinizi kesintisiz takip edin.
+                        <p className="text-gray-400 text-lg mb-12 leading-relaxed">
+                            Cunilora mobil uygulaması ile eğitimlerinizi yanınıza alın. Mutfakta tezgah başında, pazarda alışveriş yaparken veya internetin çekmediği anlarda derslerinizi kesintisiz takip edin.
                         </p>
 
-                        <ul className="space-y-4 mb-12">
-                            {[
-                                "Dersleri indirin ve çevrimdışı izleyin",
-                                "Malzeme listelerine marketteyken ulaşın",
-                                "Pişirme sürelerini anlık takip edin",
-                                "Şef asistanına sesli olarak danışın"
-                            ].map((item, i) => (
-                                <li key={i} className="flex items-center gap-3 text-gray-300">
-                                    <CheckCircle2 className="text-green-500 w-5 h-5 flex-shrink-0" />
-                                    <span>{item}</span>
-                                </li>
-                            ))}
-                        </ul>
-
                         <div className="flex flex-col sm:flex-row items-center gap-4">
-                            <button className="w-full sm:w-auto flex items-center justify-center gap-3 bg-[#111111] border border-gray-700 hover:border-orange-500 text-white px-8 py-3.5 rounded-2xl transition-all group">
-                                <Apple className="w-7 h-7" />
+                            <button className="w-full sm:w-auto flex items-center justify-center gap-3 bg-white text-black hover:bg-gray-100 px-8 py-3.5 rounded-2xl transition-all shadow-xl shadow-white/5 border border-white">
+                                <Apple className="w-8 h-8 fill-black" />
                                 <div className="text-left">
-                                    <p className="text-[10px] text-gray-400 uppercase font-bold leading-none mb-1">Download on the</p>
+                                    <p className="text-[10px] uppercase font-bold leading-none mb-1 opacity-70">Download on the</p>
                                     <p className="text-xl font-bold leading-none">App Store</p>
                                 </div>
                             </button>
 
-                            <button className="w-full sm:w-auto flex items-center justify-center gap-3 bg-[#111111] border border-gray-700 hover:border-orange-500 text-white px-8 py-3.5 rounded-2xl transition-all group">
+                            <button className="w-full sm:w-auto flex items-center justify-center gap-3 bg-black border border-gray-700 hover:border-gray-500 text-white px-8 py-3.5 rounded-2xl transition-all group">
                                 <PlayIcon className="w-7 h-7 text-white fill-current" />
                                 <div className="text-left">
                                     <p className="text-[10px] text-gray-400 uppercase font-bold leading-none mb-1">Get it on</p>
