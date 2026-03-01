@@ -143,27 +143,27 @@ async function getLandingData() {
   const sampleInstructors = [
     {
       id: "mock-1",
-      name: "Şef Marco Rossi",
+      name: "Şef Kemal Can",
       image: "https://images.unsplash.com/photo-1577219491135-ce39a730fbaf?w=800&q=80"
     },
     {
       id: "mock-2",
-      name: "Şef Elena Rodriguez",
+      name: "Şef Ayşe Demir",
       image: "https://images.unsplash.com/photo-1583394293214-28ded15ee548?w=800&q=80"
     },
     {
       id: "mock-3",
-      name: "Şef Kenji Tanaka",
+      name: "Şef Murat Yıldız",
       image: "https://images.unsplash.com/photo-1595273670150-db0a3d395797?w=800&q=80"
     },
     {
       id: "mock-4",
-      name: "Şef Sarah Jenkins",
+      name: "Şef Selin Kaya",
       image: "https://images.unsplash.com/photo-1625631980585-e5faf626f56c?w=800&q=80"
     },
     {
       id: "mock-5",
-      name: "Şef Marcus Wareing",
+      name: "Şef Ömer Faruk",
       image: "https://images.unsplash.com/photo-1566554273541-37a9ca77b91f?w=800&q=80"
     }
   ];

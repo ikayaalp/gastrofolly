@@ -11,9 +11,7 @@ import Footer from "@/components/layout/Footer";
 import AutoScrollCourses from "@/components/home/AutoScrollCourses";
 import FAQSection from "@/components/home/FAQSection";
 import { Crown, Award, BookOpen, Smartphone } from "lucide-react";
-import WhyCulinora from "@/components/home/WhyCulinora";
 import InstructorsSection from "@/components/home/InstructorsSection";
-import ChefAIFeature from "@/components/home/ChefAIFeature";
 import MobileAppSection from "@/components/home/MobileAppSection";
 
 interface Category {
@@ -414,14 +412,8 @@ export default function LandingPageClient({
                 <AutoScrollCourses courses={initialFeatured} />
             )}
 
-            {/* Why Culinora Section */}
-            <WhyCulinora />
-
             {/* Meet the Chefs Section */}
             <InstructorsSection instructors={initialInstructors} />
-
-            {/* Chef AI Highlight Section */}
-            <ChefAIFeature />
 
             {/* Mobile App Showcase Section */}
             <MobileAppSection />
