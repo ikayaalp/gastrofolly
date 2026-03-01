@@ -183,7 +183,7 @@ const StoryViewer = ({ stories, initialIndex, onClose }: StoryViewerProps) => {
                 {/* Footer (Course Link) - Pointer events auto */}
                 {currentStory.courseId && (
                     <div
-                        className="absolute bottom-8 md:bottom-12 left-0 right-0 p-4 z-20 text-center cursor-pointer pointer-events-auto flex flex-col items-center"
+                        className="absolute bottom-16 md:bottom-12 left-0 right-0 p-4 z-20 text-center cursor-pointer pointer-events-auto flex flex-col items-center"
                         onClick={handleNavigateToCourse}
                     >
                         <div className="flex flex-col items-center text-white animate-bounce-slow hover:text-orange-500 transition-colors">
