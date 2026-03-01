@@ -93,8 +93,8 @@ export default function MobileAppSection() {
                                     <path fill="#1976D2" d="M12 558l253-254 240 254z" transform="scale(.8) translate(40 40)" />
                                 </svg>
                                 <div className="text-left text-white leading-tight">
-                                    <p className="text-[10px] font-semibold uppercase tracking-tighter">Google Play</p>
-                                    <p className="text-xl font-bold -mt-1 whitespace-nowrap">'DEN ALIN</p>
+                                    <p className="text-[10px] font-semibold">Google Play'den</p>
+                                    <p className="text-xl font-bold -mt-1">İndirin</p>
                                 </div>
                             </button>
                         </div>
