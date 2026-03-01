@@ -300,7 +300,30 @@ export default async function LearnPage({ params, searchParams }: LearnPageProps
   const recommendedCourses = await getRecommendedCourses(course.categoryId, course.id)
 
   // Mevcut dersi belirle
-  const currentLessonId = resolvedSearchParams?.lesson || course.lessons[0]?.id
+  let currentLessonId = resolvedSearchParams?.lesson
+
+  // Eğer URL'de lesson parametresi yoksa, kullanıcının en son izlediği dersi bul
+  if (!currentLessonId && progress && progress.length > 0) {
+    // Önce tamamlanmamış en son izlenen dersi bul
+    const lastWatchedIncomplete = [...progress]
+      .filter((p: any) => !p.isCompleted)
+      .sort((a: any, b: any) => new Date(b.watchedAt || 0).getTime() - new Date(a.watchedAt || 0).getTime())[0];
+
+    if (lastWatchedIncomplete) {
+      currentLessonId = lastWatchedIncomplete.lessonId;
+    } else {
+      // Hepsi tamamlandıysa veya tamamlanmamış yoksa en son izlenen dersi aç
+      const lastWatched = [...progress].sort((a: any, b: any) => new Date(b.watchedAt || 0).getTime() - new Date(a.watchedAt || 0).getTime())[0];
+      if (lastWatched) {
+        currentLessonId = lastWatched.lessonId;
+      }
+    }
+  }
+
+  // Son çare olarak ilk dersi aç
+  if (!currentLessonId) {
+    currentLessonId = course.lessons[0]?.id;
+  }
   const lessons: LearnPageLesson[] = course.lessons
   const currentIndex = lessons.findIndex((lesson: LearnPageLesson) => lesson.id === currentLessonId)
   const previousLesson: LearnPageLesson | null = currentIndex > 0 ? lessons[currentIndex - 1] : null

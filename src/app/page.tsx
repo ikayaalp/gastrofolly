@@ -9,12 +9,34 @@ async function getLandingData() {
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
 
-  // 1. Fetch Categories (Small query, mostly static)
+  // 1. Fetch Categories (With 12 latest courses each)
   const categoriesPromise = prisma.category.findMany({
     select: {
       id: true,
       name: true,
       slug: true,
+      courses: {
+        where: { isPublished: true },
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          price: true,
+          imageUrl: true,
+          level: true,
+          instructor: {
+            select: { name: true, image: true }
+          },
+          category: {
+            select: { id: true, name: true }
+          },
+          reviews: {
+            select: { rating: true }
+          }
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 12
+      },
       _count: {
         select: { courses: true }
       }

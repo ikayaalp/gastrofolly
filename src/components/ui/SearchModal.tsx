@@ -35,10 +35,22 @@ interface SearchModalProps {
 
 export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const [query, setQuery] = useState("")
+  const [level, setLevel] = useState("")
+  const [categoryId, setCategoryId] = useState("")
+  const [categoriesList, setCategoriesList] = useState<{ id: string, name: string }[]>([])
   const [courses, setCourses] = useState<Course[]>([])
   const [loading, setLoading] = useState(false)
   const [hasSearched, setHasSearched] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    fetch('/api/categories')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) setCategoriesList(data)
+      })
+      .catch(err => console.error("Error loading categories", err))
+  }, [])
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
@@ -48,7 +60,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
   useEffect(() => {
     const searchCourses = async () => {
-      if (query.trim().length < 2) {
+      if (query.trim().length < 2 && !level && !categoryId) {
         setCourses([])
         setHasSearched(false)
         return
@@ -56,7 +68,12 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
       setLoading(true)
       try {
-        const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`)
+        const params = new URLSearchParams()
+        if (query) params.append("q", query)
+        if (level) params.append("level", level)
+        if (categoryId) params.append("categoryId", categoryId)
+
+        const response = await fetch(`/api/search?${params.toString()}`)
         const data = await response.json()
 
         if (response.ok) {
@@ -78,7 +95,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
     const debounceTimer = setTimeout(searchCourses, 300)
     return () => clearTimeout(debounceTimer)
-  }, [query])
+  }, [query, level, categoryId])
 
   const calculateAverageRating = (reviews: Array<{ rating: number }>) => {
     if (!reviews || reviews.length === 0) return 0
@@ -127,10 +144,34 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
             </div>
             <button
               onClick={onClose}
-              className="ml-4 p-2.5 text-gray-400 hover:text-white hover:bg-orange-500/10 rounded-xl transition-all duration-300 border border-transparent hover:border-orange-500/30"
+              className="ml-4 p-2.5 text-gray-400 hover:text-white hover:bg-orange-500/10 rounded-xl transition-all duration-300 border border-transparent hover:border-orange-500/30 h-12 w-12 flex items-center justify-center shrink-0"
             >
               <X className="h-5 w-5" />
             </button>
+          </div>
+
+          {/* Filters */}
+          <div className="flex flex-col sm:flex-row gap-3 px-4 md:px-6 pb-4 border-b border-gray-800">
+            <select
+              value={categoryId}
+              onChange={(e) => setCategoryId(e.target.value)}
+              className="flex-1 bg-black/40 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-gray-300 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors"
+            >
+              <option value="">Tüm Kategoriler</option>
+              {categoriesList.map(c => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+            <select
+              value={level}
+              onChange={(e) => setLevel(e.target.value)}
+              className="flex-1 bg-black/40 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-gray-300 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors"
+            >
+              <option value="">Tüm Seviyeler</option>
+              <option value="BEGINNER">Başlangıç</option>
+              <option value="INTERMEDIATE">Orta Seviye</option>
+              <option value="ADVANCED">İleri Seviye</option>
+            </select>
           </div>
 
           {/* Results */}

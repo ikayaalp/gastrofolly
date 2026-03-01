@@ -74,9 +74,20 @@ async function getHomeData(userId?: string) {
       orderBy: { enrollments: { _count: 'desc' } },
       take: 6
     }),
-    // Kategoriler (sadece count al, tüm kurs verisini yükleme)
+    // Kategoriler ve her kategori için en fazla 6 kurs
     prisma.category.findMany({
       include: {
+        courses: {
+          where: { isPublished: true },
+          include: {
+            instructor: { select: { id: true, name: true, image: true } },
+            category: { select: { id: true, name: true, slug: true } },
+            reviews: { select: { rating: true } },
+            _count: { select: { enrollments: true, lessons: true } }
+          },
+          take: 6,
+          orderBy: { createdAt: 'desc' }
+        },
         _count: {
           select: { courses: true }
         }

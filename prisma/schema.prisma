@@ -192,6 +192,7 @@ model Progress {
   id          String   @id @default(cuid())
   isCompleted Boolean  @default(false)
   watchedAt   DateTime @default(now())
+  timeWatched Int      @default(0) // İzlenen süre (saniye cinsinden)
 
   userId   String
   user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)

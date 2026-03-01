@@ -124,14 +124,27 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
     };
   }, []);
 
-  // lesson değiştiğinde her zaman otomatik oynat, butonu da gizle
+  // lesson değiştiğinde progress'i çek ve otomatik oynat
   useEffect(() => {
     const video = videoRef.current;
     if (video && lesson.videoUrl) {
-      video.currentTime = 0;
-      video.play();
-      setShowCenterPlay(false);
-      setIsPlaying(true);
+      // Önce süreyi çek
+      fetch(`/api/video-progress?lessonId=${lesson.id}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.timeWatched > 0 && videoRef.current) {
+            videoRef.current.currentTime = data.timeWatched;
+          }
+          video.play().catch(() => { });
+          setShowCenterPlay(false);
+          setIsPlaying(true);
+        })
+        .catch(err => {
+          console.error("Progress load error", err);
+          video.play().catch(() => { });
+          setShowCenterPlay(false);
+          setIsPlaying(true);
+        });
     }
   }, [lesson.id, lesson.videoUrl]);
 
@@ -264,7 +277,7 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
 
   const markAsCompleted = async () => {
     try {
-      await fetch('/api/progress', {
+      await fetch('/api/video-progress', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -272,6 +285,7 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
         body: JSON.stringify({
           lessonId: lesson.id,
           courseId: course.id,
+          timeWatched: videoRef.current?.currentTime || currentTime,
           isCompleted: true,
         }),
       })
@@ -286,6 +300,36 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
       markAsCompleted()
     }
   }, [currentTime, duration, isCompleted, lesson.id, course.id, markAsCompleted])
+
+  // Periyodik izleme süresi kaydetme (her 10 saniyede)
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout;
+
+    if (isPlaying && lesson.id && course.id) {
+      intervalId = setInterval(async () => {
+        const video = videoRef.current;
+        if (!video) return;
+
+        try {
+          await fetch('/api/video-progress', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              lessonId: lesson.id,
+              courseId: course.id,
+              timeWatched: video.currentTime,
+            })
+          });
+        } catch (error) {
+          console.error("Progress save error", error);
+        }
+      }, 10000);
+    }
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [isPlaying, lesson.id, course.id]);
 
   // YouTube URL kontrolü
   const isYouTubeUrl = (url: string) => {
