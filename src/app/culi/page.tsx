@@ -266,8 +266,8 @@ export default function CuliPage() {
                                     key={conv.id}
                                     onClick={() => loadMessages(conv.id)}
                                     className={`w-full group flex items-center justify-between px-3 py-2.5 rounded-lg text-left transition-colors text-sm ${activeConversationId === conv.id
-                                            ? 'bg-gray-800 text-white'
-                                            : 'text-gray-400 hover:bg-gray-800/50 hover:text-gray-200'
+                                        ? 'bg-gray-800 text-white'
+                                        : 'text-gray-400 hover:bg-gray-800/50 hover:text-gray-200'
                                         }`}
                                 >
                                     <span className="truncate flex-1 mr-2">{conv.title}</span>
@@ -357,8 +357,8 @@ export default function CuliPage() {
                                         )}
                                         <div
                                             className={`max-w-[80%] px-4 py-3 text-sm leading-relaxed ${msg.role === 'user'
-                                                    ? 'bg-orange-600 text-white rounded-2xl rounded-br-md'
-                                                    : 'bg-[#1a1a1a] text-gray-200 rounded-2xl rounded-bl-md border border-gray-800'
+                                                ? 'bg-orange-600 text-white rounded-2xl rounded-br-md'
+                                                : 'bg-[#1a1a1a] text-gray-200 rounded-2xl rounded-bl-md border border-gray-800'
                                                 }`}
                                         >
                                             {msg.role === 'assistant' ? (
@@ -371,9 +371,15 @@ export default function CuliPage() {
                                             )}
                                         </div>
                                         {msg.role === 'user' && (
-                                            <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center flex-shrink-0 mt-1">
-                                                <span className="text-xs font-bold text-white">{session.user.name?.charAt(0) || '?'}</span>
-                                            </div>
+                                            session.user.image ? (
+                                                <div className="relative w-8 h-8 rounded-full overflow-hidden flex-shrink-0 mt-1">
+                                                    <Image src={session.user.image} alt={session.user.name || ''} fill className="object-cover" />
+                                                </div>
+                                            ) : (
+                                                <div className="w-8 h-8 rounded-full bg-orange-600 flex items-center justify-center flex-shrink-0 mt-1">
+                                                    <span className="text-xs font-bold text-white">{session.user.name?.charAt(0) || '?'}</span>
+                                                </div>
+                                            )
                                         )}
                                     </div>
                                 ))}
