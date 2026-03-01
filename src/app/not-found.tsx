@@ -1,11 +1,14 @@
 import Link from "next/link"
-import { ChefHat, Home, Search } from "lucide-react"
+import Image from "next/image"
+import { Home, Search } from "lucide-react"
 
 export default function NotFound() {
     return (
         <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4 text-center">
             <div className="bg-orange-600/20 p-6 rounded-full mb-6 animate-pulse">
-                <ChefHat className="h-16 w-16 text-orange-500" />
+                <div className="relative w-16 h-16">
+                    <Image src="/logo.jpeg" alt="Culinora" fill className="object-contain" />
+                </div>
             </div>
 
             <h1 className="text-6xl font-bold text-white mb-2">404</h1>

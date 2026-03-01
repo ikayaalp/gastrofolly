@@ -4,7 +4,8 @@ import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { signIn } from "next-auth/react"
-import { ChefHat, Eye, EyeOff, Mail, CheckCircle, Check, X } from "lucide-react"
+import { Eye, EyeOff, Mail, CheckCircle, Check, X } from "lucide-react"
+import Image from "next/image"
 import { validatePassword, getStrengthColor, getStrengthText } from "@/lib/passwordValidator"
 
 export default function SignUp() {
@@ -87,7 +88,15 @@ export default function SignUp() {
       <div className="max-w-md mx-auto w-full space-y-8 relative">
         <div>
           <div className="flex justify-center">
-            <ChefHat className="h-12 w-12 text-orange-500" />
+            <Link href="/" className="flex items-center gap-0.5">
+              <div className="relative w-12 h-12">
+                <Image src="/logo.jpeg" alt="C" fill className="object-contain" />
+              </div>
+              <span className="text-2xl font-bold tracking-tight">
+                <span className="text-orange-500">ulin</span>
+                <span className="text-white">ora</span>
+              </span>
+            </Link>
           </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-white">
             Hesap oluşturun
