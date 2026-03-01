@@ -11,15 +11,15 @@ const faqs = [
     },
     {
         question: "Bireysel kurs satın alabilir miyim, yoksa üyelik mi gerekli?",
-        answer: "Culinora'da sadece avantajlı abonelik sistemi geçerlidir. Tek bir üyelik ile platformdaki tüm eğitimlere sınırsız erişim sağlayabilirsiniz."
+        answer: "Culinora'da bireysel kurs satışı bulunmamaktadır. Tüm içeriklerimiz abonelik sistemi ile yönetilmektedir. Tek bir üyelik ile platformdaki tüm eğitimlere sınırsız erişim sağlayabilirsiniz."
     },
     {
         question: "Eğitimlere ne kadar süreyle erişebilirim?",
-        answer: "Bireysel satın aldığınız kurslara ömür boyu erişebilirsiniz. Premium aboneliğiniz olduğu sürece de kütüphanedeki tüm içeriklere dilediğiniz zaman, dilediğiniz yerden ulaşabilirsiniz."
+        answer: "Premium aboneliğiniz olduğu sürece kütüphanedeki tüm içeriklere dilediğiniz zaman, dilediğiniz yerden ulaşabilirsiniz."
     },
     {
         question: "Mobil cihazlardan izleyebilir miyim?",
-        answer: "Elbette! Culinora platformu tüm cihazlarla uyumludur. Bilgisayar, tablet veya telefonunuzdan eğitimlere kaldığınız yerden devam edebilirsiniz."
+        answer: "Evet! Culinora'yı tüm cihazlarınızdan takip edebilirsiniz. Web platformumuzun yanı sıra hem Android hem de iOS (iPhone) mobil uygulamalarımız üzerinden eğitimlerinize dilediğiniz her yerde devam edebilirsiniz."
     },
     {
         question: "Şeflerle iletişim kurabilir miyim?",
