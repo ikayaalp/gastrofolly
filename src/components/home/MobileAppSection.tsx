@@ -84,18 +84,9 @@ export default function MobileAppSection() {
                                 </div>
                             </button>
 
-                            {/* Google Play Button - Official Logo & Text */}
-                            <button className="flex items-center gap-3 bg-black border border-gray-700/50 rounded-xl px-5 py-2 hover:bg-white/5 transition-all w-full sm:w-auto">
-                                <svg viewBox="0 0 512 512" className="w-8 h-8">
-                                    <path fill="#00F0FF" d="M12 50.15V522c0 10.33 5.48 19.34 13.68 24.36l252.09-252.09L12 50.15z" transform="scale(.9) translate(30 20)" />
-                                    <path fill="#00FF75" d="M414.77 163.63L114.34 5.37C105.58.62 95.83-1.07 86.67.93l191.09 191.09 137.01-28.39z" transform="scale(.9) translate(30 20)" />
-                                    <path fill="#FFBD00" d="M414.77 408.37l-137.01-28.39L86.67 571.07c9.16 2 18.91.31 27.67-4.44l300.43-158.26z" transform="scale(.9) translate(30 20)" />
-                                    <path fill="#FF3D00" d="M495.63 243.63L414.77 163.63 277.76 286l137.01 122.37 80.86-80z" transform="scale(.9) translate(30 20)" />
-                                </svg>
-                                <div className="text-left text-white leading-tight">
-                                    <p className="text-[10px] font-semibold">Google Play'den</p>
-                                    <p className="text-xl font-bold -mt-1">İndirin</p>
-                                </div>
+                            {/* Google Play Button - Direct Image from User Reference */}
+                            <button className="flex items-center justify-center transition-transform hover:scale-105 duration-300 w-full sm:w-auto">
+                                <img src="/assets/googleplay_hemen.png" alt="Google Play'den Hemen İndirin" className="h-[60px] w-auto object-contain" />
                             </button>
                         </div>
                     </motion.div>
