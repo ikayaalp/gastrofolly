@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import crypto from 'crypto'
 import { sendPasswordResetEmail } from '@/lib/emailService'
+import { checkRateLimit, getClientIp, RATE_LIMITS } from '@/lib/rateLimit'
 
 /**
  * Şifre sıfırlama bağlantısı gönder
@@ -9,6 +10,16 @@ import { sendPasswordResetEmail } from '@/lib/emailService'
  */
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting
+    const ip = getClientIp(request)
+    const rateLimitResult = checkRateLimit(`reset:${ip}`, RATE_LIMITS.RESET)
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { message: 'Çok fazla istek gönderildi. Lütfen biraz bekleyin.' },
+        { status: 429 }
+      )
+    }
+
     const { email } = await request.json()
 
     if (!email) {
@@ -48,7 +59,7 @@ export async function POST(request: NextRequest) {
     // Reset email'i gönder
     const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
     const resetUrl = `${baseUrl}/auth/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`
-    
+
     const emailSent = await sendPasswordResetEmail(email, resetUrl, user.name || undefined)
 
     if (!emailSent) {

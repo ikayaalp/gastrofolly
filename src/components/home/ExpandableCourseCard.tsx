@@ -23,7 +23,7 @@ interface Course {
     category: {
         name: string
     }
-    reviews: Array<{
+    reviews?: Array<{
         rating: number
     }>
     _count: {
@@ -78,8 +78,8 @@ export default function ExpandableCourseCard({ course, showProgress, rank, large
     }
 
     // Calculate rating
-    const averageRating = course.reviews.length > 0
-        ? course.reviews.reduce((acc, r) => acc + r.rating, 0) / course.reviews.length
+    const averageRating = (course.reviews?.length ?? 0) > 0
+        ? course.reviews!.reduce((acc, r) => acc + r.rating, 0) / course.reviews!.length
         : 0
 
     // Determine subscription package based on course level

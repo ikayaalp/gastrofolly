@@ -3,9 +3,20 @@ import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { generateVerificationCode, sendVerificationEmail, getCodeExpiry } from "@/lib/emailService"
 import { validatePassword } from "@/lib/passwordValidator"
+import { checkRateLimit, getClientIp, RATE_LIMITS } from "@/lib/rateLimit"
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting
+    const ip = getClientIp(request)
+    const rateLimitResult = checkRateLimit(`register:${ip}`, RATE_LIMITS.AUTH)
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { message: "Çok fazla istek gönderildi. Lütfen biraz bekleyin." },
+        { status: 429 }
+      )
+    }
+
     const { name, email, password } = await request.json()
 
     // Validasyon

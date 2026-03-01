@@ -6,11 +6,19 @@ import { prisma } from "@/lib/prisma"
 
 export async function GET(request: NextRequest) {
     try {
-        // Cron secret kontrolü (güvenlik için)
+        // Cron secret kontrolü (güvenlik için - ZORUNLU)
         const authHeader = request.headers.get('authorization')
         const cronSecret = process.env.CRON_SECRET
 
-        if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+        if (!cronSecret) {
+            console.error('[Cron] CRON_SECRET is not configured!')
+            return NextResponse.json(
+                { error: "Server configuration error: CRON_SECRET is required" },
+                { status: 500 }
+            )
+        }
+
+        if (authHeader !== `Bearer ${cronSecret}`) {
             return NextResponse.json(
                 { error: "Yetkisiz erişim" },
                 { status: 401 }

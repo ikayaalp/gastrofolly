@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { validatePassword } from '@/lib/passwordValidator'
+import { checkRateLimit, getClientIp, RATE_LIMITS } from '@/lib/rateLimit'
 
 /**
  * Şifreyi sıfırla (token ile)
@@ -9,6 +10,16 @@ import { validatePassword } from '@/lib/passwordValidator'
  */
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting
+    const ip = getClientIp(request)
+    const rateLimitResult = checkRateLimit(`reset-pw:${ip}`, RATE_LIMITS.AUTH)
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { message: 'Çok fazla istek gönderildi. Lütfen biraz bekleyin.' },
+        { status: 429 }
+      )
+    }
+
     const { email, token, newPassword } = await request.json()
 
     if (!email || !token || !newPassword) {

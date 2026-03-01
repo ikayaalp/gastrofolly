@@ -66,14 +66,24 @@ export async function POST(request: NextRequest) {
     // Kullanıcının aboneliği var mı kontrol et
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { subscriptionPlan: true }
+      select: { subscriptionPlan: true, subscriptionEndDate: true }
     })
 
-    if (!user?.subscriptionPlan && !course.isFree) {
-      return NextResponse.json(
-        { error: "Bu kursa kayıt olmak için aktif bir aboneliğiniz olmalıdır." },
-        { status: 403 }
-      )
+    if (!course.isFree) {
+      if (!user?.subscriptionPlan) {
+        return NextResponse.json(
+          { error: "Bu kursa kayıt olmak için aktif bir aboneliğiniz olmalıdır." },
+          { status: 403 }
+        )
+      }
+
+      // Abonelik süresi dolmuş mu kontrol et
+      if (user.subscriptionEndDate && new Date() > user.subscriptionEndDate) {
+        return NextResponse.json(
+          { error: "Abonelik süreniz dolmuş. Lütfen aboneliğinizi yenileyin." },
+          { status: 403 }
+        )
+      }
     }
 
     // Kullanıcıyı kursa kaydet

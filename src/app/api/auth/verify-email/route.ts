@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { isCodeExpired } from '@/lib/emailService'
+import { checkRateLimit, getClientIp, RATE_LIMITS } from '@/lib/rateLimit'
 
 /**
  * Email doğrulama kodu kontrol et
@@ -8,6 +9,16 @@ import { isCodeExpired } from '@/lib/emailService'
  */
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting
+    const ip = getClientIp(request)
+    const rateLimitResult = checkRateLimit(`verify:${ip}`, RATE_LIMITS.VERIFY)
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: 'Çok fazla deneme. Lütfen biraz bekleyin.' },
+        { status: 429 }
+      )
+    }
+
     const { email, code } = await request.json()
 
     if (!email || !code) {

@@ -36,19 +36,23 @@ interface Course {
   category: {
     name: string
   }
-  reviews: Array<{
+  reviews?: Array<{
     rating: number
   }>
   _count: {
     enrollments: number
     lessons: number
+    reviews?: number
   }
 }
 
 interface Category {
   id: string
   name: string
-  courses: Course[]
+  courses?: Course[]
+  _count?: {
+    courses: number
+  }
 }
 
 interface UserEnrollment {
@@ -58,7 +62,7 @@ interface UserEnrollment {
 interface HomePageClientProps {
   featuredCourses: Course[]
   popularCourses: Course[]
-  recentCourses: Course[]
+  recentCourses?: Course[]
   categories: Category[]
   userEnrollments: UserEnrollment[]
   session: { user: { id: string; name?: string | null; email?: string | null; image?: string | null; role?: string } } | null
@@ -72,6 +76,8 @@ export default function HomePageClient({
   userEnrollments,
   session
 }: HomePageClientProps) {
+  // recentCourses yoksa featuredCourses'u kullan (aynı sorgu, optimize edildi)
+  const recentCoursesData = recentCourses || featuredCourses
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const { data: clientSession } = useSession()
 
@@ -236,12 +242,12 @@ export default function HomePageClient({
           {/* Yeni Kurslar */}
           <CourseRow
             title="Yeni Eklenen Kurslar"
-            courses={recentCourses}
+            courses={recentCoursesData}
           />
 
           {/* Kategorilere Göre */}
           {categories.map((category) => (
-            category.courses.length > 0 && (
+            category.courses && category.courses.length > 0 && (
               <CourseRow
                 key={category.id}
                 title={category.name}

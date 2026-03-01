@@ -21,7 +21,7 @@ export function middleware(request: NextRequest) {
 
     // Block access to development-only endpoints in production
     if (process.env.NODE_ENV === 'production') {
-        const blockedPaths = ['/api/seed', '/api/migrate', '/api/test-courses']
+        const blockedPaths = ['/api/seed', '/api/migrate', '/api/test-courses', '/api/debug-db', '/api/test-email', '/api/test']
         const pathname = request.nextUrl.pathname
 
         if (blockedPaths.some(path => pathname.startsWith(path))) {

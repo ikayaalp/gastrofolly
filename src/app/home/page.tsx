@@ -47,17 +47,16 @@ async function getHomeData(userId?: string) {
   const [
     featuredCourses,
     popularCourses,
-    recentCourses,
     categories,
     userCourses
   ] = await Promise.all([
-    // Öne çıkan kurslar
+    // Öne çıkan kurslar (en yeni)
     prisma.course.findMany({
       where: { isPublished: true },
       include: {
-        instructor: true,
-        category: true,
-        reviews: true,
+        instructor: { select: { id: true, name: true, image: true } },
+        category: { select: { id: true, name: true, slug: true } },
+        reviews: { select: { rating: true } },
         _count: { select: { enrollments: true, lessons: true } }
       },
       orderBy: { createdAt: 'desc' },
@@ -67,38 +66,19 @@ async function getHomeData(userId?: string) {
     prisma.course.findMany({
       where: { isPublished: true },
       include: {
-        instructor: true,
-        category: true,
-        reviews: true,
+        instructor: { select: { id: true, name: true, image: true } },
+        category: { select: { id: true, name: true, slug: true } },
+        reviews: { select: { rating: true } },
         _count: { select: { enrollments: true, lessons: true } }
       },
       orderBy: { enrollments: { _count: 'desc' } },
       take: 6
     }),
-    // En yeni kurslar
-    prisma.course.findMany({
-      where: { isPublished: true },
-      include: {
-        instructor: true,
-        category: true,
-        reviews: true,
-        _count: { select: { enrollments: true, lessons: true } }
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 6
-    }),
-    // Kategoriler
+    // Kategoriler (sadece count al, tüm kurs verisini yükleme)
     prisma.category.findMany({
       include: {
-        courses: {
-          where: { isPublished: true },
-          include: {
-            instructor: true,
-            category: true,
-            reviews: true,
-            _count: { select: { enrollments: true, lessons: true } }
-          },
-          take: 6
+        _count: {
+          select: { courses: true }
         }
       }
     }),
@@ -109,10 +89,9 @@ async function getHomeData(userId?: string) {
         isPublished: true
       },
       include: {
-        instructor: true,
-        category: true,
-        lessons: true,
-        reviews: true,
+        instructor: { select: { id: true, name: true, image: true } },
+        category: { select: { id: true, name: true, slug: true } },
+        reviews: { select: { rating: true } },
         _count: { select: { lessons: true, enrollments: true } }
       },
       take: 6
@@ -127,7 +106,6 @@ async function getHomeData(userId?: string) {
   return {
     featuredCourses,
     popularCourses,
-    recentCourses,
     categories,
     userEnrollments
   }
@@ -143,7 +121,6 @@ export default async function HomePage() {
   const {
     featuredCourses,
     popularCourses,
-    recentCourses,
     categories,
     userEnrollments
   } = await getHomeData(session.user.id)
@@ -151,11 +128,10 @@ export default async function HomePage() {
   return (
     <>
       <HomePageClient
-        featuredCourses={featuredCourses}
-        popularCourses={popularCourses}
-        recentCourses={recentCourses}
-        categories={categories}
-        userEnrollments={userEnrollments}
+        featuredCourses={featuredCourses as any}
+        popularCourses={popularCourses as any}
+        categories={categories as any}
+        userEnrollments={userEnrollments as any}
         session={session}
       />
       <AIAssistantWidget />

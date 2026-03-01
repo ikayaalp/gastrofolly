@@ -133,7 +133,7 @@ export default async function LandingPage() {
     redirect("/home");
   }
 
-  // Server Component Data Fetching
+  // Server Component Data Fetching (no session needed since user is not logged in)
   const { categories, featured, userCourses } = await getLandingData();
 
   return (

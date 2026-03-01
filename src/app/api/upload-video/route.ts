@@ -3,9 +3,20 @@ import { writeFile, mkdir } from "fs/promises"
 import { prisma } from "@/lib/prisma"
 import path from "path"
 import { getAuthUser } from '@/lib/mobileAuth'
+import { checkRateLimit, getClientIp, RATE_LIMITS } from '@/lib/rateLimit'
+
+const MAX_VIDEO_SIZE = 500 * 1024 * 1024 // 500MB
+const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo']
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting
+    const ip = getClientIp(request)
+    const rateLimitResult = checkRateLimit(`upload:${ip}`, RATE_LIMITS.UPLOAD)
+    if (!rateLimitResult.success) {
+      return NextResponse.json({ error: 'Çok fazla yükleme isteği. Lütfen biraz bekleyin.' }, { status: 429 })
+    }
+
     // Only admin or instructor can upload videos
     const user = await getAuthUser(request)
     if (!user || (user.role !== 'ADMIN' && user.role !== 'INSTRUCTOR')) {
@@ -17,6 +28,16 @@ export async function POST(request: NextRequest) {
 
     if (!file) {
       return NextResponse.json({ error: "Video dosyası bulunamadı" }, { status: 400 })
+    }
+
+    // Dosya boyutu kontrolü
+    if (file.size > MAX_VIDEO_SIZE) {
+      return NextResponse.json({ error: "Video dosyası 500MB'dan küçük olmalıdır" }, { status: 400 })
+    }
+
+    // Dosya türü kontrolü
+    if (!ALLOWED_VIDEO_TYPES.includes(file.type)) {
+      return NextResponse.json({ error: "Geçersiz dosya türü. Sadece MP4, WebM, MOV ve AVI desteklenir." }, { status: 400 })
     }
 
     // Video dosyalarını public/videos klasörüne kaydet
