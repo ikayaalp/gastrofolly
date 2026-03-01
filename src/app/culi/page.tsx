@@ -195,9 +195,9 @@ export default function CuliPage() {
     return (
         <div className="h-screen bg-black flex flex-col">
             {/* Desktop Header */}
-            <header className="hidden md:block bg-gray-900/30 backdrop-blur-sm border-b border-gray-800 z-50">
-                <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center py-3">
+            <header className="hidden md:block fixed top-0 left-0 right-0 z-50 bg-gray-900/30 backdrop-blur-sm border-b border-gray-800">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex justify-between items-center py-4">
                         <div className="flex items-center space-x-8">
                             <Link href="/home" className="flex items-center gap-0.5">
                                 <div className="relative w-10 h-10">
