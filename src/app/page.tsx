@@ -144,52 +144,52 @@ async function getLandingData() {
     {
       id: "mock-1",
       name: "Şef Kemal Can",
-      image: "https://images.unsplash.com/photo-1581299894007-aaa50297cf16?auto=format&fit=crop&q=80&w=800"
+      image: "https://images.unsplash.com/photo-1577219491135-ce39a730fbaf?auto=format&fit=crop&q=80&w=600"
     },
     {
       id: "mock-2",
-      name: "Şef Ömer Faruk", // Swapped position
-      image: "https://images.unsplash.com/photo-1566554273541-37a9ca77b91f?auto=format&fit=crop&q=80&w=800"
+      name: "Şef Ömer Faruk",
+      image: "https://images.unsplash.com/photo-1583394828560-ad4807e60744?auto=format&fit=crop&q=80&w=600"
     },
     {
       id: "mock-3",
       name: "Şef Murat Yıldız",
-      image: "https://images.unsplash.com/photo-1595273670150-db0a3d395797?auto=format&fit=crop&q=80&w=800"
+      image: "https://images.unsplash.com/photo-1595273670150-db0a3d395797?auto=format&fit=crop&q=80&w=600"
     },
     {
       id: "mock-4",
       name: "Şef Selin Kaya",
-      image: "https://images.unsplash.com/photo-1583394293214-28ded15ee548?auto=format&fit=crop&q=80&w=800"
+      image: "https://images.unsplash.com/photo-1583394293214-28ded15ee548?auto=format&fit=crop&q=80&w=600"
     },
     {
       id: "mock-5",
-      name: "Şef Ayşe Demir", // Swapped position
-      image: "https://images.unsplash.com/photo-1577219491135-ce39a730fbaf?auto=format&fit=crop&q=80&w=800"
+      name: "Şef Ayşe Demir",
+      image: "https://images.unsplash.com/photo-1541614101331-1a5a3a194e90?auto=format&fit=crop&q=80&w=600"
     },
     {
       id: "mock-6",
       name: "Şef Zeynep Ak",
-      image: "https://images.unsplash.com/photo-1625631980585-e5faf626f56c?auto=format&fit=crop&q=80&w=800"
+      image: "https://images.unsplash.com/photo-1590604166326-77871694f284?auto=format&fit=crop&q=80&w=600"
     },
     {
       id: "mock-7",
       name: "Şef Caner Tekin",
-      image: "https://images.unsplash.com/photo-1544145945-f904253db0ad?auto=format&fit=crop&q=80&w=800"
+      image: "https://images.unsplash.com/photo-1544145945-f904253db0ad?auto=format&fit=crop&q=80&w=600"
     },
     {
       id: "mock-8",
       name: "Şef Deniz Bulut",
-      image: "https://images.unsplash.com/photo-1512485600893-b083c767f000?auto=format&fit=crop&q=80&w=800"
+      image: "https://images.unsplash.com/photo-1600565193348-f74bd3c7ccdf?auto=format&fit=crop&q=80&w=600"
     },
     {
       id: "mock-9",
       name: "Şef Burak Güler",
-      image: "https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&q=80&w=800"
+      image: "https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&q=80&w=600"
     },
     {
       id: "mock-10",
       name: "Şef Leyla Korkmaz",
-      image: "https://images.unsplash.com/photo-1590604166326-77871694f284?auto=format&fit=crop&q=80&w=800"
+      image: "https://images.unsplash.com/photo-1625631980585-e5faf626f56c?auto=format&fit=crop&q=80&w=600"
     }
   ];
 
