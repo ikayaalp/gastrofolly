@@ -234,6 +234,9 @@ export default async function CoursePage({ params }: CoursePageProps) {
                       </Link>
                     </>
                   )}
+                  <Link href="/culi" className="text-gray-300 hover:text-white transition-colors">
+                    Culi
+                  </Link>
                   <Link href="/chef-sosyal" className="text-gray-300 hover:text-white transition-colors">
                     Chef Sosyal
                   </Link>

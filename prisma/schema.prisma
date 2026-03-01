@@ -94,6 +94,7 @@ model User {
   pollVotes     PollVote[]
   referralEarnings Referral[] @relation("InfluencerReferrals")
   referredPayments Referral[] @relation("ReferredUserReferrals")
+  aiConversations  AiConversation[]
 }
 
 enum UserRole {
@@ -490,4 +491,28 @@ model Story {
   
   title       String?  // Hikaye başlığı
   coverImage  String?  // Hikaye kapak resmi URL
+}
+
+// Culi AI Sohbet modeli
+model AiConversation {
+  id        String      @id @default(cuid())
+  title     String      @default("Yeni Sohbet")
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  AiMessage[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([userId, updatedAt])
+}
+
+model AiMessage {
+  id             String         @id @default(cuid())
+  role           String
+  content        String         @db.Text
+  conversationId String
+  conversation   AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime       @default(now())
+
+  @@index([conversationId, createdAt])
 }

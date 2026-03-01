@@ -204,6 +204,9 @@ export default function InstructorCoursesClient({ courses, categories, session }
                 <Link href="/instructor-dashboard/courses" className="text-white font-semibold">
                   Kurslarımı Yönet
                 </Link>
+                <Link href="/culi" className="text-gray-300 hover:text-white transition-colors">
+                  Culi
+                </Link>
                 <Link href="/chef-sosyal" className="text-gray-300 hover:text-white transition-colors">
                   Chef Sosyal
                 </Link>

@@ -69,6 +69,9 @@ export default async function AboutPage() {
                       </Link>
                     </>
                   )}
+                  <Link href="/culi" className="text-gray-300 hover:text-white transition-colors">
+                    Culi
+                  </Link>
                   <Link href="/chef-sosyal" className="text-gray-300 hover:text-orange-500">
                     Chef Sosyal
                   </Link>

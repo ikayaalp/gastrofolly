@@ -156,6 +156,9 @@ export default function SocialAdminPage() {
                         <Plus className="h-4 w-4 mr-2" />
                         Anket Oluştur
                     </button>
+                    <Link href="/culi" className="text-gray-300 hover:text-white transition-colors">
+                      Culi
+                    </Link>
                     <Link href="/chef-sosyal" target="_blank" className="flex items-center px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm text-gray-300 transition-colors">
                         <ExternalLink className="h-4 w-4 mr-2" />
                         Siteyi Görüntüle
