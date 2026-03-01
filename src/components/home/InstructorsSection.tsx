@@ -24,7 +24,7 @@ export default function InstructorsSection({ instructors }: InstructorsSectionPr
                             Profesyonel <span className="text-orange-500">Şeflerimizle</span> Tanışın
                         </h2>
                         <p className="text-gray-400 text-lg">
-                            Michelin yıldızlı mutfaklardan, ödüllü pastanelerden ve gastronomi dünyasının zirvesinden gelen uzmanlarla öğrenmeye başlayın.
+                            Michelin yıldızlı profesyonellerden, dünya mutfağı uzmanlarından ve modern gastronomi dünyasının usta isimlerinden öğrenmeye başlayın.
                         </p>
                     </div>
                 </div>
