@@ -165,6 +165,31 @@ async function getLandingData() {
       id: "mock-5",
       name: "Şef Ömer Faruk",
       image: "https://images.unsplash.com/photo-1566554273541-37a9ca77b91f?w=800&q=80"
+    },
+    {
+      id: "mock-6",
+      name: "Şef Zeynep Ak",
+      image: "https://images.unsplash.com/photo-1541614101331-1a5a3a194e90?w=800&q=80"
+    },
+    {
+      id: "mock-7",
+      name: "Şef Caner Tekin",
+      image: "https://images.unsplash.com/photo-1544145945-f904253db0ad?w=800&q=80"
+    },
+    {
+      id: "mock-8",
+      name: "Şef Deniz Bulut",
+      image: "https://images.unsplash.com/photo-1551218808-94e220e031a5?w=800&q=80"
+    },
+    {
+      id: "mock-9",
+      name: "Şef Burak Güler",
+      image: "https://images.unsplash.com/photo-1605851867684-1d207865f57e?w=800&q=80"
+    },
+    {
+      id: "mock-10",
+      name: "Şef Leyla Korkmaz",
+      image: "https://images.unsplash.com/photo-1614597396930-cd6760b99f7c?w=800&q=80"
     }
   ];
 
