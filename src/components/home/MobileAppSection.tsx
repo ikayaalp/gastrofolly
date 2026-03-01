@@ -69,7 +69,7 @@ export default function MobileAppSection() {
                             Mutfakta Her An <span className="text-orange-500">Yanınızda</span>
                         </h2>
                         <p className="text-gray-400 text-lg mb-12 leading-relaxed">
-                            Culinora mobil uygulaması ile eğitimlerinizi yanınıza alın. Mutfakta tezgah başında, pazarda alışveriş yaparken veya internetin çekmediği anlarda derslerinizi kesintisiz takip edin.
+                            Culinora mobil uygulaması ile eğitimlerinizi yanınıza alın. Mutfakta tezgah başında, internetin çekmediği anlarda derslerinizi kesintisiz takip edin.
                         </p>
 
                         <div className="flex flex-col sm:flex-row items-center gap-4">
