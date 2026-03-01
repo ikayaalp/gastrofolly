@@ -69,23 +69,30 @@ export default function MobileAppSection() {
                             Mutfakta Her An <span className="text-orange-500">Yanınızda</span>
                         </h2>
                         <p className="text-gray-400 text-lg mb-12 leading-relaxed">
-                            Cunilora mobil uygulaması ile eğitimlerinizi yanınıza alın. Mutfakta tezgah başında, pazarda alışveriş yaparken veya internetin çekmediği anlarda derslerinizi kesintisiz takip edin.
+                            Culinora mobil uygulaması ile eğitimlerinizi yanınıza alın. Mutfakta tezgah başında, pazarda alışveriş yaparken veya internetin çekmediği anlarda derslerinizi kesintisiz takip edin.
                         </p>
 
-                        <div className="flex flex-col sm:flex-row items-center gap-4">
-                            <button className="w-full sm:w-auto flex items-center justify-center gap-3 bg-white text-black hover:bg-gray-100 px-8 py-3.5 rounded-2xl transition-all shadow-xl shadow-white/5 border border-white">
-                                <Apple className="w-8 h-8 fill-black" />
-                                <div className="text-left">
-                                    <p className="text-[10px] uppercase font-bold leading-none mb-1 opacity-70">Download on the</p>
-                                    <p className="text-xl font-bold leading-none">App Store</p>
+                        <div className="flex flex-col sm:flex-row items-center gap-6">
+                            {/* App Store Button */}
+                            <button className="flex items-center gap-3 bg-black border border-gray-600 rounded-xl px-4 py-2 hover:bg-white/5 transition-colors w-full sm:w-auto">
+                                <Apple className="w-8 h-8 text-white fill-current" />
+                                <div className="text-left text-white leading-tight">
+                                    <p className="text-[10px] font-medium">App Store'dan</p>
+                                    <p className="text-xl font-semibold -mt-0.5">İndirin</p>
                                 </div>
                             </button>
 
-                            <button className="w-full sm:w-auto flex items-center justify-center gap-3 bg-black border border-gray-700 hover:border-gray-500 text-white px-8 py-3.5 rounded-2xl transition-all group">
-                                <PlayIcon className="w-7 h-7 text-white fill-current" />
-                                <div className="text-left">
-                                    <p className="text-[10px] text-gray-400 uppercase font-bold leading-none mb-1">Get it on</p>
-                                    <p className="text-xl font-bold leading-none">Google Play</p>
+                            {/* Google Play Button */}
+                            <button className="flex items-center gap-3 bg-black border border-gray-600 rounded-xl px-4 py-2 hover:bg-white/5 transition-colors w-full sm:w-auto">
+                                <svg viewBox="0 0 512 512" className="w-8 h-8">
+                                    <path fill="#4DB6AC" d="M12 50l253 254L12 558z" transform="scale(.8) translate(40 40)" />
+                                    <path fill="#D32F2F" d="M12 50l253 254L505 50z" transform="scale(.8) translate(40 40)" />
+                                    <path fill="#FBC02D" d="M505 50l-240 254L505 558z" transform="scale(.8) translate(40 40)" />
+                                    <path fill="#1976D2" d="M12 558l253-254 240 254z" transform="scale(.8) translate(40 40)" />
+                                </svg>
+                                <div className="text-left text-white leading-tight">
+                                    <p className="text-[10px] font-medium uppercase tracking-tighter">Google Play</p>
+                                    <p className="text-xl font-semibold -mt-0.5 whitespace-nowrap">'DEN ALIN</p>
                                 </div>
                             </button>
                         </div>
