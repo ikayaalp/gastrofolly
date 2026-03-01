@@ -115,7 +115,7 @@ const StoryViewer = ({ stories, initialIndex, onClose }: StoryViewerProps) => {
     if (!currentStory) return null;
 
     return (
-        <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
+        <div className="fixed inset-0 z-[100] bg-black flex items-center justify-center">
             {/* Background Media */}
             <div className="absolute inset-0 bg-black flex items-center justify-center">
                 {currentStory.mediaType === 'VIDEO' ? (
