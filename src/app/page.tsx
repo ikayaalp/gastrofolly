@@ -144,11 +144,11 @@ async function getLandingData() {
     {
       id: "mock-1",
       name: "Şef Kemal Can",
-      image: "https://images.unsplash.com/photo-1583394828560-ad4807e60744?auto=format&fit=crop&q=80&w=800"
+      image: "https://images.unsplash.com/photo-1581299894007-aaa50297cf16?auto=format&fit=crop&q=80&w=800"
     },
     {
       id: "mock-2",
-      name: "Şef Ömer Faruk", // Swapped with Ayşe
+      name: "Şef Ömer Faruk", // Swapped position
       image: "https://images.unsplash.com/photo-1566554273541-37a9ca77b91f?auto=format&fit=crop&q=80&w=800"
     },
     {
@@ -159,17 +159,17 @@ async function getLandingData() {
     {
       id: "mock-4",
       name: "Şef Selin Kaya",
-      image: "https://images.unsplash.com/photo-1625631980585-e5faf626f56c?auto=format&fit=crop&q=80&w=800"
+      image: "https://images.unsplash.com/photo-1583394293214-28ded15ee548?auto=format&fit=crop&q=80&w=800"
     },
     {
       id: "mock-5",
-      name: "Şef Ayşe Demir", // Swapped with Ömer
-      image: "https://images.unsplash.com/photo-1583394293214-28ded15ee548?auto=format&fit=crop&q=80&w=800"
+      name: "Şef Ayşe Demir", // Swapped position
+      image: "https://images.unsplash.com/photo-1577219491135-ce39a730fbaf?auto=format&fit=crop&q=80&w=800"
     },
     {
       id: "mock-6",
       name: "Şef Zeynep Ak",
-      image: "https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&q=80&w=800"
+      image: "https://images.unsplash.com/photo-1625631980585-e5faf626f56c?auto=format&fit=crop&q=80&w=800"
     },
     {
       id: "mock-7",
@@ -179,12 +179,12 @@ async function getLandingData() {
     {
       id: "mock-8",
       name: "Şef Deniz Bulut",
-      image: "https://images.unsplash.com/photo-1551218808-94e220e031a5?auto=format&fit=crop&q=80&w=800"
+      image: "https://images.unsplash.com/photo-1512485600893-b083c767f000?auto=format&fit=crop&q=80&w=800"
     },
     {
       id: "mock-9",
       name: "Şef Burak Güler",
-      image: "https://images.unsplash.com/photo-1512485600893-b083c767f000?auto=format&fit=crop&q=80&w=800"
+      image: "https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&q=80&w=800"
     },
     {
       id: "mock-10",
@@ -194,7 +194,15 @@ async function getLandingData() {
   ];
 
   // Combine database instructors with samples (Keep all 10 samples first)
-  const instructors = [...sampleInstructors, ...dbInstructors.map(i => ({ ...i, name: i.name || 'Misafir Şef' }))].slice(0, 12);
+  // For DB instructors without images, provide a high-quality fallback from the mock list
+  const instructors = [
+    ...sampleInstructors,
+    ...dbInstructors.map((i, idx) => ({
+      ...i,
+      name: i.name || 'Misafir Şef',
+      image: i.image || sampleInstructors[idx % sampleInstructors.length].image
+    }))
+  ].slice(0, 15);
 
   // Format featured courses to match interface (handle nulls)
   const formattedFeatured = featured.map(course => ({
