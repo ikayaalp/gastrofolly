@@ -183,15 +183,15 @@ const StoryViewer = ({ stories, initialIndex, onClose }: StoryViewerProps) => {
                 {/* Footer (Course Link) - Pointer events auto */}
                 {currentStory.courseId && (
                     <div
-                        className="absolute bottom-0 left-0 right-0 p-6 z-20 text-center cursor-pointer pointer-events-auto"
+                        className="absolute bottom-8 md:bottom-12 left-0 right-0 p-4 z-20 text-center cursor-pointer pointer-events-auto flex flex-col items-center"
                         onClick={handleNavigateToCourse}
                     >
                         <div className="flex flex-col items-center text-white animate-bounce-slow hover:text-orange-500 transition-colors">
                             <span className="text-xs font-bold mb-1 drop-shadow-md">Daha Fazla</span>
                             <ChevronUp size={24} className="drop-shadow-md" />
                             {currentStory.course?.title && (
-                                <div className="bg-white/20 backdrop-blur-md px-4 py-1 rounded-full mt-2 border border-white/30">
-                                    <span className="text-sm font-semibold truncate max-w-[200px] block">{currentStory.course.title}</span>
+                                <div className="bg-white/20 backdrop-blur-md px-4 py-1.5 rounded-full mt-2 border border-white/30 max-w-[80vw]">
+                                    <span className="text-sm font-semibold truncate block w-full">{currentStory.course.title}</span>
                                 </div>
                             )}
                         </div>
