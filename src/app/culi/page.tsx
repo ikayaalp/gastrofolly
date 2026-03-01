@@ -324,29 +324,6 @@ export default function CuliPage() {
                                 Ben <span className="text-orange-500 font-semibold">Culi</span>, gastronomi asistanınız.
                                 Yemek tarifleri, mutfak teknikleri ve kurslar hakkında bana her şeyi sorabilirsiniz.
                             </p>
-
-                            {/* Quick Suggestions */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl w-full mb-8">
-                                {[
-                                    { emoji: '🍕', text: 'Ev yapımı pizza hamuru nasıl yapılır?' },
-                                    { emoji: '🔪', text: 'Temel bıçak teknikleri nelerdir?' },
-                                    { emoji: '🎓', text: 'Hangi kursu seçmeliyim?' },
-                                    { emoji: '🥘', text: 'Türk mutfağından kolay tarifler' },
-                                ].map((suggestion, i) => (
-                                    <button
-                                        key={i}
-                                        onClick={() => {
-                                            setInput(suggestion.text)
-                                            inputRef.current?.focus()
-                                        }}
-                                        className="flex items-center gap-3 text-left text-sm bg-gray-900 hover:bg-gray-800 text-gray-300 hover:text-white p-4 rounded-xl border border-gray-800 hover:border-orange-500/30 transition-all"
-                                    >
-                                        <span className="text-2xl">{suggestion.emoji}</span>
-                                        <span>{suggestion.text}</span>
-                                    </button>
-                                ))}
-                            </div>
-
                             {/* Centered Input */}
                             <div className="w-full max-w-3xl">
                                 <div className="flex items-end gap-3 bg-[#1a1a1a] border border-gray-700 focus-within:border-orange-500/50 rounded-2xl px-4 py-3 transition-colors">
