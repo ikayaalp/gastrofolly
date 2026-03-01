@@ -315,7 +315,7 @@ export default function CuliPage() {
                     {/* Messages | Welcome screen */}
                     {messages.length === 0 ? (
                         /* Gemini-style Welcome Screen — input centered on page */
-                        <div className="flex-1 flex flex-col items-center justify-center px-4">
+                        <div className="flex-1 flex flex-col items-center justify-center px-4 pb-24">
                             <div className="relative w-20 h-20 mb-6">
                                 <Image src="/logo.jpeg" alt="Culi" fill className="object-contain" />
                             </div>
