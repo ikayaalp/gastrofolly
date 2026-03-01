@@ -18,6 +18,9 @@ export default function InstructorsSection({ instructors, speed = 1, intervalMs 
     const containerRef = useRef<HTMLDivElement>(null);
     const [isHover, setIsHover] = useState(false);
 
+    // Duplicate the instructors to create a seamless infinite loop
+    const displayInstructors = [...instructors, ...instructors, ...instructors];
+
     useEffect(() => {
         if (!containerRef.current) return;
         const el = containerRef.current;
@@ -26,16 +29,19 @@ export default function InstructorsSection({ instructors, speed = 1, intervalMs 
             if (isHover) return;
             if (!el) return;
 
-            // auto scroll right; loop back when reaching end
-            if (el.scrollLeft + el.clientWidth + 2 >= el.scrollWidth) {
-                el.scrollTo({ left: 0, behavior: 'auto' });
-            } else {
-                el.scrollTo({ left: el.scrollLeft + speed, behavior: 'auto' });
+            const cardWidth = 320 + 32; // card width + margin (md scale)
+            const totalWidthOfOneSet = instructors.length * cardWidth;
+
+            // When we scroll past the first set, jump back to start of first set seamlessly
+            if (el.scrollLeft >= totalWidthOfOneSet) {
+                el.scrollLeft -= totalWidthOfOneSet;
             }
+
+            el.scrollLeft += speed;
         }, intervalMs);
 
         return () => clearInterval(timer);
-    }, [isHover, speed, intervalMs]);
+    }, [isHover, speed, intervalMs, instructors.length]);
 
     if (!instructors || instructors.length === 0) return null;
 
@@ -57,11 +63,12 @@ export default function InstructorsSection({ instructors, speed = 1, intervalMs 
                 ref={containerRef}
                 onMouseEnter={() => setIsHover(true)}
                 onMouseLeave={() => setIsHover(false)}
-                className="flex overflow-x-auto scrollbar-hide space-x-6 md:space-x-8 py-4 px-6 md:px-[calc((100vw-1280px)/2)] w-full"
+                className="flex overflow-x-auto scrollbar-hide space-x-6 md:space-x-8 py-4 px-6 md:px-[calc((100vw-1280px)/2)] w-full antialiased"
+                style={{ scrollBehavior: 'auto' }}
             >
-                {instructors.map((instructor) => (
+                {displayInstructors.map((instructor, idx) => (
                     <div
-                        key={instructor.id}
+                        key={`${instructor.id}-${idx}`}
                         className="min-w-[260px] w-[260px] md:min-w-[320px] md:w-[320px] group relative flex-shrink-0"
                     >
                         <div className="aspect-[4/5] relative overflow-hidden rounded-2xl bg-gray-900 border border-gray-800 group-hover:border-orange-500/50 transition-all duration-500 shadow-xl group-hover:shadow-orange-900/10">
@@ -88,4 +95,3 @@ export default function InstructorsSection({ instructors, speed = 1, intervalMs 
         </section>
     );
 }
-
