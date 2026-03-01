@@ -48,9 +48,12 @@ export default function AutoScrollCourses({ courses, speed = 1, intervalMs = 16 
   return (
     <div className="bg-black w-full py-12 border-t border-gray-900">
       {/* Başlık satırı */}
-      <div className="max-w-[1400px] mx-auto px-6 mb-8 flex items-end justify-between">
+      <div className="max-w-[1400px] mx-auto px-6 mb-8">
         <div>
-          <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight">Öne Çıkan Eğitimler</h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight mb-4">Öne Çıkan <span className="text-orange-500">Eğitimler</span></h2>
+          <p className="text-gray-400 text-base md:text-lg leading-relaxed max-w-2xl">
+            Temel mutfak becerilerinden ileri düzey gastronomi tekniklerine kadar, profesyonel şefler tarafından hazırlanan kapsamlı eğitimlerle mutfaktaki yeteneklerinizi keşfedin.
+          </p>
         </div>
       </div>
 
@@ -90,17 +93,14 @@ export default function AutoScrollCourses({ courses, speed = 1, intervalMs = 16 
                 <div className="absolute inset-0 p-5 md:p-8 flex flex-col justify-end">
                   <div className="transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
                     {course.instructor?.name && (
-                      <div className="flex items-center gap-2 mb-2">
+                      <div className="flex items-center gap-2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">
                         <span className="w-6 h-[1px] bg-orange-500"></span>
                         <p className="text-orange-400 text-xs font-semibold uppercase tracking-widest">{course.instructor.name}</p>
                       </div>
                     )}
-                    <h3 className="text-white font-bold text-xl md:text-2xl leading-tight mb-2 group-hover:text-orange-50 transition-colors">
+                    <h3 className="text-white font-bold text-xl md:text-2xl leading-tight mb-2 md:mb-3 group-hover:text-orange-50 transition-colors">
                       {course.title}
                     </h3>
-                    <p className="text-gray-400 text-xs md:text-sm leading-relaxed line-clamp-2">
-                      {course.description}
-                    </p>
                   </div>
                 </div>
               </div>

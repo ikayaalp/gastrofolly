@@ -86,11 +86,11 @@ export default function MobileAppSection() {
 
                             {/* Google Button */}
                             <button className="flex items-center gap-3 bg-black border border-[#A6A6A6]/30 rounded-2xl px-5 py-3 hover:bg-white/5 transition-all w-[220px] h-[64px]">
-                                <svg viewBox="0 0 512 512" className="w-8 h-8 flex-shrink-0" xmlns="http://www.w3.org/2000/svg">
-                                    <path fill="#2196F3" d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1z" />
-                                    <path fill="#4CAF50" d="M47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0z" />
-                                    <path fill="#FFC107" d="M472.2 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-14.3 18-46.5-1.2-60.8z" />
-                                    <path fill="#F44336" d="M104.6 499l220.7-221.1 60.1 60.1L104.6 499z" />
+                                <svg viewBox="0 0 24 24" className="w-8 h-8 flex-shrink-0">
+                                    <path fill="#4285F4" d="M22.018 13.298l-3.919 2.218-3.515-3.493 3.543-3.521 3.891 2.202a1.49 1.49 0 0 1 0 2.594z" />
+                                    <path fill="#34A853" d="M1.337.924a1.486 1.486 0 0 0-.112.568v21.017c0 .217.045.419.112.568l11.075-11.052L1.337.924z" />
+                                    <path fill="#FBBC04" d="M14.584 12.023l3.515 3.493-12.842 7.278a1.474 1.474 0 0 1-1.92-.27l11.247-10.501z" />
+                                    <path fill="#EA4335" d="M14.584 12.023L3.337.924a1.474 1.474 0 0 1 1.92-.266l12.842 7.365-3.515 3.5z" />
                                 </svg>
                                 <div className="text-left">
                                     <p className="text-white text-sm leading-tight">Google Play</p>
