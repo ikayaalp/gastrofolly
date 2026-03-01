@@ -99,8 +99,8 @@ export default function CategoryPage() {
             <header className="fixed top-0 left-0 right-0 z-50 bg-[#0a0a0a] border-b border-gray-800">
                 <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
                     <div className="flex items-center justify-between h-16">
-                        <Link href="/" className="flex items-center gap-2">
-                            <div className="relative w-9 h-9">
+                        <Link href="/" className="flex items-center gap-0.5">
+                            <div className="relative w-10 h-10">
                                 <Image
                                     src="/logo.jpeg"
                                     alt="C"
@@ -108,7 +108,7 @@ export default function CategoryPage() {
                                     className="object-contain"
                                 />
                             </div>
-                            <span className="text-xl font-bold tracking-tight">
+                            <span className="text-2xl font-bold tracking-tight">
                                 <span className="text-orange-500">ulin</span>
                                 <span className="text-white">ora</span>
                             </span>

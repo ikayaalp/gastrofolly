@@ -174,8 +174,8 @@ function ResetPasswordForm() {
                     <div className="flex-1 h-2 bg-gray-700 rounded-full overflow-hidden">
                       <div
                         className={`h-full transition-all duration-300 ${passwordValidation.strength === 'strong' ? 'bg-green-500 w-full' :
-                            passwordValidation.strength === 'medium' ? 'bg-yellow-500 w-2/3' :
-                              'bg-red-500 w-1/3'
+                          passwordValidation.strength === 'medium' ? 'bg-yellow-500 w-2/3' :
+                            'bg-red-500 w-1/3'
                           }`}
                       />
                     </div>
@@ -250,8 +250,8 @@ function ResetPasswordForm() {
         </div>
 
         <div className="text-center">
-          <Link href="/" className="flex items-center justify-center space-x-2 text-gray-400 hover:text-white">
-            <div className="relative w-6 h-6">
+          <Link href="/" className="flex items-center justify-center gap-0.5">
+            <div className="relative w-10 h-10">
               <Image
                 src="/logo.jpeg"
                 alt="C"
@@ -259,7 +259,10 @@ function ResetPasswordForm() {
                 className="object-contain"
               />
             </div>
-            <span>Culinora&apos;a Dön</span>
+            <span className="text-2xl font-bold tracking-tight">
+              <span className="text-orange-500">ulin</span>
+              <span className="text-white">ora</span>
+            </span>
           </Link>
         </div>
       </div>

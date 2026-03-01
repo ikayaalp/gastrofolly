@@ -66,7 +66,7 @@ function SignInForm() {
                 <div>
                     <div className="flex justify-center">
                         <Link href="/" className="flex items-center gap-0.5">
-                            <div className="relative w-12 h-12">
+                            <div className="relative w-10 h-10">
                                 <Image src="/logo.jpeg" alt="C" fill className="object-contain" />
                             </div>
                             <span className="text-2xl font-bold tracking-tight">
