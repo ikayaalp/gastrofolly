@@ -1,0 +1,41 @@
+﻿Category: Temel Mutfak (cmipdr941000kzqeebfaoruat)
+  Course Count: 6
+  Published Course Count: 3
+    - Profesyonel B─▒├ğak Bilgisi ve Kullan─▒m─▒ (Published)
+    - Temel Pi┼şirme Teknikleri (Published)
+    - Profesyonel Do─şrama Teknikleri (Published)
+    - Temel Mutfak Teknikleri (Draft)
+    - Taze Makarna Yap─▒m─▒  (Draft)
+    -  (Draft)
+---
+Category: T├╝rk Mutfa─ş─▒ (cmipdr942000lzqeel530jph4)
+  Course Count: 2
+  Published Course Count: 0
+    - Osmanl─▒ Saray Mutfa─ş─▒ (Draft)
+    - T├╝rk Mutfa─ş─▒ Klasikleri (Draft)
+---
+Category: Pastane Sanat─▒ (cmipdr98t000mzqee2j5m06b2)
+  Course Count: 1
+  Published Course Count: 0
+    - ├çikolata Sanat─▒ (Draft)
+---
+Category: ─░talyan Mutfa─ş─▒ (cmlwtgjcz000400eb2kkvwwtt)
+  Course Count: 0
+  Published Course Count: 0
+---
+Category: Soslar (cmlzr8yqd002602ee2bfg8oey)
+  Course Count: 2
+  Published Course Count: 0
+    - 	Fond ve Jus ├£retimi (Draft)
+    - Temel Soslar ve T├╝reyenleri (Draft)
+---
+Category: ├çikolata (cmlzt3fa5005902eepps1cvs3)
+  Course Count: 1
+  Published Course Count: 1
+    - Bean to Bar ├çikolata (Published)
+---
+Category: Pastac─▒l─▒k (cmlzt8eqp005a02eek73ewzj8)
+  Course Count: 1
+  Published Course Count: 1
+    - Temel Butik Pastac─▒l─▒k (Published)
+---

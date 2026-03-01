@@ -151,26 +151,6 @@ export default function CategoryPage() {
                         {/* Sidebar - NeoSkola Style (Clean List) */}
                         <aside className="lg:w-56 flex-shrink-0">
 
-                            {/* Sort */}
-                            <div className="mb-8">
-                                <h3 className="text-white text-sm font-bold mb-4">Sıralama</h3>
-                                <div className="flex flex-col gap-1">
-                                    {[
-                                        { id: "newest", label: "Yeni Eklenenler" },
-                                        { id: "popular", label: "En Çok İzlenenler" },
-                                        { id: "rating", label: "En Yüksek Puanlı" }
-                                    ].map(option => (
-                                        <button
-                                            key={option.id}
-                                            onClick={() => setSortBy(option.id as any)}
-                                            className={`text-left text-sm py-1.5 transition-colors ${sortBy === option.id ? "text-orange-500 font-medium" : "text-gray-400 hover:text-gray-200"
-                                                }`}
-                                        >
-                                            {option.label}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
 
                             {/* Categories */}
                             <div>

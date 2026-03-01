@@ -9,7 +9,11 @@ export async function GET() {
         const categories = await (prisma as any).category.findMany({
             include: {
                 _count: {
-                    select: { courses: true }
+                    select: {
+                        courses: {
+                            where: { isPublished: true }
+                        }
+                    }
                 }
             },
             orderBy: { name: 'asc' }
@@ -17,13 +21,15 @@ export async function GET() {
 
         console.log(`API: Successfully fetched ${categories.length} categories`);
 
-        const formattedCategories = categories.map((cat: any) => ({
-            id: cat.id,
-            name: cat.name,
-            slug: cat.slug,
-            imageUrl: cat.imageUrl,
-            courseCount: cat._count?.courses || 0
-        }));
+        const formattedCategories = categories
+            .filter((cat: any) => cat._count?.courses > 0)
+            .map((cat: any) => ({
+                id: cat.id,
+                name: cat.name,
+                slug: cat.slug,
+                imageUrl: cat.imageUrl,
+                courseCount: cat._count?.courses || 0
+            }));
 
         return NextResponse.json({ categories: formattedCategories });
     } catch (error: any) {

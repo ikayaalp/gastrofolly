@@ -38,7 +38,11 @@ async function getLandingData() {
         take: 12
       },
       _count: {
-        select: { courses: true }
+        select: {
+          courses: {
+            where: { isPublished: true }
+          }
+        }
       }
     }
   });
@@ -134,12 +138,14 @@ async function getLandingData() {
   }));
 
   // Format categories
-  const categories = categoriesData.map(c => ({
-    id: c.id,
-    name: c.name,
-    slug: c.slug,
-    courseCount: c._count.courses
-  }));
+  const categories = categoriesData
+    .filter(c => c._count.courses > 0)
+    .map(c => ({
+      id: c.id,
+      name: c.name,
+      slug: c.slug,
+      courseCount: c._count.courses
+    }));
 
   return { categories, featured: formattedFeatured, userCourses };
 }
