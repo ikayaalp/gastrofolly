@@ -84,7 +84,7 @@ export default function MobileAppSection() {
                                 </div>
                             </button>
 
-                            {/* Google Play Button */}
+                            {/* Google Button */}
                             <button className="flex items-center gap-3 bg-black border border-[#A6A6A6]/30 rounded-2xl px-5 py-3 hover:bg-white/5 transition-all w-[220px] h-[64px]">
                                 <svg viewBox="0 0 512 512" className="w-8 h-8 flex-shrink-0" xmlns="http://www.w3.org/2000/svg">
                                     <path fill="#2196F3" d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1z" />
