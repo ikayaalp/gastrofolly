@@ -84,13 +84,13 @@ export default function MobileAppSection() {
                                 </div>
                             </button>
 
-                            {/* Google Play Button - Pixel Perfect Code Implementation */}
+                            {/* Google Play Button - Official Logo & Text */}
                             <button className="flex items-center gap-3 bg-black border border-gray-700/50 rounded-xl px-5 py-2 hover:bg-white/5 transition-all w-full sm:w-auto">
                                 <svg viewBox="0 0 512 512" className="w-8 h-8">
-                                    <path fill="#4DB6AC" d="M12 50l253 254L12 558z" transform="scale(.8) translate(40 40)" />
-                                    <path fill="#D32F2F" d="M12 50l253 254L505 50z" transform="scale(.8) translate(40 40)" />
-                                    <path fill="#FBC02D" d="M505 50l-240 254L505 558z" transform="scale(.8) translate(40 40)" />
-                                    <path fill="#1976D2" d="M12 558l253-254 240 254z" transform="scale(.8) translate(40 40)" />
+                                    <path fill="#00F0FF" d="M12 50.15V522c0 10.33 5.48 19.34 13.68 24.36l252.09-252.09L12 50.15z" transform="scale(.9) translate(30 20)" />
+                                    <path fill="#00FF75" d="M414.77 163.63L114.34 5.37C105.58.62 95.83-1.07 86.67.93l191.09 191.09 137.01-28.39z" transform="scale(.9) translate(30 20)" />
+                                    <path fill="#FFBD00" d="M414.77 408.37l-137.01-28.39L86.67 571.07c9.16 2 18.91.31 27.67-4.44l300.43-158.26z" transform="scale(.9) translate(30 20)" />
+                                    <path fill="#FF3D00" d="M495.63 243.63L414.77 163.63 277.76 286l137.01 122.37 80.86-80z" transform="scale(.9) translate(30 20)" />
                                 </svg>
                                 <div className="text-left text-white leading-tight">
                                     <p className="text-[10px] font-semibold">Google Play'den</p>
