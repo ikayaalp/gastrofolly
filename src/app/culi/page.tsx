@@ -248,7 +248,7 @@ export default function CuliPage() {
             </div>
 
             {/* Main Content */}
-            <div className="flex-1 flex overflow-hidden">
+            <div className="flex-1 flex overflow-hidden md:pt-[73px]">
                 {/* Sidebar */}
                 <div className={`${isSidebarOpen ? 'w-72' : 'w-0'} transition-all duration-300 bg-[#0a0a0a] border-r border-gray-800 flex flex-col overflow-hidden`}>
                     {/* New Chat Button */}
