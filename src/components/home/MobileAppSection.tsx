@@ -84,19 +84,10 @@ export default function MobileAppSection() {
                                 </div>
                             </button>
 
-                            {/* Google Play Button */}
-                            <button className="flex items-center gap-3 bg-black border border-[#A6A6A6] rounded-lg px-4 py-2.5 hover:bg-white/5 transition-all w-full sm:w-auto">
-                                <svg viewBox="0 0 24 24" className="w-7 h-7 flex-shrink-0">
-                                    <path fill="#4285F4" d="M22.018 13.298l-3.919 2.218-3.515-3.493 3.543-3.521 3.891 2.202a1.49 1.49 0 0 1 0 2.594z" />
-                                    <path fill="#34A853" d="M1.337.924a1.486 1.486 0 0 0-.112.568v21.017c0 .217.045.419.112.568l11.075-11.052L1.337.924z" />
-                                    <path fill="#FBBC04" d="M14.584 12.023l3.515 3.493-12.842 7.278a1.474 1.474 0 0 1-1.92-.27l11.247-10.501z" />
-                                    <path fill="#EA4335" d="M14.584 12.023L3.337.924a1.474 1.474 0 0 1 1.92-.266l12.842 7.365-3.515 3.5z" />
-                                </svg>
-                                <div className="text-left">
-                                    <p className="text-white text-[10px] leading-tight">Hemen İndirin</p>
-                                    <p className="text-white text-lg font-semibold leading-tight">Google Play</p>
-                                </div>
-                            </button>
+                            {/* Google Play Button - Official Google Badge */}
+                            <a href="#" className="block w-full sm:w-auto transition-transform hover:scale-105 duration-300">
+                                <img src="/assets/google-play-badge.png" alt="Google Play'den Hemen İndirin" className="h-[52px] w-auto object-contain" />
+                            </a>
                         </div>
                     </motion.div>
                 </div>
