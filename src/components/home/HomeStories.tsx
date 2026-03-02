@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
-import { X, ChevronUp, Plus, Video } from 'lucide-react';
+import { X, ChevronUp, ChevronLeft, ChevronRight, Plus, Video } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { getOptimizedMediaUrl } from '@/lib/utils';
 
@@ -206,6 +206,18 @@ export default function HomeStories() {
     const [stories, setStories] = useState<StoryGroup[]>([]);
     const [viewerVisible, setViewerVisible] = useState(false);
     const [selectedGroupIndex, setSelectedGroupIndex] = useState(0);
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
+    const [canScrollLeft, setCanScrollLeft] = useState(false);
+    const [canScrollRight, setCanScrollRight] = useState(false);
+    const [showControls, setShowControls] = useState(false);
+
+    const checkScrollability = () => {
+        if (scrollContainerRef.current) {
+            const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+            setCanScrollLeft(scrollLeft > 0);
+            setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+        }
+    };
 
     useEffect(() => {
         const fetchStories = async () => {
@@ -219,16 +231,12 @@ export default function HomeStories() {
                     const groupedMap = new Map();
 
                     data.stories.forEach((story: any) => {
-                        // Grouping strategy: If title exists, group by title. If not, group by creatorId.
-                        // This allows "Highlights" style grouping if user provides tags/titles.
                         const groupKey = story.title
                             ? `title_${story.title.toLowerCase().trim()}`
                             : `user_${story.creatorId || story.creator?.name || 'anonymous'}`;
 
                         if (!groupedMap.has(groupKey)) {
-                            // Use the custom title or creator name
                             const displayName = story.title || story.creator?.name || "Culinora";
-                            // Use custom coverImage, or creator image, or fallback to first story's media
                             const avatarUrl = story.coverImage || story.creator?.image ||
                                 (story.mediaType === 'IMAGE' ? story.mediaUrl : story.mediaUrl.replace(/\.[^.]+$/, '.jpg'));
 
@@ -254,6 +262,27 @@ export default function HomeStories() {
         fetchStories();
     }, []);
 
+    useEffect(() => {
+        checkScrollability();
+        const container = scrollContainerRef.current;
+        if (container) {
+            container.addEventListener('scroll', checkScrollability);
+            return () => container.removeEventListener('scroll', checkScrollability);
+        }
+    }, [stories]);
+
+    const scrollLeftHandler = () => {
+        if (scrollContainerRef.current) {
+            scrollContainerRef.current.scrollBy({ left: -300, behavior: 'smooth' });
+        }
+    };
+
+    const scrollRightHandler = () => {
+        if (scrollContainerRef.current) {
+            scrollContainerRef.current.scrollBy({ left: 300, behavior: 'smooth' });
+        }
+    };
+
     const openStory = (index: number) => {
         setSelectedGroupIndex(index);
         setViewerVisible(true);
@@ -262,16 +291,43 @@ export default function HomeStories() {
     if (stories.length === 0) return null;
 
     return (
-        <div className="py-4 md:py-8 overflow-x-auto scrollbar-hide">
-            <div className="flex space-x-4 md:space-x-8">
+        <div
+            className="py-4 md:py-8 relative"
+            onMouseEnter={() => setShowControls(true)}
+            onMouseLeave={() => setShowControls(false)}
+        >
+            {/* Sol Ok */}
+            {canScrollLeft && (
+                <button
+                    onClick={scrollLeftHandler}
+                    className={`absolute left-0 top-0 bottom-0 z-10 bg-black/50 hover:bg-black/70 text-white w-10 flex items-center justify-center transition-opacity duration-200 rounded-r-lg ${showControls ? 'opacity-100' : 'opacity-0'}`}
+                >
+                    <ChevronLeft className="h-6 w-6" />
+                </button>
+            )}
+
+            {/* Sağ Ok */}
+            {canScrollRight && (
+                <button
+                    onClick={scrollRightHandler}
+                    className={`absolute right-0 top-0 bottom-0 z-10 bg-black/50 hover:bg-black/70 text-white w-10 flex items-center justify-center transition-opacity duration-200 rounded-l-lg ${showControls ? 'opacity-100' : 'opacity-0'}`}
+                >
+                    <ChevronRight className="h-6 w-6" />
+                </button>
+            )}
+
+            <div
+                ref={scrollContainerRef}
+                className="flex space-x-4 md:space-x-8 overflow-x-auto scrollbar-hide"
+            >
                 {stories.map((group, index) => (
                     <div
                         key={group.id}
                         className="flex flex-col items-center space-y-2 min-w-[104px] md:min-w-[128px] cursor-pointer"
                         onClick={() => openStory(index)}
                     >
-                        <div className={`w-[104px] h-[104px] md:w-[128px] md:h-[128px] rounded-full p-[2px] bg-gradient-to-tr from-orange-400 to-orange-600`}>
-                            <div className="w-full h-full rounded-full p-[2px] bg-black">
+                        <div className="w-[104px] h-[104px] md:w-[128px] md:h-[128px] rounded-full p-[2px] bg-gradient-to-tr from-orange-400 to-orange-600">
+                            <div className="w-full h-full rounded-full p-[2px] bg-[#0a0a0a]">
                                 <img
                                     src={getOptimizedMediaUrl(group.user.avatar, 'IMAGE')}
                                     alt={group.user.name}
