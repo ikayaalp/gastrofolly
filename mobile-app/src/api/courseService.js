@@ -39,6 +39,20 @@ const courseService = {
         }
     },
 
+    // Get all categories from backend
+    getCategories: async () => {
+        try {
+            const response = await api.get(config.API_ENDPOINTS.CATEGORIES);
+            return { success: true, data: response.data };
+        } catch (error) {
+            console.error('Categories error:', error);
+            return {
+                success: false,
+                error: error.response?.data?.message || 'Kategoriler yüklenemedi',
+            };
+        }
+    },
+
     // Get user's enrolled courses
     getUserCourses: async () => {
         try {

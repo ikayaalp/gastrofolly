@@ -4,6 +4,7 @@ import { StyleSheet, Text, View, Image, Dimensions, TouchableOpacity, ScrollView
 import { Ionicons } from '@expo/vector-icons';
 import { ChefHat, BookOpen, Star, Play, Plus, Info } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import Logo from '../components/Logo';
 import courseService from '../api/courseService';
 import authService from '../api/authService';
 import storyService from '../api/storyService';
@@ -331,8 +332,7 @@ export default function HomeScreen({ navigation }) {
             <View style={styles.header}>
                 <View style={styles.headerContent}>
                     <View style={styles.logoContainer}>
-                        <ChefHat color="#f97316" size={24} />
-                        <Text style={styles.logoText}>Culinora</Text>
+                        <Logo size="md" />
                     </View>
                     <View style={styles.headerActions}>
                         <TouchableOpacity
@@ -359,7 +359,7 @@ export default function HomeScreen({ navigation }) {
                 }
             >
                 {/* Auto-Scrolling Carousel */}
-                {featuredCourses.length > 0 && (
+                {featuredCourses && featuredCourses.length > 0 && (
                     <View style={styles.carouselSection}>
                         <ScrollView
                             ref={scrollViewRef}
@@ -372,7 +372,7 @@ export default function HomeScreen({ navigation }) {
                         >
                             {featuredCourses.slice(0, 5).map((course, index) => (
                                 <TouchableOpacity
-                                    key={course.id || index}
+                                    key={course.id || `featured-${index}`}
                                     style={[styles.carouselCard, { width }]}
                                     activeOpacity={0.9}
                                     onPress={() => navigation.navigate('CourseDetail', { courseId: course.id })}
@@ -386,15 +386,12 @@ export default function HomeScreen({ navigation }) {
                                         style={styles.carouselGradient}
                                     >
                                         <View style={styles.carouselContent}>
-
                                             <Text style={styles.carouselTitle} numberOfLines={2}>
                                                 {course.title}
                                             </Text>
-
                                             <View style={styles.metaContainer}>
                                                 <Text style={styles.metaText}>Eğitmen: {course.instructor?.name || 'Şef'}</Text>
                                             </View>
-
                                             <View style={styles.actionButtons}>
                                                 <TouchableOpacity
                                                     style={styles.playButton}
@@ -413,7 +410,7 @@ export default function HomeScreen({ navigation }) {
                 )}
 
                 {/* My Courses Section (Continue Watching) */}
-                {userCourses.length > 0 && (
+                {userCourses && userCourses.length > 0 && (
                     <View style={styles.section}>
                         <Text style={styles.sectionTitle}>Kaldığın Yerden Devam Et</Text>
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
@@ -423,7 +420,7 @@ export default function HomeScreen({ navigation }) {
                 )}
 
                 {/* Featured Courses Section */}
-                {featuredCourses.length > 0 && (
+                {featuredCourses && featuredCourses.length > 0 && (
                     <View style={styles.section}>
                         <Text style={styles.sectionTitle}>Öne Çıkan Kurslar</Text>
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
@@ -435,8 +432,8 @@ export default function HomeScreen({ navigation }) {
                 {/* Stories Section */}
                 <Stories stories={stories} navigation={navigation} />
 
-                {/* Popular Courses Section - Netflix-style with ranking numbers */}
-                {popularCourses.length > 0 && (
+                {/* Popular Courses Section */}
+                {popularCourses && popularCourses.length > 0 && (
                     <View style={styles.section}>
                         <Text style={styles.sectionTitle}>Popüler Kurslar</Text>
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.rankedHorizontalScroll}>
@@ -445,8 +442,8 @@ export default function HomeScreen({ navigation }) {
                     </View>
                 )}
 
-                {/* Recent Courses Section - Large vertical cards */}
-                {recentCourses.length > 0 && (
+                {/* Recent Courses Section */}
+                {recentCourses && recentCourses.length > 0 && (
                     <View style={styles.section}>
                         <Text style={styles.sectionTitle}>Yeni Eklenen Kurslar</Text>
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
@@ -456,18 +453,21 @@ export default function HomeScreen({ navigation }) {
                 )}
 
                 {/* Categories Sections */}
-                {categories.map((category) => (
-                    category.courses && category.courses.length > 0 && (
-                        <View key={category.id} style={styles.section}>
-                            <Text style={styles.sectionTitle}>{category.name}</Text>
-                            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
-                                {category.courses.map((course, index) => renderCourseCard(course, index))}
-                            </ScrollView>
-                        </View>
-                    )
-                ))}
+                {categories && categories.length > 0 && categories.map((category) => {
+                    if (category.courses && category.courses.length > 0) {
+                        return (
+                            <View key={category.id} style={styles.section}>
+                                <Text style={styles.sectionTitle}>{category.name}</Text>
+                                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
+                                    {category.courses.map((course, index) => renderCourseCard(course, index))}
+                                </ScrollView>
+                            </View>
+                        );
+                    }
+                    return null;
+                })}
             </ScrollView>
-        </View >
+        </View>
     );
 }
 
@@ -548,7 +548,7 @@ const styles = StyleSheet.create({
     courseImage: {
         width: '100%',
         height: '100%',
-        resizeMode: 'cover',
+        resizeMode: 'stretch',
     },
     courseOverlay: {
         position: 'absolute',

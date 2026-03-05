@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ChefHat, Mail } from 'lucide-react-native';
 import authService from '../api/authService';
 import CustomAlert from '../components/CustomAlert';
+import Logo from '../components/Logo';
 
 export default function EmailVerificationScreen({ route, navigation }) {
     const { email } = route.params;
@@ -61,8 +62,7 @@ export default function EmailVerificationScreen({ route, navigation }) {
                 <ScrollView contentContainerStyle={styles.scrollContent}>
                     {/* Header */}
                     <View style={styles.header}>
-                        <ChefHat color="#f97316" size={48} />
-                        <Text style={styles.title}>E-posta Doğrulama</Text>
+                        <Logo size="xl" style={{ marginBottom: 15 }} />
                         <Text style={styles.subtitle}>
                             {email} adresine gönderilen 6 haneli kodu girin
                         </Text>

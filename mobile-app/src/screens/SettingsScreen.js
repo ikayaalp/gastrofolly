@@ -72,7 +72,7 @@ export default function SettingsScreen({ navigation }) {
     const handleHelp = () => {
         showAlert(
             'Yardım Merkezi',
-            'Destek için bize e-posta gönderebilirsiniz:\n\nsupport@culinora.com',
+            'Destek için bize e-posta gönderebilirsiniz:\n\ninfo@culinora.net',
             [{ text: "Kopyala", onPress: () => { } }, { text: "Tamam" }],
             'info'
         );

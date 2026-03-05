@@ -118,7 +118,7 @@ export default function TopicCard({
                                         <Image
                                             source={{ uri: url }}
                                             style={[styles.topicMediaImage, { width: width, height: width }]}
-                                            resizeMode="cover"
+                                            resizeMode="stretch"
                                         />
                                     </TouchableOpacity>
                                 )}
@@ -140,7 +140,7 @@ export default function TopicCard({
                             <Image
                                 source={{ uri: mediaUrls[0] }}
                                 style={[styles.topicMediaImage, { width: width, height: width }]}
-                                resizeMode="cover"
+                                resizeMode="stretch"
                             />
                         </TouchableOpacity>
                     )}
@@ -162,7 +162,7 @@ export default function TopicCard({
                         <Video
                             source={{ uri: item.mediaUrl }}
                             style={[styles.topicMediaImage, { width: width, height: width }]}
-                            resizeMode={ResizeMode.COVER}
+                            resizeMode={ResizeMode.STRETCH}
                             shouldPlay
                             isLooping
                             isMuted
@@ -183,7 +183,7 @@ export default function TopicCard({
                         <Image
                             source={{ uri: item.thumbnailUrl || 'https://via.placeholder.com/400x240?text=Video' }}
                             style={[styles.topicMediaImage, { width: width, height: width }]}
-                            resizeMode="cover"
+                            resizeMode="stretch"
                         />
                     )}
 

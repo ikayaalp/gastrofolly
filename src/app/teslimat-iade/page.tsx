@@ -23,22 +23,22 @@ export default async function DeliveryReturnPage() {
                         <Link href={session?.user ? "/home" : "/"} className="flex items-center gap-0.5">
                             <div className="relative w-10 h-10">
 
-                              <Image
+                                <Image
 
-                                src="/logo.jpeg"
+                                    src="/logo.jpeg"
 
-                                alt="C"
+                                    alt="C"
 
-                                fill
+                                    fill
 
-                                className="object-contain"
+                                    className="object-contain"
 
-                              />
+                                />
 
                             </div>
                             <span className="text-2xl font-bold tracking-tight">
-                              <span className="text-orange-500">ulin</span>
-                              <span className="text-white">ora</span>
+                                <span className="text-orange-500">ulin</span>
+                                <span className="text-white">ora</span>
                             </span>
                         </Link>
                         <nav className="hidden md:flex space-x-8">
@@ -142,7 +142,7 @@ export default async function DeliveryReturnPage() {
                                 <p>İade talebiniz aşağıdaki adımlarla gerçekleştirilir:</p>
                                 <ol className="list-decimal list-inside space-y-2 ml-4">
                                     <li>
-                                        <strong className="text-white">destek@culinora.com</strong> adresine veya{" "}
+                                        <strong className="text-white">info@culinora.net</strong> adresine veya{" "}
                                         <Link href="/contact" className="text-orange-500 hover:text-orange-400 transition-colors">İletişim</Link> sayfasından başvurun.
                                     </li>
                                     <li>Üyelik bilgilerinizi ve iade gerekçenizi belirtin.</li>

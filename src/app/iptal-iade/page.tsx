@@ -23,22 +23,22 @@ export default async function CancellationRefundPage() {
                         <Link href={session?.user ? "/home" : "/"} className="flex items-center gap-0.5">
                             <div className="relative w-10 h-10">
 
-                              <Image
+                                <Image
 
-                                src="/logo.jpeg"
+                                    src="/logo.jpeg"
 
-                                alt="C"
+                                    alt="C"
 
-                                fill
+                                    fill
 
-                                className="object-contain"
+                                    className="object-contain"
 
-                              />
+                                />
 
                             </div>
                             <span className="text-2xl font-bold tracking-tight">
-                              <span className="text-orange-500">ulin</span>
-                              <span className="text-white">ora</span>
+                                <span className="text-orange-500">ulin</span>
+                                <span className="text-white">ora</span>
                             </span>
                         </Link>
                         <nav className="hidden md:flex space-x-8">
@@ -151,7 +151,7 @@ export default async function CancellationRefundPage() {
                             </p>
                             <div className="mt-4 bg-gray-900/50 rounded-xl p-6 border border-gray-800">
                                 <p className="text-gray-300">
-                                    <strong className="text-white">E-posta:</strong> destek@culinora.com
+                                    <strong className="text-white">E-posta:</strong> info@culinora.net
                                 </p>
                                 <p className="text-gray-300 mt-2">
                                     <strong className="text-white">İletişim Sayfası:</strong>{" "}

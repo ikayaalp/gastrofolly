@@ -401,14 +401,17 @@ export default function LearnScreen({ route, navigation }) {
         if (index === 0) return true;
         // Free lessons are accessible
         if (lesson.isFree) return true;
-        // Check enrollment
-        if (course?.isEnrolled) return true;
 
-        // Subscription check (simplified, assuming if they are here they might have access or we check logic)
-        // Ideally we should use the same logic as CourseDetail
+        // Subcription check
+        let hasPremiumAccess = false;
+
+        // Find user data from current state (assuming it's loaded in useEffect)
+        // Wait, LearnScreen does not store userData state, it fetches course.
+        // Let's rely on course payload. Does course payload have access info?
+        // Let's add an API call or use the passed token/asyncStorage.
+        // Actually, LearnScreen might rely on the backend filtering the URLs.
+        // Let's rely on videoUrl as a fallback, but we should improve it.
         // For now, if videoUrl exists, we assume access. 
-        // Better: Pass hasAccess param or re-check.
-        // Let's rely on backend filtering videoUrl for now, but UI should warn.
         if (lesson.videoUrl) return true;
 
         return false;

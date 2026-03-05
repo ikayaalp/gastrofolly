@@ -181,12 +181,12 @@ export default async function ContactPage() {
               </div>
               <h3 className="text-xl font-bold text-white mb-2">E-posta</h3>
               <p className="text-gray-400 text-sm mb-4">24 saat içinde yanıt</p>
-              <a href="mailto:info@gastrofolly.com" className="text-orange-500 hover:text-orange-400 font-semibold">
-                info@gastrofolly.com
+              <a href="mailto:info@culinora.net" className="text-orange-500 hover:text-orange-400 font-semibold">
+                info@culinora.net
               </a>
               <br />
-              <a href="mailto:destek@gastrofolly.com" className="text-gray-400 hover:text-gray-300 text-sm">
-                destek@gastrofolly.com
+              <a href="mailto:info@culinora.net" className="text-gray-400 hover:text-gray-300 text-sm">
+                info@culinora.net
               </a>
             </div>
 
@@ -409,3 +409,4 @@ export default async function ContactPage() {
     </div>
   )
 }
+

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, Image } from 'react-native';
 import { ChefHat, Mail, ArrowLeft } from 'lucide-react-native';
 import authService from '../api/authService';
 import CustomAlert from '../components/CustomAlert';
 import AuthBackground from '../components/AuthBackground';
+import Logo from '../components/Logo';
 
 export default function ForgotPasswordScreen({ navigation }) {
     const [email, setEmail] = useState('');
@@ -62,8 +63,7 @@ export default function ForgotPasswordScreen({ navigation }) {
                 </TouchableOpacity>
 
                 <View style={styles.header}>
-                    <ChefHat color="#f97316" size={48} />
-                    <Text style={styles.title}>Şifremi Unuttum</Text>
+                    <Logo size="xl" style={{ marginBottom: 15 }} />
                     <Text style={styles.subtitle}>E-posta adresinize sıfırlama bağlantısı göndereceğiz</Text>
                 </View>
 

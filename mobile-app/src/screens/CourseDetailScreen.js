@@ -11,6 +11,7 @@ import {
     Linking,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import Logo from '../components/Logo';
 import {
     ChefHat,
     Clock,
@@ -20,10 +21,12 @@ import {
     Lock,
     CheckCircle,
     ArrowLeft,
+    Bookmark,
 } from 'lucide-react-native';
 import courseService from '../api/courseService';
 import authService from '../api/authService';
 import CustomAlert from '../components/CustomAlert';
+import favoritesService from '../services/favoritesService';
 
 const { width } = Dimensions.get('window');
 
@@ -40,6 +43,7 @@ export default function CourseDetailScreen({ route, navigation }) {
         buttons: [],
         type: 'info'
     });
+    const [isFavorite, setIsFavorite] = useState(false);
 
     const showAlert = (title, message, buttons = [{ text: 'Tamam' }], type = 'info') => {
         setAlertConfig({ title, message, buttons, type });
@@ -101,6 +105,10 @@ export default function CourseDetailScreen({ route, navigation }) {
 
             if (result.success) {
                 setCourse(result.data);
+
+                // Check if this course is in favorites
+                const favStatus = await favoritesService.isFavorite(courseId);
+                setIsFavorite(favStatus);
             } else {
                 throw new Error(result.error || 'Kurs bulunamadı');
             }
@@ -115,6 +123,29 @@ export default function CourseDetailScreen({ route, navigation }) {
             );
         } finally {
             setLoading(false);
+        }
+    };
+
+    const toggleFavorite = async () => {
+        if (!course) return;
+
+        if (isFavorite) {
+            await favoritesService.removeFavorite(course.id);
+            setIsFavorite(false);
+        } else {
+            // Need to construct a favorite item identical to what CoursesScreen expects
+            const favItem = {
+                id: course.id,
+                title: course.title,
+                imageUrl: course.imageUrl,
+                category: course.category,
+                instructor: course.instructor,
+                duration: course.duration,
+                _count: course._count,
+                course: course,
+            };
+            await favoritesService.addFavorite(favItem);
+            setIsFavorite(true);
         }
     };
 
@@ -169,20 +200,21 @@ export default function CourseDetailScreen({ route, navigation }) {
     }
 
     const checkAccess = () => {
-        // Enrolled users check REMOVED - strictly subscription based now
-        // if (course?.isEnrolled) return true;
+        let hasPremiumAccess = false;
+        const hasValidPlanName = userData?.subscriptionPlan && userData.subscriptionPlan !== 'FREE';
+        let isDateValid = false;
 
-        // Valid Premium Subscription
-        if (userData?.subscriptionPlan && userData.subscriptionPlan !== 'FREE') {
-            // Check expiry if available
-            if (userData.subscriptionEndDate) {
-                return new Date(userData.subscriptionEndDate) > new Date();
-            }
-            return true; // Assume valid if no date (infinite or lifetime?)
+        if (userData?.subscriptionEndDate) {
+            isDateValid = new Date(userData.subscriptionEndDate) > new Date();
+        } else {
+            isDateValid = hasValidPlanName;
         }
 
-        if (userData?.isSubscriptionValid) return true;
-        return false;
+        if (hasValidPlanName && isDateValid) {
+            hasPremiumAccess = true;
+        }
+
+        return hasPremiumAccess;
     };
 
     const levelInfo = getLevelInfo(course.level);
@@ -190,6 +222,9 @@ export default function CourseDetailScreen({ route, navigation }) {
     const totalDuration = getTotalDuration(course.lessons || []);
     const isEnrolled = course.isEnrolled || false;
     const hasAccess = checkAccess();
+
+    const displayImageUrl = course?.imageUrl || initialImageUrl || 'https://images.unsplash.com/photo-1556910103-1c02745a30bf?q=80&w=800';
+    const displayTitle = course?.title || initialTitle || 'Yükleniyor...';
 
     return (
         <View style={styles.container}>
@@ -199,8 +234,7 @@ export default function CourseDetailScreen({ route, navigation }) {
                     <ArrowLeft size={24} color="white" />
                 </TouchableOpacity>
                 <View style={styles.logoContainer}>
-                    <ChefHat size={28} color="#ea580c" />
-                    <Text style={styles.logoText}>Culinora</Text>
+                    <Logo size="md" />
                 </View>
                 <View style={{ width: 32 }} />
             </View>
@@ -224,10 +258,16 @@ export default function CourseDetailScreen({ route, navigation }) {
 
                 {/* Course Info */}
                 <View style={styles.contentContainer}>
-
-
-                    {/* Title */}
-                    <Text style={styles.title}>{course.title}</Text>
+                    {/* Title & Favorite Row */}
+                    <View style={styles.titleRow}>
+                        <Text style={[styles.title, { flex: 1 }]}>{course.title}</Text>
+                        <TouchableOpacity
+                            style={styles.favoriteBtn}
+                            onPress={toggleFavorite}
+                        >
+                            <Bookmark size={24} color={isFavorite ? "#ea580c" : "#9ca3af"} fill={isFavorite ? "#ea580c" : "none"} />
+                        </TouchableOpacity>
+                    </View>
 
                     {/* Description */}
                     <Text style={styles.description}>{course.description}</Text>
@@ -522,11 +562,22 @@ const styles = StyleSheet.create({
         fontSize: 12,
         fontWeight: '600',
     },
+    titleRow: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        marginBottom: 12,
+        gap: 16,
+    },
     title: {
         color: 'white',
         fontSize: 24,
         fontWeight: 'bold',
-        marginBottom: 12,
+    },
+    favoriteBtn: {
+        padding: 4,
+        marginTop: 4,
+        backgroundColor: 'rgba(255,255,255,0.05)',
+        borderRadius: 8,
     },
     description: {
         color: '#d1d5db',

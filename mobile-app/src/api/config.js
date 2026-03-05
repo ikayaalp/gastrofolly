@@ -9,5 +9,6 @@ export default {
         VERIFY_EMAIL: '/api/auth/verify-email',
         CANCEL_SUBSCRIPTION: '/api/user/subscription/cancel',
         GOOGLE_LOGIN: '/api/auth/google-mobile',
+        CATEGORIES: '/api/categories',
     },
 };

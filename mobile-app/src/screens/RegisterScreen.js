@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, Image } from 'react-native';
 import { ChefHat, Mail, Lock, User } from 'lucide-react-native';
 import authService from '../api/authService';
 import CustomAlert from '../components/CustomAlert';
 import AuthBackground from '../components/AuthBackground';
+import Logo from '../components/Logo';
 
 export default function RegisterScreen({ navigation }) {
     const [name, setName] = useState('');
@@ -71,8 +72,7 @@ export default function RegisterScreen({ navigation }) {
             <ScrollView contentContainerStyle={styles.scrollContent}>
                 {/* Header */}
                 <View style={styles.header}>
-                    <ChefHat color="#f97316" size={48} />
-                    <Text style={styles.title}>Culinora</Text>
+                    <Logo size="xl" style={{ marginBottom: 15 }} />
                     <Text style={styles.subtitle}>Gastronomi yolculuğunuza başlayın</Text>
                 </View>
 

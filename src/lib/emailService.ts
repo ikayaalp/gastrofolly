@@ -12,7 +12,7 @@ const createTransporter = (): Transporter<SMTPTransport.SentMessageInfo> => {
   return nodemailer.createTransport({
     service: 'gmail',
     auth: {
-      user: process.env.EMAIL_USER, // Gmail adresiniz
+      user: 'info@culinora.net',
       pass: process.env.EMAIL_PASSWORD, // Gmail App Password
     },
   })
@@ -37,7 +37,7 @@ export async function sendVerificationEmail(
     const transporter = createTransporter()
 
     const mailOptions = {
-      from: `"Culinora Platform" <${process.env.EMAIL_USER}>`,
+      from: `"Culinora" <info@culinora.net>`,
       to: to,
       subject: '🔐 Culinora - Email Doğrulama Kodunuz',
       html: `
@@ -217,7 +217,7 @@ export async function sendPasswordResetEmail(
     const transporter = createTransporter()
 
     const mailOptions = {
-      from: `"Culinora Platform" <${process.env.EMAIL_USER}>`,
+      from: `"Culinora" <info@culinora.net>`,
       to: to,
       subject: '🔑 Culinora - Şifre Sıfırlama',
       html: `
@@ -299,7 +299,7 @@ export async function sendSubscriptionStartedEmail(
     })
 
     const mailOptions = {
-      from: `"Culinora Platform" <${process.env.EMAIL_USER}>`,
+      from: `"Culinora" <info@culinora.net>`,
       to: to,
       subject: '🎉 Mutfaktaki Yeriniz Hazır! - Culinora Aboneliğiniz Başladı',
       html: `

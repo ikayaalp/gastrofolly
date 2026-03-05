@@ -19,7 +19,7 @@ const googleServicesJson = {
             "oauth_client": [],
             "api_key": [
                 {
-                    "current_key": "AIzaSyAJ3d9gm8iLbksaQhv3BnBgOeQbRFtxH5M"
+                    "current_key": process.env.FIREBASE_API_KEY || "AIzaSyAJ3d9gm8iLbksaQhv3BnBgOeQbRFtxH5M" // Fallback only for local dev without env
                 }
             ],
             "services": {
@@ -59,7 +59,11 @@ export default {
         },
         "ios": {
             "supportsTablet": true,
-            "bundleIdentifier": "com.chef2.app"
+            "bundleIdentifier": "com.chef2.app",
+            "infoPlist": {
+                "UIBackgroundModes": ["remote-notification"]
+            },
+            "googleServicesFile": "./GoogleService-Info.plist"
         },
         "android": {
             "package": "com.chef2.app",
@@ -83,12 +87,15 @@ export default {
                 }
             ],
             "expo-web-browser",
-            "expo-font"
+            "expo-font",
+            "expo-asset"
         ],
         "extra": {
             "eas": {
                 "projectId": "2c8e9c53-462a-426d-993b-42bce6d04342"
             }
-        }
+        },
+        "privacyPolicyUrl": "https://culinora.net/privacy-policy",
+        "termsOfServiceUrl": "https://culinora.net/terms"
     }
 };

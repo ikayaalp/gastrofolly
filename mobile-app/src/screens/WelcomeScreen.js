@@ -7,9 +7,11 @@ import {
     StatusBar,
     Dimensions,
     ScrollView,
+    Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ChefHat, Play, Star, Users, Crown, BookOpen, Zap, ArrowRight } from 'lucide-react-native';
+import Logo from '../components/Logo';
 
 const { width, height } = Dimensions.get('window');
 
@@ -25,8 +27,7 @@ export default function WelcomeScreen({ navigation }) {
             >
                 {/* Header */}
                 <View style={styles.header}>
-                    <ChefHat size={32} color="#ea580c" />
-                    <Text style={styles.headerTitle}>Culinora</Text>
+                    <Logo size="xl" />
                 </View>
 
                 {/* Hero Section */}

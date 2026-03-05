@@ -18,22 +18,22 @@ export default async function PrivacyPage() {
                         <Link href={session?.user ? "/home" : "/"} className="flex items-center gap-0.5">
                             <div className="relative w-10 h-10">
 
-                              <Image
+                                <Image
 
-                                src="/logo.jpeg"
+                                    src="/logo.jpeg"
 
-                                alt="C"
+                                    alt="C"
 
-                                fill
+                                    fill
 
-                                className="object-contain"
+                                    className="object-contain"
 
-                              />
+                                />
 
                             </div>
                             <span className="text-2xl font-bold tracking-tight">
-                              <span className="text-orange-500">ulin</span>
-                              <span className="text-white">ora</span>
+                                <span className="text-orange-500">ulin</span>
+                                <span className="text-white">ora</span>
                             </span>
                         </Link>
                         <nav className="hidden md:flex space-x-8">
@@ -105,7 +105,7 @@ export default async function PrivacyPage() {
                             </h2>
                             <p className="text-gray-400">
                                 KVKK ve GDPR kapsamında; verilerinize erişme, düzeltme, silme veya işlenmesine itiraz etme haklarına sahipsiniz.
-                                Bu haklarınızı kullanmak için privacy@culinora.net adresi üzerinden bizimle iletişime geçebilirsiniz.
+                                Bu haklarınızı kullanmak için info@culinora.net adresi üzerinden bizimle iletişime geçebilirsiniz.
                             </p>
                         </div>
                     </div>

@@ -7,6 +7,7 @@ import { makeRedirectUri } from 'expo-auth-session';
 import authService from '../api/authService';
 import CustomAlert from '../components/CustomAlert';
 import AuthBackground from '../components/AuthBackground';
+import Logo from '../components/Logo';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -105,8 +106,7 @@ export default function LoginScreen({ navigation }) {
             <ScrollView contentContainerStyle={styles.scrollContent}>
                 {/* Header */}
                 <View style={styles.header}>
-                    <ChefHat color="#f97316" size={48} />
-                    <Text style={styles.title}>Culinora</Text>
+                    <Logo size="xl" style={{ marginBottom: 15 }} />
                     <Text style={styles.subtitle}>Gastronomi dünyasına hoş geldiniz</Text>
                 </View>
 
