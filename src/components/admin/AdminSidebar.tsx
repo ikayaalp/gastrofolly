@@ -49,7 +49,7 @@ const sidebarItems = [
         icon: Users
     },
     {
-        title: "Fenomenler",
+        title: "Affiliate",
         href: "/admin/influencers",
         icon: Star
     },
@@ -82,7 +82,7 @@ export default function AdminSidebar({ className, onClose }: AdminSidebarProps) 
     return (
         <div className={cn("flex flex-col h-full bg-black border-r border-gray-800 w-64", className)}>
             <div className="p-6 border-b border-gray-800">
-                <div className="flex items-center gap-0.5">
+                <Link href="/home" className="flex items-center gap-0.5">
                     <div className="relative w-10 h-10 flex-shrink-0">
                         <Image
                             src="/logo.jpeg"
@@ -95,7 +95,7 @@ export default function AdminSidebar({ className, onClose }: AdminSidebarProps) 
                         <span className="text-orange-500">ulin</span>
                         <span className="text-white">ora</span>
                     </span>
-                </div>
+                </Link>
                 <p className="text-xs text-gray-500 mt-1 ml-0.5">Yönetim Paneli</p>
             </div>
 

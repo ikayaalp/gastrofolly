@@ -151,7 +151,7 @@ export default function HeroSection({ courses }: HeroSectionProps) {
 
             {/* Eğitmen Adı */}
             <p className="text-lg md:text-xl text-gray-300 mb-6 drop-shadow-md">
-              Şef {course.instructor.name}
+              Şef {course.instructor.name?.replace(/^Şef\s*/i, '')}
             </p>
 
 
