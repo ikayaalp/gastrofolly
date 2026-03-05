@@ -459,6 +459,127 @@ export async function sendSubscriptionStartedEmail(
 }
 
 /**
+ * Admin panelinden özel email gönder (tanıtım, duyuru vb.)
+ */
+export async function sendCustomEmail(
+  to: string,
+  subject: string,
+  messageHtml: string,
+  recipientName?: string
+): Promise<boolean> {
+  try {
+    const transporter = createTransporter()
+
+    const mailOptions = {
+      from: `"Culinora" <info@culinora.net>`,
+      to: to,
+      subject: subject,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <style>
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+              line-height: 1.6;
+              color: #333;
+              background-color: #f4f4f4;
+              margin: 0;
+              padding: 0;
+            }
+            .container {
+              max-width: 600px;
+              margin: 40px auto;
+              background: #ffffff;
+              border-radius: 12px;
+              overflow: hidden;
+              box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+            .header {
+              background: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
+              padding: 40px 20px;
+              text-align: center;
+            }
+            .header h1 {
+              margin: 0;
+              color: #ffffff;
+              font-size: 28px;
+              font-weight: 700;
+            }
+            .content {
+              padding: 40px 30px;
+            }
+            .greeting {
+              font-size: 18px;
+              margin-bottom: 20px;
+              color: #1f2937;
+            }
+            .message-body {
+              font-size: 16px;
+              color: #4b5563;
+              line-height: 1.8;
+            }
+            .message-body p {
+              margin: 0 0 16px 0;
+            }
+            .footer {
+              background: #f9fafb;
+              padding: 30px;
+              text-align: center;
+              border-top: 1px solid #e5e7eb;
+            }
+            .footer-text {
+              font-size: 14px;
+              color: #6b7280;
+              margin: 5px 0;
+            }
+            .unsubscribe {
+              font-size: 12px;
+              color: #9ca3af;
+              margin-top: 15px;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>Culinora</h1>
+            </div>
+            <div class="content">
+              ${recipientName ? `<div class="greeting">Merhaba ${recipientName}! 👋</div>` : ''}
+              <div class="message-body">
+                ${messageHtml}
+              </div>
+            </div>
+            <div class="footer">
+              <p class="footer-text">
+                <strong>Culinora Gastronomi Platformu</strong>
+              </p>
+              <p class="footer-text">
+                Profesyonel şeflerden gastronomi öğrenin
+              </p>
+              <p class="footer-text" style="margin-top: 15px; font-size: 12px;">
+                © ${new Date().getFullYear()} Culinora. Tüm hakları saklıdır.
+              </p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+    }
+
+    await transporter.sendMail(mailOptions)
+    console.log(`Custom email sent to ${to}`)
+    return true
+  } catch (error) {
+    console.error(`Error sending custom email to ${to}:`, error)
+    return false
+  }
+}
+
+/**
  * Kodun geçerlilik süresini kontrol et (10 dakika)
  */
 export function isCodeExpired(expiryDate: Date): boolean {

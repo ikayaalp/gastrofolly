@@ -16,7 +16,8 @@ import {
     LogOut,
     Camera,
     MessageCircle,
-    Star
+    Star,
+    Mail
 } from "lucide-react"
 
 const sidebarItems = [
@@ -61,6 +62,11 @@ const sidebarItems = [
         title: "Bildirimler",
         href: "/admin/notifications",
         icon: Bell
+    },
+    {
+        title: "Mail",
+        href: "/admin/mail",
+        icon: Mail
     }
 ]
 
