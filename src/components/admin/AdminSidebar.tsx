@@ -81,22 +81,22 @@ export default function AdminSidebar({ className, onClose }: AdminSidebarProps) 
 
     return (
         <div className={cn("flex flex-col h-full bg-black border-r border-gray-800 w-64", className)}>
-            <div className="p-6 flex items-center gap-1 border-b border-gray-800">
-                <div className="relative w-10 h-10">
-                    <Image
-                        src="/logo.jpeg"
-                        alt="C"
-                        fill
-                        className="object-contain"
-                    />
-                </div>
-                <div>
-                    <h1 className="text-lg font-bold tracking-tight">
+            <div className="p-6 border-b border-gray-800">
+                <div className="flex items-center gap-0.5">
+                    <div className="relative w-10 h-10 flex-shrink-0">
+                        <Image
+                            src="/logo.jpeg"
+                            alt="C"
+                            fill
+                            className="object-contain"
+                        />
+                    </div>
+                    <span className="text-2xl font-bold tracking-tight">
                         <span className="text-orange-500">ulin</span>
                         <span className="text-white">ora</span>
-                    </h1>
-                    <p className="text-xs text-gray-500">Yönetim Paneli</p>
+                    </span>
                 </div>
+                <p className="text-xs text-gray-500 mt-1 ml-0.5">Yönetim Paneli</p>
             </div>
 
             <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
