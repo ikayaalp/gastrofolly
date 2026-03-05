@@ -61,13 +61,12 @@ function SubscriptionContent() {
 
     // URL'den gelen plan parametresi varsa, direkt o planı başlat
     useEffect(() => {
-        if (planParam && session) {
-            const plan = plans.find(p => p.name === planParam)
-            if (plan) {
-                handleSubscription(plan.name)
-            }
+        if (planParam === "Premium Yıllık") {
+            setBillingPeriod("yearly")
+        } else if (planParam === "Premium") {
+            setBillingPeriod("monthly")
         }
-    }, [planParam, session])
+    }, [planParam])
 
     return (
         <div className="min-h-screen bg-black">
@@ -79,22 +78,22 @@ function SubscriptionContent() {
                             <Link href="/home" className="flex items-center gap-0.5">
                                 <div className="relative w-10 h-10">
 
-                                  <Image
+                                    <Image
 
-                                    src="/logo.jpeg"
+                                        src="/logo.jpeg"
 
-                                    alt="C"
+                                        alt="C"
 
-                                    fill
+                                        fill
 
-                                    className="object-contain"
+                                        className="object-contain"
 
-                                  />
+                                    />
 
                                 </div>
                                 <span className="text-2xl font-bold tracking-tight">
-                                  <span className="text-orange-500">ulin</span>
-                                  <span className="text-white">ora</span>
+                                    <span className="text-orange-500">ulin</span>
+                                    <span className="text-white">ora</span>
                                 </span>
                             </Link>
                             {session?.user && (
@@ -106,7 +105,7 @@ function SubscriptionContent() {
                                         Kurslarım
                                     </Link>
                                     <Link href="/culi" className="text-gray-300 hover:text-white transition-colors">
-                                      Culi
+                                        Culi
                                     </Link>
                                     <Link href="/chef-sosyal" className="text-gray-300 hover:text-white transition-colors">
                                         Chef Sosyal
@@ -145,22 +144,22 @@ function SubscriptionContent() {
                     <Link href="/home" className="flex items-center gap-0.5">
                         <div className="relative w-8 h-8">
 
-                          <Image
+                            <Image
 
-                            src="/logo.jpeg"
+                                src="/logo.jpeg"
 
-                            alt="C"
+                                alt="C"
 
-                            fill
+                                fill
 
-                            className="object-contain"
+                                className="object-contain"
 
-                          />
+                            />
 
                         </div>
                         <span className="text-lg font-bold tracking-tight">
-                          <span className="text-orange-500">ulin</span>
-                          <span className="text-white">ora</span>
+                            <span className="text-orange-500">ulin</span>
+                            <span className="text-white">ora</span>
                         </span>
                     </Link>
                     <div className="flex items-center space-x-3">
