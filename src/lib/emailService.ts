@@ -544,11 +544,7 @@ export async function sendCustomEmail(
         </head>
         <body>
           <div class="container">
-            <div class="header">
-              <h1>Culinora</h1>
-            </div>
             <div class="content">
-              ${recipientName ? `<div class="greeting">Merhaba ${recipientName}! 👋</div>` : ''}
               <div class="message-body">
                 ${messageHtml}
               </div>
