@@ -544,6 +544,9 @@ export async function sendCustomEmail(
         </head>
         <body>
           <div class="container">
+            <div style="background: #000; text-align: center; padding: 24px 20px; border-radius: 12px 12px 0 0;">
+              <img src="https://culinora.net/culinora-banner.png" alt="Culinora" style="max-width: 280px; height: auto;" />
+            </div>
             <div class="content">
               <div class="message-body">
                 ${messageHtml}
