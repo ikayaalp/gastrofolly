@@ -15,6 +15,17 @@ export async function GET() {
 
         const isPasswordValid = await bcrypt.compare('Password123!', user.password || '');
 
+        let newHashGenerated = false;
+
+        if (!isPasswordValid) {
+            const newHash = await bcrypt.hash('Password123!', 10);
+            await prisma.user.update({
+                where: { email: 'test@culinora.com' },
+                data: { password: newHash }
+            });
+            newHashGenerated = true;
+        }
+
         return NextResponse.json({
             success: true,
             user: {
@@ -22,7 +33,8 @@ export async function GET() {
                 email: user.email,
                 emailVerified: user.emailVerified
             },
-            passwordMatch: isPasswordValid
+            passwordMatch: isPasswordValid,
+            newHashGenerated
         });
     } catch (error: any) {
         return NextResponse.json({ success: false, error: error.message, stack: error.stack }, { status: 500 });
