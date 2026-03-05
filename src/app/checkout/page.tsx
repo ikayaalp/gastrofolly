@@ -17,7 +17,9 @@ function CheckoutContent() {
   const courseId = searchParams.get("courseId")
   const refParam = searchParams.get("ref")
 
-  const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly")
+  const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">(
+    planName === "Premium Yıllık" ? "yearly" : "monthly"
+  )
   const [referralCode, setReferralCode] = useState(refParam || "")
   const [appliedReferral, setAppliedReferral] = useState<{ code: string, discountPercent: number, influencerName: string } | null>(null)
   const [loading, setLoading] = useState(false)
@@ -26,7 +28,8 @@ function CheckoutContent() {
 
   // Plan bilgileri
   const plans: Record<string, { price: number, icon: LucideIcon, color: string }> = {
-    "Premium": { price: 299, icon: Crown, color: "from-orange-600 to-red-600" }
+    "Premium": { price: 299, icon: Crown, color: "from-orange-600 to-red-600" },
+    "Premium Yıllık": { price: 299, icon: Crown, color: "from-orange-600 to-red-600" }
   }
 
   const selectedPlan = planName && plans[planName] ? plans[planName] : null
