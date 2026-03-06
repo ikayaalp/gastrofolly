@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { getAuthUser } from '@/lib/mobileAuth'
 
 export async function GET(
     request: NextRequest,
@@ -8,6 +9,13 @@ export async function GET(
     try {
         const { id } = await params
 
+        // Get current user if logged in (for poll vote check)
+        let user = null
+        try {
+            user = await getAuthUser(request)
+        } catch (e) {
+            // Ignore auth error for public view
+        }
 
         // Get topic with author and category
         const topic = await prisma.topic.findUnique({
@@ -26,6 +34,26 @@ export async function GET(
                         name: true,
                         slug: true,
                         color: true
+                    }
+                },
+                poll: {
+                    include: {
+                        options: {
+                            include: {
+                                votes: user?.id ? {
+                                    where: { userId: user.id }
+                                } : false,
+                                _count: {
+                                    select: { votes: true }
+                                }
+                            }
+                        },
+                        votes: user?.id ? {
+                            where: { userId: user.id }
+                        } : false,
+                        _count: {
+                            select: { votes: true }
+                        }
                     }
                 },
                 _count: {
