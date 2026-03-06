@@ -273,6 +273,20 @@ const forumService = {
         }
     },
 
+    // Vote on a poll
+    votePoll: async (pollId, optionId) => {
+        try {
+            const response = await api.post('/api/forum/polls/vote', { pollId, optionId });
+            return { success: true, data: response.data };
+        } catch (error) {
+            console.error('Vote poll error:', error);
+            return {
+                success: false,
+                error: error.response?.data?.error || error.response?.data?.message || 'Oy kullanılamadı',
+            };
+        }
+    },
+
     // Delete a topic (discussion) - only own topics
     deleteTopic: async (topicId) => {
         try {

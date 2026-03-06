@@ -30,7 +30,8 @@ export default function TopicCard({
     formatTimeAgo,
     onHashtagPress,
     onReport,
-    onBlock
+    onBlock,
+    onVotePoll
 }) {
     const [activeSlide, setActiveSlide] = useState(0);
     const [showOptionsModal, setShowOptionsModal] = useState(false);
@@ -138,6 +139,57 @@ export default function TopicCard({
                     })}
                 </Text>
             ) : null}
+
+            {/* Poll */}
+            {item.poll && (
+                <View style={styles.pollContainer}>
+                    {item.poll.options.map((option) => {
+                        const totalVotes = item.poll._count?.votes || 0;
+                        const optionVotes = option._count?.votes || 0;
+                        const percentage = totalVotes > 0 ? Math.round((optionVotes / totalVotes) * 100) : 0;
+
+                        // Check if current user voted for this specific option
+                        // In Prisma we requested poll.votes which gives the user's vote if it exists
+                        const userVote = item.poll.votes?.[0];
+                        const hasVoted = !!userVote;
+                        const isSelectedOption = userVote?.optionId === option.id;
+
+                        return (
+                            <TouchableOpacity
+                                key={option.id}
+                                style={[
+                                    styles.pollOption,
+                                    hasVoted && styles.pollOptionVoted,
+                                    isSelectedOption && styles.pollOptionSelected
+                                ]}
+                                disabled={hasVoted}
+                                onPress={() => {
+                                    if (onVotePoll) onVotePoll(item.poll.id, option.id, item.id);
+                                }}
+                            >
+                                {hasVoted && (
+                                    <View style={[styles.pollProgressBar, { width: `${percentage}%` }]} />
+                                )}
+                                <View style={styles.pollOptionContent}>
+                                    <View style={styles.pollOptionLeft}>
+                                        <View style={[
+                                            styles.pollRadioContent,
+                                            isSelectedOption && styles.pollRadioSelected
+                                        ]} />
+                                        <Text style={styles.pollOptionText}>{option.text}</Text>
+                                    </View>
+                                    {hasVoted && (
+                                        <Text style={styles.pollOptionPercent}>{percentage}%</Text>
+                                    )}
+                                </View>
+                            </TouchableOpacity>
+                        );
+                    })}
+                    <Text style={styles.pollTotalVotes}>
+                        {item.poll._count?.votes || 0} oy kullanıldı
+                    </Text>
+                </View>
+            )}
 
             {/* Media */}
             {hasImage && (
@@ -465,5 +517,76 @@ const styles = StyleSheet.create({
     separator: {
         height: 1,
         backgroundColor: '#333',
+    },
+    pollContainer: {
+        marginTop: 12,
+        paddingHorizontal: 20,
+    },
+    pollOption: {
+        position: 'relative',
+        backgroundColor: '#262626',
+        borderRadius: 8,
+        minHeight: 44,
+        justifyContent: 'center',
+        marginBottom: 8,
+        overflow: 'hidden',
+    },
+    pollOptionVoted: {
+        backgroundColor: '#1f1f1f',
+        borderWidth: 1,
+        borderColor: '#333',
+    },
+    pollOptionSelected: {
+        borderColor: '#ea580c',
+    },
+    pollProgressBar: {
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(234, 88, 12, 0.2)',
+    },
+    pollOptionContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        zIndex: 1, // Keep text above progress bar
+    },
+    pollOptionLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1,
+    },
+    pollRadioContent: {
+        width: 16,
+        height: 16,
+        borderRadius: 8,
+        borderWidth: 2,
+        borderColor: '#6b7280',
+        marginRight: 12,
+    },
+    pollRadioSelected: {
+        borderColor: '#ea580c',
+        backgroundColor: '#ea580c',
+    },
+    pollOptionText: {
+        color: '#e5e7eb',
+        fontSize: 15,
+        fontWeight: '500',
+        flex: 1,
+    },
+    pollOptionPercent: {
+        color: '#9ca3af',
+        fontSize: 14,
+        fontWeight: '600',
+        marginLeft: 8,
+    },
+    pollTotalVotes: {
+        color: '#6b7280',
+        fontSize: 13,
+        marginTop: 4,
+        marginBottom: 8,
     }
 });

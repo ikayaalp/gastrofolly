@@ -318,6 +318,56 @@ export default function SocialScreen({ navigation }) {
         );
     };
 
+    const handleVotePoll = async (pollId, optionId, topicId) => {
+        if (!isLoggedIn) {
+            showAlert('Giriş Yapın', 'Oy kullanmak için giriş yapmalısınız.', [{ text: 'Tamam' }], 'warning');
+            return;
+        }
+
+        // Optimistically update the UI before API call so user feels it's instant
+        setTopics(prevTopics =>
+            prevTopics.map(topic => {
+                if (topic.id === topicId && topic.poll) {
+                    // Check if already voted
+                    const userAlreadyVoted = topic.poll.votes && topic.poll.votes.length > 0;
+                    const oldOptionId = userAlreadyVoted ? topic.poll.votes[0].optionId : null;
+
+                    // If voted for the exact same thing, do nothing
+                    if (oldOptionId === optionId) return topic;
+
+                    const newOptions = topic.poll.options.map(opt => {
+                        let newVotes = opt._count?.votes || 0;
+                        if (opt.id === optionId) newVotes += 1; // Increment new option
+                        if (opt.id === oldOptionId) newVotes = Math.max(0, newVotes - 1); // Decrement old option
+                        return { ...opt, _count: { votes: newVotes } };
+                    });
+
+                    let newTotalVotes = topic.poll._count?.votes || 0;
+                    if (!userAlreadyVoted) newTotalVotes += 1;
+
+                    return {
+                        ...topic,
+                        poll: {
+                            ...topic.poll,
+                            options: newOptions,
+                            votes: [{ userId: 'temp-local', pollId, optionId }],
+                            _count: { votes: newTotalVotes }
+                        }
+                    };
+                }
+                return topic;
+            })
+        );
+
+        const result = await forumService.votePoll(pollId, optionId);
+        if (!result.success) {
+            showAlert('Hata', result.error, [{ text: 'Tamam' }], 'error');
+            // Normally we'd revert the optimistic update here if it failed,
+            // but for a simple poll it's fine, or we can just refetch feed
+            fetchTopics(sortBy);
+        }
+    };
+
     const handleCreateTopic = async () => {
         if (!newTopicForm.content.trim() && selectedMedias.length === 0) {
             showAlert('Uyarı', 'Lütfen bir şeyler yazın veya medya paylaşın.', [{ text: 'Tamam' }], 'warning');
@@ -514,6 +564,7 @@ export default function SocialScreen({ navigation }) {
             formatTimeAgo={formatTimeAgo}
             onReport={handleReport}
             onBlock={handleBlock}
+            onVotePoll={handleVotePoll}
         />
     ), [playingVideoId, videoProgress, videoDurations, likedTopics, savedTopics, handleLike, formatTimeAgo, navigation]);
 
