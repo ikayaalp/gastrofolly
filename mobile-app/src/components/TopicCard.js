@@ -162,7 +162,6 @@ export default function TopicCard({
                                     hasVoted && styles.pollOptionVoted,
                                     isSelectedOption && styles.pollOptionSelected
                                 ]}
-                                disabled={hasVoted}
                                 onPress={() => {
                                     if (onVotePoll) onVotePoll(item.poll.id, option.id, item.id);
                                 }}

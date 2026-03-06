@@ -492,7 +492,6 @@ export default function TopicDetailScreen({ route, navigation }) {
                                     hasVoted && styles.pollOptionVoted,
                                     isSelectedOption && styles.pollOptionSelected
                                 ]}
-                                disabled={hasVoted}
                                 onPress={() => handleVotePoll(topic.poll.id, option.id)}
                             >
                                 {hasVoted && (
