@@ -20,7 +20,8 @@ import {
     LogOut,
     ChevronRight,
     Globe,
-    Shield
+    Shield,
+    Trash2
 } from 'lucide-react-native';
 import authService from '../api/authService';
 import CustomAlert from '../components/CustomAlert';
@@ -62,6 +63,32 @@ export default function SettingsScreen({ navigation }) {
                             index: 0,
                             routes: [{ name: 'Login' }],
                         });
+                    }
+                }
+            ],
+            'confirm'
+        );
+    };
+
+    const handleDeleteAccount = () => {
+        showAlert(
+            'Hesabı Sil',
+            'Hesabınızı silmek istediğinize emin misiniz? Bu işlem geri alınamaz ve tüm verileriniz kalıcı olarak silinecektir.',
+            [
+                { text: 'Vazgeç', style: 'cancel' },
+                {
+                    text: 'Hesabımı Sil',
+                    style: 'destructive',
+                    onPress: async () => {
+                        const result = await authService.deleteAccount();
+                        if (result.success) {
+                            navigation.reset({
+                                index: 0,
+                                routes: [{ name: 'Login' }],
+                            });
+                        } else {
+                            showAlert('Hata', result.error, [{ text: 'Tamam' }], 'error');
+                        }
                     }
                 }
             ],
@@ -188,6 +215,17 @@ export default function SettingsScreen({ navigation }) {
                             title="Çıkış Yap"
                             danger={true}
                             onPress={handleLogout}
+                            showChevron={false}
+                        />
+                    </View>
+
+                    <View style={[styles.section, styles.dangerSection]}>
+                        <SettingItem
+                            icon={Trash2}
+                            title="Hesabımı Sil"
+                            subtitle="Hesabınız ve tüm verileriniz kalıcı olarak silinir"
+                            danger={true}
+                            onPress={handleDeleteAccount}
                             showChevron={false}
                         />
                     </View>

@@ -244,6 +244,25 @@ const authService = {
             };
         }
     },
+
+    // Delete user account
+    deleteAccount: async () => {
+        try {
+            const response = await api.delete('/api/user/delete-account');
+
+            if (response.data.success) {
+                // Clear all local storage
+                await AsyncStorage.multiRemove(['authToken', 'userData', 'userId', 'expoPushToken', '@favorites']);
+                return { success: true };
+            }
+            return { success: false, error: response.data.error || 'Hesap silinemedi' };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.response?.data?.error || error.response?.data?.message || 'Hesap silinirken bir hata oluştu',
+            };
+        }
+    },
 };
 
 export default authService;

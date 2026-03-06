@@ -34,6 +34,9 @@ import NotificationsScreen from '../screens/NotificationsScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import AccountScreen from '../screens/AccountScreen';
 import SubscriptionScreen from '../screens/SubscriptionScreen';
+import FavoritesScreen from '../screens/FavoritesScreen';
+import CertificatesScreen from '../screens/CertificatesScreen';
+import ChangePasswordScreen from '../screens/ChangePasswordScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -51,7 +54,6 @@ function HomeStackNavigator() {
             <HomeStack.Screen name="InstructorProfile" component={InstructorProfileScreen} />
             <HomeStack.Screen name="Search" component={SearchScreen} />
             <HomeStack.Screen name="Notifications" component={NotificationsScreen} />
-            <HomeStack.Screen name="Settings" component={SettingsScreen} />
             <HomeStack.Screen name="ChefSor" component={ChefSorScreen} />
         </HomeStack.Navigator>
     );
@@ -186,6 +188,9 @@ export default function AppNavigator() {
                 <Stack.Screen name="ChefSor" component={ChefSorScreen} />
                 <Stack.Screen name="Search" component={SearchScreen} />
                 <Stack.Screen name="Subscription" component={SubscriptionScreen} />
+                <Stack.Screen name="Favorites" component={FavoritesScreen} />
+                <Stack.Screen name="Certificates" component={CertificatesScreen} />
+                <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
                 <Stack.Screen name="InstructorProfile" component={InstructorProfileScreen} />
             </Stack.Navigator>
         </NavigationContainer>

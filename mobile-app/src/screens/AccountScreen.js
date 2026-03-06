@@ -1,11 +1,48 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, SafeAreaView, StatusBar, Image, Platform } from 'react-native';
-import { User, Settings, LogOut, BookOpen, Heart, MessageCircle, ChevronRight, Award, Play, MessageSquare, Shield } from 'lucide-react-native';
+import {
+    StyleSheet,
+    Text,
+    View,
+    TouchableOpacity,
+    ScrollView,
+    SafeAreaView,
+    StatusBar,
+    Image,
+    Platform,
+    Switch,
+    Linking
+} from 'react-native';
+import {
+    User,
+    Settings,
+    LogOut,
+    BookOpen,
+    Heart,
+    MessageCircle,
+    ChevronRight,
+    Award,
+    Play,
+    MessageSquare,
+    Shield,
+    Bell,
+    Lock,
+    HelpCircle,
+    Info,
+    Globe,
+    Trash2,
+    Share2,
+    Star,
+    AlertCircle
+} from 'lucide-react-native';
 import authService from '../api/authService';
 import CustomAlert from '../components/CustomAlert';
 
 export default function AccountScreen({ navigation }) {
     const [userData, setUserData] = useState(null);
+    const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+    const [showLanguageModal, setShowLanguageModal] = useState(false);
+    const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+    const [currentLanguage, setCurrentLanguage] = useState('tr');
     const [alertVisible, setAlertVisible] = useState(false);
     const [alertConfig, setAlertConfig] = useState({
         title: '',
@@ -53,6 +90,49 @@ export default function AccountScreen({ navigation }) {
         );
     };
 
+    const handleDeleteAccount = () => {
+        showAlert(
+            'Hesabı Sil',
+            'Hesabınızı silmek istediğinize emin misiniz? Bu işlem geri alınamaz ve tüm verileriniz kalıcı olarak silinecektir.',
+            [
+                { text: 'Vazgeç', style: 'cancel' },
+                {
+                    text: 'Hesabımı Sil',
+                    style: 'destructive',
+                    onPress: async () => {
+                        const result = await authService.deleteAccount();
+                        if (result.success) {
+                            navigation.reset({
+                                index: 0,
+                                routes: [{ name: 'Login' }],
+                            });
+                        } else {
+                            showAlert('Hata', result.error, [{ text: 'Tamam' }], 'error');
+                        }
+                    }
+                }
+            ],
+            'confirm'
+        );
+    };
+
+    const handleHelp = () => {
+        showAlert(
+            'Yardım Merkezi',
+            'Destek için bize e-posta gönderebilirsiniz:\n\ninfo@culinora.net',
+            [{ text: "Kopyala", onPress: () => { } }, { text: "Tamam" }],
+            'info'
+        );
+    };
+
+    const handleShare = async () => {
+        try {
+            await Linking.openURL('https://culinora.net');
+        } catch (error) {
+            showAlert('Hata', 'Bağlantı açılamadı.', [{ text: 'Tamam' }], 'error');
+        }
+    };
+
     const getRoleName = (role) => {
         switch (role) {
             case 'ADMIN': return 'Yönetici';
@@ -66,17 +146,46 @@ export default function AccountScreen({ navigation }) {
         return 'Ücretsiz Üyelik';
     };
 
-    const MenuItem = ({ icon: Icon, title, onPress, subtitle }) => (
-        <TouchableOpacity style={styles.menuItem} onPress={onPress}>
+    // Reusable components
+    const MenuItem = ({ icon: Icon, title, onPress, subtitle, rightText, danger = false }) => (
+        <TouchableOpacity style={styles.menuItem} onPress={onPress} activeOpacity={0.7}>
+            <View style={[styles.menuIconContainer, danger && styles.menuIconDanger]}>
+                <Icon size={20} color={danger ? '#ef4444' : '#9ca3af'} />
+            </View>
+            <View style={styles.menuContent}>
+                <Text style={[styles.menuTitle, danger && { color: '#ef4444' }]}>{title}</Text>
+                {subtitle && <Text style={styles.menuSubtitle}>{subtitle}</Text>}
+            </View>
+            {rightText ? (
+                <Text style={styles.rightText}>{rightText}</Text>
+            ) : (
+                <ChevronRight size={18} color="#4b5563" />
+            )}
+        </TouchableOpacity>
+    );
+
+    const SwitchItem = ({ icon: Icon, title, value, onValueChange }) => (
+        <View style={styles.menuItem}>
             <View style={styles.menuIconContainer}>
                 <Icon size={20} color="#9ca3af" />
             </View>
             <View style={styles.menuContent}>
                 <Text style={styles.menuTitle}>{title}</Text>
-                {subtitle && <Text style={styles.menuSubtitle}>{subtitle}</Text>}
             </View>
-            <ChevronRight size={18} color="#4b5563" />
-        </TouchableOpacity>
+            <Switch
+                value={value}
+                onValueChange={onValueChange}
+                trackColor={{ false: '#374151', true: 'rgba(234, 88, 12, 0.5)' }}
+                thumbColor={value ? '#ea580c' : '#9ca3af'}
+            />
+        </View>
+    );
+
+    const InfoRow = ({ label, value }) => (
+        <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>{label}</Text>
+            <Text style={styles.infoValue}>{value}</Text>
+        </View>
     );
 
     return (
@@ -94,133 +203,228 @@ export default function AccountScreen({ navigation }) {
                         {userData?.image ? (
                             <Image
                                 source={{ uri: userData.image }}
-                                style={{
-                                    width: 74,
-                                    height: 74,
-                                    borderRadius: 37,
-                                }}
+                                style={styles.avatarImage}
                             />
                         ) : (
-                            <Text style={styles.avatarEmoji}>
+                            <Text style={styles.avatarInitials}>
                                 {userData?.name
                                     ? userData.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
                                     : 'U'}
                             </Text>
                         )}
                     </View>
-                    <View style={styles.profileInfo}>
-                        <Text style={styles.profileName}>{userData?.name || 'Kullanıcı'}</Text>
-                        <Text style={styles.profileEmail}>{userData?.email || 'email@example.com'}</Text>
-                        <View style={styles.roleContainer}>
-                            <Text style={styles.roleText}>
-                                {userData?.role === 'INSTRUCTOR' || userData?.role === 'ADMIN'
-                                    ? getRoleName(userData?.role)
-                                    : getPlanName(userData?.subscriptionPlan)}
-                            </Text>
-                        </View>
+                    <Text style={styles.profileName}>{userData?.name || 'Kullanıcı'}</Text>
+                    <Text style={styles.profileEmail}>{userData?.email || 'email@example.com'}</Text>
+                </View>
+
+                {/* Hesap Ayarları */}
+                <View style={styles.section}>
+                    <View style={styles.sectionContent}>
+                        <MenuItem
+                            icon={User}
+                            title="Hesabımı Düzenle"
+                            onPress={() => navigation.navigate('EditProfile')}
+                        />
+                        <MenuItem
+                            icon={Lock}
+                            title="Şifremi Değiştir"
+                            onPress={() => navigation.navigate('ChangePassword')}
+                        />
                     </View>
                 </View>
 
-                {/* Statistics / Quick Stats (Optional placeholder for future) */}
-                {/* <View style={styles.statsContainer}> ... </View> */}
-
-                {/* Membership Section */}
+                {/* Abonelik */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Üyelik Planı</Text>
+                    <Text style={styles.sectionTitle}>Abonelik</Text>
                     <View style={styles.sectionContent}>
+                        <View style={styles.subscriptionInfo}>
+                            <Text style={styles.subscriptionStatus}>
+                                {userData?.subscriptionPlan && userData.subscriptionPlan !== 'FREE'
+                                    ? 'Premium üyeliğiniz aktif'
+                                    : 'Abone değilsiniz'}
+                            </Text>
+                            <Text style={styles.subscriptionDesc}>
+                                {userData?.subscriptionPlan && userData.subscriptionPlan !== 'FREE'
+                                    ? 'Tüm içeriklere erişiminiz devam etmektedir.'
+                                    : 'Abone olarak mevcut eğitimleri ve yeni eklenecek tüm konuları istediğiniz zaman izleyebilirsiniz.'}
+                            </Text>
+                        </View>
                         <MenuItem
                             icon={Award}
                             title="Abonelik Bilgileri"
-                            subtitle="Paket durumu ve ödeme"
                             onPress={() => navigation.navigate('Subscription')}
                         />
                     </View>
                 </View>
 
-                {/* Menu Sections */}
+
+
+
+                {/* Genel */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>İçeriklerim</Text>
+                    <Text style={styles.sectionTitle}>Genel</Text>
                     <View style={styles.sectionContent}>
-                        <MenuItem
-                            icon={BookOpen}
-                            title="Kurslarım"
-                            subtitle="Kayıtlı olduğunuz kurslar"
-                            onPress={() => navigation.navigate('Courses')}
+                        <SwitchItem
+                            icon={Bell}
+                            title="Bildirimler"
+                            value={notificationsEnabled}
+                            onValueChange={setNotificationsEnabled}
                         />
                         <MenuItem
-                            icon={Heart}
-                            title="Favorilerim"
-                            subtitle="Beğendiğiniz içerikler"
-                            onPress={() => showAlert('Yakında', 'Favorilerim özelliği yakında gelecek!', [{ text: 'Tamam' }], 'info')}
+                            icon={Globe}
+                            title="Dil Seçeneği"
+                            rightText={currentLanguage === 'tr' ? 'Türkçe' : 'English'}
+                            onPress={() => setShowLanguageModal(true)}
                         />
                         <MenuItem
-                            icon={Award}
-                            title="Sertifikalarım"
-                            subtitle="Tamamlanan eğitimler"
-                            onPress={() => showAlert('Yakında', 'Sertifikalarım özelliği yakında gelecek!', [{ text: 'Tamam' }], 'info')}
+                            icon={Shield}
+                            title="Gizlilik ve Güvenlik"
+                            onPress={() => setShowPrivacyModal(true)}
                         />
                     </View>
                 </View>
 
+                {/* Culinora'yı destekle */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>İletişim & Destek</Text>
+                    <Text style={styles.sectionTitle}>Culinora'yı Destekle</Text>
                     <View style={styles.sectionContent}>
                         <MenuItem
-                            icon={MessageCircle}
-                            title="Chef'e Sor"
-                            subtitle="Eğitmenlerle iletişime geçin"
-                            onPress={() => navigation.navigate('ChefSor')}
+                            icon={Share2}
+                            title="Paylaş"
+                            onPress={handleShare}
                         />
-                        {userData?.role === 'INSTRUCTOR' && (
-                            <MenuItem
-                                icon={MessageSquare}
-                                title="Öğrencilerden Sorular"
-                                subtitle="Gelen soruları yanıtlayın"
-                                onPress={() => navigation.navigate('ChefSor')}
-                            />
-                        )}
+                        <MenuItem
+                            icon={Star}
+                            title="Uygulamayı Değerlendir"
+                            onPress={() => showAlert('Bilgi', 'Uygulama mağazada yayınlandığında değerlendirebilirsiniz.', [{ text: 'Tamam' }], 'info')}
+                        />
+                        <MenuItem
+                            icon={HelpCircle}
+                            title="Yardım Merkezi"
+                            onPress={handleHelp}
+                        />
+                        <MenuItem
+                            icon={AlertCircle}
+                            title="Sorun Bildir"
+                            onPress={() => Linking.openURL('mailto:info@culinora.net?subject=Sorun%20Bildirimi%20-%20Culinora%20Mobile')}
+                        />
+                        <MenuItem
+                            icon={Info}
+                            title="Hakkında"
+                            subtitle="Sürüm 1.0.2"
+                            onPress={() => showAlert('Hakkında', 'Culinora Mobile v1.0.2\n\nGeliştirici: Culinora Team\n© 2024 Tüm hakları saklıdır.', [{ text: 'Tamam' }])}
+                        />
                     </View>
                 </View>
 
-                {userData?.role === 'ADMIN' && (
+                {/* İletişim & Admin (conditional) */}
+                {(userData?.role === 'INSTRUCTOR' || userData?.role === 'ADMIN') && (
                     <View style={styles.section}>
                         <Text style={styles.sectionTitle}>Yönetim</Text>
                         <View style={styles.sectionContent}>
-                            <MenuItem
-                                icon={User}
-                                title="Admin Paneli"
-                                onPress={() => showAlert('Bilgi', 'Admin paneli sadece web sürümünde mevcuttur.', [{ text: 'Tamam' }], 'info')}
-                            />
-                            <MenuItem
-                                icon={Play}
-                                title="Kurs Yönetimi"
-                                onPress={() => showAlert('Bilgi', 'Kurs yönetimi sadece web sürümünde mevcuttur.', [{ text: 'Tamam' }], 'info')}
-                            />
+                            {userData?.role === 'INSTRUCTOR' && (
+                                <MenuItem
+                                    icon={MessageSquare}
+                                    title="Öğrencilerden Sorular"
+                                    onPress={() => navigation.navigate('ChefSor')}
+                                />
+                            )}
+                            {userData?.role === 'ADMIN' && (
+                                <>
+                                    <MenuItem
+                                        icon={User}
+                                        title="Admin Paneli"
+                                        onPress={() => showAlert('Bilgi', 'Admin paneli sadece web sürümünde mevcuttur.', [{ text: 'Tamam' }], 'info')}
+                                    />
+                                    <MenuItem
+                                        icon={Play}
+                                        title="Kurs Yönetimi"
+                                        onPress={() => showAlert('Bilgi', 'Kurs yönetimi sadece web sürümünde mevcuttur.', [{ text: 'Tamam' }], 'info')}
+                                    />
+                                </>
+                            )}
                         </View>
                     </View>
                 )}
 
+                {/* Danger zone */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Uygulama</Text>
                     <View style={styles.sectionContent}>
                         <MenuItem
-                            icon={Settings}
-                            title="Ayarlar"
-                            subtitle="Uygulama ve hesap ayarları"
-                            onPress={() => navigation.navigate('Settings')}
-                        />
-                        <TouchableOpacity
-                            style={styles.logoutButton}
+                            icon={LogOut}
+                            title="Çıkış Yap"
+                            danger={true}
                             onPress={handleLogout}
-                        >
-                            <LogOut size={20} color="#ef4444" />
-                            <Text style={styles.logoutText}>Çıkış Yap</Text>
-                        </TouchableOpacity>
+                        />
+                    </View>
+                </View>
+                <View style={[styles.section, { marginTop: 0 }]}>
+                    <View style={styles.sectionContent}>
+                        <MenuItem
+                            icon={Trash2}
+                            title="Hesabımı Sil"
+                            subtitle="Tüm verileriniz kalıcı olarak silinir"
+                            danger={true}
+                            onPress={handleDeleteAccount}
+                        />
                     </View>
                 </View>
 
                 <Text style={styles.versionText}>Culinora Mobile v1.0.2</Text>
             </ScrollView>
+
+            {/* Language Selection Modal */}
+            {showLanguageModal && (
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>Dil Seçin</Text>
+                        <TouchableOpacity
+                            style={[styles.modalOption, currentLanguage === 'tr' && styles.modalOptionSelected]}
+                            onPress={() => { setCurrentLanguage('tr'); setShowLanguageModal(false); }}
+                        >
+                            <Text style={[styles.modalOptionText, currentLanguage === 'tr' && styles.modalOptionTextSelected]}>Türkçe (TR)</Text>
+                            {currentLanguage === 'tr' && <Shield size={16} color="#ea580c" />}
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[styles.modalOption, currentLanguage === 'en' && styles.modalOptionSelected]}
+                            onPress={() => { setCurrentLanguage('en'); setShowLanguageModal(false); }}
+                        >
+                            <Text style={[styles.modalOptionText, currentLanguage === 'en' && styles.modalOptionTextSelected]}>English (EN)</Text>
+                            {currentLanguage === 'en' && <Shield size={16} color="#ea580c" />}
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.modalCloseButton} onPress={() => setShowLanguageModal(false)}>
+                            <Text style={styles.modalCloseText}>İptal</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            )}
+
+            {/* Privacy Policy Modal */}
+            {showPrivacyModal && (
+                <View style={[styles.modalOverlay, { justifyContent: 'flex-end', padding: 0 }]}>
+                    <View style={[styles.modalContent, { width: '100%', height: '80%', borderBottomLeftRadius: 0, borderBottomRightRadius: 0 }]}>
+                        <View style={styles.modalHeader}>
+                            <Text style={styles.modalTitle}>Gizlilik Politikası</Text>
+                            <TouchableOpacity onPress={() => setShowPrivacyModal(false)}>
+                                <Text style={styles.modalCloseText}>Kapat</Text>
+                            </TouchableOpacity>
+                        </View>
+                        <ScrollView style={{ flex: 1 }}>
+                            <Text style={styles.policyText}>
+                                <Text style={styles.policyHeader}>1. Veri Toplama{'\n'}</Text>
+                                Uygulamamızı kullanırken, adınız, e-posta adresiniz gibi kişisel bilgilerinizi toplayabiliriz. Bu bilgiler, size daha iyi bir hizmet sunmak için kullanılır.{'\n\n'}
+                                <Text style={styles.policyHeader}>2. Kullanım{'\n'}</Text>
+                                Topladığımız bilgiler, hesabınızı yönetmek, size bildirim göndermek ve deneyiminizi kişiselleştirmek için kullanılır.{'\n\n'}
+                                <Text style={styles.policyHeader}>3. Güvenlik{'\n'}</Text>
+                                Verileriniz bizim için önemlidir. Endüstri standardı güvenlik önlemleri ile korunmaktadır.{'\n\n'}
+                                <Text style={styles.policyHeader}>4. Üçüncü Taraflar{'\n'}</Text>
+                                Bilgileriniz, yasal zorunluluklar dışında üçüncü taraflarla paylaşılmaz.{'\n\n'}
+                                Daha fazla bilgi için web sitemizi ziyaret edebilirsiniz.
+                            </Text>
+                        </ScrollView>
+                    </View>
+                </View>
+            )}
 
             {/* Custom Alert */}
             <CustomAlert
@@ -259,13 +463,13 @@ const styles = StyleSheet.create({
     scrollContent: {
         paddingBottom: 100,
     },
+    // Profile Header
     profileHeader: {
-        flexDirection: 'row',
         alignItems: 'center',
-        padding: 24,
+        paddingVertical: 28,
+        paddingHorizontal: 20,
         borderBottomWidth: 1,
         borderBottomColor: '#1a1a1a',
-        backgroundColor: '#000',
     },
     avatarContainer: {
         width: 80,
@@ -274,15 +478,19 @@ const styles = StyleSheet.create({
         backgroundColor: '#ea580c',
         justifyContent: 'center',
         alignItems: 'center',
+        marginBottom: 12,
         borderWidth: 3,
         borderColor: '#1f2937',
     },
-    avatarEmoji: {
-        fontSize: 40,
+    avatarImage: {
+        width: 74,
+        height: 74,
+        borderRadius: 37,
     },
-    profileInfo: {
-        marginLeft: 20,
-        flex: 1,
+    avatarInitials: {
+        color: 'white',
+        fontSize: 28,
+        fontWeight: 'bold',
     },
     profileName: {
         color: 'white',
@@ -293,20 +501,8 @@ const styles = StyleSheet.create({
     profileEmail: {
         color: '#9ca3af',
         fontSize: 14,
-        marginBottom: 10,
     },
-    roleContainer: {
-        backgroundColor: 'rgba(234, 88, 12, 0.15)',
-        alignSelf: 'flex-start',
-        paddingHorizontal: 10,
-        paddingVertical: 4,
-        borderRadius: 6,
-    },
-    roleText: {
-        color: '#ea580c',
-        fontSize: 12,
-        fontWeight: 'bold',
-    },
+    // Sections
     section: {
         marginTop: 24,
         paddingHorizontal: 20,
@@ -326,6 +522,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#1f2937',
     },
+    // Menu items
     menuItem: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -344,6 +541,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginRight: 16,
     },
+    menuIconDanger: {
+        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    },
     menuContent: {
         flex: 1,
     },
@@ -357,24 +557,113 @@ const styles = StyleSheet.create({
         fontSize: 12,
         marginTop: 2,
     },
-    logoutButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingVertical: 16,
-        paddingHorizontal: 16,
-        justifyContent: 'center',
-        gap: 8,
+    rightText: {
+        color: '#6b7280',
+        fontSize: 13,
+        marginRight: 4,
     },
-    logoutText: {
-        color: '#ef4444',
+    // Subscription info box
+    subscriptionInfo: {
+        padding: 20,
+        borderBottomWidth: 1,
+        borderBottomColor: '#1f2937',
+    },
+    subscriptionStatus: {
+        color: 'white',
         fontSize: 15,
         fontWeight: '600',
+        marginBottom: 6,
     },
+    subscriptionDesc: {
+        color: '#6b7280',
+        fontSize: 13,
+        lineHeight: 18,
+    },
+    // Version
     versionText: {
         color: '#4b5563',
         textAlign: 'center',
         fontSize: 12,
         marginTop: 30,
         marginBottom: 20,
+    },
+    // Modal Styles
+    modalOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0,0,0,0.7)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+    },
+    modalContent: {
+        backgroundColor: '#1f2937',
+        borderRadius: 20,
+        padding: 20,
+        width: '100%',
+        maxHeight: '80%',
+    },
+    modalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 20,
+        paddingBottom: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#374151',
+    },
+    modalTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: 'white',
+        marginBottom: 20,
+    },
+    modalOption: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#374151',
+    },
+    modalOptionSelected: {
+        backgroundColor: 'rgba(234, 88, 12, 0.1)',
+        paddingHorizontal: 12,
+        borderRadius: 8,
+        borderBottomWidth: 0,
+    },
+    modalOptionText: {
+        fontSize: 16,
+        color: '#d1d5db',
+    },
+    modalOptionTextSelected: {
+        color: '#ea580c',
+        fontWeight: 'bold',
+    },
+    modalCloseButton: {
+        marginTop: 20,
+        padding: 12,
+        alignItems: 'center',
+        backgroundColor: '#374151',
+        borderRadius: 12,
+    },
+    modalCloseText: {
+        color: 'white',
+        fontWeight: '600',
+        fontSize: 16,
+    },
+    policyText: {
+        color: '#d1d5db',
+        lineHeight: 24,
+        fontSize: 14,
+    },
+    policyHeader: {
+        color: 'white',
+        fontWeight: 'bold',
+        fontSize: 16,
+        marginBottom: 8,
     },
 });

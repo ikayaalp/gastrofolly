@@ -176,7 +176,6 @@ export default function SubscriptionScreen({ navigation }) {
                     <View style={styles.featuresList}>
                         <FeatureItem text="Tüm başlangıç seviye derslere erişim" />
                         <FeatureItem text="Reklamsız izleme deneyimi" />
-                        <FeatureItem text="Çevrimdışı izleme (Yakında)" />
                         <FeatureItem text="Eğitmen soru-cevap desteği" />
                     </View>
                 </View>

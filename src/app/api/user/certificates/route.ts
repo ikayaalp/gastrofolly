@@ -1,12 +1,10 @@
-"use server"
-
 import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import jwt from "jsonwebtoken"
 
-export async function DELETE(request: NextRequest) {
+export async function GET(request: NextRequest) {
     try {
         let userId: string | null = null
 
@@ -35,20 +33,38 @@ export async function DELETE(request: NextRequest) {
             )
         }
 
-        // Kullanıcıyı ve ilişkili tüm verilerini sil
-        // Prisma cascade delete ayarları sayesinde ilişkili veriler otomatik silinir
-        await prisma.user.delete({
-            where: { id: userId }
+        const certificates = await prisma.certificate.findMany({
+            where: { userId },
+            include: {
+                course: {
+                    select: {
+                        title: true,
+                        imageUrl: true,
+                        instructor: {
+                            select: {
+                                name: true
+                            }
+                        }
+                    }
+                }
+            },
+            orderBy: { issuedAt: 'desc' }
         })
 
         return NextResponse.json({
             success: true,
-            message: "Hesap başarıyla silindi"
+            certificates: certificates.map(cert => ({
+                id: cert.id,
+                courseName: cert.courseName,
+                courseImageUrl: cert.course.imageUrl,
+                instructorName: cert.course.instructor?.name || 'Eğitmen',
+                issuedAt: cert.issuedAt.toISOString(),
+            }))
         })
     } catch (error) {
-        console.error("Delete account error:", error)
+        console.error("Certificates fetch error:", error)
         return NextResponse.json(
-            { error: "Hesap silinirken bir hata oluştu" },
+            { error: "Sertifikalar alınırken bir hata oluştu" },
             { status: 500 }
         )
     }
