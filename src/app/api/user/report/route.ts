@@ -18,8 +18,8 @@ export async function POST(req: Request) {
             if (authHeader && authHeader.startsWith("Bearer ")) {
                 const token = authHeader.substring(7);
                 try {
-                    const decoded = jwt.verify(token, process.env.JWT_SECRET || "default_secret_key");
-                    currentUserId = (decoded as any).id;
+                    const decoded = jwt.verify(token, process.env.NEXTAUTH_SECRET!);
+                    currentUserId = (decoded as any).userId || (decoded as any).id;
                 } catch (e) {
                     return NextResponse.json({ error: "Geçersiz token" }, { status: 401 });
                 }
