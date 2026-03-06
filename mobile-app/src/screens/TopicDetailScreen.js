@@ -495,7 +495,11 @@ export default function TopicDetailScreen({ route, navigation }) {
                                 onPress={() => handleVotePoll(topic.poll.id, option.id)}
                             >
                                 {hasVoted && (
-                                    <View style={[styles.pollProgressBar, { width: `${percentage}%` }]} />
+                                    <View style={[
+                                        styles.pollProgressBar,
+                                        isSelectedOption && styles.pollProgressBarSelected,
+                                        { width: `${percentage}%` }
+                                    ]} />
                                 )}
                                 <View style={styles.pollOptionContent}>
                                     <View style={styles.pollOptionLeft}>
@@ -1426,7 +1430,10 @@ const styles = StyleSheet.create({
         left: 0,
         top: 0,
         bottom: 0,
-        backgroundColor: 'rgba(234, 88, 12, 0.2)',
+        backgroundColor: '#374151', // bg-gray-700 equivalent
+    },
+    pollProgressBarSelected: {
+        backgroundColor: '#ea580c', // bg-orange-600 equivalent
     },
     pollOptionContent: {
         flexDirection: 'row',
