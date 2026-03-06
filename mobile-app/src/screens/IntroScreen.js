@@ -1,48 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Text, TouchableWithoutFeedback, Animated } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, StyleSheet, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function IntroScreen({ navigation }) {
-    const [isNavigating, setIsNavigating] = useState(false);
-    const fadeAnim = useState(new Animated.Value(0))[0];
-    const scaleAnim = useState(new Animated.Value(0.8))[0];
-
     useEffect(() => {
-        // Fade in and scale animation
-        Animated.parallel([
-            Animated.timing(fadeAnim, {
-                toValue: 1,
-                duration: 500,
-                useNativeDriver: true,
-            }),
-            Animated.spring(scaleAnim, {
-                toValue: 1,
-                friction: 4,
-                tension: 40,
-                useNativeDriver: true,
-            }),
-        ]).start();
-
-        // Auto-navigate after 2 seconds
-        const timer = setTimeout(() => {
-            handleNavigate();
-        }, 2000);
-
-        return () => clearTimeout(timer);
-    }, []);
-
-    const handleNavigate = async () => {
-        if (isNavigating) return;
-        setIsNavigating(true);
-
-        // Fade out animation
-        Animated.timing(fadeAnim, {
-            toValue: 0,
-            duration: 300,
-            useNativeDriver: true,
-        }).start();
-
-        setTimeout(async () => {
+        const checkAuthAndRoute = async () => {
             try {
                 // Check if onboarding is completed
                 const onboardingCompleted = await AsyncStorage.getItem('onboardingCompleted');
@@ -76,26 +38,15 @@ export default function IntroScreen({ navigation }) {
                     routes: [{ name: 'Login' }],
                 });
             }
-        }, 300);
-    };
+        };
+
+        checkAuthAndRoute();
+    }, [navigation]);
 
     return (
-        <TouchableWithoutFeedback onPress={handleNavigate}>
-            <View style={styles.container}>
-                <Animated.View
-                    style={[
-                        styles.logoContainer,
-                        {
-                            opacity: fadeAnim,
-                            transform: [{ scale: scaleAnim }],
-                        },
-                    ]}
-                >
-                    <Text style={styles.chefText}>CHEF</Text>
-                    <Text style={styles.versionText}>2.0</Text>
-                </Animated.View>
-            </View>
-        </TouchableWithoutFeedback>
+        <View style={styles.container}>
+            <ActivityIndicator size="large" color="#ea580c" />
+        </View>
     );
 }
 
@@ -105,22 +56,5 @@ const styles = StyleSheet.create({
         backgroundColor: '#000000',
         justifyContent: 'center',
         alignItems: 'center',
-    },
-    logoContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    chefText: {
-        fontSize: 56,
-        fontWeight: 'bold',
-        color: '#FFFFFF',
-        letterSpacing: 2,
-    },
-    versionText: {
-        fontSize: 56,
-        fontWeight: 'bold',
-        color: '#ea580c',
-        marginLeft: 12,
-        letterSpacing: 1,
     },
 });

@@ -67,6 +67,7 @@ export default function SocialScreen({ navigation }) {
     const [sortBy, setSortBy] = useState('newest');
     const [likedTopics, setLikedTopics] = useState(new Set());
     const [savedTopics, setSavedTopics] = useState(new Set());
+    const [blockedUsers, setBlockedUsers] = useState(new Set());
     const [showNewTopicModal, setShowNewTopicModal] = useState(false);
     const [newTopicForm, setNewTopicForm] = useState({ title: '', content: '' });
     const [submitting, setSubmitting] = useState(false);
@@ -270,6 +271,53 @@ export default function SocialScreen({ navigation }) {
         }
     };
 
+    const handleReport = async (targetId, targetType) => {
+        if (!isLoggedIn) {
+            showAlert('Giriş Yapın', 'Şikayet etmek için giriş yapmalısınız.', [{ text: 'Tamam' }], 'warning');
+            return;
+        }
+
+        const result = await forumService.reportContent(targetId, targetType, "Uygunsuz İçerik");
+        if (result.success) {
+            showAlert('Şikayet Alındı', 'Bildiriminiz için teşekkürler. İçerik incelenecektir.', [{ text: 'Tamam' }], 'success');
+        } else {
+            showAlert('Hata', result.error, [{ text: 'Tamam' }], 'error');
+        }
+    };
+
+    const handleBlock = (userId, userName) => {
+        if (!isLoggedIn) {
+            showAlert('Giriş Yapın', 'Kullanıcı engellemek için giriş yapmalısınız.', [{ text: 'Tamam' }], 'warning');
+            return;
+        }
+
+        showAlert(
+            'Kullanıcıyı Engelle',
+            `${userName} adlı kullanıcıyı engellemek istediğinizden emin misiniz? Bu kişinin paylaşımlarını artık görmeyeceksiniz.`,
+            [
+                { text: 'İptal', style: 'cancel' },
+                {
+                    text: 'Engelle',
+                    style: 'destructive',
+                    onPress: async () => {
+                        const result = await forumService.blockUser(userId);
+                        if (result.success) {
+                            setBlockedUsers(prev => {
+                                const newSet = new Set(prev);
+                                newSet.add(userId);
+                                return newSet;
+                            });
+                            showAlert('Engellendi', 'Kullanıcı engellendi. Artık bu kişinin paylaşımlarını görmeyeceksiniz.', [{ text: 'Tamam' }], 'success');
+                        } else {
+                            showAlert('Hata', result.error, [{ text: 'Tamam' }], 'error');
+                        }
+                    }
+                }
+            ],
+            'warning'
+        );
+    };
+
     const handleCreateTopic = async () => {
         if (!newTopicForm.content.trim() && selectedMedias.length === 0) {
             showAlert('Uyarı', 'Lütfen bir şeyler yazın veya medya paylaşın.', [{ text: 'Tamam' }], 'warning');
@@ -464,6 +512,8 @@ export default function SocialScreen({ navigation }) {
             setVideoDurations={setVideoDurations}
             setVideoProgress={setVideoProgress}
             formatTimeAgo={formatTimeAgo}
+            onReport={handleReport}
+            onBlock={handleBlock}
         />
     ), [playingVideoId, videoProgress, videoDurations, likedTopics, savedTopics, handleLike, formatTimeAgo, navigation]);
 
@@ -551,7 +601,8 @@ export default function SocialScreen({ navigation }) {
                 </ScrollView>
             </View>
             < FlatList
-                data={sortBy === 'saved' ? topics.filter(t => savedTopics.has(t.id)) : topics
+                data={(sortBy === 'saved' ? topics.filter(t => savedTopics.has(t.id)) : topics)
+                    .filter(t => !blockedUsers.has(t.author?.id))
                 }
                 renderItem={renderTopicItem}
                 keyExtractor={(item) => item.id}

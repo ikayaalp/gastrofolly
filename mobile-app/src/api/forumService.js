@@ -245,6 +245,34 @@ const forumService = {
 
 
 
+    // Block a user
+    blockUser: async (blockedUserId) => {
+        try {
+            const response = await api.post('/api/user/block', { blockedUserId });
+            return { success: true, data: response.data };
+        } catch (error) {
+            console.error('Block user error:', error);
+            return {
+                success: false,
+                error: error.response?.data?.message || 'Kullanıcı engellenemedi',
+            };
+        }
+    },
+
+    // Report content (topic or post)
+    reportContent: async (targetId, targetType, reason = '') => {
+        try {
+            const response = await api.post('/api/user/report', { targetId, targetType, reason });
+            return { success: true, data: response.data };
+        } catch (error) {
+            console.error('Report error:', error);
+            return {
+                success: false,
+                error: error.response?.data?.message || 'Şikayet gönderilemedi',
+            };
+        }
+    },
+
     // Delete a topic (discussion) - only own topics
     deleteTopic: async (topicId) => {
         try {

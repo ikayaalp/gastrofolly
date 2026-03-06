@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList, Dimensions } from 'react-native';
-import { ThumbsUp, MessageCircle, Clock, Film, Image as ImageIcon, User, Bookmark } from 'lucide-react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList, Dimensions, Modal, TouchableWithoutFeedback } from 'react-native';
+import { ThumbsUp, MessageCircle, Clock, Film, Image as ImageIcon, User, Bookmark, MoreVertical } from 'lucide-react-native';
 import { Video, ResizeMode } from 'expo-av';
 
 const { width } = Dimensions.get('window');
@@ -28,9 +28,12 @@ export default function TopicCard({
     setVideoDurations,
     setVideoProgress,
     formatTimeAgo,
-    onHashtagPress
+    onHashtagPress,
+    onReport,
+    onBlock
 }) {
     const [activeSlide, setActiveSlide] = useState(0);
+    const [showOptionsModal, setShowOptionsModal] = useState(false);
 
     const mediaUrls = item.mediaUrl ? item.mediaUrl.split(',') : [];
     const hasImage = mediaUrls.length > 0 && (item.mediaType === 'image' || item.mediaType === 'IMAGE');
@@ -65,7 +68,50 @@ export default function TopicCard({
                         </Text>
                     </View>
                 </View>
+                <TouchableOpacity onPress={() => setShowOptionsModal(true)} style={styles.optionsButton}>
+                    <MoreVertical size={20} color="#6b7280" />
+                </TouchableOpacity>
             </View>
+
+            {/* Options Modal */}
+            <Modal
+                transparent={true}
+                visible={showOptionsModal}
+                animationType="fade"
+                onRequestClose={() => setShowOptionsModal(false)}
+            >
+                <TouchableWithoutFeedback onPress={() => setShowOptionsModal(false)}>
+                    <View style={styles.modalOverlay}>
+                        <View style={styles.optionsModalContent}>
+                            <TouchableOpacity
+                                style={styles.optionItem}
+                                onPress={() => {
+                                    setShowOptionsModal(false);
+                                    if (onReport) onReport(item.id, 'topic');
+                                }}
+                            >
+                                <Text style={styles.optionTextRed}>Gönderiyi Şikayet Et</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={styles.optionItem}
+                                onPress={() => {
+                                    setShowOptionsModal(false);
+                                    if (onBlock && item.author?.id) onBlock(item.author.id, item.author?.name || 'Anonim');
+                                }}
+                            >
+                                <Text style={styles.optionTextRed}>Kullanıcıyı Engelle</Text>
+                            </TouchableOpacity>
+                            <View style={styles.separator} />
+                            <TouchableOpacity
+                                style={styles.optionItem}
+                                onPress={() => setShowOptionsModal(false)}
+                            >
+                                <Text style={styles.optionText}>İptal</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </TouchableWithoutFeedback>
+            </Modal>
 
             {/* Title */}
 
@@ -384,5 +430,40 @@ const styles = StyleSheet.create({
     saveButton: {
         marginLeft: 'auto',
         padding: 8,
+    },
+    optionsButton: {
+        padding: 8,
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+    },
+    optionsModalContent: {
+        backgroundColor: '#1a1a1a',
+        borderRadius: 12,
+        width: '80%',
+        overflow: 'hidden',
+    },
+    optionItem: {
+        paddingVertical: 16,
+        paddingHorizontal: 20,
+        alignItems: 'center',
+    },
+    optionText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '500',
+    },
+    optionTextRed: {
+        color: '#ef4444',
+        fontSize: 16,
+        fontWeight: '500',
+    },
+    separator: {
+        height: 1,
+        backgroundColor: '#333',
     }
 });

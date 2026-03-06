@@ -14,6 +14,8 @@ import {
     Platform,
     Keyboard,
     Dimensions,
+    Modal,
+    TouchableWithoutFeedback
 } from 'react-native';
 import {
     ArrowLeft,
@@ -25,6 +27,7 @@ import {
     Reply,
     Trash2,
     Bookmark,
+    MoreVertical
 } from 'lucide-react-native';
 import { Video } from 'expo-av';
 import forumService from '../api/forumService';
@@ -59,6 +62,11 @@ export default function TopicDetailScreen({ route, navigation }) {
         buttons: [],
         type: 'info'
     });
+
+    // UGC compliance stats
+    const [blockedUsers, setBlockedUsers] = useState(new Set());
+    const [showOptionsModal, setShowOptionsModal] = useState(false);
+    const [selectedItemToReport, setSelectedItemToReport] = useState({}); // { id, type, authorId, authorName }
 
     const showAlert = (title, message, buttons = [{ text: 'Tamam' }], type = 'info') => {
         setAlertConfig({ title, message, buttons, type });
@@ -163,6 +171,60 @@ export default function TopicDetailScreen({ route, navigation }) {
 
     const handleSave = () => {
         setIsSaved(prev => !prev);
+    };
+
+    const handleReport = async (targetId, targetType) => {
+        if (!isLoggedIn) {
+            showAlert('Giriş Yapın', 'Şikayet etmek için giriş yapmalısınız.', [{ text: 'Tamam' }], 'warning');
+            return;
+        }
+
+        const result = await forumService.reportContent(targetId, targetType, "Uygunsuz İçerik");
+        if (result.success) {
+            showAlert('Şikayet Alındı', 'Bildiriminiz için teşekkürler. İçerik incelenecektir.', [{ text: 'Tamam' }], 'success');
+        } else {
+            showAlert('Hata', result.error, [{ text: 'Tamam' }], 'error');
+        }
+    };
+
+    const handleBlock = (userId, userName) => {
+        if (!isLoggedIn) {
+            showAlert('Giriş Yapın', 'Kullanıcı engellemek için giriş yapmalısınız.', [{ text: 'Tamam' }], 'warning');
+            return;
+        }
+
+        showAlert(
+            'Kullanıcıyı Engelle',
+            `${userName} adlı kullanıcıyı engellemek istediğinizden emin misiniz? Bu kişinin paylaşımlarını artık görmeyeceksiniz.`,
+            [
+                { text: 'İptal', style: 'cancel' },
+                {
+                    text: 'Engelle',
+                    style: 'destructive',
+                    // "onPress" logic is triggered from custom alert component using a callback,
+                    // but since our CustomAlert doesn't support complex callbacks, we'll manually handle block:
+                    onPress: async () => {
+                        const result = await forumService.blockUser(userId);
+                        if (result.success) {
+                            setBlockedUsers(prev => {
+                                const newSet = new Set(prev);
+                                newSet.add(userId);
+                                return newSet;
+                            });
+                            // Go back if we blocked the author of the main topic
+                            if (topic?.author?.id === userId) {
+                                showAlert('Engellendi', 'Kullanıcı engellendi.', [{ text: 'Tamam', onPress: () => navigation.goBack() }], 'success');
+                            } else {
+                                showAlert('Engellendi', 'Kullanıcı engellendi. Artık bu kişinin paylaşımlarını görmeyeceksiniz.', [{ text: 'Tamam' }], 'success');
+                            }
+                        } else {
+                            showAlert('Hata', result.error, [{ text: 'Tamam' }], 'error');
+                        }
+                    }
+                }
+            ],
+            'warning'
+        );
     };
 
     const handleReplyTo = (commentId, authorName) => {
@@ -355,6 +417,15 @@ export default function TopicDetailScreen({ route, navigation }) {
                         {topic.category?.name || 'Genel'}
                     </Text>
                 </View>
+                <TouchableOpacity
+                    style={{ marginLeft: 'auto', padding: 8 }}
+                    onPress={() => {
+                        setSelectedItemToReport({ id: topic.id, type: 'topic', authorId: topic.author?.id, authorName: topic.author?.name });
+                        setShowOptionsModal(true);
+                    }}
+                >
+                    <MoreVertical size={20} color="#6b7280" />
+                </TouchableOpacity>
             </View>
 
 
@@ -511,6 +582,15 @@ export default function TopicDetailScreen({ route, navigation }) {
                     <Text style={styles.commentAuthor}>{item.author?.name || 'Anonim'}</Text>
                     <Text style={styles.commentDot}>•</Text>
                     <Text style={styles.commentTime}>{formatTimeAgo(item.createdAt)}</Text>
+                    <TouchableOpacity
+                        style={{ marginLeft: 'auto', padding: 4 }}
+                        onPress={() => {
+                            setSelectedItemToReport({ id: item.id, type: 'post', authorId: item.author?.id, authorName: item.author?.name });
+                            setShowOptionsModal(true);
+                        }}
+                    >
+                        <MoreVertical size={16} color="#6b7280" />
+                    </TouchableOpacity>
                 </View>
 
                 <Text style={styles.commentContent}>{item.content}</Text>
@@ -601,7 +681,7 @@ export default function TopicDetailScreen({ route, navigation }) {
 
             {/* Content */}
             <FlatList
-                data={comments}
+                data={comments.filter(c => !blockedUsers.has(c.author?.id))}
                 renderItem={renderCommentItem}
                 keyExtractor={(item) => item.id}
                 ListHeaderComponent={renderHeader}
@@ -684,6 +764,48 @@ export default function TopicDetailScreen({ route, navigation }) {
                 imageUrl={fullscreenImageUrl}
                 onClose={() => setFullscreenImageUrl(null)}
             />
+
+            {/* Options Modal */}
+            <Modal
+                transparent={true}
+                visible={showOptionsModal}
+                animationType="fade"
+                onRequestClose={() => setShowOptionsModal(false)}
+            >
+                <TouchableWithoutFeedback onPress={() => setShowOptionsModal(false)}>
+                    <View style={styles.modalOverlay}>
+                        <View style={styles.optionsModalContent}>
+                            <TouchableOpacity
+                                style={styles.optionItem}
+                                onPress={() => {
+                                    setShowOptionsModal(false);
+                                    handleReport(selectedItemToReport.id, selectedItemToReport.type);
+                                }}
+                            >
+                                <Text style={styles.optionTextRed}>İçeriği Şikayet Et</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={styles.optionItem}
+                                onPress={() => {
+                                    setShowOptionsModal(false);
+                                    if (selectedItemToReport.authorId) {
+                                        handleBlock(selectedItemToReport.authorId, selectedItemToReport.authorName || 'Anonim');
+                                    }
+                                }}
+                            >
+                                <Text style={styles.optionTextRed}>Kullanıcıyı Engelle</Text>
+                            </TouchableOpacity>
+                            <View style={styles.separator} />
+                            <TouchableOpacity
+                                style={styles.optionItem}
+                                onPress={() => setShowOptionsModal(false)}
+                            >
+                                <Text style={styles.optionText}>İptal</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </TouchableWithoutFeedback>
+            </Modal>
         </KeyboardAvoidingView>
     );
 }
@@ -1170,4 +1292,36 @@ const styles = StyleSheet.create({
         marginVertical: 12,
         backgroundColor: '#000',
     },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+    },
+    optionsModalContent: {
+        backgroundColor: '#1a1a1a',
+        borderRadius: 12,
+        width: '80%',
+        overflow: 'hidden',
+    },
+    optionItem: {
+        paddingVertical: 16,
+        paddingHorizontal: 20,
+        alignItems: 'center',
+    },
+    optionText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '500',
+    },
+    optionTextRed: {
+        color: '#ef4444',
+        fontSize: 16,
+        fontWeight: '500',
+    },
+    separator: {
+        height: 1,
+        backgroundColor: '#333',
+    }
 });
