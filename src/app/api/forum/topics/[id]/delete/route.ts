@@ -36,10 +36,8 @@ export async function DELETE(
             )
         }
 
-        // Check if user is the author
-        // Note: Use user.id directly. In an admin route we might allow admins, 
-        // but this looks like a user route (checking authorId).
-        if (topic.authorId !== user.id) {
+        // Check if user is the author or an Admin
+        if (topic.authorId !== user.id && user.role !== 'ADMIN') {
             return NextResponse.json(
                 { error: 'Bu tartışmayı silme yetkiniz yok' },
                 { status: 403 }

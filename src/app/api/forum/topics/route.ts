@@ -35,8 +35,15 @@ export async function GET(request: NextRequest) {
         break
     }
 
-    // Kategori filtresi
-    const where: any = {}
+    // Kategori ve süre filtresi
+    const now = new Date();
+    const where: any = {
+      OR: [
+        { poll: null }, // Poll olmayan normal gönderiler
+        { poll: { endDate: { gt: now } } } // Poll varsa endDate henüz geçmemiş olanlar
+      ]
+    }
+
     if (category && category !== 'all') {
       where.category = {
         slug: category
@@ -47,11 +54,19 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search')
     if (search) {
       const searchClean = search.replace(/^#/, '')
-      where.OR = [
-        { title: { contains: search, mode: 'insensitive' } },
-        { content: { contains: search, mode: 'insensitive' } },
-        { hashtags: { some: { name: { contains: searchClean, mode: 'insensitive' } } } }
+
+      // OR halihazırda varsa, AND içine almalıyız
+      where.AND = [
+        { OR: where.OR },
+        {
+          OR: [
+            { title: { contains: search, mode: 'insensitive' } },
+            { content: { contains: search, mode: 'insensitive' } },
+            { hashtags: { some: { name: { contains: searchClean, mode: 'insensitive' } } } }
+          ]
+        }
       ]
+      delete where.OR
     }
 
     // Get current user if logged in (for poll vote check)
