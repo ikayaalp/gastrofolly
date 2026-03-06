@@ -403,20 +403,9 @@ export default function TopicDetailScreen({ route, navigation }) {
                         <User size={14} color="#9ca3af" />
                     </View>
                 )}
-                <Text style={styles.headerAuthorName}>u/{topic.author?.name || 'anonim'}</Text>
+                <Text style={styles.headerAuthorName}>{topic.author?.name || 'Anonim'}</Text>
                 <Text style={styles.headerDot}>•</Text>
                 <Text style={styles.headerTime}>{formatTimeAgo(topic.createdAt)}</Text>
-                <Text style={styles.headerDot}>•</Text>
-                <View
-                    style={[
-                        styles.headerCategoryBadge,
-                        { backgroundColor: (topic.category?.color || '#6b7280') + '20' },
-                    ]}
-                >
-                    <Text style={[styles.headerCategoryText, { color: topic.category?.color || '#6b7280' }]}>
-                        {topic.category?.name || 'Genel'}
-                    </Text>
-                </View>
                 <TouchableOpacity
                     style={{ marginLeft: 'auto', padding: 8 }}
                     onPress={() => {
