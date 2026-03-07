@@ -6,13 +6,13 @@ import {
     TextInput,
     TouchableOpacity,
     FlatList,
-    Image,
     ActivityIndicator,
     SafeAreaView,
     StatusBar,
     Platform,
     Keyboard
 } from 'react-native';
+import { Image } from 'expo-image';
 import { Search, X, ArrowLeft, Star, ChevronRight, User } from 'lucide-react-native';
 import courseService from '../api/courseService';
 
@@ -69,11 +69,17 @@ export default function SearchScreen({ navigation }) {
     const renderItem = ({ item }) => (
         <TouchableOpacity
             style={styles.resultItem}
-            onPress={() => navigation.navigate('CourseDetail', { courseId: item.id })}
+            onPress={() => navigation.navigate('CourseDetail', { courseId: item.id, initialCourse: item })}
         >
             <View style={styles.thumbnailContainer}>
                 {item.imageUrl ? (
-                    <Image source={{ uri: item.imageUrl }} style={styles.thumbnail} />
+                    <Image
+                        source={item.imageUrl}
+                        style={styles.thumbnail}
+                        contentFit="cover"
+                        transition={200}
+                        cachePolicy="memory-disk"
+                    />
                 ) : (
                     <View style={styles.thumbnailPlaceholder}>
                         <Search size={20} color="#374151" />

@@ -21,8 +21,9 @@ import { Send, Bot, User, ChefHat, History, X, Clock, Trash2, AlertTriangle } fr
 import { sendMessageToAI } from '../api/aiService';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import Markdown from 'react-native-markdown-display';
+import LoginRequiredModal from '../components/LoginRequiredModal';
 
 const SUGGESTIONS = [
     { id: 1, text: "🍝 İtalyan Makarnası Tarifi", icon: "🍝" },
@@ -34,6 +35,7 @@ const SUGGESTIONS = [
 const MAX_HISTORY_ITEMS = 10;
 
 export default function CuliScreen() {
+    const navigation = useNavigation();
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -41,6 +43,8 @@ export default function CuliScreen() {
     const [isMenuVisible, setIsMenuVisible] = useState(false);
     const [showClearConfirm, setShowClearConfirm] = useState(false);
     const [chatHistory, setChatHistory] = useState([]);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [showLoginModal, setShowLoginModal] = useState(false);
     const flatListRef = useRef(null);
 
     // Initial load of history
@@ -70,10 +74,22 @@ export default function CuliScreen() {
         messagesRef.current = messages;
     }, [messages]);
 
-    // Auto-archive on blur (tab switch)
+    // Auto-archive on blur (tab switch) + auth check on focus
     useFocusEffect(
         useCallback(() => {
-            // Screen focused
+            // Screen focused - check auth
+            const checkAuth = async () => {
+                const token = await AsyncStorage.getItem('authToken');
+                const loggedIn = !!token;
+                setIsLoggedIn(loggedIn);
+                if (!loggedIn) {
+                    setShowLoginModal(true);
+                } else {
+                    setShowLoginModal(false);
+                }
+            };
+            checkAuth();
+
             return () => {
                 // Screen blur - save and clear
                 // Use ref to access latest messages without triggering re-run on every message change
@@ -450,6 +466,20 @@ export default function CuliScreen() {
                     </View>
                 </View>
             </Modal>
+
+            {/* Login Required Modal */}
+            <LoginRequiredModal
+                visible={showLoginModal}
+                message="Culi AI asistanını kullanmak için giriş yapmanız gerekmektedir."
+                onLogin={() => {
+                    setShowLoginModal(false);
+                    navigation.navigate('Login');
+                }}
+                onCancel={() => {
+                    setShowLoginModal(false);
+                    navigation.navigate('Home');
+                }}
+            />
         </View>
     );
 }

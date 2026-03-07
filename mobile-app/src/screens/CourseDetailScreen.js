@@ -27,12 +27,14 @@ import courseService from '../api/courseService';
 import authService from '../api/authService';
 import CustomAlert from '../components/CustomAlert';
 import favoritesService from '../services/favoritesService';
+import LoginRequiredModal from '../components/LoginRequiredModal';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width } = Dimensions.get('window');
 
 export default function CourseDetailScreen({ route, navigation }) {
-    const { courseId } = route.params;
-    const [course, setCourse] = useState(null);
+    const { courseId, initialCourse } = route.params;
+    const [course, setCourse] = useState(initialCourse || null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [userData, setUserData] = useState(null);
@@ -44,6 +46,8 @@ export default function CourseDetailScreen({ route, navigation }) {
         type: 'info'
     });
     const [isFavorite, setIsFavorite] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(true);
+    const [showLoginModal, setShowLoginModal] = useState(false);
 
     const showAlert = (title, message, buttons = [{ text: 'Tamam' }], type = 'info') => {
         setAlertConfig({ title, message, buttons, type });
@@ -57,6 +61,9 @@ export default function CourseDetailScreen({ route, navigation }) {
         React.useCallback(() => {
             // Force refresh user data from server to check for new subscription
             const refreshData = async () => {
+                const token = await AsyncStorage.getItem('authToken');
+                if (!token) return; // Don't try to refresh if not logged in
+
                 try {
                     console.log('Refreshing user data for subscription check...');
                     const updatedUser = await authService.refreshUserData();
@@ -73,7 +80,14 @@ export default function CourseDetailScreen({ route, navigation }) {
             };
 
             refreshData();
-            loadCourseDetails();
+
+            // We let initial load handle the very first course load and auth check.
+            // But if user navigates back to this screen while logged in, we should reload course
+            const checkAndLoadCourse = async () => {
+                const token = await AsyncStorage.getItem('authToken');
+                if (token) loadCourseDetails();
+            };
+            checkAndLoadCourse();
 
             return () => {
                 // cleanup
@@ -81,9 +95,22 @@ export default function CourseDetailScreen({ route, navigation }) {
         }, [courseId])
     );
 
-    // Initial load kept as backup
+    // Initial load + auth check
     useEffect(() => {
-        loadUserData();
+        const checkAuthAndLoad = async () => {
+            const token = await AsyncStorage.getItem('authToken');
+            const loggedIn = !!token;
+            setIsLoggedIn(loggedIn);
+
+            if (!loggedIn) {
+                setShowLoginModal(true);
+            } else {
+                loadUserData();
+            }
+            // Always try to load course details to show in background
+            loadCourseDetails(loggedIn);
+        };
+        checkAuthAndLoad();
     }, []);
 
     const loadUserData = async () => {
@@ -95,32 +122,38 @@ export default function CourseDetailScreen({ route, navigation }) {
         }
     };
 
-    const loadCourseDetails = async () => {
+    const loadCourseDetails = async (isUserLoggedIn = isLoggedIn) => {
         try {
             setLoading(true);
             setError(null);
 
-            // Fetch course details using service (sends auth token)
+            // Fetch course details using service
             const result = await courseService.getCourseDetails(courseId);
 
             if (result.success) {
                 setCourse(result.data);
 
-                // Check if this course is in favorites
-                const favStatus = await favoritesService.isFavorite(courseId);
-                setIsFavorite(favStatus);
+                if (isUserLoggedIn) {
+                    // Check if this course is in favorites only if logged in
+                    const favStatus = await favoritesService.isFavorite(courseId);
+                    setIsFavorite(favStatus);
+                }
             } else {
                 throw new Error(result.error || 'Kurs bulunamadı');
             }
         } catch (err) {
             console.error('Course detail error:', err);
-            setError(err.message || 'Kurs detayları yüklenirken bir hata oluştu');
-            showAlert(
-                'Hata',
-                'Kurs detayları yüklenemedi. Ana sayfaya dönülüyor.',
-                [{ text: 'Tamam', onPress: () => navigation.goBack() }],
-                'error'
-            );
+
+            // Sadece kullanıcı giriş yapmışsa veya modal gösterilmiyorsa hata göster
+            if (isUserLoggedIn) {
+                setError(err.message || 'Kurs detayları yüklenirken bir hata oluştu');
+                showAlert(
+                    'Hata',
+                    'Kurs detayları yüklenemedi. Ana sayfaya dönülüyor.',
+                    [{ text: 'Tamam', onPress: () => navigation.goBack() }],
+                    'error'
+                );
+            }
         } finally {
             setLoading(false);
         }
@@ -447,6 +480,20 @@ export default function CourseDetailScreen({ route, navigation }) {
                 buttons={alertConfig.buttons}
                 type={alertConfig.type}
                 onClose={() => setAlertVisible(false)}
+            />
+
+            {/* Login Required Modal */}
+            <LoginRequiredModal
+                visible={showLoginModal}
+                message="Kurs detaylarını görüntülemek için giriş yapmanız gerekmektedir."
+                onLogin={() => {
+                    setShowLoginModal(false);
+                    navigation.navigate('Login');
+                }}
+                onCancel={() => {
+                    setShowLoginModal(false);
+                    navigation.goBack();
+                }}
             />
         </View>
     );

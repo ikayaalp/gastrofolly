@@ -198,7 +198,7 @@ export default function InstructorProfileScreen({ navigation, route }) {
                             <TouchableOpacity
                                 key={course.id}
                                 style={styles.courseCard}
-                                onPress={() => navigation.navigate('CourseDetail', { courseId: course.id })}
+                                onPress={() => navigation.navigate('CourseDetail', { courseId: course.id, initialCourse: course })}
                             >
                                 {course.imageUrl ? (
                                     <Image

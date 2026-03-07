@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, Text, View, Image, ScrollView, TouchableOpacity, Modal, Dimensions, StatusBar, Platform } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Modal, Dimensions, StatusBar, Platform } from 'react-native';
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -152,8 +153,11 @@ const StoryViewer = ({ stories, initialIndex, onClose, navigation }) => {
                     />
                 ) : (
                     <Image
-                        source={{ uri: currentStoryItem.mediaUrl || currentStoryItem.content }}
+                        source={currentStoryItem.mediaUrl || currentStoryItem.content}
                         style={viewerStyles.backgroundImage}
+                        contentFit="cover"
+                        transition={100}
+                        cachePolicy="memory-disk"
                     />
                 )}
 
@@ -187,8 +191,11 @@ const StoryViewer = ({ stories, initialIndex, onClose, navigation }) => {
                         {/* User Info */}
                         <View style={viewerStyles.userInfo}>
                             <Image
-                                source={{ uri: currentStoryGroup.user.avatar }}
+                                source={currentStoryGroup.user.avatar}
                                 style={viewerStyles.userAvatarSmall}
+                                contentFit="cover"
+                                transition={100}
+                                cachePolicy="memory-disk"
                             />
                             {/* Display Title or Creator Name */}
                             <Text style={viewerStyles.userNameSmall}>
@@ -260,8 +267,11 @@ export default function Stories({ stories = [], navigation }) {
                         >
                             <View style={styles.imageContainer}>
                                 <Image
-                                    source={{ uri: story.user.avatar }}
+                                    source={story.user.avatar}
                                     style={styles.avatar}
+                                    contentFit="cover"
+                                    transition={200}
+                                    cachePolicy="memory-disk"
                                 />
                             </View>
                         </LinearGradient>

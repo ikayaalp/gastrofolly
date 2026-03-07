@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, Text, View, Image, Dimensions, TouchableOpacity, ScrollView, ActivityIndicator, StatusBar, Platform, RefreshControl } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, TouchableOpacity, ScrollView, ActivityIndicator, StatusBar, Platform, RefreshControl } from 'react-native';
+import { Image } from 'expo-image';
 
 import { Ionicons } from '@expo/vector-icons';
 import { ChefHat, BookOpen, Star, Play, Plus, Info } from 'lucide-react-native';
@@ -169,13 +170,16 @@ export default function HomeScreen({ navigation }) {
             <TouchableOpacity
                 key={courseData.id || index}
                 style={styles.courseCard}
-                onPress={() => navigation.navigate('CourseDetail', { courseId: courseData.id })}
+                onPress={() => navigation.navigate('CourseDetail', { courseId: courseData.id, initialCourse: courseData })}
                 activeOpacity={0.9}
             >
                 {/* Course Image with Overlay */}
                 <Image
-                    source={{ uri: imageUrl }}
+                    source={imageUrl}
                     style={styles.courseImage}
+                    contentFit="cover"
+                    transition={200}
+                    cachePolicy="memory-disk"
                 />
 
                 {/* Gradient Overlay with Text */}
@@ -208,7 +212,7 @@ export default function HomeScreen({ navigation }) {
             <TouchableOpacity
                 key={courseData.id || index}
                 style={styles.rankedCardContainer}
-                onPress={() => navigation.navigate('CourseDetail', { courseId: courseData.id })}
+                onPress={() => navigation.navigate('CourseDetail', { courseId: courseData.id, initialCourse: courseData })}
                 activeOpacity={0.9}
             >
                 {/* Large Ranking Number */}
@@ -219,8 +223,11 @@ export default function HomeScreen({ navigation }) {
                 {/* Course Card */}
                 <View style={styles.rankedCourseCard}>
                     <Image
-                        source={{ uri: imageUrl }}
+                        source={imageUrl}
                         style={styles.rankedCourseImage}
+                        contentFit="cover"
+                        transition={200}
+                        cachePolicy="memory-disk"
                     />
                     <LinearGradient
                         colors={['transparent', 'rgba(0,0,0,0.7)', 'rgba(0,0,0,0.95)']}
@@ -251,12 +258,15 @@ export default function HomeScreen({ navigation }) {
             <TouchableOpacity
                 key={courseData.id || index}
                 style={styles.largeCourseCard}
-                onPress={() => navigation.navigate('CourseDetail', { courseId: courseData.id })}
+                onPress={() => navigation.navigate('CourseDetail', { courseId: courseData.id, initialCourse: courseData })}
                 activeOpacity={0.9}
             >
                 <Image
-                    source={{ uri: imageUrl }}
+                    source={imageUrl}
                     style={styles.largeCourseImage}
+                    contentFit="cover"
+                    transition={200}
+                    cachePolicy="memory-disk"
                 />
                 <LinearGradient
                     colors={['transparent', 'rgba(0,0,0,0.6)', 'rgba(0,0,0,0.95)']}
@@ -286,12 +296,15 @@ export default function HomeScreen({ navigation }) {
             <TouchableOpacity
                 key={courseData.id || index}
                 style={styles.courseCard}
-                onPress={() => navigation.navigate('CourseDetail', { courseId: courseData.id })}
+                onPress={() => navigation.navigate('CourseDetail', { courseId: courseData.id, initialCourse: courseData })}
                 activeOpacity={0.9}
             >
                 <Image
-                    source={{ uri: imageUrl }}
+                    source={imageUrl}
                     style={styles.courseImage}
+                    contentFit="cover"
+                    transition={200}
+                    cachePolicy="memory-disk"
                 />
                 <LinearGradient
                     colors={['transparent', 'rgba(0,0,0,0.8)', '#000']}
@@ -375,11 +388,14 @@ export default function HomeScreen({ navigation }) {
                                     key={course.id || `featured-${index}`}
                                     style={[styles.carouselCard, { width }]}
                                     activeOpacity={0.9}
-                                    onPress={() => navigation.navigate('CourseDetail', { courseId: course.id })}
+                                    onPress={() => navigation.navigate('CourseDetail', { courseId: course.id, initialCourse: course })}
                                 >
                                     <Image
-                                        source={{ uri: course.imageUrl || 'https://images.unsplash.com/photo-1556910103-1c02745a30bf?q=80&w=800' }}
+                                        source={course.imageUrl || 'https://images.unsplash.com/photo-1556910103-1c02745a30bf?q=80&w=800'}
                                         style={styles.carouselImage}
+                                        contentFit="cover"
+                                        transition={300}
+                                        cachePolicy="memory-disk"
                                     />
                                     <LinearGradient
                                         colors={['transparent', 'rgba(0,0,0,0.2)', 'rgba(0,0,0,0.8)', '#000']}

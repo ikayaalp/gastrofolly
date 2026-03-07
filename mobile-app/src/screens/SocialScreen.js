@@ -47,6 +47,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomAlert from '../components/CustomAlert';
 import ImageViewerModal from '../components/ImageViewerModal';
 import TopicCard from '../components/TopicCard';
+import LoginRequiredModal from '../components/LoginRequiredModal';
 
 const formatDuration = (millis) => {
     if (!millis) return 'Video';
@@ -72,6 +73,7 @@ export default function SocialScreen({ navigation }) {
     const [newTopicForm, setNewTopicForm] = useState({ title: '', content: '' });
     const [submitting, setSubmitting] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [showLoginModal, setShowLoginModal] = useState(false);
     const [alertVisible, setAlertVisible] = useState(false);
     const [alertConfig, setAlertConfig] = useState({
         title: '',
@@ -180,8 +182,12 @@ export default function SocialScreen({ navigation }) {
 
     const checkLoginStatus = async () => {
         const token = await AsyncStorage.getItem('authToken');
-        setIsLoggedIn(!!token);
-        if (token) {
+        const loggedIn = !!token;
+        setIsLoggedIn(loggedIn);
+        if (!loggedIn) {
+            setShowLoginModal(true);
+        } else {
+            setShowLoginModal(false);
             const user = await authService.getCurrentUser();
             setCurrentUser(user);
         }
@@ -909,6 +915,20 @@ export default function SocialScreen({ navigation }) {
                     </TouchableOpacity>
                 </View>
             </Modal>
+
+            {/* Login Required Modal */}
+            <LoginRequiredModal
+                visible={showLoginModal}
+                message="Chef Sosyal'i kullanmak için giriş yapmanız gerekmektedir."
+                onLogin={() => {
+                    setShowLoginModal(false);
+                    navigation.navigate('Login');
+                }}
+                onCancel={() => {
+                    setShowLoginModal(false);
+                    navigation.navigate('Home');
+                }}
+            />
         </View >
     );
 }

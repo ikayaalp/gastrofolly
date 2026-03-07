@@ -10,7 +10,8 @@ import {
     Image,
     Platform,
     Switch,
-    Linking
+    Linking,
+    ActivityIndicator
 } from 'react-native';
 import {
     User,
@@ -36,9 +37,15 @@ import {
 } from 'lucide-react-native';
 import authService from '../api/authService';
 import CustomAlert from '../components/CustomAlert';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LinearGradient } from 'expo-linear-gradient';
+import AuthBackground from '../components/AuthBackground';
+import Logo from '../components/Logo';
 
 export default function AccountScreen({ navigation }) {
     const [userData, setUserData] = useState(null);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [isInitLoading, setIsInitLoading] = useState(true);
     const [notificationsEnabled, setNotificationsEnabled] = useState(true);
     const [showLanguageModal, setShowLanguageModal] = useState(false);
     const [showPrivacyModal, setShowPrivacyModal] = useState(false);
@@ -60,12 +67,20 @@ export default function AccountScreen({ navigation }) {
         const unsubscribe = navigation.addListener('focus', () => {
             loadUserData();
         });
+        loadUserData();
         return unsubscribe;
     }, [navigation]);
 
     const loadUserData = async () => {
-        const user = await authService.getCurrentUser();
-        setUserData(user);
+        const token = await AsyncStorage.getItem('authToken');
+        setIsLoggedIn(!!token);
+        setIsInitLoading(false);
+        if (token) {
+            const user = await authService.getCurrentUser();
+            setUserData(user);
+        } else {
+            setUserData(null);
+        }
     };
 
     const handleLogout = () => {
@@ -187,6 +202,79 @@ export default function AccountScreen({ navigation }) {
             <Text style={styles.infoValue}>{value}</Text>
         </View>
     );
+
+    // Guest UI - Login/Register screen
+    if (isInitLoading) {
+        return (
+            <View style={[styles.container, styles.loadingContainer]}>
+                <ActivityIndicator size="large" color="#ea580c" />
+            </View>
+        );
+    }
+
+    if (!isLoggedIn) {
+        return (
+            <SafeAreaView style={styles.container}>
+                <StatusBar barStyle="light-content" backgroundColor="#000" />
+                {/* Background image same as login */}
+                <AuthBackground />
+
+                <ScrollView style={styles.scrollView} contentContainerStyle={styles.guestScrollContent}>
+                    {/* Logo - same as login screen */}
+                    <View style={styles.guestHero}>
+                        <Logo size="xl" style={{ marginBottom: 15 }} />
+                        <Text style={styles.guestSubtitle}>Giriş yaparak tüm özelliklere erişin</Text>
+                    </View>
+
+                    {/* Features */}
+                    <View style={styles.guestFeatures}>
+                        <View style={styles.guestFeatureItem}>
+                            <View style={styles.guestFeatureDot} />
+                            <Text style={styles.guestFeatureText}>Kursları izleyin ve ilerlemenizi takip edin</Text>
+                        </View>
+                        <View style={styles.guestFeatureItem}>
+                            <View style={styles.guestFeatureDot} />
+                            <Text style={styles.guestFeatureText}>Chef AI ile kişisel mutfak asistanınızı kullanın</Text>
+                        </View>
+                        <View style={styles.guestFeatureItem}>
+                            <View style={styles.guestFeatureDot} />
+                            <Text style={styles.guestFeatureText}>Sosyal alanda tarif ve deneyimlerinizi paylaşın</Text>
+                        </View>
+                        <View style={styles.guestFeatureItem}>
+                            <View style={styles.guestFeatureDot} />
+                            <Text style={styles.guestFeatureText}>Şeflerle doğrudan iletişim kurun</Text>
+                        </View>
+                    </View>
+
+                    {/* Buttons */}
+                    <View style={styles.guestButtons}>
+                        <TouchableOpacity
+                            style={styles.guestLoginButton}
+                            onPress={() => navigation.navigate('Login')}
+                        >
+                            <LinearGradient
+                                colors={['#ea580c', '#c2410c']}
+                                style={styles.guestLoginGradient}
+                            >
+                                <Text style={styles.guestLoginText}>Giriş Yap</Text>
+                            </LinearGradient>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={styles.guestRegisterButton}
+                            onPress={() => navigation.navigate('Register')}
+                        >
+                            <Text style={styles.guestRegisterText}>Hesap Oluştur</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    <Text style={styles.guestFooter}>
+                        Giriş yaparak kullanım koşullarını ve gizlilik politikasını kabul etmiş olursunuz.
+                    </Text>
+                </ScrollView>
+            </SafeAreaView>
+        );
+    }
 
     return (
         <SafeAreaView style={styles.container}>
@@ -445,6 +533,10 @@ const styles = StyleSheet.create({
         backgroundColor: '#000',
         paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     },
+    loadingContainer: {
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
     header: {
         paddingVertical: 16,
         paddingHorizontal: 20,
@@ -665,5 +757,91 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         fontSize: 16,
         marginBottom: 8,
+    },
+    // Guest screen styles
+    guestScrollContent: {
+        flexGrow: 1,
+        justifyContent: 'center',
+        paddingBottom: 120,
+        paddingHorizontal: 20,
+    },
+    guestHero: {
+        alignItems: 'center',
+        paddingTop: 20,
+        paddingBottom: 32,
+    },
+    guestSubtitle: {
+        fontSize: 16,
+        color: '#d1d5db',
+        textAlign: 'center',
+        lineHeight: 24,
+        paddingHorizontal: 20,
+        marginTop: 8,
+        fontWeight: '500',
+    },
+    guestFeatures: {
+        backgroundColor: 'rgba(0,0,0,0.85)',
+        borderRadius: 16,
+        padding: 20,
+        marginBottom: 32,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.15)',
+    },
+    guestFeatureItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 16,
+    },
+    guestFeatureDot: {
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        backgroundColor: '#ea580c',
+        marginRight: 14,
+    },
+    guestFeatureText: {
+        fontSize: 14,
+        color: '#d1d5db',
+        flex: 1,
+        lineHeight: 20,
+    },
+    guestButtons: {
+        gap: 12,
+        marginBottom: 24,
+    },
+    guestLoginButton: {
+        borderRadius: 14,
+        overflow: 'hidden',
+    },
+    guestLoginGradient: {
+        paddingVertical: 18,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    guestLoginText: {
+        color: '#fff',
+        fontSize: 17,
+        fontWeight: 'bold',
+    },
+    guestRegisterButton: {
+        paddingVertical: 18,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 14,
+        borderWidth: 1.5,
+        borderColor: 'rgba(234, 88, 12, 0.4)',
+        backgroundColor: 'rgba(234, 88, 12, 0.08)',
+    },
+    guestRegisterText: {
+        color: '#ea580c',
+        fontSize: 17,
+        fontWeight: 'bold',
+    },
+    guestFooter: {
+        color: '#4b5563',
+        fontSize: 12,
+        textAlign: 'center',
+        lineHeight: 18,
+        paddingHorizontal: 20,
     },
 });

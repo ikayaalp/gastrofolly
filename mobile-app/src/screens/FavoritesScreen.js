@@ -70,7 +70,7 @@ export default function FavoritesScreen({ navigation }) {
     const renderFavoriteItem = ({ item }) => (
         <TouchableOpacity
             style={styles.courseCard}
-            onPress={() => navigation.navigate('CourseDetail', { courseId: item.id })}
+            onPress={() => navigation.navigate('CourseDetail', { courseId: item.id, initialCourse: item })}
             activeOpacity={0.8}
         >
             <Image

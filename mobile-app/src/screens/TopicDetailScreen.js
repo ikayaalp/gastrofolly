@@ -8,7 +8,6 @@ import {
     TouchableOpacity,
     ActivityIndicator,
     RefreshControl,
-    Image,
     TextInput,
     KeyboardAvoidingView,
     Platform,
@@ -17,6 +16,7 @@ import {
     Modal,
     TouchableWithoutFeedback
 } from 'react-native';
+import { Image } from 'expo-image';
 import {
     ArrowLeft,
     ThumbsUp,
@@ -438,7 +438,12 @@ export default function TopicDetailScreen({ route, navigation }) {
             {/* Reddit-style Header: avatar + u/author • time • category */}
             <View style={styles.topicHeader}>
                 {topic.author?.image ? (
-                    <Image source={{ uri: topic.author.image }} style={styles.headerAvatar} />
+                    <Image
+                        source={topic.author.image}
+                        style={styles.headerAvatar}
+                        contentFit="cover"
+                        cachePolicy="memory-disk"
+                    />
                 ) : (
                     <View style={styles.headerAvatarPlaceholder}>
                         <User size={14} color="#9ca3af" />
@@ -530,9 +535,10 @@ export default function TopicDetailScreen({ route, navigation }) {
                     activeOpacity={0.9}
                 >
                     <Image
-                        source={{ uri: topic.mediaUrl }}
+                        source={topic.mediaUrl}
                         style={[styles.topicMediaImage, { width: Dimensions.get('window').width, height: Dimensions.get('window').width }]}
-                        resizeMode="cover"
+                        contentFit="cover"
+                        cachePolicy="memory-disk"
                     />
                     <View style={styles.tapToExpandHint}>
                         <Text style={styles.tapToExpandText}>Büyütmek için dokun</Text>
@@ -593,7 +599,12 @@ export default function TopicDetailScreen({ route, navigation }) {
         <View key={reply.id} style={styles.nestedReplyCard}>
             <View style={styles.commentAvatarContainer}>
                 {reply.author?.image ? (
-                    <Image source={{ uri: reply.author.image }} style={styles.nestedReplyAvatar} />
+                    <Image
+                        source={reply.author.image}
+                        style={styles.nestedReplyAvatar}
+                        contentFit="cover"
+                        cachePolicy="memory-disk"
+                    />
                 ) : (
                     <View style={styles.nestedReplyAvatarPlaceholder}>
                         <User size={12} color="#fff" />
@@ -649,7 +660,12 @@ export default function TopicDetailScreen({ route, navigation }) {
         <View style={styles.commentCard}>
             <View style={styles.commentAvatarContainer}>
                 {item.author?.image ? (
-                    <Image source={{ uri: item.author.image }} style={styles.commentAvatar} />
+                    <Image
+                        source={item.author.image}
+                        style={styles.commentAvatar}
+                        contentFit="cover"
+                        cachePolicy="memory-disk"
+                    />
                 ) : (
                     <View style={styles.commentAvatarPlaceholder}>
                         <User size={16} color="#fff" />

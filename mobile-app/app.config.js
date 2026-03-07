@@ -48,12 +48,12 @@ export default {
         "slug": "chef-2-0",
 
         "scheme": "chef2",
-        "version": "1.0.0",
+        "version": "1.0.3",
         "orientation": "portrait",
-        "icon": "./assets/icon.png",
+        "icon": "./assets/icon_blackBg.png",
         "userInterfaceStyle": "dark",
         "splash": {
-            "image": "./assets/icon.png",
+            "image": "./assets/icon_blackBg.png",
             "resizeMode": "contain",
             "backgroundColor": "#000000"
         },
@@ -67,7 +67,7 @@ export default {
         },
         "android": {
             "package": "com.chef2.app",
-            "versionCode": 1,
+            "versionCode": 3,
             "adaptiveIcon": {
                 "foregroundImage": "./assets/adaptive-icon.png",
                 "backgroundColor": "#000000"
@@ -81,7 +81,7 @@ export default {
             [
                 "expo-notifications",
                 {
-                    "icon": "./assets/icon.png",
+                    "icon": "./assets/icon_blackBg.png",
                     "color": "#FF6B00",
                     "sounds": []
                 }
