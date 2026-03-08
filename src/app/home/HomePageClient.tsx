@@ -103,8 +103,7 @@ export default function HomePageClient({
                   />
                 </div>
                 <span className="text-2xl font-bold">
-                  <span className="text-orange-500">ulin</span>
-                  <span className="text-white">ora</span>
+                  <span className="text-orange-500">ulin</span><span className="text-white" style={{ marginLeft: "0px" }}>ora</span>
                 </span>
                 {session?.user?.role === 'INSTRUCTOR' && (
                   <span className="bg-blue-600 text-white px-2 py-1 rounded text-sm font-medium">Eğitmen</span>
@@ -184,8 +183,7 @@ export default function HomePageClient({
               />
             </div>
             <span className="text-lg font-bold">
-              <span className="text-orange-500">ulin</span>
-              <span className="text-white">ora</span>
+              <span className="text-orange-500">ulin</span><span className="text-white" style={{ marginLeft: "0px" }}>ora</span>
             </span>
           </Link>
           <div className="flex items-center space-x-3">

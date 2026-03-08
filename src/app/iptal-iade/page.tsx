@@ -37,8 +37,7 @@ export default async function CancellationRefundPage() {
 
                             </div>
                             <span className="text-2xl font-bold tracking-tight">
-                                <span className="text-orange-500">ulin</span>
-                                <span className="text-white">ora</span>
+                                <span className="text-orange-500">ulin</span><span className="text-white" style={{ marginLeft: "0px" }}>ora</span>
                             </span>
                         </Link>
                         <nav className="hidden md:flex space-x-8">

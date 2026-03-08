@@ -366,8 +366,7 @@ export default async function LearnPage({ params, searchParams }: LearnPageProps
 
             </div>
             <span className="text-lg font-bold tracking-tight">
-              <span className="text-orange-500">ulin</span>
-              <span className="text-white">ora</span>
+              <span className="text-orange-500">ulin</span><span className="text-white" style={{ marginLeft: "0px" }}>ora</span>
             </span>
           </Link>
           <UserDropdown />

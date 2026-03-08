@@ -32,8 +32,7 @@ export default async function ContactPage() {
                     />
                   </div>
                   <span className="text-2xl font-bold tracking-tight">
-                    <span className="text-orange-500">ulin</span>
-                    <span className="text-white">ora</span>
+                    <span className="text-orange-500">ulin</span><span className="text-white" style={{ marginLeft: "0px" }}>ora</span>
                   </span>
                   {session.user.role === 'ADMIN' && (
                     <span className="bg-orange-600 text-white px-2 py-1 rounded text-sm font-medium">Admin</span>
@@ -79,8 +78,7 @@ export default async function ContactPage() {
                     />
                   </div>
                   <span className="text-2xl font-bold tracking-tight">
-                    <span className="text-orange-500">ulin</span>
-                    <span className="text-white">ora</span>
+                    <span className="text-orange-500">ulin</span><span className="text-white" style={{ marginLeft: "0px" }}>ora</span>
                   </span>
                 </Link>
                 <nav className="hidden md:flex space-x-8">
@@ -134,8 +132,7 @@ export default async function ContactPage() {
               />
             </div>
             <span className="text-lg font-bold tracking-tight">
-              <span className="text-orange-500">ulin</span>
-              <span className="text-white">ora</span>
+              <span className="text-orange-500">ulin</span><span className="text-white" style={{ marginLeft: "0px" }}>ora</span>
             </span>
           </Link>
           <UserDropdown />

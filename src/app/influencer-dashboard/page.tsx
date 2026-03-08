@@ -107,8 +107,7 @@ export default function InfluencerDashboardPage() {
 
                                 </div>
                                 <span className="text-2xl font-bold tracking-tight">
-                                  <span className="text-orange-500">ulin</span>
-                                  <span className="text-white">ora</span>
+                                  <span className="text-orange-500">ulin</span><span className="text-white" style={{ marginLeft: "0px" }}>ora</span>
                                 </span>
                             </Link>
                         </div>
@@ -139,8 +138,7 @@ export default function InfluencerDashboardPage() {
 
                         </div>
                         <span className="text-lg font-bold tracking-tight">
-                          <span className="text-orange-500">ulin</span>
-                          <span className="text-white">ora</span>
+                          <span className="text-orange-500">ulin</span><span className="text-white" style={{ marginLeft: "0px" }}>ora</span>
                         </span>
                     </Link>
                     <div className="flex items-center space-x-3">
