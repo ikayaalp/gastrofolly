@@ -72,6 +72,9 @@ export default function SocialScreen({ navigation }) {
     const [showNewTopicModal, setShowNewTopicModal] = useState(false);
     const [newTopicForm, setNewTopicForm] = useState({ title: '', content: '' });
     const [submitting, setSubmitting] = useState(false);
+    const [showEulaModal, setShowEulaModal] = useState(false);
+    const [eulaAccepted, setEulaAccepted] = useState(true);
+    const [eulaChecked, setEulaChecked] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [showLoginModal, setShowLoginModal] = useState(false);
     const [alertVisible, setAlertVisible] = useState(false);
@@ -190,6 +193,13 @@ export default function SocialScreen({ navigation }) {
             setShowLoginModal(false);
             const user = await authService.getCurrentUser();
             setCurrentUser(user);
+        }
+
+        // Check EULA status
+        const eulaStatus = await AsyncStorage.getItem('chef-sosyal-eula-accepted');
+        if (!eulaStatus) {
+            setEulaAccepted(false);
+            setShowEulaModal(true);
         }
     };
 
@@ -929,6 +939,96 @@ export default function SocialScreen({ navigation }) {
                     navigation.navigate('Home');
                 }}
             />
+            {/* EULA Modal */}
+            <Modal
+                visible={showEulaModal && !eulaAccepted}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => { }}
+            >
+                <View style={styles.eulaOverlay}>
+                    <View style={styles.eulaContainer}>
+                        <View style={styles.eulaHeader}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                                <Text style={styles.eulaHeaderIcon}>📜</Text>
+                                <Text style={styles.eulaTitle}>Chef Sosyal Kullanım Koşulları</Text>
+                            </View>
+                            <TouchableOpacity
+                                onPress={() => navigation.navigate('Home')}
+                                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                            >
+                                <X size={24} color="#6b7280" />
+                            </TouchableOpacity>
+                        </View>
+
+                        <ScrollView style={styles.eulaScroll} showsVerticalScrollIndicator={true}>
+                            <Text style={styles.eulaText}>
+                                <Text style={{ fontWeight: 'bold', color: '#fff' }}>Culinora Chef Sosyal</Text> topluluğuna hoş geldiniz! Burası, şeflerin, mutfak profesyonellerinin ve gastronomi tutkunlarının bir araya gelip vizyonlarını, tecrübelerini ve tabaklarını paylaştığı nezih bir alandır.
+                            </Text>
+
+                            <View style={styles.eulaWarningBox}>
+                                <View style={styles.eulaWarningHeader}>
+                                    <Text style={styles.eulaWarningIcon}>�️</Text>
+                                    <Text style={styles.eulaWarningTitle}>Topluluk Kuralları ve Etik İlkeler</Text>
+                                </View>
+                                <Text style={styles.eulaWarningText}>
+                                    Topluluğumuzda güvenli, destekleyici ve saygılı bir ortamı koruyabilmek için, <Text style={{ fontWeight: 'bold', color: '#fff' }}>Aşağılayıcı, Küfürlü, Ayrımcı İçeriklere (Objectionable Content)</Text> ve <Text style={{ fontWeight: 'bold', color: '#fff' }}>İstismarcı/Zorba (Abusive) Kullanıcılara karşı net kurallar uyguluyoruz.</Text>
+                                </Text>
+
+                                <View style={styles.eulaBulletPoint}>
+                                    <Text style={styles.eulaBulletDot}>•</Text>
+                                    <Text style={styles.eulaBulletText}>Bu kuralları ihlal eden kullanıcıların hesapları askıya alınabilir veya sonlandırılabilir.</Text>
+                                </View>
+                                <View style={styles.eulaBulletPoint}>
+                                    <Text style={styles.eulaBulletDot}>•</Text>
+                                    <Text style={styles.eulaBulletText}>Rahatsız edici olduğunu düşündüğünüz içerikleri <Text style={{ fontWeight: 'bold', color: '#fff' }}>"Şikayet Et" (Report)</Text> butonu ile moderatörlere bildirebilirsiniz.</Text>
+                                </View>
+                                <View style={styles.eulaBulletPoint}>
+                                    <Text style={styles.eulaBulletDot}>•</Text>
+                                    <Text style={styles.eulaBulletText}>Görmek istemediğiniz kişileri <Text style={{ fontWeight: 'bold', color: '#fff' }}>"Engelle" (Block User)</Text> özelliği ile engelleyebilirsiniz.</Text>
+                                </View>
+                            </View>
+
+                            <Text style={styles.eulaText}>
+                                <Text style={{ fontWeight: 'bold', color: '#fff' }}>Telif Hakkı ve Kişisel Haklar:</Text> Paylaştığınız içeriklerin yasal sorumluluğu size aittir. Culinora, topluluk kurallarını ihlal eden içerikleri kaldırma hakkını saklı tutar.
+                            </Text>
+                        </ScrollView>
+
+                        <View style={styles.eulaFooter}>
+                            <Text style={styles.eulaDisclaimer}>
+                                Yukarıdaki topluluk kurallarını okuduğumu ve kabul ettiğimi; kurallara uymamam durumunda hesabımın kısıtlanabileceğini anlıyorum.
+                            </Text>
+
+                            <View style={styles.eulaCheckboxContainer}>
+                                <TouchableOpacity
+                                    style={styles.eulaCheckboxBtn}
+                                    onPress={() => setEulaChecked(!eulaChecked)}
+                                    activeOpacity={0.7}
+                                >
+                                    <View style={[styles.eulaCheckbox, eulaChecked && styles.eulaCheckboxChecked]}>
+                                        {eulaChecked && <Check size={14} color="#fff" strokeWidth={3} />}
+                                    </View>
+                                    <Text style={styles.eulaCheckboxText}>Kuralları okudum ve kabul ediyorum</Text>
+                                </TouchableOpacity>
+                            </View>
+
+                            <View style={styles.eulaButtonsContainer}>
+                                <TouchableOpacity
+                                    style={[styles.eulaAcceptBtn, !eulaChecked && styles.eulaAcceptBtnDisabled]}
+                                    disabled={!eulaChecked}
+                                    onPress={async () => {
+                                        await AsyncStorage.setItem('chef-sosyal-eula-accepted', 'true');
+                                        setEulaAccepted(true);
+                                        setShowEulaModal(false);
+                                    }}
+                                >
+                                    <Text style={styles.eulaAcceptBtnText}>Devam Et</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
         </View >
     );
 }
@@ -1688,5 +1788,161 @@ const styles = StyleSheet.create({
         fontSize: 11,
         color: '#ef4444',
         fontWeight: '600',
+    },
+    eulaOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.95)',
+        justifyContent: 'center',
+        padding: 16,
+    },
+    eulaContainer: {
+        backgroundColor: '#0a0a0a',
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: '#1a1a1a',
+        maxHeight: '90%',
+        padding: 20,
+    },
+    eulaHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 16,
+    },
+    eulaHeaderIcon: {
+        fontSize: 24,
+        marginRight: 8,
+    },
+    eulaTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#ea580c',
+        flex: 1,
+    },
+    eulaScroll: {
+        marginBottom: 16,
+    },
+    eulaText: {
+        fontSize: 14,
+        color: '#d1d5db',
+        lineHeight: 20,
+        marginBottom: 12,
+    },
+    eulaWarningBox: {
+        backgroundColor: '#1a1a1a',
+        borderRadius: 12,
+        padding: 16,
+        borderWidth: 1,
+        borderColor: '#333',
+        marginBottom: 16,
+    },
+    eulaWarningHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    eulaWarningIcon: {
+        fontSize: 18,
+        marginRight: 6,
+    },
+    eulaWarningTitle: {
+        fontSize: 15,
+        fontWeight: 'bold',
+        color: '#fff',
+    },
+    eulaWarningText: {
+        fontSize: 13,
+        color: '#9ca3af',
+        lineHeight: 18,
+        marginBottom: 8,
+    },
+    eulaBulletPoint: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        marginBottom: 6,
+    },
+    eulaBulletDot: {
+        fontSize: 14,
+        color: '#9ca3af',
+        marginRight: 8,
+        marginTop: -2,
+    },
+    eulaBulletText: {
+        fontSize: 13,
+        color: '#9ca3af',
+        flex: 1,
+        lineHeight: 18,
+    },
+    eulaFooter: {
+        borderTopWidth: 1,
+        borderTopColor: '#1a1a1a',
+        paddingTop: 16,
+    },
+    eulaDisclaimer: {
+        fontSize: 11,
+        color: '#6b7280',
+        textAlign: 'center',
+        marginBottom: 16,
+        lineHeight: 16,
+    },
+    eulaCheckboxContainer: {
+        marginBottom: 16,
+        backgroundColor: '#1a1a1a',
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: '#333',
+        overflow: 'hidden',
+    },
+    eulaCheckboxBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 12,
+    },
+    eulaCheckbox: {
+        width: 22,
+        height: 22,
+        borderRadius: 6,
+        borderWidth: 2,
+        borderColor: '#4b5563',
+        marginRight: 10,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#000',
+    },
+    eulaCheckboxChecked: {
+        backgroundColor: '#ea580c',
+        borderColor: '#ea580c',
+    },
+    eulaCheckboxText: {
+        color: '#d1d5db',
+        fontSize: 14,
+        fontWeight: '500',
+        flex: 1,
+    },
+    eulaButtonsContainer: {
+        flexDirection: 'row',
+        gap: 12,
+    },
+    eulaAcceptBtn: {
+        flex: 1,
+        paddingVertical: 14,
+        borderRadius: 12,
+        backgroundColor: '#ea580c',
+        alignItems: 'center',
+        justifyContent: 'center',
+        elevation: 4,
+        shadowColor: '#ea580c',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+    },
+    eulaAcceptBtnDisabled: {
+        backgroundColor: '#374151',
+        elevation: 0,
+        shadowOpacity: 0,
+    },
+    eulaAcceptBtnText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold',
     },
 });
