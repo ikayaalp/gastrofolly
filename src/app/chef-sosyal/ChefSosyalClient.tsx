@@ -862,7 +862,7 @@ export default function ChefSosyalClient({
                 <strong>Culinora Chef Sosyal</strong> topluluğuna hoş geldiniz! Burası, şeflerin, mutfak profesyonellerinin ve gastronomi tutkunlarının bir araya gelip vizyonlarını, tecrübelerini ve tabaklarını paylaştığı nezih bir alandır.
               </p>
 
-              <div className="bg-[#1a1a1a] p-4 rounded-xl border border-gray-800">
+              <div className="mb-4">
                 <h3 className="text-white font-semibold mb-2 flex items-center">
                   <span className="text-blue-500 mr-2">🛡️</span> Topluluk Kuralları ve Etik İlkeler
                 </h3>

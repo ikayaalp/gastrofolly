@@ -1828,11 +1828,6 @@ const styles = StyleSheet.create({
         marginBottom: 12,
     },
     eulaWarningBox: {
-        backgroundColor: '#1a1a1a',
-        borderRadius: 12,
-        padding: 16,
-        borderWidth: 1,
-        borderColor: '#333',
         marginBottom: 16,
     },
     eulaWarningHeader: {
