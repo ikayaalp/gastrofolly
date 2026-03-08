@@ -92,7 +92,7 @@ export default function AdminSidebar({ className, onClose }: AdminSidebarProps) 
                         />
                     </div>
                     <span className="text-2xl font-bold tracking-tight">
-                        <span className="text-orange-500">ulin</span><span className="text-white" style={{ marginLeft: "0px" }}>ora</span>
+                        <span className="text-orange-500" style={{ marginLeft: "-6px" }}>ulin</span><span className="text-white" style={{ marginLeft: "0px" }}>ora</span>
                     </span>
                 </Link>
                 <p className="text-xs text-gray-500 mt-1 ml-0.5">Yönetim Paneli</p>

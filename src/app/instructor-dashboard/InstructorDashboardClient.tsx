@@ -66,7 +66,7 @@ export default function InstructorDashboardClient({ instructorData, session }: P
 
                 </div>
                 <span className="text-2xl font-bold tracking-tight">
-                  <span className="text-orange-500">ulin</span><span className="text-white" style={{ marginLeft: "0px" }}>ora</span>
+                  <span className="text-orange-500" style={{ marginLeft: "-6px" }}>ulin</span><span className="text-white" style={{ marginLeft: "0px" }}>ora</span>
                 </span>
                 <span className="bg-blue-600 text-white px-2 py-1 rounded text-sm font-medium">Eğitmen</span>
               </Link>
@@ -127,7 +127,7 @@ export default function InstructorDashboardClient({ instructorData, session }: P
 
             </div>
             <span className="text-lg font-bold tracking-tight">
-              <span className="text-orange-500">ulin</span><span className="text-white" style={{ marginLeft: "0px" }}>ora</span>
+              <span className="text-orange-500" style={{ marginLeft: "-6px" }}>ulin</span><span className="text-white" style={{ marginLeft: "0px" }}>ora</span>
             </span>
           </Link>
           <div className="flex items-center space-x-3">

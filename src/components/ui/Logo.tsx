@@ -10,10 +10,10 @@ interface LogoProps {
 
 export default function Logo({ className = "", size = "md", withText = true, textClassName = "" }: LogoProps) {
     const sizeMap = {
-        sm: { img: 24, text: "text-lg", margin: 0 },
-        md: { img: 32, text: "text-2xl", margin: 0 }, // Default header size
-        lg: { img: 48, text: "text-3xl", margin: -1 },
-        xl: { img: 64, text: "text-4xl", margin: -2 }
+        sm: { img: 24, text: "text-lg", margin: -4 },
+        md: { img: 32, text: "text-2xl", margin: -6 }, // Default header size
+        lg: { img: 48, text: "text-3xl", margin: -8 },
+        xl: { img: 64, text: "text-4xl", margin: -10 }
     }
 
     const { img: imgSize, text: defaultTextSize, margin: marginLeft } = sizeMap[size]
