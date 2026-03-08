@@ -30,7 +30,9 @@ export default function Logo({ className = "", size = "md", withText = true, tex
             </div>
             {withText && (
                 <span className={`font-bold ${defaultTextSize} ${textClassName}`} style={{ marginLeft }}>
-                    <span className="text-orange-500">ulin</span>
+                    <span className="text-orange-500">
+                        <span className="sr-only">C</span>ulin
+                    </span>
                     <span className="text-white">ora</span>
                 </span>
             )}
