@@ -182,7 +182,7 @@ export default function InstructorCoursesClient({ courses, categories, session }
               <Link href="/home" className="flex items-center gap-0.5">
                 <div className="relative w-10 h-10">
                   <Image
-                    src="/logo.jpeg"
+                    src="/logo.png"
                     alt="C"
                     fill
                     className="object-contain"

@@ -86,6 +86,13 @@ export default {
                     "sounds": []
                 }
             ],
+            [
+                "expo-image-picker",
+                {
+                    "photosPermission": "Kendi profil fotoğrafınızı güncelleyebilmeniz ve toplulukta yemek tariflerinizi paylaşabilmeniz için fotoğraflarınıza erişim izni gereklidir.",
+                    "cameraPermission": "Kendi profil fotoğrafınızı çekebilmeniz ve toplulukta yemek tariflerinizi paylaşabilmeniz için kameranıza erişim izni gereklidir."
+                }
+            ],
             "expo-web-browser",
             "expo-font",
             "expo-asset"

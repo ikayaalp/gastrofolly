@@ -54,7 +54,7 @@ export default function InstructorDashboardClient({ instructorData, session }: P
 
                   <Image
 
-                    src="/logo.jpeg"
+                    src="/logo.png"
 
                     alt="C"
 
@@ -116,7 +116,7 @@ export default function InstructorDashboardClient({ instructorData, session }: P
 
               <Image
 
-                src="/logo.jpeg"
+                src="/logo.png"
 
                 alt="C"
 

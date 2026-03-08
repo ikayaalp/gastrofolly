@@ -461,7 +461,7 @@ export default function ChefSosyalClient({
             <Link href="/home" className="flex items-center gap-0.5">
               <div className="relative w-9 h-9">
                 <Image
-                  src="/logo.jpeg"
+                  src="/logo.png"
                   alt="C"
                   fill
                   className="object-contain"

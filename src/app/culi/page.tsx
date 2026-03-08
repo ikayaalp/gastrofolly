@@ -201,7 +201,7 @@ export default function CuliPage() {
                         <div className="flex items-center space-x-8">
                             <Link href="/home" className="flex items-center gap-0.5">
                                 <div className="relative w-10 h-10">
-                                    <Image src="/logo.jpeg" alt="C" fill className="object-contain" />
+                                    <Image src="/logo.png" alt="C" fill className="object-contain" />
                                 </div>
                                 <span className="text-2xl font-bold tracking-tight">
                                     <span className="text-orange-500">ulin</span>
@@ -233,7 +233,7 @@ export default function CuliPage() {
                         </button>
                         <Link href="/home" className="flex items-center gap-0.5">
                             <div className="relative w-8 h-8">
-                                <Image src="/logo.jpeg" alt="C" fill className="object-contain" />
+                                <Image src="/logo.png" alt="C" fill className="object-contain" />
                             </div>
                             <span className="text-lg font-bold tracking-tight">
                                 <span className="text-orange-500">ulin</span>
@@ -317,7 +317,7 @@ export default function CuliPage() {
                         /* Gemini-style Welcome Screen — input centered on page */
                         <div className="flex-1 flex flex-col items-center justify-center px-4 pb-24">
                             <div className="relative w-20 h-20 mb-6">
-                                <Image src="/logo.jpeg" alt="Culi" fill className="object-contain" />
+                                <Image src="/logo.png" alt="Culi" fill className="object-contain" />
                             </div>
                             <h1 className="text-3xl font-bold text-white mb-2">Merhaba {userName}! 👋</h1>
                             <p className="text-gray-500 text-base max-w-lg mb-8 text-center">

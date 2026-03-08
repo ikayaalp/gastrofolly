@@ -235,7 +235,7 @@ function CheckoutContent() {
 
                   <Image
 
-                    src="/logo.jpeg"
+                    src="/logo.png"
 
                     alt="C"
 
@@ -267,7 +267,7 @@ function CheckoutContent() {
 
               <Image
 
-                src="/logo.jpeg"
+                src="/logo.png"
 
                 alt="C"
 

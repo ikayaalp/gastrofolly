@@ -7,7 +7,7 @@ export default function NotFound() {
         <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4 text-center">
             <div className="bg-orange-600/20 p-6 rounded-full mb-6 animate-pulse">
                 <div className="relative w-16 h-16">
-                    <Image src="/logo.jpeg" alt="Culinora" fill className="object-contain" />
+                    <Image src="/logo.png" alt="Culinora" fill className="object-contain" />
                 </div>
             </div>
 

@@ -36,7 +36,7 @@ export default async function BlogPage() {
 
                               <Image
 
-                                src="/logo.jpeg"
+                                src="/logo.png"
 
                                 alt="C"
 

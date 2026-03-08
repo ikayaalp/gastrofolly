@@ -94,7 +94,7 @@ export default function CoursesPageClient() {
 
                                     <Image
 
-                                        src="/logo.jpeg"
+                                        src="/logo.png"
 
                                         alt="C"
 

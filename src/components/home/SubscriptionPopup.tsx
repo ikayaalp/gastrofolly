@@ -59,7 +59,7 @@ export default function SubscriptionPopup({ isVisible }: SubscriptionPopupProps)
                             {/* Top Header Stripe */}
                             <div className="bg-gradient-to-r from-orange-600 to-red-600 px-4 py-3 flex items-center gap-3">
                                 <div className="relative w-9 h-9 flex-shrink-0">
-                                    <Image src="/logo.jpeg" alt="Culinora" fill className="object-contain rounded-lg" />
+                                    <Image src="/logo.png" alt="Culinora" fill className="object-contain rounded-lg" />
                                 </div>
                                 <div>
                                     <p className="text-white/70 text-xs font-medium uppercase tracking-widest">Culinora</p>

@@ -48,7 +48,7 @@ export default async function CertificatesPage() {
 
                                   <Image
 
-                                    src="/logo.jpeg"
+                                    src="/logo.png"
 
                                     alt="C"
 

@@ -89,7 +89,7 @@ export default async function InstructorPage({ params }: InstructorPageProps) {
 
                   <Image
 
-                    src="/logo.jpeg"
+                    src="/logo.png"
 
                     alt="C"
 
@@ -169,7 +169,7 @@ export default async function InstructorPage({ params }: InstructorPageProps) {
 
               <Image
 
-                src="/logo.jpeg"
+                src="/logo.png"
 
                 alt="C"
 

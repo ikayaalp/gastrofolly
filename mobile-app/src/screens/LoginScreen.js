@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, Image } from 'react-native';
 import { ChefHat, Mail, Lock } from 'lucide-react-native';
 import * as WebBrowser from 'expo-web-browser';
-import * as Google from 'expo-auth-session/providers/google';
-import { makeRedirectUri } from 'expo-auth-session';
 import authService from '../api/authService';
 import CustomAlert from '../components/CustomAlert';
 import AuthBackground from '../components/AuthBackground';
@@ -22,55 +20,6 @@ export default function LoginScreen({ navigation }) {
         buttons: [],
         type: 'info'
     });
-
-    const [request, response, promptAsync] = Google.useAuthRequest({
-        expoClientId: '334630749775-jjq3dmppnftjm1h34qlobiql8p4a3tv7.apps.googleusercontent.com', // For Expo Go
-        iosClientId: '334630749775-terb1dfppb1atgem3t1pc0o41chaj3r1.apps.googleusercontent.com',
-        androidClientId: '334630749775-egnkr4i90r374isi6ep5iihjl0skqh19.apps.googleusercontent.com',
-        webClientId: '334630749775-meelg2lgcapd5d64rmbm9gmm8h06im0e.apps.googleusercontent.com',
-        redirectUri: makeRedirectUri({
-            useProxy: true,
-        }),
-        selectAccount: true,
-    });
-
-    React.useEffect(() => {
-        if (request) {
-            console.log('Redirect URI:', request.redirectUri);
-        }
-    }, [request]);
-
-    React.useEffect(() => {
-        if (response?.type === 'success') {
-            const { authentication } = response;
-            // Pass both accessToken (for userinfo) and idToken (for backend verification)
-            handleGoogleLogin(authentication.accessToken, authentication.idToken);
-        }
-    }, [response]);
-
-    const handleGoogleLogin = async (accessToken, idToken) => {
-        setLoading(true);
-        // Use accessToken to fetch user info from Google
-        try {
-            const userInfoResponse = await fetch('https://www.googleapis.com/userinfo/v2/me', {
-                headers: { Authorization: `Bearer ${accessToken}` },
-            });
-            const user = await userInfoResponse.json();
-
-            // Send idToken to backend for verification
-            const result = await authService.googleLogin(idToken, user.email, user.name, user.picture);
-
-            if (result.success) {
-                navigation.replace('Main');
-            } else {
-                showAlert('Hata', result.error, [{ text: 'Tamam' }], 'error');
-            }
-        } catch (error) {
-            showAlert('Hata', 'Google kullanıcı bilgileri alınamadı', [{ text: 'Tamam' }], 'error');
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const showAlert = (title, message, buttons = [{ text: 'Tamam' }], type = 'info') => {
         setAlertConfig({ title, message, buttons, type });
@@ -156,24 +105,6 @@ export default function LoginScreen({ navigation }) {
                         ) : (
                             <Text style={styles.loginButtonText}>Giriş Yap</Text>
                         )}
-                    </TouchableOpacity>
-
-                    <View style={styles.divider}>
-                        <View style={styles.dividerLine} />
-                        <Text style={styles.dividerText}>veya</Text>
-                        <View style={styles.dividerLine} />
-                    </View>
-
-                    <TouchableOpacity
-                        style={styles.googleButton}
-                        onPress={() => promptAsync()}
-                        disabled={!request}
-                    >
-                        <Image
-                            source={{ uri: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/768px-Google_%22G%22_logo.svg.png' }}
-                            style={styles.googleLogo}
-                        />
-                        <Text style={styles.googleButtonText}>Google ile Giriş Yap</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
@@ -288,42 +219,9 @@ const styles = StyleSheet.create({
     loginButtonDisabled: {
         opacity: 0.6,
     },
-    divider: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginVertical: 24,
-    },
-    dividerLine: {
-        flex: 1,
-        height: 1,
-        backgroundColor: 'rgba(255,255,255,0.2)',
-    },
-    dividerText: {
-        color: '#9ca3af',
-        paddingHorizontal: 16,
-        fontSize: 14,
-    },
-    googleButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#fff',
-        borderRadius: 12,
-        paddingVertical: 14,
-        marginBottom: 16,
-    },
-    googleLogo: {
-        width: 24,
-        height: 24,
-        marginRight: 12,
-    },
-    googleButtonText: {
-        color: '#333',
-        fontSize: 16,
-        fontWeight: '600',
-    },
     registerLink: {
         alignItems: 'center',
+        marginTop: 24,
     },
     registerLinkText: {
         color: '#9ca3af',

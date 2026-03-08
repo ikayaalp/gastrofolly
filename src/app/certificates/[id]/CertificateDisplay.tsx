@@ -112,7 +112,7 @@ export default function CertificateDisplay({ certificate }: CertificateDisplayPr
 
                               <Image
 
-                                src="/logo.jpeg"
+                                src="/logo.png"
 
                                 alt="C"
 

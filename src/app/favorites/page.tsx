@@ -24,7 +24,7 @@ export default function FavoritesPage() {
 
                     <Image
 
-                      src="/logo.jpeg"
+                      src="/logo.png"
 
                       alt="C"
 
@@ -126,7 +126,7 @@ export default function FavoritesPage() {
 
                   <Image
 
-                    src="/logo.jpeg"
+                    src="/logo.png"
 
                     alt="C"
 
@@ -203,7 +203,7 @@ export default function FavoritesPage() {
 
               <Image
 
-                src="/logo.jpeg"
+                src="/logo.png"
 
                 alt="C"
 

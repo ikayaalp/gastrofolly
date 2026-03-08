@@ -354,7 +354,7 @@ export default async function LearnPage({ params, searchParams }: LearnPageProps
 
               <Image
 
-                src="/logo.jpeg"
+                src="/logo.png"
 
                 alt="C"
 

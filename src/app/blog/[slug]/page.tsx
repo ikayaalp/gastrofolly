@@ -259,7 +259,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
                               <Image
 
-                                src="/logo.jpeg"
+                                src="/logo.png"
 
                                 alt="C"
 

@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "https://culinora.net/logo.jpeg",
+        url: "https://culinora.net/logo.png",
         width: 800,
         height: 600,
         alt: "Culinora Logo",
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Culinora - Gastronomi Kursları",
     description: "Profesyonel şeflerden sertifikalı gastronomi kursları.",
-    images: ["https://culinora.net/logo.jpeg"],
+    images: ["https://culinora.net/logo.png"],
   },
   robots: {
     index: true,
@@ -68,7 +68,7 @@ export default async function RootLayout({
     "@type": "Organization",
     "name": "Culinora",
     "url": "https://culinora.net",
-    "logo": "https://culinora.net/logo.jpeg", // Ensure this exists or update path
+    "logo": "https://culinora.net/logo.png", // Ensure this exists or update path
     "description": "Profesyonel şeflerden sertifikalı online gastronomi eğitimi platformu.",
     "sameAs": [
       "https://www.instagram.com/culinora", // Placeholder - user should verify

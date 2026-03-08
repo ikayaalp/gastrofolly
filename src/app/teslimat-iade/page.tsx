@@ -25,7 +25,7 @@ export default async function DeliveryReturnPage() {
 
                                 <Image
 
-                                    src="/logo.jpeg"
+                                    src="/logo.png"
 
                                     alt="C"
 

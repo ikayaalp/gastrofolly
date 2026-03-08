@@ -153,7 +153,7 @@ export default function InstructorProfileClient({ instructorData, session }: Pro
 
                   <Image
 
-                    src="/logo.jpeg"
+                    src="/logo.png"
 
                     alt="C"
 

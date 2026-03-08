@@ -80,7 +80,7 @@ function SubscriptionContent() {
 
                                     <Image
 
-                                        src="/logo.jpeg"
+                                        src="/logo.png"
 
                                         alt="C"
 
@@ -146,7 +146,7 @@ function SubscriptionContent() {
 
                             <Image
 
-                                src="/logo.jpeg"
+                                src="/logo.png"
 
                                 alt="C"
 

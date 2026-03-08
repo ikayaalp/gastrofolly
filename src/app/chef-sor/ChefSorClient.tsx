@@ -109,7 +109,7 @@ export default function ChefSorClient({ session }: Props) {
 
                   <Image
 
-                    src="/logo.jpeg"
+                    src="/logo.png"
 
                     alt="C"
 
@@ -194,7 +194,7 @@ export default function ChefSorClient({ session }: Props) {
 
               <Image
 
-                src="/logo.jpeg"
+                src="/logo.png"
 
                 alt="C"
 

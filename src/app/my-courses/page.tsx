@@ -122,7 +122,7 @@ export default function MyCoursesPage() {
               <Link href="/home" className="flex items-center gap-0.5">
                 <div className="relative w-10 h-10">
                   <Image
-                    src="/logo.jpeg"
+                    src="/logo.png"
                     alt="C"
                     fill
                     className="object-contain"
@@ -184,7 +184,7 @@ export default function MyCoursesPage() {
           <Link href="/home" className="flex items-center gap-0.5">
             <div className="relative w-8 h-8">
               <Image
-                src="/logo.jpeg"
+                src="/logo.png"
                 alt="C"
                 fill
                 className="object-contain"

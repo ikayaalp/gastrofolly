@@ -143,7 +143,7 @@ export default function LandingPageClient({
                             <Link href="/" className="flex items-center gap-0.5 mx-auto">
                                 <div className="relative w-10 h-10">
                                     <Image
-                                        src="/logo.jpeg"
+                                        src="/logo.png"
                                         alt="C"
                                         fill
                                         className="object-contain"

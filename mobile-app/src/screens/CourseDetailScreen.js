@@ -9,6 +9,7 @@ import {
     ActivityIndicator,
     Dimensions,
     Linking,
+    Modal,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Logo from '../components/Logo';
@@ -48,6 +49,7 @@ export default function CourseDetailScreen({ route, navigation }) {
     const [isFavorite, setIsFavorite] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(true);
     const [showLoginModal, setShowLoginModal] = useState(false);
+    const [showPremiumModal, setShowPremiumModal] = useState(false);
 
     const showAlert = (title, message, buttons = [{ text: 'Tamam' }], type = 'info') => {
         setAlertConfig({ title, message, buttons, type });
@@ -199,15 +201,7 @@ export default function CourseDetailScreen({ route, navigation }) {
         return { name: 'Premium', color: '#ea580c', price: price, slug: 'premium' };
     };
 
-    // Open website payment page - uses plan name for redirect
-    const handleSubscribe = async (planName) => {
-        const paymentUrl = `https://culinora.net/subscription?plan=${encodeURIComponent(planName)}&courseId=${courseId}`;
-        try {
-            await Linking.openURL(paymentUrl);
-        } catch (error) {
-            showAlert('Hata', 'Ödeme sayfası açılamadı. Lütfen tarayıcıdan deneyin.', [{ text: 'Tamam' }], 'error');
-        }
-    };
+
 
     if (loading) {
         return (
@@ -305,32 +299,30 @@ export default function CourseDetailScreen({ route, navigation }) {
                     {/* Description */}
                     <Text style={styles.description}>{course.description}</Text>
 
-                    {/* Subscribe Button - Opens website payment */}
-                    {!hasAccess && (
-                        <TouchableOpacity
-                            style={[styles.subscribeButtonInline, { backgroundColor: levelInfo.color }]}
-                            onPress={() => handleSubscribe(levelInfo.name)}
-                        >
-                            <Text style={styles.subscribeButtonText}>
-                                Premium Üye Ol - {levelInfo.price}/ay
-                            </Text>
-                        </TouchableOpacity>
-                    )}
+                    {/* Removed inline Premium Content banner */}
 
-                    {hasAccess && (
-                        <TouchableOpacity
-                            style={[
-                                styles.enrolledButtonInline,
-                                (course.progress > 0) && { backgroundColor: '#10b981' } // Green if started
-                            ]}
-                            onPress={() => navigation.navigate('Learn', { courseId: course.id })}
-                        >
+                    <TouchableOpacity
+                        style={[
+                            styles.enrolledButtonInline,
+                            (course.progress > 0) && { backgroundColor: '#10b981' } // Green if started
+                        ]}
+                        onPress={() => {
+                            if (hasAccess) {
+                                navigation.navigate('Learn', { courseId: course.id });
+                            } else {
+                                setShowPremiumModal(true);
+                            }
+                        }}
+                    >
+                        {hasAccess ? (
                             <Play size={20} color="white" fill="white" />
-                            <Text style={styles.enrolledButtonText}>
-                                {course.progress > 0 ? 'Kursa Devam Et' : 'Kursa Başla'}
-                            </Text>
-                        </TouchableOpacity>
-                    )}
+                        ) : (
+                            <Lock size={20} color="white" />
+                        )}
+                        <Text style={styles.enrolledButtonText}>
+                            {course.progress > 0 ? 'Kursa Devam Et' : 'Kursa Başla'}
+                        </Text>
+                    </TouchableOpacity>
 
                     {/* Instructor */}
                     {/* Instructor */}
@@ -396,7 +388,7 @@ export default function CourseDetailScreen({ route, navigation }) {
                                             if (isAccessAllowed) {
                                                 navigation.navigate('Learn', { courseId: course.id, lessonId: lesson.id });
                                             } else {
-                                                showAlert('Premium İçerik', 'Bu derse erişmek için Premium üye olmalısınız.');
+                                                setShowPremiumModal(true);
                                             }
                                         }}
                                     >
@@ -495,6 +487,36 @@ export default function CourseDetailScreen({ route, navigation }) {
                     navigation.goBack();
                 }}
             />
+
+            {/* Premium Info Modal (Reader App Pattern) */}
+            <Modal
+                visible={showPremiumModal}
+                transparent={true}
+                animationType="slide"
+                onRequestClose={() => setShowPremiumModal(false)}
+            >
+                <View style={styles.premiumModalOverlay}>
+                    <View style={styles.premiumModalContent}>
+                        <View style={styles.premiumModalHandle} />
+                        <Text style={styles.premiumModalTitle}>Premium İçerik</Text>
+                        <Text style={styles.premiumModalText}>
+                            Bu kursa ve platformdaki tüm ayrıcalıklara erişmek için Premium Culinora üyesi olmanız gerekmektedir.
+                        </Text>
+                        <View style={styles.premiumModalInfoBox}>
+                            <Lock size={16} color="#9ca3af" />
+                            <Text style={styles.premiumModalInfoText}>
+                                iOS politikaları gereği uygulama içerisinde abonelik işlemi yapılamamaktadır. Detaylar için web sitemizi ziyaret edebilirsiniz.
+                            </Text>
+                        </View>
+                        <TouchableOpacity
+                            style={styles.premiumModalCloseBtn}
+                            onPress={() => setShowPremiumModal(false)}
+                        >
+                            <Text style={styles.premiumModalCloseText}>Anladım</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 }
@@ -840,5 +862,80 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 16,
         fontWeight: 'bold',
+    },
+    premiumModalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        justifyContent: 'flex-end',
+    },
+    premiumModalContent: {
+        backgroundColor: '#1c1c1e',
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
+        padding: 24,
+        alignItems: 'center',
+        paddingBottom: 40,
+        borderTopWidth: 1,
+        borderTopColor: '#1f2937',
+    },
+    premiumModalHandle: {
+        width: 40,
+        height: 4,
+        backgroundColor: '#4B5563',
+        borderRadius: 2,
+        marginBottom: 20,
+    },
+    premiumModalIconContainer: {
+        width: 64,
+        height: 64,
+        borderRadius: 32,
+        backgroundColor: 'rgba(234, 88, 12, 0.1)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 16,
+    },
+    premiumModalTitle: {
+        color: 'white',
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginBottom: 12,
+        textAlign: 'center',
+    },
+    premiumModalText: {
+        color: '#d1d5db',
+        fontSize: 16,
+        textAlign: 'center',
+        lineHeight: 24,
+        marginBottom: 24,
+    },
+    premiumModalInfoBox: {
+        flexDirection: 'row',
+        backgroundColor: '#111827',
+        padding: 16,
+        borderRadius: 12,
+        alignItems: 'center',
+        marginBottom: 24,
+        width: '100%',
+        borderWidth: 1,
+        borderColor: '#1f2937',
+    },
+    premiumModalInfoText: {
+        color: '#9ca3af',
+        fontSize: 14,
+        flex: 1,
+        marginLeft: 12,
+        lineHeight: 20,
+    },
+    premiumModalCloseBtn: {
+        backgroundColor: '#ea580c',
+        width: '100%',
+        paddingVertical: 16,
+        borderRadius: 30,
+        alignItems: 'center',
+    },
+    premiumModalCloseText: {
+        color: 'white',
+        fontSize: 16,
+        fontWeight: '600',
     },
 });

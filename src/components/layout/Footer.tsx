@@ -47,7 +47,7 @@ export default function Footer() {
                         <Link href="/" className="flex items-center gap-1 mb-4">
                             <div className="relative h-8 w-8">
                                 <Image
-                                    src="/logo.jpeg"
+                                    src="/logo.png"
                                     alt="C"
                                     fill
                                     className="object-contain"

@@ -70,7 +70,7 @@ export default async function InstructorsPage() {
 
                               <Image
 
-                                src="/logo.jpeg"
+                                src="/logo.png"
 
                                 alt="C"
 

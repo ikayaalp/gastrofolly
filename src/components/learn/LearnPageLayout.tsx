@@ -135,7 +135,7 @@ export default function LearnPageLayout({
 
                                   <Image
 
-                                    src="/logo.jpeg"
+                                    src="/logo.png"
 
                                     alt="C"
 
@@ -215,7 +215,7 @@ export default function LearnPageLayout({
 
                           <Image
 
-                            src="/logo.jpeg"
+                            src="/logo.png"
 
                             alt="C"
 

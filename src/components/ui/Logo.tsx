@@ -22,10 +22,10 @@ export default function Logo({ className = "", size = "md", withText = true, tex
         <div className={`flex items-center gap-1 ${className}`}>
             <div className="relative" style={{ width: imgSize, height: imgSize }}>
                 <Image
-                    src="/logo.jpeg"
+                    src="/logo.png"
                     alt="Culinora Logo"
                     fill
-                    className="object-contain rounded-full"
+                    className="object-contain"
                 />
             </div>
             {withText && (

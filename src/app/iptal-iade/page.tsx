@@ -25,7 +25,7 @@ export default async function CancellationRefundPage() {
 
                                 <Image
 
-                                    src="/logo.jpeg"
+                                    src="/logo.png"
 
                                     alt="C"
 

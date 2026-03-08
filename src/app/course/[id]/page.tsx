@@ -197,7 +197,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
 
                   <Image
 
-                    src="/logo.jpeg"
+                    src="/logo.png"
 
                     alt="C"
 
@@ -279,7 +279,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
 
               <Image
 
-                src="/logo.jpeg"
+                src="/logo.png"
 
                 alt="C"
 

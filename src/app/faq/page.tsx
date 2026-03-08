@@ -53,7 +53,7 @@ export default async function FAQPage() {
 
                               <Image
 
-                                src="/logo.jpeg"
+                                src="/logo.png"
 
                                 alt="C"
 

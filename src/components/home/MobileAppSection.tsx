@@ -27,14 +27,14 @@ export default function MobileAppSection() {
                             {/* Screen Content Wrapper */}
                             <div className="w-full h-full rounded-[35px] overflow-hidden relative">
                                 <Image
-                                    src="/logo.jpeg"
+                                    src="/logo.png"
                                     alt="Culinora App"
                                     fill
                                     className="object-cover opacity-20"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/80 to-black flex flex-col items-center justify-center p-8">
                                     <div className="w-20 h-20 relative mb-6">
-                                        <Image src="/logo.jpeg" alt="Culinora" fill className="object-contain rounded-2xl" />
+                                        <Image src="/logo.png" alt="Culinora" fill className="object-contain rounded-2xl" />
                                     </div>
                                     <h3 className="text-white text-2xl font-bold text-center mb-2">Culinora</h3>
                                     <p className="text-gray-400 text-sm text-center">Mutfaktaki Yeni Yol Arkadaşın</p>

@@ -20,7 +20,7 @@ export default async function PrivacyPage() {
 
                                 <Image
 
-                                    src="/logo.jpeg"
+                                    src="/logo.png"
 
                                     alt="C"
 

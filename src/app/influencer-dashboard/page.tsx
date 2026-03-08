@@ -95,7 +95,7 @@ export default function InfluencerDashboardPage() {
 
                                   <Image
 
-                                    src="/logo.jpeg"
+                                    src="/logo.png"
 
                                     alt="C"
 
@@ -127,7 +127,7 @@ export default function InfluencerDashboardPage() {
 
                           <Image
 
-                            src="/logo.jpeg"
+                            src="/logo.png"
 
                             alt="C"
 
