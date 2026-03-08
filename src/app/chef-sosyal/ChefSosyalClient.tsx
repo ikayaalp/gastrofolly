@@ -867,12 +867,12 @@ export default function ChefSosyalClient({
                   <span className="text-blue-500 mr-2">🛡️</span> Topluluk Kuralları ve Etik İlkeler
                 </h3>
                 <p className="mb-2">
-                  Topluluğumuzda güvenli, destekleyici ve saygılı bir ortamı koruyabilmek için, <strong>Aşağılayıcı, Küfürlü, Ayrımcı (Herhangi bir ırk, din, dil, cinsiyet hedef alan) İçeriklere (Objectionable Content)</strong> ve <strong>İstismarcı/Zorba (Abusive) Kullanıcılara karşı net kurallar uyguluyoruz.</strong>
+                  Topluluğumuzda güvenli, destekleyici ve saygılı bir ortamı koruyabilmek için, <strong>Aşağılayıcı, Küfürlü, Ayrımcı (Herhangi bir ırk, din, dil, cinsiyet hedef alan) İçeriklere</strong> ve <strong>İstismarcı/Zorba Kullanıcılara karşı net kurallar uyguluyoruz.</strong>
                 </p>
                 <ul className="list-disc pl-5 space-y-1 mt-2 text-gray-400">
                   <li>Bu kuralları ihlal eden kullanıcıların hesapları askıya alınabilir veya sonlandırılabilir.</li>
-                  <li>Rahatsız edici olduğunu düşündüğünüz içerikleri <strong>"Şikayet Et" (Report)</strong> butonunu kullanarak moderatörlerimize bildirebilirsiniz (Şikayetleriniz en kısa sürede incelenir).</li>
-                  <li>Görmek istemediğiniz kişileri <strong>"Engelle" (Block User)</strong> özelliği ile tamamen engelleyebilirsiniz.</li>
+                  <li>Rahatsız edici olduğunu düşündüğünüz içerikleri <strong>"Şikayet Et"</strong> butonunu kullanarak moderatörlerimize bildirebilirsiniz (Şikayetleriniz en kısa sürede incelenir).</li>
+                  <li>Görmek istemediğiniz kişileri <strong>"Engelle"</strong> özelliği ile tamamen engelleyebilirsiniz.</li>
                 </ul>
               </div>
 

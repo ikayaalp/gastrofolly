@@ -972,7 +972,7 @@ export default function SocialScreen({ navigation }) {
                                     <Text style={styles.eulaWarningTitle}>Topluluk Kuralları ve Etik İlkeler</Text>
                                 </View>
                                 <Text style={styles.eulaWarningText}>
-                                    Topluluğumuzda güvenli, destekleyici ve saygılı bir ortamı koruyabilmek için, <Text style={{ fontWeight: 'bold', color: '#fff' }}>Aşağılayıcı, Küfürlü, Ayrımcı İçeriklere (Objectionable Content)</Text> ve <Text style={{ fontWeight: 'bold', color: '#fff' }}>İstismarcı/Zorba (Abusive) Kullanıcılara karşı net kurallar uyguluyoruz.</Text>
+                                    Topluluğumuzda güvenli, destekleyici ve saygılı bir ortamı koruyabilmek için, <Text style={{ fontWeight: 'bold', color: '#fff' }}>Aşağılayıcı, Küfürlü, Ayrımcı İçeriklere</Text> ve <Text style={{ fontWeight: 'bold', color: '#fff' }}>İstismarcı/Zorba Kullanıcılara karşı net kurallar uyguluyoruz.</Text>
                                 </Text>
 
                                 <View style={styles.eulaBulletPoint}>
@@ -981,11 +981,11 @@ export default function SocialScreen({ navigation }) {
                                 </View>
                                 <View style={styles.eulaBulletPoint}>
                                     <Text style={styles.eulaBulletDot}>•</Text>
-                                    <Text style={styles.eulaBulletText}>Rahatsız edici olduğunu düşündüğünüz içerikleri <Text style={{ fontWeight: 'bold', color: '#fff' }}>"Şikayet Et" (Report)</Text> butonu ile moderatörlere bildirebilirsiniz.</Text>
+                                    <Text style={styles.eulaBulletText}>Rahatsız edici olduğunu düşündüğünüz içerikleri <Text style={{ fontWeight: 'bold', color: '#fff' }}>"Şikayet Et"</Text> butonu ile moderatörlere bildirebilirsiniz.</Text>
                                 </View>
                                 <View style={styles.eulaBulletPoint}>
                                     <Text style={styles.eulaBulletDot}>•</Text>
-                                    <Text style={styles.eulaBulletText}>Görmek istemediğiniz kişileri <Text style={{ fontWeight: 'bold', color: '#fff' }}>"Engelle" (Block User)</Text> özelliği ile engelleyebilirsiniz.</Text>
+                                    <Text style={styles.eulaBulletText}>Görmek istemediğiniz kişileri <Text style={{ fontWeight: 'bold', color: '#fff' }}>"Engelle"</Text> özelliği ile engelleyebilirsiniz.</Text>
                                 </View>
                             </View>
 
