@@ -118,7 +118,6 @@ export default function ChefSosyalClient({
   const [submitting, setSubmitting] = useState(false)
   const [likedTopics, setLikedTopics] = useState<Set<string>>(new Set())
   const [savedTopics, setSavedTopics] = useState<Set<string>>(new Set())
-  const [eulaChecked, setEulaChecked] = useState(false)
 
   // Alert Modal State
   const [alertModal, setAlertModal] = useState<{
@@ -140,13 +139,6 @@ export default function ChefSosyalClient({
 
   // URL parametreleri değiştiğinde state'i güncelle ve konuları yükle
   useEffect(() => {
-    // EULA Kontrolü
-    const hasAccepted = localStorage.getItem('chef-sosyal-eula-accepted')
-    if (!hasAccepted) {
-      setEulaAccepted(false)
-      setShowEulaModal(true)
-    }
-
     const category = searchParams.get('category') || 'all'
     const sort = searchParams.get('sort') || 'newest'
     const search = searchParams.get('search') || ''
@@ -839,88 +831,6 @@ export default function ChefSosyalClient({
         showCancelButton={false}
         isDanger={alertModal.type === 'error'}
       />
-      {/* EULA Modal */}
-      {showEulaModal && !eulaAccepted && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/95 backdrop-blur-md"></div>
-          <div className="relative w-full max-w-lg bg-[#0a0a0a] border border-gray-800 rounded-2xl p-6 shadow-2xl flex flex-col max-h-[90vh] text-white">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold flex items-center text-orange-500">
-                <span className="mr-2">📜</span> Chef Sosyal Kullanım Koşulları
-              </h2>
-              <button
-                onClick={() => router.push('/home')}
-                className="text-gray-500 hover:text-white transition-colors"
-                aria-label="Kapat"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto pr-2 text-sm text-gray-300 space-y-4 minimal-scrollbar">
-              <p>
-                <strong>Culinora Chef Sosyal</strong> topluluğuna hoş geldiniz! Burası, şeflerin, mutfak profesyonellerinin ve gastronomi tutkunlarının bir araya gelip vizyonlarını, tecrübelerini ve tabaklarını paylaştığı nezih bir alandır.
-              </p>
-
-              <div className="mb-4">
-                <h3 className="text-white font-semibold mb-2 flex items-center">
-                  <span className="text-blue-500 mr-2">🛡️</span> Topluluk Kuralları ve Etik İlkeler
-                </h3>
-                <p className="mb-2">
-                  Topluluğumuzda güvenli, destekleyici ve saygılı bir ortamı koruyabilmek için, <strong>Aşağılayıcı, Küfürlü, Ayrımcı (Herhangi bir ırk, din, dil, cinsiyet hedef alan) İçeriklere</strong> ve <strong>İstismarcı/Zorba Kullanıcılara karşı net kurallar uyguluyoruz.</strong>
-                </p>
-                <ul className="list-disc pl-5 space-y-1 mt-2 text-gray-400">
-                  <li>Bu kuralları ihlal eden kullanıcıların hesapları askıya alınabilir veya sonlandırılabilir.</li>
-                  <li>Rahatsız edici olduğunu düşündüğünüz içerikleri <strong>"Şikayet Et"</strong> butonunu kullanarak moderatörlerimize bildirebilirsiniz (Şikayetleriniz en kısa sürede incelenir).</li>
-                  <li>Görmek istemediğiniz kişileri <strong>"Engelle"</strong> özelliği ile tamamen engelleyebilirsiniz.</li>
-                </ul>
-              </div>
-
-              <p>
-                <strong>Telif Hakkı ve Kişisel Haklar:</strong> Paylaştığınız tariflerin, görsellerin ve bilgilerin yasal sorumluluğu size aittir. Culinora, platform güvenliğini tehdit eden durumlarda içeriklere müdahale etme veya silme hakkını saklı tutar.
-              </p>
-            </div>
-
-            <div className="mt-6 pt-4 border-t border-gray-800">
-              <p className="text-xs text-gray-500 mb-4 text-center">
-                Yukarıdaki topluluk kurallarını okuduğumu ve kabul ettiğimi; kurallara uymamam durumunda hesabımın kısıtlanabileceğini (App Store kalite standartları gereği) anlıyorum.
-              </p>
-
-              {/* Checkbox for EULA */}
-              <label className="flex items-center space-x-3 mb-6 cursor-pointer bg-[#1a1a1a] p-3 rounded-lg border border-gray-800 hover:border-gray-600 transition-colors">
-                <input
-                  type="checkbox"
-                  checked={eulaChecked}
-                  onChange={(e) => setEulaChecked(e.target.checked)}
-                  className="w-5 h-5 rounded bg-black border-gray-700 text-orange-600 focus:ring-orange-600 focus:ring-offset-black accent-orange-600"
-                />
-                <span className="text-sm font-medium text-gray-200">
-                  Kuralları okudum ve kabul ediyorum
-                </span>
-              </label>
-
-              <div className="flex">
-                <button
-                  disabled={!eulaChecked}
-                  onClick={() => {
-                    localStorage.setItem('chef-sosyal-eula-accepted', 'true')
-                    setEulaAccepted(true)
-                    setShowEulaModal(false)
-                  }}
-                  className={`flex-1 px-4 py-3 rounded-xl font-bold transition-all duration-200 
-                    ${eulaChecked
-                      ? 'bg-orange-600 text-white hover:bg-orange-700 shadow-lg shadow-orange-900/20'
-                      : 'bg-gray-800 text-gray-500 cursor-not-allowed border border-gray-700'
-                    }`}
-                >
-                  Devam Et
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
     </div>
   )
 }
