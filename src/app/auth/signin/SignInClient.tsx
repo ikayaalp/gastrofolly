@@ -66,10 +66,10 @@ function SignInForm() {
                 <div>
                     <div className="flex justify-center">
                         <Link href="/" className="flex items-center gap-0.5">
-                            <div className="relative w-10 h-10">
+                            <div className="relative w-14 h-14">
                                 <Image src="/logo.png" alt="C" fill className="object-contain" />
                             </div>
-                            <span className="text-2xl font-bold tracking-tight">
+                            <span className="text-4xl font-bold tracking-tight">
                                 <span className="text-orange-500" style={{ marginLeft: "-6px" }}>
                                     <span className="sr-only">C</span>ulin
                                 </span>
