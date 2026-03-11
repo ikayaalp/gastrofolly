@@ -10,6 +10,8 @@ import {
     Dimensions,
     Linking,
     Modal,
+    Platform,
+    StatusBar,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Logo from '../components/Logo';
@@ -353,24 +355,7 @@ export default function CourseDetailScreen({ route, navigation }) {
                         </TouchableOpacity>
                     )}
 
-                    {/* Stats */}
-                    <View style={styles.statsContainer}>
-                        <View style={styles.statItem}>
-                            <Users size={20} color="#ea580c" />
-                            <Text style={styles.statNumber}>{course._count?.enrollments || 0}</Text>
-                            <Text style={styles.statLabel}>Öğrenci</Text>
-                        </View>
-                        <View style={styles.statItem}>
-                            <Play size={20} color="#ea580c" />
-                            <Text style={styles.statNumber}>{course._count?.lessons || 0}</Text>
-                            <Text style={styles.statLabel}>Ders</Text>
-                        </View>
-                        <View style={styles.statItem}>
-                            <Clock size={20} color="#ea580c" />
-                            <Text style={styles.statNumber}>{Math.round(totalDuration / 60)}</Text>
-                            <Text style={styles.statLabel}>Saat</Text>
-                        </View>
-                    </View>
+
 
                     {/* Lessons */}
                     {course.lessons && course.lessons.length > 0 && (
@@ -557,9 +542,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingTop: 50,
-        paddingBottom: 12,
-        paddingHorizontal: 16,
+        paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 6 : 46,
+        paddingBottom: 8, paddingHorizontal: 16,
         backgroundColor: '#000',
         borderBottomWidth: 1,
         borderBottomColor: '#1a1a1a',

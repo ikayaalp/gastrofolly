@@ -6,7 +6,7 @@ const LOGO_SOURCE = require('../../assets/icon.png');
 export default function Logo({ size = 'md', style, textStyle }) {
     const sizeMap = {
         sm: { img: 24, text: 20, margin: -2 },
-        md: { img: 32, text: 26, margin: -3 }, // Default header size
+        md: { img: 38, text: 26, margin: -3 }, // Default header size
         lg: { img: 48, text: 38, margin: -4 },
         xl: { img: 80, text: 60, margin: -8 } // For auth screens
     };
@@ -45,3 +45,5 @@ const styles = StyleSheet.create({
         color: '#fff',
     }
 });
+
+

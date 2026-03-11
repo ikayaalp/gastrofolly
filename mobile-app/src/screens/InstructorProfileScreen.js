@@ -10,6 +10,7 @@ import {
     StatusBar,
     Image,
     Share,
+    Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ArrowLeft, Star, Users, BookOpen, Award, Share2, Play, MessageCircle } from 'lucide-react-native';
@@ -252,10 +253,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#000',
     },
     header: {
-        paddingTop: 50,
-        paddingHorizontal: 20,
-        paddingBottom: 10,
-        flexDirection: 'row',
+        paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 6 : 46,
+        paddingBottom: 8, flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
     },

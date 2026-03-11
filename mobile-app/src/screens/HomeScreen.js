@@ -504,8 +504,8 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
     header: {
-        paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 10 : 50,
-        paddingBottom: 12,
+        paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 6 : 46,
+        paddingBottom: 8,
         backgroundColor: '#000',
         borderBottomWidth: 1,
         borderBottomColor: '#1a1a1a',

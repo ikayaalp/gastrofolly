@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, StatusBar, ActivityIndicator, Linking } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, StatusBar, ActivityIndicator, Linking, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ArrowLeft, Award, Calendar, CheckCircle, CreditCard, Shield, LogOut } from 'lucide-react-native';
 import authService from '../api/authService';
@@ -224,9 +224,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingTop: 50,
-        paddingBottom: 20,
-        paddingHorizontal: 20,
+        paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 6 : 46,
+        paddingBottom: 8, paddingHorizontal: 20,
         borderBottomWidth: 1,
         borderBottomColor: '#1a1a1a',
     },

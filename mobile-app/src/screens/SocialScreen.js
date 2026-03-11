@@ -946,8 +946,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     header: {
-        paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 16 : 60,
-        paddingBottom: 16,
+        paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 6 : 46,
+        paddingBottom: 8,
         paddingHorizontal: 20,
         backgroundColor: '#000',
         borderBottomWidth: 1,
