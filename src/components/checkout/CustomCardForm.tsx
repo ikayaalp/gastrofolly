@@ -199,7 +199,7 @@ export default function CustomCardForm({ onSuccess, loading }: CustomCardFormPro
                 </form>
 
                 <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-center gap-4 grayscale opacity-50">
-                    <img src="/iyzico-logo-pack/iyzico_logo_white.svg" alt="iyzico" className="h-4" />
+                    <img src="/iyzico-logo-pack/checkout_iyzico_ile_ode/TR/Tr_White_Horizontal/iyzico_ile_ode_horizontal_white.svg" alt="iyzico" className="h-4" />
                     <div className="w-px h-4 bg-zinc-800"></div>
                     <span className="text-[10px] text-zinc-500 uppercase tracking-widest">Secure 256-bit SSL</span>
                 </div>
