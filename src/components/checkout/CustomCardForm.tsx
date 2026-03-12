@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { CreditCard, Calendar, Lock, User, CheckCircle2, AlertCircle, Loader2, Check } from "lucide-react"
+import { CreditCard, Calendar, Lock, User, CheckCircle2, AlertCircle, Loader2, Check, X } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import Link from "next/link"
 
@@ -22,6 +22,8 @@ export default function CustomCardForm({ onSuccess, loading }: CustomCardFormPro
         subscription: false,
         preliminary: false
     })
+
+    const [modalContent, setModalContent] = useState<{ title: string, url: string } | null>(null)
 
     const [errors, setErrors] = useState<Record<string, string>>({})
     const [cardType, setCardType] = useState<"visa" | "mastercard" | "troy" | "unknown">("unknown")
@@ -79,6 +81,13 @@ export default function CustomCardForm({ onSuccess, loading }: CustomCardFormPro
         setErrors(newErrors)
         return Object.keys(newErrors).length === 0
     }
+
+    const isFormValid = formData.cardHolderName.trim() !== "" &&
+        formData.cardNumber.replace(/\s+/g, "").length === 16 &&
+        formData.expireDate.length === 5 &&
+        formData.cvc.length === 3 &&
+        agreements.subscription &&
+        agreements.preliminary
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
@@ -198,7 +207,13 @@ export default function CustomCardForm({ onSuccess, loading }: CustomCardFormPro
                                 {agreements.subscription && <Check className="w-3.5 h-3.5 text-white" />}
                             </div>
                             <p className="text-xs text-zinc-400 leading-relaxed font-light">
-                                <Link href="/mesafeli-satis-sozlesmesi" target="_blank" className="text-orange-500 hover:text-orange-400 underline underline-offset-2 font-normal" onClick={(e) => e.stopPropagation()}>Premium Abonelik Sözleşmesini</Link> kabul ediyorum.
+                                <button
+                                    type="button"
+                                    onClick={(e) => { e.stopPropagation(); setModalContent({ title: "Premium Abonelik Sözleşmesi", url: "/mesafeli-satis-sozlesmesi" }) }}
+                                    className="text-orange-500 hover:text-orange-400 underline underline-offset-2 font-normal"
+                                >
+                                    Premium Abonelik Sözleşmesini
+                                </button> kabul ediyorum.
                             </p>
                         </div>
 
@@ -207,7 +222,13 @@ export default function CustomCardForm({ onSuccess, loading }: CustomCardFormPro
                                 {agreements.preliminary && <Check className="w-3.5 h-3.5 text-white" />}
                             </div>
                             <p className="text-xs text-zinc-400 leading-relaxed font-light">
-                                <Link href="/on-bilgilendirme-formu" target="_blank" className="text-orange-500 hover:text-orange-400 underline underline-offset-2 font-normal" onClick={(e) => e.stopPropagation()}>Premium Abonelik Ön Bilgilendirme Formunu</Link> onaylıyorum.
+                                <button
+                                    type="button"
+                                    onClick={(e) => { e.stopPropagation(); setModalContent({ title: "Premium Abonelik Ön Bilgilendirme Formunu", url: "/on-bilgilendirme-formu" }) }}
+                                    className="text-orange-500 hover:text-orange-400 underline underline-offset-2 font-normal"
+                                >
+                                    Premium Abonelik Ön Bilgilendirme Formunu
+                                </button> onaylıyorum.
                             </p>
                         </div>
 
@@ -218,7 +239,7 @@ export default function CustomCardForm({ onSuccess, loading }: CustomCardFormPro
 
                     <button
                         type="submit"
-                        disabled={loading}
+                        disabled={loading || !isFormValid}
                         className="w-full bg-orange-600 hover:bg-orange-700 disabled:bg-zinc-800 disabled:text-zinc-500 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-orange-900/10 flex items-center justify-center gap-2 mt-4"
                     >
                         {loading ? (
@@ -238,6 +259,42 @@ export default function CustomCardForm({ onSuccess, loading }: CustomCardFormPro
                     <span className="text-[10px] text-zinc-500 uppercase tracking-widest">Secure 256-bit SSL</span>
                 </div>
             </div>
+
+            {/* Agreement Modal */}
+            <AnimatePresence>
+                {modalContent && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 sm:p-8"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.95, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.95, opacity: 0 }}
+                            className="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden shadow-orange-500/10"
+                        >
+                            <div className="flex items-center justify-between p-6 border-b border-zinc-100 bg-zinc-50/50">
+                                <h3 className="text-xl font-bold text-zinc-900">{modalContent.title}</h3>
+                                <button
+                                    onClick={() => setModalContent(null)}
+                                    className="p-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-500 rounded-full transition-colors"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+                            <div className="flex-1 overflow-y-auto p-0 bg-white custom-scrollbar">
+                                <iframe
+                                    src={modalContent.url}
+                                    className="w-full h-[70vh] border-none"
+                                    title={modalContent.title}
+                                />
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </motion.div>
     )
 }
