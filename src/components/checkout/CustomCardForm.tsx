@@ -1,8 +1,9 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { CreditCard, Calendar, Lock, User, CheckCircle2, AlertCircle, Loader2 } from "lucide-react"
+import { CreditCard, Calendar, Lock, User, CheckCircle2, AlertCircle, Loader2, Check } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
+import Link from "next/link"
 
 interface CustomCardFormProps {
     onSuccess: (cardData: any) => void
@@ -15,6 +16,11 @@ export default function CustomCardForm({ onSuccess, loading }: CustomCardFormPro
         cardNumber: "",
         expireDate: "",
         cvc: ""
+    })
+
+    const [agreements, setAgreements] = useState({
+        subscription: false,
+        preliminary: false
     })
 
     const [errors, setErrors] = useState<Record<string, string>>({})
@@ -66,6 +72,9 @@ export default function CustomCardForm({ onSuccess, loading }: CustomCardFormPro
         if (formData.cardNumber.replace(/\s+/g, "").length < 16) newErrors.cardNumber = "Geçersiz kart numarası"
         if (formData.expireDate.length < 5) newErrors.expireDate = "Geçersiz tarih"
         if (formData.cvc.length < 3) newErrors.cvc = "Geçersiz CVC"
+
+        if (!agreements.subscription) newErrors.subscription = "Sözleşmeyi kabul etmelisiniz"
+        if (!agreements.preliminary) newErrors.preliminary = "Ön bilgilendirme formunu onaylamalısınız"
 
         setErrors(newErrors)
         return Object.keys(newErrors).length === 0
@@ -180,6 +189,31 @@ export default function CustomCardForm({ onSuccess, loading }: CustomCardFormPro
                             </div>
                             {errors.cvc && <p className="text-xs text-red-500 mt-1 ml-1">{errors.cvc}</p>}
                         </div>
+                    </div>
+
+                    {/* Agreements */}
+                    <div className="space-y-4 pt-2">
+                        <div className="flex items-start gap-3 group cursor-pointer" onClick={() => setAgreements(prev => ({ ...prev, subscription: !prev.subscription }))}>
+                            <div className={`mt-0.5 flex-shrink-0 w-5 h-5 rounded border ${agreements.subscription ? 'bg-orange-600 border-orange-600' : 'border-white/20 bg-zinc-950'} flex items-center justify-center transition-all group-hover:border-orange-500/50`}>
+                                {agreements.subscription && <Check className="w-3.5 h-3.5 text-white" />}
+                            </div>
+                            <p className="text-xs text-zinc-400 leading-relaxed font-light">
+                                <Link href="/mesafeli-satis-sozlesmesi" target="_blank" className="text-orange-500 hover:text-orange-400 underline underline-offset-2 font-normal" onClick={(e) => e.stopPropagation()}>Premium Abonelik Sözleşmesini</Link> kabul ediyorum.
+                            </p>
+                        </div>
+
+                        <div className="flex items-start gap-3 group cursor-pointer" onClick={() => setAgreements(prev => ({ ...prev, preliminary: !prev.preliminary }))}>
+                            <div className={`mt-0.5 flex-shrink-0 w-5 h-5 rounded border ${agreements.preliminary ? 'bg-orange-600 border-orange-600' : 'border-white/20 bg-zinc-950'} flex items-center justify-center transition-all group-hover:border-orange-500/50`}>
+                                {agreements.preliminary && <Check className="w-3.5 h-3.5 text-white" />}
+                            </div>
+                            <p className="text-xs text-zinc-400 leading-relaxed font-light">
+                                <Link href="/on-bilgilendirme-formu" target="_blank" className="text-orange-500 hover:text-orange-400 underline underline-offset-2 font-normal" onClick={(e) => e.stopPropagation()}>Premium Abonelik Ön Bilgilendirme Formunu</Link> onaylıyorum.
+                            </p>
+                        </div>
+
+                        {(errors.subscription || errors.preliminary) && (
+                            <p className="text-[10px] text-red-500 animate-pulse ml-1">Lütfen devam etmek için sözleşmeleri onaylayın.</p>
+                        )}
                     </div>
 
                     <button
