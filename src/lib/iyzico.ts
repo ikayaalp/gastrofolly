@@ -206,6 +206,30 @@ export interface IyzicoPaymentRequest {
   basketItems: IyzicoPaymentItem[]
 }
 
+export interface IyzicoPaymentCard {
+  cardHolderName: string
+  cardNumber: string
+  expireMonth: string
+  expireYear: string
+  cvc: string
+  registerCard?: number
+}
+
+export interface IyzicoThreedInitializeRequest extends Omit<IyzicoPaymentRequest, 'enabledInstallments'> {
+  paymentCard: IyzicoPaymentCard
+}
+
+export interface IyzicoThreedInitializeResult {
+  status: string
+  locale: string
+  systemTime: number
+  conversationId: string
+  threeDSHtmlContent?: string
+  errorCode?: string
+  errorMessage?: string
+  errorGroup?: string
+}
+
 export interface IyzicoSubscriptionCustomer {
   name: string
   surname: string
@@ -374,6 +398,15 @@ export const createSubscriptionCheckoutForm = async (request: IyzicoSubscription
  */
 export const retrieveSubscriptionCheckoutForm = async (token: string): Promise<IyzicoSubscriptionResult> => {
   return makeIyzicoRequest<IyzicoSubscriptionResult>(`/v2/subscription/checkoutform/${token}`, null, 'GET')
+}
+
+/**
+ * 3D Secure Ödeme Başlatma (Direct API)
+ * Kendi kart formumuzdan gelen bilgilerle 3D Secure akışını başlatır.
+ * Endpoint: /payment/3d/initialize
+ */
+export const initializeThreedPayment = async (request: IyzicoThreedInitializeRequest): Promise<IyzicoThreedInitializeResult> => {
+  return makeIyzicoRequest<IyzicoThreedInitializeResult>('/payment/3d/initialize', request)
 }
 
 

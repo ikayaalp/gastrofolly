@@ -4,10 +4,12 @@ import { useSession } from "next-auth/react"
 import Link from "next/link"
 import Image from "next/image"
 import { ChefHat, Check, Crown, BookOpen, Home, Users, MessageCircle, Loader2, Tag, X, LucideIcon } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
 import UserDropdown from "@/components/ui/UserDropdown"
 import { useState, Suspense, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { toast } from "react-hot-toast"
+import CustomCardForm from "@/components/checkout/CustomCardForm"
 
 function CheckoutContent() {
   const { data: session, status } = useSession()
@@ -25,6 +27,8 @@ function CheckoutContent() {
   const [loading, setLoading] = useState(false)
   const [validatingCode, setValidatingCode] = useState(false)
   const [formLoaded, setFormLoaded] = useState(false)
+  const [threeDSHtml, setThreeDSHtml] = useState<string | null>(null)
+  const [showThreeDModal, setShowThreeDModal] = useState(false)
 
   // Plan bilgileri
   const plans: Record<string, { price: number, icon: LucideIcon, color: string }> = {
@@ -127,11 +131,11 @@ function CheckoutContent() {
     toast.success("Referans kodu kaldırıldı")
   }
 
-  // Ödemeye devam
-  const handleProceedToPayment = async () => {
+  // Özel Kart Formu ile Ödeme
+  const handleCustomCardPayment = async (cardData: any) => {
     setLoading(true)
     try {
-      const response = await fetch("/api/iyzico/initialize-payment", {
+      const response = await fetch("/api/iyzico/initialize-threed", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -139,82 +143,35 @@ function CheckoutContent() {
           price: total.toString(),
           billingPeriod,
           courseId,
-          referralCode: appliedReferral?.code || undefined
+          referralCode: appliedReferral?.code || undefined,
+          cardData
         })
       })
 
-      const contentType = response.headers.get("content-type")
-      if (!contentType || !contentType.includes("application/json")) {
-        const text = await response.text()
-        console.error("API non-JSON response:", text.substring(0, 500))
-        toast.error(`Sistem hatası (${response.status}). Lütfen daha sonra tekrar deneyin.`)
-        setLoading(false)
-        return
-      }
-
       const data = await response.json()
 
-      if (data.success) {
-        if (data.paymentPageUrl) {
-          window.location.href = data.paymentPageUrl
-        } else if (data.checkoutFormContent) {
-          const checkoutContainer = document.getElementById('iyzipay-checkout-form')
-          if (checkoutContainer) {
-            // Container'ı Temizle
-            checkoutContainer.innerHTML = ''
-
-            // Eğer daha önce form açıldıysa veya denendiyse Iyzico global objelerini sil (yenisinin çalışması için)
-            // @ts-ignore
-            if (typeof window !== 'undefined') {
-              try {
-                // @ts-ignore
-                window.iyziInit = undefined;
-              } catch (e) { }
-              try {
-                // @ts-ignore
-                window.iyziSubscriptionInit = undefined;
-              } catch (e) { }
-              try {
-                // @ts-ignore
-                window.iyziUcsInit = undefined;
-              } catch (e) { }
-            }
-
-            // HTML stringini bir geçici DOM yapısına at
-            const wrapper = document.createElement("div")
-            wrapper.innerHTML = data.checkoutFormContent
-
-            // Script etiketlerini güvenli şekilde sayfaya (DOM'a) dahil et ve çalıştır
-            const scripts = wrapper.getElementsByTagName("script")
-            for (let i = 0; i < scripts.length; i++) {
-              const script = document.createElement("script")
-              script.type = "text/javascript"
-              if (scripts[i].src) {
-                script.src = scripts[i].src
-              } else {
-                script.text = scripts[i].text || scripts[i].innerHTML
-              }
-              document.head.appendChild(script)
-            }
-
-            setFormLoaded(true)
-            setLoading(false)
-          } else {
-            console.error("Iyzico checkout container not found!")
-            toast.error("Ödeme formu yüklenemedi (Container eksik).")
-            setLoading(false)
-          }
-        }
+      if (data.success && data.threeDSHtmlContent) {
+        setThreeDSHtml(data.threeDSHtmlContent)
+        setShowThreeDModal(true)
       } else {
-        console.error("Payment initiation failed:", data)
-        toast.error(data.error || data.errorMessage || data.message || "Ödeme başlatılamadı. Lütfen bilgilerinizi kontrol ediniz.")
+        toast.error(data.error || "Ödeme başlatılamadı.")
         setLoading(false)
       }
-    } catch (error: any) {
-      console.error("Payment error:", error)
-      toast.error(error?.message || "Bir bağlantı hatası oluştu. Lütfen internet bağlantınızı kontrol ediniz.")
+    } catch (error) {
+      console.error("Custom payment error:", error)
+      toast.error("Bir hata oluştu.")
       setLoading(false)
     }
+  }
+
+  // Eski ödeme butonu (buton tıklanınca form geliyordu) - Artık form hep görünür olacaksa bunu kaldırabiliriz 
+  // veya "Kart ile Öde" butonu gibi kullanabiliriz.
+  // Mevcut yapıda "Ödemeye Devam" butonu formu yükleyip gösteriyordu.
+  // Kullanıcının "kart girilen yeri kendim yapmak istiyorum" isteğine göre, 
+  // "Ödemeye Devam" deyince formun açılması veya formun hep sağda/altta olması sağlanabilir.
+  // Biz "Ödemeye Devam" deyince özel formumuzu açalım.
+  const handleProceedToPayment = async () => {
+    setFormLoaded(true) // Artık özel formumuzu göstereceğiz
   }
 
   if (!selectedPlan || !planName) {
@@ -294,7 +251,34 @@ function CheckoutContent() {
             <h1 className="text-3xl md:text-4xl font-bold text-white mb-8">Ödeme Bilgileri</h1>
           )}
 
-          <div id="iyzipay-checkout-form" className={`w-full bg-white rounded-xl overflow-hidden ${formLoaded ? 'block mb-8' : 'hidden'}`}></div>
+          <div className={`${formLoaded ? 'block mb-8' : 'hidden'}`}>
+            <CustomCardForm onSuccess={handleCustomCardPayment} loading={loading} />
+          </div>
+
+          <AnimatePresence>
+            {showThreeDModal && threeDSHtml && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+              >
+                <div className="bg-white rounded-2xl w-full max-w-2xl h-[600px] overflow-hidden relative">
+                  <button
+                    onClick={() => setShowThreeDModal(false)}
+                    className="absolute top-4 right-4 z-10 p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
+                  >
+                    <X className="w-5 h-5 text-gray-500" />
+                  </button>
+                  <iframe
+                    srcDoc={threeDSHtml}
+                    className="w-full h-full border-none"
+                    title="3D Secure"
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {!formLoaded && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
