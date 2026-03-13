@@ -73,6 +73,7 @@ export async function POST(request: NextRequest) {
                 email: user.email,
                 role: user.role,
                 image: user.image,
+                createdAt: user.createdAt,
                 subscriptionPlan: user.subscriptionPlan,
                 subscriptionStartDate: user.subscriptionStartDate,
                 subscriptionEndDate: user.subscriptionEndDate,

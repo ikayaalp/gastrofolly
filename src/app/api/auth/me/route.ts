@@ -29,6 +29,7 @@ export async function GET(request: NextRequest) {
                 email: true,
                 role: true,
                 image: true,
+                createdAt: true,
                 subscriptionPlan: true,
                 subscriptionStartDate: true,
                 subscriptionEndDate: true,

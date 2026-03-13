@@ -13,6 +13,7 @@ export default function SignUp() {
     firstName: "",
     lastName: "",
     email: "",
+    phoneNumber: "",
     password: "",
     confirmPassword: ""
   })
@@ -25,11 +26,36 @@ export default function SignUp() {
   // Şifre validasyonu
   const passwordValidation = validatePassword(formData.password)
 
+  // Telefon numarasını formatla: 5XX XXX XX XX
+  const formatPhoneInput = (value: string) => {
+    let digits = value.replace(/\D/g, '')
+    if (digits.startsWith('0')) digits = digits.substring(1)
+    digits = digits.substring(0, 10)
+    let formatted = ''
+    if (digits.length > 0) formatted = digits.substring(0, 3)
+    if (digits.length > 3) formatted += ' ' + digits.substring(3, 6)
+    if (digits.length > 6) formatted += ' ' + digits.substring(6, 8)
+    if (digits.length > 8) formatted += ' ' + digits.substring(8, 10)
+    return formatted
+  }
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({ ...prev, phoneNumber: formatPhoneInput(e.target.value) }))
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setError("")
     setSuccess(false)
+
+    // Telefon numarası kontrolü
+    const cleanPhone = formData.phoneNumber.replace(/\D/g, '')
+    if (cleanPhone.length !== 10 || !cleanPhone.startsWith('5')) {
+      setError("Geçerli bir telefon numarası girin (5XX XXX XX XX)")
+      setIsLoading(false)
+      return
+    }
 
     // Şifre validasyonu
     if (!passwordValidation.isValid) {
@@ -54,6 +80,7 @@ export default function SignUp() {
         body: JSON.stringify({
           name: `${formData.firstName} ${formData.lastName}`.trim(),
           email: formData.email,
+          phoneNumber: '+90' + formData.phoneNumber.replace(/\D/g, ''),
           password: formData.password,
         }),
       })
@@ -185,6 +212,29 @@ export default function SignUp() {
                 className="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md shadow-sm text-white placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                 placeholder="ornek@email.com"
               />
+            </div>
+
+            <div>
+              <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-300">
+                Telefon Numarası
+              </label>
+              <div className="mt-1 flex">
+                <span className="inline-flex items-center px-3 bg-gray-700 border border-r-0 border-gray-600 rounded-l-md text-gray-300 text-sm font-medium">
+                  +90
+                </span>
+                <input
+                  id="phoneNumber"
+                  name="phoneNumber"
+                  type="tel"
+                  autoComplete="tel"
+                  required
+                  value={formData.phoneNumber}
+                  onChange={handlePhoneChange}
+                  maxLength={13}
+                  className="block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-r-md shadow-sm text-white placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                  placeholder="5XX XXX XX XX"
+                />
+              </div>
             </div>
 
             <div>

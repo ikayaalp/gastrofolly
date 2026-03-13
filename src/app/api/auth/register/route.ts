@@ -17,10 +17,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { name, email, password } = await request.json()
+    const { name, email, password, phoneNumber } = await request.json()
 
     // Validasyon
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !phoneNumber) {
       return NextResponse.json(
         { message: "Tüm alanlar gereklidir" },
         { status: 400 }
@@ -60,6 +60,7 @@ export async function POST(request: NextRequest) {
         data: {
           name,
           password: hashedPassword,
+          phoneNumber: phoneNumber || null,
           verificationCode,
           verificationCodeExpiry: codeExpiry
         }
@@ -97,6 +98,7 @@ export async function POST(request: NextRequest) {
         name,
         email,
         password: hashedPassword,
+        phoneNumber: phoneNumber || null,
         verificationCode,
         verificationCodeExpiry: codeExpiry,
         emailVerified: null // Henüz doğrulanmamış

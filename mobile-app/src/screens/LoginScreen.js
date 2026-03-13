@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, Image } from 'react-native';
-import { ChefHat, Mail, Lock } from 'lucide-react-native';
+import { ChefHat, Mail, Lock, Eye, EyeOff } from 'lucide-react-native';
 import * as WebBrowser from 'expo-web-browser';
 import authService from '../api/authService';
 import CustomAlert from '../components/CustomAlert';
@@ -12,6 +12,7 @@ WebBrowser.maybeCompleteAuthSession();
 export default function LoginScreen({ navigation }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [alertVisible, setAlertVisible] = useState(false);
     const [alertConfig, setAlertConfig] = useState({
@@ -84,8 +85,15 @@ export default function LoginScreen({ navigation }) {
                             placeholderTextColor="#6b7280"
                             value={password}
                             onChangeText={setPassword}
-                            secureTextEntry
+                            secureTextEntry={!showPassword}
                         />
+                        <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeButton}>
+                            {showPassword ? (
+                                <EyeOff color="#9ca3af" size={20} />
+                            ) : (
+                                <Eye color="#9ca3af" size={20} />
+                            )}
+                        </TouchableOpacity>
                     </View>
 
                     <TouchableOpacity
@@ -185,6 +193,9 @@ const styles = StyleSheet.create({
     },
     inputIcon: {
         marginRight: 12,
+    },
+    eyeButton: {
+        padding: 8,
     },
     input: {
         flex: 1,

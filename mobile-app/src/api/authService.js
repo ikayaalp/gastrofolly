@@ -27,12 +27,13 @@ api.interceptors.request.use(
 
 const authService = {
     // Register new user
-    register: async (name, email, password) => {
+    register: async (name, email, password, phoneNumber) => {
         try {
             const response = await api.post(config.API_ENDPOINTS.REGISTER, {
                 name,
                 email,
                 password,
+                phoneNumber,
             });
             return { success: true, data: response.data };
         } catch (error) {
