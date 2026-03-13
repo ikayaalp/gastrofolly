@@ -26,7 +26,12 @@ export default function SubscriptionScreen({ navigation }) {
     }, []);
 
     const loadUserData = async () => {
-        const user = await authService.getCurrentUser();
+        // Önce sunucudan taze veri çek (web sitesindeki gibi güncel olsun)
+        let user = await authService.refreshUserData();
+        // Sunucudan çekilemezse cache'den oku
+        if (!user) {
+            user = await authService.getCurrentUser();
+        }
         setUserData(user);
         setLoading(false);
     };
@@ -139,17 +144,28 @@ export default function SubscriptionScreen({ navigation }) {
                     <View style={styles.divider} />
 
                     <View style={styles.datesContainer}>
-                        <View style={styles.dateRow}>
-                            <Calendar size={16} color="rgba(255,255,255,0.8)" />
-                            <Text style={styles.dateText}>
-                                Başlangıç: {formatDate(userData?.subscriptionStartDate || new Date())}
-                            </Text>
-                        </View>
-                        {userData?.subscriptionEndDate && (
+                        {userData?.subscriptionPlan && userData?.subscriptionPlan !== 'FREE' ? (
+                            <>
+                                <View style={styles.dateRow}>
+                                    <Calendar size={16} color="rgba(255,255,255,0.8)" />
+                                    <Text style={styles.dateText}>
+                                        Başlangıç: {formatDate(userData?.subscriptionStartDate)}
+                                    </Text>
+                                </View>
+                                {userData?.subscriptionEndDate && (
+                                    <View style={styles.dateRow}>
+                                        <Calendar size={16} color="rgba(255,255,255,0.8)" />
+                                        <Text style={styles.dateText}>
+                                            Yenileme: {formatDate(userData?.subscriptionEndDate)}
+                                        </Text>
+                                    </View>
+                                )}
+                            </>
+                        ) : (
                             <View style={styles.dateRow}>
                                 <Calendar size={16} color="rgba(255,255,255,0.8)" />
                                 <Text style={styles.dateText}>
-                                    Yenileme: {formatDate(userData?.subscriptionEndDate)}
+                                    Üyelik başlangıcı: {formatDate(userData?.createdAt)}
                                 </Text>
                             </View>
                         )}
@@ -158,7 +174,7 @@ export default function SubscriptionScreen({ navigation }) {
                     <View style={[styles.statusBadge, userData?.subscriptionCancelled && styles.statusBadgeCancelled]}>
                         <Shield size={12} color="white" />
                         <Text style={styles.statusText}>
-                            {userData?.subscriptionCancelled ? 'İptal Edildi' : 'Aktif Premium'}
+                            {userData?.subscriptionCancelled ? 'İptal Edildi' : (userData?.subscriptionPlan && userData?.subscriptionPlan !== 'FREE') ? 'Aktif Premium' : 'Ücretsiz'}
                         </Text>
                     </View>
 
