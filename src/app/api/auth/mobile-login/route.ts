@@ -74,6 +74,7 @@ export async function POST(request: NextRequest) {
                 role: user.role,
                 image: user.image,
                 subscriptionPlan: user.subscriptionPlan,
+                subscriptionStartDate: user.subscriptionStartDate,
                 subscriptionEndDate: user.subscriptionEndDate,
                 isSubscriptionValid: isSubscriptionValid,
             },

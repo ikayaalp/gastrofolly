@@ -30,6 +30,7 @@ export async function GET(request: NextRequest) {
                 role: true,
                 image: true,
                 subscriptionPlan: true,
+                subscriptionStartDate: true,
                 subscriptionEndDate: true,
             }
         });
