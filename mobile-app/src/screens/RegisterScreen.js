@@ -178,15 +178,8 @@ export default function RegisterScreen({ navigation }) {
                             placeholderTextColor="#6b7280"
                             value={confirmPassword}
                             onChangeText={setConfirmPassword}
-                            secureTextEntry={!showConfirmPassword}
+                            secureTextEntry
                         />
-                        <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)} style={styles.eyeButton}>
-                            {showConfirmPassword ? (
-                                <EyeOff color="#9ca3af" size={20} />
-                            ) : (
-                                <Eye color="#9ca3af" size={20} />
-                            )}
-                        </TouchableOpacity>
                     </View>
 
                     <TouchableOpacity

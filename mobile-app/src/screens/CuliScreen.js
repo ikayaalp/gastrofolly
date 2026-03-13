@@ -14,10 +14,12 @@ import {
     ActivityIndicator,
     Modal,
     Alert,
-    ScrollView
+    ScrollView,
+    StatusBar,
+    Image
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Send, Bot, User, ChefHat, History, X, Clock, Trash2, AlertTriangle } from 'lucide-react-native';
+import { Send, Bot, User, ChefHat, History, X, Clock, Trash2, AlertTriangle, Sparkles } from 'lucide-react-native';
 import { sendMessageToAI } from '../api/aiService';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -254,19 +256,12 @@ export default function CuliScreen() {
                 style={StyleSheet.absoluteFill}
             />
 
-            <SafeAreaView edges={['top']} style={styles.safeArea}>
-                <View style={styles.header}>
+            <View style={styles.safeArea}>
+                <View style={[styles.header, { paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 6 : 46 }]}>
                     <View style={styles.headerContent}>
                         <View style={styles.headerTitleContainer}>
-                            <LinearGradient
-                                colors={['#ea580c', '#f97316']}
-                                style={styles.headerIconBg}
-                            >
-                                <ChefHat size={24} color="#fff" />
-                            </LinearGradient>
                             <View>
                                 <Text style={styles.headerTitle}>Culi</Text>
-                                <Text style={styles.headerSubtitle}>Kişisel Mutfak Asistanın</Text>
                             </View>
                         </View>
                         <TouchableOpacity
@@ -292,6 +287,10 @@ export default function CuliScreen() {
                             >
                                 <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
                                     <View style={styles.emptyState}>
+                                        <View style={styles.emptyStateIconContainer}>
+                                            <ChefHat size={40} color="#ea580c" />
+                                            <Sparkles size={16} color="#ea580c" style={{ position: 'absolute', top: 16, right: 16 }} />
+                                        </View>
                                         <Text style={styles.emptyStateTitle}>Merhaba Şef! 👋</Text>
                                         <Text style={styles.emptyStateSubtitle}>
                                             Bugün mutfakta sana nasıl yardımcı olabilirim?
@@ -371,7 +370,7 @@ export default function CuliScreen() {
                         </View>
                     </View>
                 </KeyboardAvoidingView>
-            </SafeAreaView>
+            </View>
 
             {/* History Modal */}
             <Modal
@@ -494,10 +493,10 @@ const styles = StyleSheet.create({
     },
     header: {
         paddingHorizontal: 20,
-        paddingVertical: 16,
+        paddingBottom: 16,
         borderBottomWidth: 1,
         borderBottomColor: '#27272a',
-        backgroundColor: 'rgba(0,0,0,0.8)',
+        backgroundColor: '#000',
     },
     headerContent: {
         flexDirection: 'row',
@@ -522,10 +521,9 @@ const styles = StyleSheet.create({
         elevation: 4,
     },
     headerTitle: {
-        fontSize: 18,
+        fontSize: 28,
         fontWeight: 'bold',
         color: '#fff',
-        letterSpacing: 0.5,
     },
     headerSubtitle: {
         fontSize: 13,

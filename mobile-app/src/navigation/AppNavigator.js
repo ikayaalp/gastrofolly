@@ -4,7 +4,7 @@ import { NavigationContainer, createNavigationContainerRef } from '@react-naviga
 
 export const navigationRef = createNavigationContainerRef();
 
-import { Platform } from 'react-native';
+import { Platform, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
@@ -27,7 +27,7 @@ import IntroScreen from '../screens/IntroScreen';
 
 import CuliScreen from '../screens/CuliScreen';
 
-import { Home, BookOpen, Users, MessageCircle, User, Bot } from 'lucide-react-native';
+import { Home, BookOpen, Users, MessageCircle, User, Sparkles, ChefHat } from 'lucide-react-native';
 
 import SearchScreen from '../screens/SearchScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
@@ -137,7 +137,12 @@ function TabNavigator() {
                 options={{
                     tabBarLabel: 'Culi',
                     tabBarIcon: ({ color, size }) => (
-                        <Bot size={24} color={color} />
+                        <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
+                            <ChefHat size={size} color={color} />
+                            <View style={{ position: 'absolute', top: -2, right: -4 }}>
+                                <Sparkles size={10} color={color} />
+                            </View>
+                        </View>
                     ),
                 }}
             />

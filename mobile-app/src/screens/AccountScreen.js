@@ -372,15 +372,10 @@ export default function AccountScreen({ navigation }) {
                     </View>
                 </View>
 
-                {/* Culinora'yı destekle */}
+                {/* Yardım ve Destek */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Culinora'yı Destekle</Text>
+                    <Text style={styles.sectionTitle}>Yardım ve Destek</Text>
                     <View style={styles.sectionContent}>
-                        <MenuItem
-                            icon={Share2}
-                            title="Paylaş"
-                            onPress={handleShare}
-                        />
                         <MenuItem
                             icon={Star}
                             title="Uygulamayı Değerlendir"
@@ -472,13 +467,6 @@ export default function AccountScreen({ navigation }) {
                         >
                             <Text style={[styles.modalOptionText, currentLanguage === 'tr' && styles.modalOptionTextSelected]}>Türkçe (TR)</Text>
                             {currentLanguage === 'tr' && <Shield size={16} color="#ea580c" />}
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={[styles.modalOption, currentLanguage === 'en' && styles.modalOptionSelected]}
-                            onPress={() => { setCurrentLanguage('en'); setShowLanguageModal(false); }}
-                        >
-                            <Text style={[styles.modalOptionText, currentLanguage === 'en' && styles.modalOptionTextSelected]}>English (EN)</Text>
-                            {currentLanguage === 'en' && <Shield size={16} color="#ea580c" />}
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.modalCloseButton} onPress={() => setShowLanguageModal(false)}>
                             <Text style={styles.modalCloseText}>İptal</Text>
