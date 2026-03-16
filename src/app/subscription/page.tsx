@@ -236,7 +236,7 @@ function SubscriptionContent() {
                     <div className="flex justify-center mb-16">
                         {(() => {
                             const isYearly = billingPeriod === "yearly"
-                            const basePrice = 20
+                            const basePrice = 299
                             const yearlyPrice = Math.round(basePrice * 12 * 0.8)
                             const displayPrice = isYearly ? yearlyPrice.toString() : basePrice.toString()
                             const displayPeriod = isYearly ? "yıl" : "ay"

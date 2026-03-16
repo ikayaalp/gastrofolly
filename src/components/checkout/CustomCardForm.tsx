@@ -19,6 +19,14 @@ export default function CustomCardForm({ onSuccess, loading, errorMessage }: Cus
         cvc: ""
     })
 
+    const [localSubmit, setLocalSubmit] = useState(false)
+
+    useEffect(() => {
+        if (!loading) {
+            setLocalSubmit(false)
+        }
+    }, [loading])
+
     const [agreements, setAgreements] = useState({
         subscription: false,
         preliminary: false
@@ -92,7 +100,10 @@ export default function CustomCardForm({ onSuccess, loading, errorMessage }: Cus
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
+        if (loading || localSubmit) return
+
         if (validate()) {
+            setLocalSubmit(true)
             const [month, year] = formData.expireDate.split("/")
             onSuccess({
                 cardHolderName: formData.cardHolderName,
@@ -260,10 +271,10 @@ export default function CustomCardForm({ onSuccess, loading, errorMessage }: Cus
 
                     <button
                         type="submit"
-                        disabled={loading || !isFormValid}
+                        disabled={loading || localSubmit || !isFormValid}
                         className="w-full bg-orange-600 hover:bg-orange-700 disabled:bg-zinc-800 disabled:text-zinc-500 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-orange-900/10 flex items-center justify-center gap-2 mt-4"
                     >
-                        {loading ? (
+                        {(loading || localSubmit) ? (
                             <Loader2 className="w-5 h-5 animate-spin" />
                         ) : (
                             <>
