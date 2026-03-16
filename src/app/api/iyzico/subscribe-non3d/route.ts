@@ -136,10 +136,10 @@ export async function POST(request: NextRequest) {
         }
 
         // Pricing plan referans kodu (billingPeriod'a göre)
-        const pricingPlanReferenceCode =
-            billingPeriod === "yearly"
-                ? "320d1389-1f42-4509-9d71-d250778ef913" // Yıllık Plan
-                : "b10db468-1d22-440f-80e2-fe53443e05a4" // Aylık Plan
+        // Kullanıcı isteği üzerine tüm aylık abonelikler yeni indirimli plan ID'sine (0cae...) yönlendirildi.
+        const pricingPlanReferenceCode = billingPeriod === "yearly"
+            ? "320d1389-1f42-4509-9d71-d250778ef913" // Normal Yıllık Plan ID
+            : "0cae68e0-1f38-4ba1-8939-84985d441088" // İndirimli Aylık Plan ID (Tüm aylıklar için geçerli olacak)
 
         const non3dRequest: IyzicoSubscriptionNon3DRequest = {
             locale: "tr",
