@@ -325,9 +325,9 @@ export default function LandingPageClient({
                                     {/* Right Side: Price & Action */}
                                     <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
                                         <div className="flex items-baseline gap-2 text-white">
-                                            <span className="text-gray-500 text-sm line-through decoration-orange-600">399 ₺</span>
+                                            <span className="text-gray-500 text-sm line-through decoration-orange-600">25 ₺</span>
                                             <span className="text-gray-400 text-sm">yerine</span>
-                                            <span className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-600">299 ₺</span>
+                                            <span className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-600">20 ₺</span>
                                             <span className="text-gray-400 text-sm font-light">/ Aylık</span>
                                         </div>
 

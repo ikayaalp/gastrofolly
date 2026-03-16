@@ -448,6 +448,18 @@ export interface IyzicoSubscriptionNon3DResult {
   errorCode?: string
   errorMessage?: string
   errorGroup?: string
+  data?: {
+    referenceCode?: string
+    parentReferenceCode?: string
+    pricingPlanReferenceCode?: string
+    customerReferenceCode?: string
+    subscriptionStatus?: string
+    trialDays?: number
+    trialStartDate?: number
+    trialEndDate?: number
+    startDate?: number
+    createdDate?: number
+  }
 }
 
 export const initializeSubscriptionNon3D = async (

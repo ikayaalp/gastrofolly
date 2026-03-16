@@ -7,7 +7,7 @@ export default function SubscriptionBanner() {
     const plans = [
         {
             name: "Premium",
-            price: "299",
+            price: "20",
             icon: Crown,
             color: "from-orange-600 to-red-600",
             borderColor: "border-orange-500/50",

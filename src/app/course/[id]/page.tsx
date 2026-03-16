@@ -433,7 +433,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
                   <h3 className="text-xl font-bold text-white mb-2">Premium Üyelik Gerekli</h3>
                   <p className="text-gray-300 mb-4 text-sm">Bu kursa erişmek için Premium üye olmalısınız.</p>
                   <div className="text-3xl font-bold text-white mb-4">
-                    299 ₺<span className="text-sm text-gray-400 ml-2 font-normal">/ Aylık</span>
+                    20 ₺<span className="text-sm text-gray-400 ml-2 font-normal">/ Aylık</span>
                   </div>
                   <Link
                     href="/subscription?plan=Premium"
@@ -620,7 +620,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
                       Bu kursa erişmek için Premium üye olmalısınız.
                     </p>
                     <div className="text-3xl font-bold text-white mb-1">
-                      299 ₺
+                      20 ₺
                       <span className="text-sm text-gray-400 ml-2 font-normal">/ Aylık</span>
                     </div>
                   </div>

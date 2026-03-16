@@ -186,14 +186,18 @@ export async function POST(request: NextRequest) {
 
         const result = await initializeSubscriptionNon3D(non3dRequest)
 
+        // Iyzico V2 API başarılı sonuçları genelde 'data' objesi içinde döner.
+        const subscriptionStatus = result.data?.subscriptionStatus || result.subscriptionStatus
+        const referenceCode = result.data?.referenceCode || result.referenceCode
+
         console.log("NON3D Subscription result:", {
             status: result.status,
-            subscriptionStatus: result.subscriptionStatus,
+            subscriptionStatus: subscriptionStatus,
             errorCode: result.errorCode,
             errorMessage: result.errorMessage
         })
 
-        if (result.status === "success" && result.subscriptionStatus === "ACTIVE") {
+        if (result.status === "success" && subscriptionStatus === "ACTIVE") {
             // ✅ Başarılı abonelik
 
             // Payment kaydını güncelle
@@ -201,7 +205,7 @@ export async function POST(request: NextRequest) {
                 where: { id: payment.id },
                 data: {
                     status: "COMPLETED",
-                    stripePaymentId: result.referenceCode || payment.id
+                    stripePaymentId: referenceCode || payment.id
                 }
             })
 
@@ -244,8 +248,8 @@ export async function POST(request: NextRequest) {
 
             return NextResponse.json({
                 success: true,
-                subscriptionStatus: result.subscriptionStatus,
-                referenceCode: result.referenceCode
+                subscriptionStatus: subscriptionStatus,
+                referenceCode: referenceCode
             })
         } else {
             // ❌ Başarısız abonelik — kart reddedildi veya başka hata
