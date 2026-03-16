@@ -1,16 +1,17 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { CreditCard, Calendar, Lock, User, CheckCircle2, AlertCircle, Loader2, Check, X } from "lucide-react"
+import { CreditCard, Calendar, Lock, User, CheckCircle2, AlertCircle, Loader2, Check, X, AlertTriangle } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import Link from "next/link"
 
 interface CustomCardFormProps {
     onSuccess: (cardData: any) => void
     loading: boolean
+    errorMessage?: string
 }
 
-export default function CustomCardForm({ onSuccess, loading }: CustomCardFormProps) {
+export default function CustomCardForm({ onSuccess, loading, errorMessage }: CustomCardFormProps) {
     const [formData, setFormData] = useState({
         cardHolderName: "",
         cardNumber: "",
@@ -236,6 +237,26 @@ export default function CustomCardForm({ onSuccess, loading }: CustomCardFormPro
                             <p className="text-[10px] text-red-500 animate-pulse ml-1">Lütfen devam etmek için sözleşmeleri onaylayın.</p>
                         )}
                     </div>
+
+                    {/* Payment Error Banner */}
+                    <AnimatePresence>
+                        {errorMessage && (
+                            <motion.div
+                                key="error-banner"
+                                initial={{ opacity: 0, y: -8, scale: 0.97 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: -8, scale: 0.97 }}
+                                transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                                className="flex items-start gap-3 bg-red-500/10 border border-red-500/30 rounded-xl p-4"
+                            >
+                                <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                                <div>
+                                    <p className="text-sm font-semibold text-red-400 mb-0.5">Ödeme Reddedildi</p>
+                                    <p className="text-xs text-red-300 leading-relaxed">{errorMessage}</p>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
 
                     <button
                         type="submit"

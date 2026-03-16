@@ -27,8 +27,7 @@ function CheckoutContent() {
   const [loading, setLoading] = useState(false)
   const [validatingCode, setValidatingCode] = useState(false)
   const [formLoaded, setFormLoaded] = useState(false)
-  const [threeDSHtml, setThreeDSHtml] = useState<string | null>(null)
-  const [showThreeDModal, setShowThreeDModal] = useState(false)
+  const [paymentError, setPaymentError] = useState<string | undefined>(undefined)
 
   // Plan bilgileri
   const plans: Record<string, { price: number, icon: LucideIcon, color: string }> = {
@@ -131,16 +130,17 @@ function CheckoutContent() {
     toast.success("Referans kodu kaldırıldı")
   }
 
-  // Özel Kart Formu ile Ödeme
+  // Özel Kart Formu ile Ödeme (NON3D Subscription)
   const handleCustomCardPayment = async (cardData: any) => {
     setLoading(true)
+    setPaymentError(undefined) // clear previous errors
+
     try {
-      const response = await fetch("/api/iyzico/initialize-threed", {
+      const response = await fetch("/api/iyzico/subscribe-non3d", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           planName,
-          price: total.toString(),
           billingPeriod,
           courseId,
           referralCode: appliedReferral?.code || undefined,
@@ -150,16 +150,18 @@ function CheckoutContent() {
 
       const data = await response.json()
 
-      if (data.success && data.threeDSHtmlContent) {
-        setThreeDSHtml(data.threeDSHtmlContent)
-        setShowThreeDModal(true)
+      if (data.success) {
+        // Doğrudan başarılı oldu, yönlendir
+        toast.success("Aboneliğiniz başarıyla başlatıldı!")
+        router.push("/my-courses")
       } else {
-        toast.error(data.error || "Ödeme başlatılamadı.")
+        // Hata mesajını form komponentine yolla
+        setPaymentError(data.error || "Ödeme işlemi başarısız oldu. Lütfen tekrar deneyin.")
         setLoading(false)
       }
     } catch (error) {
       console.error("Custom payment error:", error)
-      toast.error("Bir hata oluştu.")
+      setPaymentError("Sistemde bir hata oluştu. Lütfen bağlantınızı kontrol edip tekrar deneyin.")
       setLoading(false)
     }
   }
@@ -252,33 +254,12 @@ function CheckoutContent() {
           )}
 
           <div className={`${formLoaded ? 'block mb-8' : 'hidden'}`}>
-            <CustomCardForm onSuccess={handleCustomCardPayment} loading={loading} />
+            <CustomCardForm 
+              onSuccess={handleCustomCardPayment} 
+              loading={loading} 
+              errorMessage={paymentError} 
+            />
           </div>
-
-          <AnimatePresence>
-            {showThreeDModal && threeDSHtml && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
-              >
-                <div className="bg-white rounded-2xl w-full max-w-2xl h-[600px] overflow-hidden relative">
-                  <button
-                    onClick={() => setShowThreeDModal(false)}
-                    className="absolute top-4 right-4 z-10 p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
-                  >
-                    <X className="w-5 h-5 text-gray-500" />
-                  </button>
-                  <iframe
-                    srcDoc={threeDSHtml}
-                    className="w-full h-full border-none"
-                    title="3D Secure"
-                  />
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
 
           {!formLoaded && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

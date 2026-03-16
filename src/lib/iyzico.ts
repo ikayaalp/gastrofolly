@@ -409,5 +409,49 @@ export const initializeThreedPayment = async (request: IyzicoThreedInitializeReq
   return makeIyzicoRequest<IyzicoThreedInitializeResult>('/payment/3d/initialize', request)
 }
 
+/**
+ * Iyzico NON3D Abonelik Başlatma
+ * Kendi kart formumuzdan gelen bilgileriyle doğrudan abonelik başlatır.
+ * Endpoint: POST /v2/subscription/initialize
+ */
+export interface IyzicoSubscriptionNon3DRequest {
+  locale: string
+  conversationId: string
+  pricingPlanReferenceCode: string
+  subscriptionInitialStatus: 'ACTIVE' | 'PENDING'
+  paymentCard: {
+    cardHolderName: string
+    cardNumber: string
+    expireYear: string
+    expireMonth: string
+    cvc: string
+    registerConsumerCard?: boolean
+  }
+  customer: IyzicoSubscriptionCustomer
+}
 
+export interface IyzicoSubscriptionNon3DResult {
+  status: string
+  locale?: string
+  systemTime?: number
+  conversationId?: string
+  referenceCode?: string
+  parentReferenceCode?: string
+  pricingPlanReferenceCode?: string
+  customerReferenceCode?: string
+  subscriptionStatus?: string
+  trialDays?: number
+  trialStartDate?: number
+  trialEndDate?: number
+  startDate?: number
+  createdDate?: number
+  errorCode?: string
+  errorMessage?: string
+  errorGroup?: string
+}
 
+export const initializeSubscriptionNon3D = async (
+  request: IyzicoSubscriptionNon3DRequest
+): Promise<IyzicoSubscriptionNon3DResult> => {
+  return makeIyzicoRequest<IyzicoSubscriptionNon3DResult>('/v2/subscription/initialize', request)
+}
