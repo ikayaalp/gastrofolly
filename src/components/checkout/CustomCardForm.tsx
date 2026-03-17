@@ -303,229 +303,234 @@ export default function CustomCardForm({ onSuccess, loading, errorMessage }: Cus
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="w-full max-w-md mx-auto"
+            className="w-full max-w-5xl mx-auto"
         >
-            {/* Card Preview */}
-            <div className="mb-6 px-2">
-                <LiveCard
-                    name={formData.cardHolderName}
-                    number={formData.cardNumber}
-                    expiry={formData.expireDate}
-                    cvc={formData.cvc}
-                    cardType={cardType}
-                    flipped={cardFlipped}
-                />
-            </div>
-
-            {/* Form Container */}
-            <div className="rounded-2xl overflow-hidden"
-                style={{
-                    background: 'rgba(255,255,255,0.03)',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    boxShadow: '0 24px 64px rgba(0,0,0,0.4)'
-                }}>
-
-                {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4"
-                    style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
-                    <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full flex items-center justify-center"
-                            style={{ background: 'rgba(249,115,22,0.15)' }}>
-                            <Lock className="w-3.5 h-3.5 text-orange-400" />
-                        </div>
-                        <span className="text-sm font-semibold text-white">Güvenli Ödeme</span>
-                    </div>
-                    {/* Card type indicators */}
-                    <div className="flex items-center gap-2">
-                        {(['visa', 'mastercard'] as const).map(t => (
-                            <div key={t}
-                                className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all duration-200 ${cardType === t
-                                    ? 'text-white ring-1 ring-orange-500'
-                                    : 'text-white/25'
-                                    }`}
-                                style={{ background: cardType === t ? 'rgba(249,115,22,0.15)' : 'rgba(255,255,255,0.04)' }}
-                            >
-                                {t === 'visa' ? 'VISA' : 'MC'}
-                            </div>
-                        ))}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                {/* Left Column: Card Preview */}
+                <div className="lg:sticky lg:top-8 w-full max-w-md mx-auto lg:max-w-none">
+                    <h2 className="text-xl font-bold text-white mb-6 pl-2 hidden lg:block">Kart Bilgileri</h2>
+                    <div className="px-2">
+                        <LiveCard
+                            name={formData.cardHolderName}
+                            number={formData.cardNumber}
+                            expiry={formData.expireDate}
+                            cvc={formData.cvc}
+                            cardType={cardType}
+                            flipped={cardFlipped}
+                        />
                     </div>
                 </div>
 
-                {/* Form body */}
-                <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                {/* Right Column: Form Container */}
+                <div className="rounded-2xl overflow-hidden w-full max-w-md mx-auto lg:max-w-none"
+                    style={{
+                        background: 'rgba(255,255,255,0.03)',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        boxShadow: '0 24px 64px rgba(0,0,0,0.4)'
+                    }}>
 
-                    {/* Card Holder */}
-                    <CardInput
-                        label="Kart Üzerindeki İsim"
-                        name="cardHolderName"
-                        value={formData.cardHolderName}
-                        onChange={handleInputChange}
-                        placeholder=""
-                        icon={User}
-                        error={errors.cardHolderName}
-                        autoComplete="cc-name"
-                    />
-
-                    {/* Card Number */}
-                    <CardInput
-                        label="Kart Numarası"
-                        name="cardNumber"
-                        value={formData.cardNumber}
-                        onChange={handleInputChange}
-                        placeholder=""
-                        icon={CreditCard}
-                        error={errors.cardNumber}
-                        autoComplete="cc-number"
-                        inputMode="numeric"
-                    />
-
-                    {/* Expiry + CVV */}
-                    <div className="grid grid-cols-2 gap-3">
-                        <CardInput
-                            label="Son Kullanma"
-                            name="expireDate"
-                            value={formData.expireDate}
-                            onChange={handleInputChange}
-                            placeholder=""
-                            icon={Calendar}
-                            error={errors.expireDate}
-                            autoComplete="cc-exp"
-                            inputMode="numeric"
-                        />
-                        <CardInput
-                            label="CVV / CVC"
-                            name="cvc"
-                            value={formData.cvc}
-                            onChange={handleInputChange}
-                            placeholder=""
-                            icon={Lock}
-                            error={errors.cvc}
-                            autoComplete="cc-csc"
-                            inputMode="numeric"
-                            onFocus={() => setCardFlipped(true)}
-                            onBlur={() => setCardFlipped(false)}
-                        />
+                    {/* Header */}
+                    <div className="flex items-center justify-between px-6 py-4 block lg:hidden"
+                        style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
+                        <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-full flex items-center justify-center"
+                                style={{ background: 'rgba(249,115,22,0.15)' }}>
+                                <Lock className="w-3.5 h-3.5 text-orange-400" />
+                            </div>
+                            <span className="text-sm font-semibold text-white">Güvenli Ödeme</span>
+                        </div>
+                        {/* Card type indicators */}
+                        <div className="flex items-center gap-2">
+                            {(['visa', 'mastercard'] as const).map(t => (
+                                <div key={t}
+                                    className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all duration-200 ${cardType === t
+                                        ? 'text-white ring-1 ring-orange-500'
+                                        : 'text-white/25'
+                                        }`}
+                                    style={{ background: cardType === t ? 'rgba(249,115,22,0.15)' : 'rgba(255,255,255,0.04)' }}
+                                >
+                                    {t === 'visa' ? 'VISA' : 'MC'}
+                                </div>
+                            ))}
+                        </div>
                     </div>
 
-                    {/* Agreements */}
-                    <div className="space-y-3 pt-1">
-                        {[
-                            {
-                                key: 'subscription' as const,
-                                label: 'Premium Abonelik Sözleşmesini',
-                                url: '/mesafeli-satis-sozlesmesi',
-                                title: 'Premium Abonelik Sözleşmesi',
-                                suffix: ' kabul ediyorum.'
-                            },
-                            {
-                                key: 'preliminary' as const,
-                                label: 'Premium Abonelik Ön Bilgilendirme Formunu',
-                                url: '/on-bilgilendirme-formu',
-                                title: 'Premium Abonelik Ön Bilgilendirme Formu',
-                                suffix: ' onaylıyorum.'
-                            }
-                        ].map(({ key, label, url, title, suffix }) => (
-                            <div
-                                key={key}
-                                className="flex items-start gap-3 cursor-pointer group"
-                                onClick={() => setAgreements(prev => ({ ...prev, [key]: !prev[key] }))}
-                            >
-                                <div className={`mt-0.5 flex-shrink-0 w-4.5 h-4.5 rounded transition-all duration-200 flex items-center justify-center
-                                    ${agreements[key]
-                                        ? 'bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.4)]'
-                                        : 'group-hover:border-orange-500/50'
-                                    }`}
-                                    style={{
-                                        width: '18px', height: '18px',
-                                        border: agreements[key] ? '1.5px solid #f97316' : '1.5px solid rgba(255,255,255,0.15)',
-                                        background: agreements[key] ? '#f97316' : 'rgba(255,255,255,0.04)'
-                                    }}>
-                                    {agreements[key] && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
-                                </div>
-                                <p className="text-xs text-zinc-500 leading-relaxed select-none">
-                                    <button
-                                        type="button"
-                                        onClick={(e) => { e.stopPropagation(); setModalContent({ title, url }) }}
-                                        className="text-orange-400 hover:text-orange-300 underline underline-offset-2 transition-colors"
-                                    >
-                                        {label}
-                                    </button>
-                                    {suffix}
-                                </p>
-                            </div>
-                        ))}
+                    {/* Form body */}
+                    <form onSubmit={handleSubmit} className="p-6 space-y-4">
 
-                        <AnimatePresence>
-                            {(errors.subscription || errors.preliminary) && (
-                                <motion.p
-                                    initial={{ opacity: 0, y: -4 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0 }}
-                                    className="text-xs text-red-400 ml-1"
+                        {/* Card Number */}
+                        <CardInput
+                            label="Kart Numarası"
+                            name="cardNumber"
+                            value={formData.cardNumber}
+                            onChange={handleInputChange}
+                            placeholder=""
+                            icon={CreditCard}
+                            error={errors.cardNumber}
+                            autoComplete="cc-number"
+                            inputMode="numeric"
+                        />
+
+                        {/* Card Holder */}
+                        <CardInput
+                            label="Kart Üzerindeki İsim"
+                            name="cardHolderName"
+                            value={formData.cardHolderName}
+                            onChange={handleInputChange}
+                            placeholder=""
+                            icon={User}
+                            error={errors.cardHolderName}
+                            autoComplete="cc-name"
+                        />
+
+                        {/* Expiry + CVV */}
+                        <div className="grid grid-cols-2 gap-3">
+                            <CardInput
+                                label="Son Kullanma"
+                                name="expireDate"
+                                value={formData.expireDate}
+                                onChange={handleInputChange}
+                                placeholder=""
+                                icon={Calendar}
+                                error={errors.expireDate}
+                                autoComplete="cc-exp"
+                                inputMode="numeric"
+                            />
+                            <CardInput
+                                label="CVV / CVC"
+                                name="cvc"
+                                value={formData.cvc}
+                                onChange={handleInputChange}
+                                placeholder=""
+                                icon={Lock}
+                                error={errors.cvc}
+                                autoComplete="cc-csc"
+                                inputMode="numeric"
+                                onFocus={() => setCardFlipped(true)}
+                                onBlur={() => setCardFlipped(false)}
+                            />
+                        </div>
+
+                        {/* Agreements */}
+                        <div className="space-y-3 pt-4">
+                            {[
+                                {
+                                    key: 'subscription' as const,
+                                    label: 'Premium Abonelik Sözleşmesini',
+                                    url: '/mesafeli-satis-sozlesmesi',
+                                    title: 'Premium Abonelik Sözleşmesi',
+                                    suffix: ' kabul ediyorum.'
+                                },
+                                {
+                                    key: 'preliminary' as const,
+                                    label: 'Premium Abonelik Ön Bilgilendirme Formunu',
+                                    url: '/on-bilgilendirme-formu',
+                                    title: 'Premium Abonelik Ön Bilgilendirme Formu',
+                                    suffix: ' onaylıyorum.'
+                                }
+                            ].map(({ key, label, url, title, suffix }) => (
+                                <div
+                                    key={key}
+                                    className="flex items-start gap-3 cursor-pointer group"
+                                    onClick={() => setAgreements(prev => ({ ...prev, [key]: !prev[key] }))}
                                 >
-                                    Devam etmek için sözleşmeleri onaylayın.
-                                </motion.p>
+                                    <div className={`mt-0.5 flex-shrink-0 w-4.5 h-4.5 rounded transition-all duration-200 flex items-center justify-center
+                                        ${agreements[key]
+                                            ? 'bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.4)]'
+                                            : 'group-hover:border-orange-500/50'
+                                        }`}
+                                        style={{
+                                            width: '18px', height: '18px',
+                                            border: agreements[key] ? '1.5px solid #f97316' : '1.5px solid rgba(255,255,255,0.15)',
+                                            background: agreements[key] ? '#f97316' : 'rgba(255,255,255,0.04)'
+                                        }}>
+                                        {agreements[key] && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
+                                    </div>
+                                    <p className="text-xs text-zinc-500 leading-relaxed select-none">
+                                        <button
+                                            type="button"
+                                            onClick={(e) => { e.stopPropagation(); setModalContent({ title, url }) }}
+                                            className="text-orange-400 hover:text-orange-300 underline underline-offset-2 transition-colors"
+                                        >
+                                            {label}
+                                        </button>
+                                        {suffix}
+                                    </p>
+                                </div>
+                            ))}
+
+                            <AnimatePresence>
+                                {(errors.subscription || errors.preliminary) && (
+                                    <motion.p
+                                        initial={{ opacity: 0, y: -4 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0 }}
+                                        className="text-xs text-red-400 ml-1"
+                                    >
+                                        Devam etmek için sözleşmeleri onaylayın.
+                                    </motion.p>
+                                )}
+                            </AnimatePresence>
+                        </div>
+
+                        {/* Error Banner */}
+                        <AnimatePresence>
+                            {errorMessage && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -8 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -8 }}
+                                    className="flex items-start gap-3 rounded-xl p-4"
+                                    style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)' }}
+                                >
+                                    <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+                                    <div>
+                                        <p className="text-sm font-semibold text-red-400 mb-0.5">Ödeme Reddedildi</p>
+                                        <p className="text-xs text-red-400/70 leading-relaxed">{errorMessage}</p>
+                                    </div>
+                                </motion.div>
                             )}
                         </AnimatePresence>
-                    </div>
 
-                    {/* Error Banner */}
-                    <AnimatePresence>
-                        {errorMessage && (
-                            <motion.div
-                                initial={{ opacity: 0, y: -8 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -8 }}
-                                className="flex items-start gap-3 rounded-xl p-4"
-                                style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)' }}
-                            >
-                                <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
-                                <div>
-                                    <p className="text-sm font-semibold text-red-400 mb-0.5">Ödeme Reddedildi</p>
-                                    <p className="text-xs text-red-400/70 leading-relaxed">{errorMessage}</p>
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
+                        {/* Submit button */}
+                        <button
+                            type="submit"
+                            disabled={loading || localSubmit || !isFormValid}
+                            className="relative overflow-hidden w-full text-white font-bold py-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2.5 mt-2"
+                            style={{
+                                background: isFormValid && !loading && !localSubmit
+                                    ? 'linear-gradient(135deg, #f97316, #dc2626)'
+                                    : 'rgba(255,255,255,0.06)',
+                                color: isFormValid && !loading && !localSubmit ? 'white' : 'rgba(255,255,255,0.25)',
+                                boxShadow: isFormValid && !loading && !localSubmit ? '0 8px 32px rgba(249,115,22,0.35)' : 'none',
+                                cursor: isFormValid && !loading && !localSubmit ? 'pointer' : 'not-allowed'
+                            }}
+                        >
+                            {/* Shimmer on hover */}
+                            {isFormValid && (
+                                <span className="absolute inset-0 -translate-x-full hover:translate-x-full transition-transform duration-700 pointer-events-none"
+                                    style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)' }} />
+                            )}
+                            {(loading || localSubmit) ? (
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                            ) : (
+                                <>
+                                    <CheckCircle2 className="w-5 h-5" />
+                                    Ödemeyi Tamamla
+                                </>
+                            )}
+                        </button>
 
-                    {/* Submit button */}
-                    <button
-                        type="submit"
-                        disabled={loading || localSubmit || !isFormValid}
-                        className="relative overflow-hidden w-full text-white font-bold py-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2.5 mt-2"
-                        style={{
-                            background: isFormValid && !loading && !localSubmit
-                                ? 'linear-gradient(135deg, #f97316, #dc2626)'
-                                : 'rgba(255,255,255,0.06)',
-                            color: isFormValid && !loading && !localSubmit ? 'white' : 'rgba(255,255,255,0.25)',
-                            boxShadow: isFormValid && !loading && !localSubmit ? '0 8px 32px rgba(249,115,22,0.35)' : 'none',
-                            cursor: isFormValid && !loading && !localSubmit ? 'pointer' : 'not-allowed'
-                        }}
-                    >
-                        {/* Shimmer on hover */}
-                        {isFormValid && (
-                            <span className="absolute inset-0 -translate-x-full hover:translate-x-full transition-transform duration-700 pointer-events-none"
-                                style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)' }} />
-                        )}
-                        {(loading || localSubmit) ? (
-                            <Loader2 className="w-5 h-5 animate-spin" />
-                        ) : (
-                            <>
-                                <CheckCircle2 className="w-5 h-5" />
-                                Ödemeyi Tamamla
-                            </>
-                        )}
-                    </button>
-
-                    {/* Trust Badges */}
-                    <div className="flex items-center justify-center gap-3 pt-1">
-                        <Lock className="w-3.5 h-3.5 text-zinc-600" />
-                        <span className="text-[10px] text-zinc-600 uppercase tracking-widest">256-bit SSL Şifreli</span>
-                        <div className="w-px h-3 bg-zinc-800" />
-                        <img src="/iyzico-logo-pack/checkout_iyzico_ile_ode/TR/Tr_White_Horizontal/iyzico_ile_ode_horizontal_white.svg"
-                            alt="iyzico" className="h-3 opacity-25" />
-                    </div>
-                </form>
+                        {/* Trust Badges */}
+                        <div className="flex items-center justify-center gap-3 pt-1">
+                            <Lock className="w-3.5 h-3.5 text-zinc-600" />
+                            <span className="text-[10px] text-zinc-600 uppercase tracking-widest">256-bit SSL Şifreli</span>
+                            <div className="w-px h-3 bg-zinc-800" />
+                            <img src="/iyzico-logo-pack/checkout_iyzico_ile_ode/TR/Tr_White_Horizontal/iyzico_ile_ode_horizontal_white.svg"
+                                alt="iyzico" className="h-3 opacity-25" />
+                        </div>
+                    </form>
+                </div>
             </div>
 
             {/* Agreement Modal */}

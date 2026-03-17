@@ -253,223 +253,89 @@ function CheckoutContent() {
       {/* Main Content */}
       <div className="pt-20 md:pt-24 pb-20 md:pb-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          {!formLoaded && (
-            <h1 className="text-3xl md:text-4xl font-bold text-white mb-8">Ödeme Bilgileri</h1>
-          )}
-
-          <div className={`${formLoaded ? 'block mb-8' : 'hidden'}`}>
-            {paymentSuccess ? (
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="bg-zinc-900/80 backdrop-blur-xl border border-green-500/30 rounded-2xl p-10 text-center shadow-[0_0_50px_-10px_rgba(34,197,94,0.3)] max-w-md mx-auto"
-              >
-                  <motion.div 
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", delay: 0.1, stiffness: 200 }}
-                    className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6 relative"
-                  >
-                      <div className="absolute inset-0 border-2 border-green-500/50 rounded-full animate-ping opacity-50"></div>
-                      <CheckCircle2 className="w-10 h-10 text-green-500" />
-                  </motion.div>
-                  <h2 className="text-2xl font-bold text-white mb-3">Ödeme Başarılı!</h2>
-                  <p className="text-zinc-400 mb-6">Aboneliğiniz başarıyla başlatıldı. Sizi eğitimlerinize yönlendiriyoruz...</p>
-                  <div className="flex justify-center">
-                      <Loader2 className="w-6 h-6 text-green-500 animate-spin" />
-                  </div>
-              </motion.div>
-            ) : (
-              <CustomCardForm 
-                onSuccess={handleCustomCardPayment} 
-                loading={loading} 
-                errorMessage={paymentError} 
-              />
-            )}
-          </div>
-
-          {!formLoaded && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Left Column */}
-              <div className="lg:col-span-2 space-y-6">
-                {/* Billing Period */}
-                <div className="bg-black border border-gray-800 rounded-xl p-6">
-                  <h2 className="text-xl font-bold text-white mb-4">Ödeme Dönemi</h2>
-                  <div className="grid grid-cols-3 gap-4">
-                    <button
-                      onClick={() => setBillingPeriod("monthly")}
-                      className={`p-4 rounded-xl border-2 transition-all ${billingPeriod === "monthly"
-                        ? "border-orange-500 bg-orange-500/10"
-                        : "border-gray-700 hover:border-gray-600"
-                        }`}
-                    >
-                      <div className="text-white font-semibold mb-1">Aylık</div>
-                      <div className="text-2xl font-bold text-white">{monthlyPrice}₺</div>
-                      <div className="text-sm text-gray-400">/ ay</div>
-                    </button>
-
-
-
-                    <button
-                      onClick={() => setBillingPeriod("yearly")}
-                      className={`p-4 rounded-xl border-2 transition-all relative ${billingPeriod === "yearly"
-                        ? "border-orange-500 bg-orange-500/10"
-                        : "border-gray-700 hover:border-gray-600"
-                        }`}
-                    >
-                      <div className="absolute -top-2 -right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                        %20 İndirim
-                      </div>
-                      <div className="text-white font-semibold mb-1">Yıllık</div>
-                      <div className="text-sm text-gray-500 line-through">{Math.round(basePrice * 12)}₺</div>
-                      <div className="text-2xl font-bold text-white">{Math.round(yearlyPrice)}₺</div>
-                      <div className="text-sm text-gray-400">/ yıl</div>
-                      <div className="text-xs text-green-400 mt-1">
-                        {Math.round(basePrice * 12 - yearlyPrice)}₺ tasarruf
-                      </div>
-                    </button>
-                  </div>
+          {/* Main Grid Checkout Layout */}
+          <div className="flex flex-col gap-10 mt-6">
+            
+            {/* Top Section: Premium Plan Banner */}
+            <div className="relative w-full rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-950 flex flex-col md:flex-row items-center justify-between"
+                 style={{ boxShadow: '0 20px 40px rgba(0,0,0,0.6)' }}>
+                {/* Left side: Background Collage (Simulated with gradients and a placeholder or real images if available) */}
+                <div className="w-full md:w-1/2 h-48 md:h-full relative overflow-hidden hidden md:block" style={{ minHeight: '180px' }}>
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent to-zinc-950 z-10" />
+                    <div className="absolute inset-0 grid grid-cols-4 grid-rows-2 gap-1 p-2 opacity-50">
+                        {/* Dummy squares to simulate the chef collage */}
+                        {Array.from({ length: 8 }).map((_, i) => (
+                           <div key={i} className="bg-zinc-800/80 rounded animate-pulse" style={{ animationDelay: `${i * 150}ms` }} />
+                        ))}
+                    </div>
                 </div>
 
-                {/* Referans Kodu */}
-                <div className="bg-black border border-gray-800 rounded-xl p-6">
-                  <h2 className="text-xl font-bold text-white mb-4">Referans Kodu</h2>
-                  {appliedReferral ? (
-                    <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <Tag className="h-5 w-5 text-green-400" />
-                        <div>
-                          <div className="text-white font-semibold">{appliedReferral.code}</div>
-                          <div className="text-sm text-green-400">
-                            %{appliedReferral.discountPercent} indirim uygulandı
-                            {appliedReferral.influencerName && (
-                              <span className="text-gray-400"> • {appliedReferral.influencerName}</span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <button
-                        onClick={handleRemoveReferral}
-                        className="text-gray-400 hover:text-white transition-colors"
-                      >
-                        <X className="h-5 w-5" />
-                      </button>
+                {/* Right side: Plan Info */}
+                <div className="w-full md:w-1/2 p-6 md:p-8 flex flex-col items-center md:items-end justify-center text-center md:text-right relative z-20">
+                    <h2 className="text-3xl font-bold text-white mb-6">Premium Paket</h2>
+                    
+                    {/* Toggle */}
+                    <div className="flex bg-zinc-900 border border-zinc-800 rounded-lg p-1 w-full max-w-sm mb-6">
+                        <button 
+                            onClick={() => setBillingPeriod("monthly")}
+                            className={`flex-1 py-3 px-4 text-sm font-semibold rounded-md transition-all ${billingPeriod === 'monthly' ? 'bg-zinc-100 text-black shadow-lg' : 'text-zinc-400 hover:text-white'}`}
+                        >
+                            Peşin Ödeme
+                        </button>
+                        <button 
+                            onClick={() => setBillingPeriod("yearly")}
+                            className={`flex-1 py-3 px-4 text-sm font-semibold rounded-md transition-all ${billingPeriod === 'yearly' ? 'bg-zinc-100 text-black shadow-lg' : 'text-zinc-400 hover:text-white'}`}
+                        >
+                            Taksitli Ödeme
+                        </button>
                     </div>
-                  ) : (
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={referralCode}
-                        onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
-                        placeholder="Referans kodunu girin"
-                        className="flex-1 bg-black border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 font-mono"
-                        disabled={validatingCode}
-                      />
-                      <button
-                        onClick={handleApplyReferral}
-                        disabled={validatingCode || !referralCode.trim()}
-                        className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                      >
-                        {validatingCode ? (
-                          <>
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            Kontrol...
-                          </>
-                        ) : (
-                          "Uygula"
-                        )}
-                      </button>
+
+                    <div className="flex items-end gap-2 text-white">
+                        <span className="text-lg text-zinc-400 font-medium">Toplam Fiyat:</span>
+                        <span className="text-3xl font-bold">₺{Math.round(total)}</span>
                     </div>
-                  )}
-                  <p className="text-xs text-gray-500 mt-2">
-                    Bir referans kodunuz varsa buraya girerek indirimden yararlanın
-                  </p>
                 </div>
-              </div>
-
-              {/* Right Column - Summary */}
-              <div className="lg:col-span-1">
-                <div className="bg-black border border-gray-800 rounded-xl p-6 sticky top-24">
-                  <h2 className="text-xl font-bold text-white mb-6">Sipariş Özeti</h2>
-
-                  <div className="space-y-4 mb-6">
-                    <div className="flex justify-between text-gray-300">
-                      <span>Ara Toplam</span>
-                      <span>{Math.round(originalPrice)}₺</span>
-                    </div>
-
-
-
-                    {billingPeriod === "yearly" && (
-                      <div className="flex justify-between text-green-400">
-                        <span>Yıllık İndirim (%20)</span>
-                        <span>-{Math.round(periodDiscount)}₺</span>
-                      </div>
-                    )}
-
-                    {appliedReferral && (
-                      <div className="flex justify-between text-green-400">
-                        <span>Referans İndirimi (%{appliedReferral.discountPercent})</span>
-                        <span>-{Math.round(referralDiscount)}₺</span>
-                      </div>
-                    )}
-
-                    <div className="border-t border-gray-700 pt-4">
-                      <div className="flex justify-between text-white text-xl font-bold">
-                        <span>Toplam</span>
-                        <span>{Math.round(total)}₺</span>
-                      </div>
-                      <p className="text-sm text-gray-400 mt-1">
-                        {billingPeriod === "monthly" ? "Aylık" : "Yıllık"} ödeme
-                      </p>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={handleProceedToPayment}
-                    disabled={loading}
-                    className="w-full bg-orange-600 hover:bg-orange-700 text-white py-4 rounded-xl font-bold text-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="h-5 w-5 animate-spin" />
-                        İşleniyor...
-                      </>
-                    ) : (
-                      <>
-                        <Check className="h-5 w-5" />
-                        Ödemeye Devam
-                      </>
-                    )}
-                  </button>
-
-                  <div className="mt-4 flex flex-col items-center gap-3">
-                    <div className="relative h-10 w-48">
-                      <Image
-                        src="/iyzico-logo-pack/checkout_iyzico_ile_ode/TR/Tr_White_Horizontal/iyzico_ile_ode_horizontal_white.svg"
-                        alt="iyzico ile Öde"
-                        fill
-                        className="object-contain"
-                      />
-                    </div>
-                    <div className="relative h-6 w-56">
-                      <Image
-                        src="/iyzico-logo-pack/footer_iyzico_ile_ode/White/logo_band_white.svg"
-                        alt="Visa, MasterCard, Troy"
-                        fill
-                        className="object-contain"
-                      />
-                    </div>
-                    <div className="flex gap-3 text-xs text-gray-500">
-                      <Link href="/iptal-iade" className="hover:text-gray-300 transition-colors underline">İptal ve İade</Link>
-                      <span>•</span>
-                      <Link href="/teslimat-iade" className="hover:text-gray-300 transition-colors underline">Teslimat ve İade</Link>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
-          )}
+
+            {/* Invoice Toggle */}
+            <div className="flex items-center justify-center gap-6 mt-4 mb-2">
+                <button className="text-red-600 font-bold hover:text-red-500 transition-colors">Bireysel Fatura</button>
+                <div className="w-px h-5 bg-zinc-700" />
+                <button className="text-zinc-500 font-medium hover:text-zinc-400 transition-colors">Kurumsal Fatura</button>
+            </div>
+
+            {/* Bottom Section: Card Form */}
+            <div className="w-full">
+                {paymentSuccess ? (
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="bg-zinc-900/80 backdrop-blur-xl border border-green-500/30 rounded-2xl p-10 text-center shadow-[0_0_50px_-10px_rgba(34,197,94,0.3)] max-w-md mx-auto"
+                    >
+                        <motion.div 
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ type: "spring", delay: 0.1, stiffness: 200 }}
+                            className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6 relative"
+                        >
+                            <div className="absolute inset-0 border-2 border-green-500/50 rounded-full animate-ping opacity-50"></div>
+                            <CheckCircle2 className="w-10 h-10 text-green-500" />
+                        </motion.div>
+                        <h2 className="text-2xl font-bold text-white mb-3">Ödeme Başarılı!</h2>
+                        <p className="text-zinc-400 mb-6">Aboneliğiniz başarıyla başlatıldı. Sizi eğitimlerinize yönlendiriyoruz...</p>
+                        <div className="flex justify-center">
+                            <Loader2 className="w-6 h-6 text-green-500 animate-spin" />
+                        </div>
+                    </motion.div>
+                ) : (
+                    <CustomCardForm 
+                        onSuccess={handleCustomCardPayment} 
+                        loading={loading} 
+                        errorMessage={paymentError} 
+                    />
+                )}
+            </div>
+          </div>
         </div>
       </div>
 
