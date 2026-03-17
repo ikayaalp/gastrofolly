@@ -59,15 +59,16 @@ function LiveCard({
     }
 
     return (
-        <div className="w-full perspective-1000" style={{ perspective: '1000px', height: '190px' }}>
+        /* Golden ratio wrapper: height = width / φ (1.618), so paddingTop = 61.8% */
+        <div className="w-full" style={{ perspective: '1200px', position: 'relative', paddingTop: '61.8%' }}>
             <motion.div
                 animate={{ rotateY: flipped ? 180 : 0 }}
                 transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-                style={{ transformStyle: 'preserve-3d', position: 'relative', width: '100%', height: '100%' }}
+                style={{ transformStyle: 'preserve-3d', position: 'absolute', inset: 0 }}
             >
                 {/* Front */}
                 <div
-                    className="absolute inset-0 rounded-2xl p-6 flex flex-col justify-between overflow-hidden"
+                    className="absolute inset-0 rounded-[20px] p-7 flex flex-col justify-between overflow-hidden"
                     style={{
                         backfaceVisibility: 'hidden',
                         WebkitBackfaceVisibility: 'hidden',
@@ -120,7 +121,7 @@ function LiveCard({
 
                 {/* Back */}
                 <div
-                    className="absolute inset-0 rounded-2xl overflow-hidden flex flex-col justify-center"
+                    className="absolute inset-0 rounded-[20px] overflow-hidden flex flex-col justify-center"
                     style={{
                         backfaceVisibility: 'hidden',
                         WebkitBackfaceVisibility: 'hidden',
