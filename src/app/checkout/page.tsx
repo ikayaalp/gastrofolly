@@ -266,7 +266,7 @@ function CheckoutContent() {
                         {/* Course thumbnails */}
                         {[
                             "https://images.unsplash.com/photo-1547592166-23ac45744acd?q=80&w=2071&auto=format&fit=crop",
-                            "https://images.unsplash.com/photo-1414235077428-33898ed1e830?q=80&w=2070&auto=format&fit=crop",
+                            "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=2070&auto=format&fit=crop",
                             "https://images.unsplash.com/photo-1600565193348-f74bd3c7ccdf?q=80&w=2070&auto=format&fit=crop",
                             "https://images.unsplash.com/photo-1507048331197-7d4ac70811cf?q=80&w=1984&auto=format&fit=crop",
                             "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?q=80&w=2070&auto=format&fit=crop",
@@ -291,7 +291,7 @@ function CheckoutContent() {
                     <h2 className="text-3xl font-bold text-white mb-6">Premium Üyelik</h2>
                     
                     {/* Toggle: Aylık / Yıllık */}
-                    <div className="flex bg-zinc-900 border border-zinc-800 rounded-lg p-1 w-full max-w-sm mb-2 relative">
+                    <div className="flex bg-zinc-900 border border-zinc-800 rounded-lg p-1 w-full max-w-sm mb-6 relative">
                         <button 
                             onClick={() => setBillingPeriod("monthly")}
                             className={`flex-1 py-3 px-4 text-sm font-semibold rounded-md transition-all ${billingPeriod === 'monthly' ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20' : 'text-zinc-400 hover:text-white'}`}
@@ -305,6 +305,19 @@ function CheckoutContent() {
                             <span>Yıllık Plan</span>
                             <span className={`text-[10px] uppercase tracking-wider font-bold mt-0.5 ${billingPeriod === 'yearly' ? 'text-white/80' : 'text-green-400'}`}>%20 İndirim</span>
                         </button>
+                    </div>
+
+                    <div className="flex flex-col items-end gap-1 text-white">
+                        <div className="flex items-end gap-2">
+                            <span className="text-lg text-zinc-400 font-medium">Toplam Fiyat:</span>
+                            <span className="text-3xl font-bold text-orange-400">₺{Math.round(total)}</span>
+                        </div>
+                        {billingPeriod === 'yearly' && (
+                            <span className="text-xs text-green-400 line-through">Normalde ₺{Math.round(basePrice * 12)}</span>
+                        )}
+                        {appliedReferral && (
+                            <span className="text-xs text-green-400">%{appliedReferral.discountPercent} kod indirimi uygulandı</span>
+                        )}
                     </div>
                 </div>
             </div>
@@ -333,86 +346,20 @@ function CheckoutContent() {
                         </div>
                     </motion.div>
                 ) : (
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                        {/* Left Side: Custom Card Form */}
-                        <div className="lg:col-span-2 w-full">
-                            <CustomCardForm 
-                                onSuccess={handleCustomCardPayment} 
-                                loading={loading} 
-                                errorMessage={paymentError}
-                                referral={{
-                                    code: referralCode,
-                                    setCode: setReferralCode,
-                                    applied: appliedReferral,
-                                    onApply: handleApplyReferral,
-                                    onRemove: handleRemoveReferral,
-                                    validating: validatingCode
-                                }}
-                            />
-                        </div>
-
-                        {/* Right Side: Order Summary Sidebar */}
-                        <div className="lg:col-span-1 w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-6 sticky top-24" style={{ boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
-                            <h3 className="text-xl font-bold text-white mb-6">İşlem Özeti</h3>
-                            
-                            <div className="space-y-4 mb-6">
-                                <div className="flex justify-between text-zinc-400 font-medium">
-                                    <span>Ara Toplam</span>
-                                    <span>₺{Math.round(originalPrice)}</span>
-                                </div>
-
-                                {billingPeriod === "yearly" && (
-                                    <div className="flex justify-between text-green-400 text-sm font-medium">
-                                        <span>Yıllık İndirim (%20)</span>
-                                        <span>-₺{Math.round(periodDiscount)}</span>
-                                    </div>
-                                )}
-
-                                {appliedReferral && (
-                                    <div className="flex justify-between text-green-400 text-sm font-medium">
-                                        <span>Promosyon İndirimi (%{appliedReferral.discountPercent})</span>
-                                        <span>-₺{Math.round(referralDiscount)}</span>
-                                    </div>
-                                )}
-
-                                <div className="border-t border-zinc-800 pt-4 mt-2">
-                                    <div className="flex justify-between items-center text-white">
-                                        <span className="font-semibold text-lg">Ödenecek Tutar</span>
-                                        <div className="text-right">
-                                            <span className="text-3xl font-bold text-orange-500">₺{Math.round(total)}</span>
-                                            <div className="text-xs text-zinc-500 mt-1">
-                                                {billingPeriod === 'monthly' ? 'Aylık yenileme' : 'Yıllık yenileme'}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Trust Details inside Sidebar */}
-                            <div className="mt-6 pt-6 border-t border-zinc-800/50 flex flex-col items-center gap-4">
-                                <div className="relative h-8 w-40 opacity-70">
-                                    <Image
-                                        src="/iyzico-logo-pack/checkout_iyzico_ile_ode/TR/Tr_White_Horizontal/iyzico_ile_ode_horizontal_white.svg"
-                                        alt="iyzico ile Öde"
-                                        fill
-                                        className="object-contain"
-                                    />
-                                </div>
-                                <div className="relative h-6 w-48 opacity-60">
-                                    <Image
-                                        src="/iyzico-logo-pack/footer_iyzico_ile_ode/White/logo_band_white.svg"
-                                        alt="Visa, MasterCard, Troy"
-                                        fill
-                                        className="object-contain"
-                                    />
-                                </div>
-                                <div className="flex gap-4 text-xs text-zinc-500 font-medium">
-                                    <Link href="/iptal-iade" className="hover:text-zinc-300 transition-colors">İptal ve İade</Link>
-                                    <span className="text-zinc-700">•</span>
-                                    <Link href="/teslimat-iade" className="hover:text-zinc-300 transition-colors">Teslimat Şartları</Link>
-                                </div>
-                            </div>
-                        </div>
+                    <div className="max-w-4xl mx-auto">
+                        <CustomCardForm 
+                            onSuccess={handleCustomCardPayment} 
+                            loading={loading} 
+                            errorMessage={paymentError}
+                            referral={{
+                                code: referralCode,
+                                setCode: setReferralCode,
+                                applied: appliedReferral,
+                                onApply: handleApplyReferral,
+                                onRemove: handleRemoveReferral,
+                                validating: validatingCode
+                            }}
+                        />
                     </div>
                 )}
             </div>
