@@ -227,6 +227,7 @@ export async function POST(request: NextRequest) {
                     subscriptionPlan: planName || "Premium",
                     subscriptionStartDate: now,
                     subscriptionEndDate: endDate,
+                    subscriptionReferenceCode: referenceCode,
                 }
             })
 
