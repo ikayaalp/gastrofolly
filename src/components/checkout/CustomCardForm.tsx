@@ -8,6 +8,14 @@ interface CustomCardFormProps {
     onSuccess: (cardData: any) => void
     loading: boolean
     errorMessage?: string
+    referral?: {
+        code: string
+        setCode: (code: string) => void
+        applied: any
+        onApply: () => void
+        onRemove: () => void
+        validating: boolean
+    }
 }
 
 /* ─── Mini helpers ─────────────────────────────────────────── */
@@ -219,7 +227,7 @@ function CardInput({
                         initial={{ opacity: 0, y: -4 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -4 }}
-                        className="flex items-center gap-1 text-xs text-red-400 mt-1.5 ml-1"
+                        className="flex items-center gap-1.5 text-xs text-red-400 mt-1.5 ml-1"
                     >
                         <AlertTriangle className="w-3 h-3" />
                         {error}
@@ -231,7 +239,7 @@ function CardInput({
 }
 
 /* ─── Main Component ───────────────────────────────────────── */
-export default function CustomCardForm({ onSuccess, loading, errorMessage }: CustomCardFormProps) {
+export default function CustomCardForm({ onSuccess, loading, errorMessage, referral }: CustomCardFormProps) {
     const [formData, setFormData] = useState({ cardHolderName: "", cardNumber: "", expireDate: "", cvc: "" })
     const [localSubmit, setLocalSubmit] = useState(false)
     const [agreements, setAgreements] = useState({ subscription: false, preliminary: false })
@@ -411,8 +419,61 @@ export default function CustomCardForm({ onSuccess, loading, errorMessage }: Cus
                             />
                         </div>
 
+                        {/* Promo / Referral Code */}
+                        {referral && (
+                            <div className="pt-2">
+                                {referral.applied ? (
+                                    <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4 flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
+                                                <Check className="w-4 h-4 text-green-400" strokeWidth={3} />
+                                            </div>
+                                            <div>
+                                                <div className="text-white font-semibold text-sm">{referral.applied.code}</div>
+                                                <div className="text-xs text-green-400">
+                                                    %{referral.applied.discountPercent} indirim uygulandı
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={referral.onRemove}
+                                            className="w-8 h-8 flex items-center justify-center rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors"
+                                        >
+                                            <X className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="flex gap-2">
+                                        <div className="relative flex-1">
+                                            <input
+                                                type="text"
+                                                value={referral.code}
+                                                onChange={(e) => referral.setCode(e.target.value.toUpperCase())}
+                                                placeholder="Promosyon Kodu (İsteğe bağlı)"
+                                                className="w-full bg-zinc-900/50 border border-zinc-800 hover:border-zinc-700 focus:border-orange-500/50 rounded-xl px-4 py-3.5 text-white text-sm font-medium focus:outline-none transition-all placeholder:text-zinc-600"
+                                                disabled={referral.validating}
+                                            />
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={referral.onApply}
+                                            disabled={referral.validating || !referral.code.trim()}
+                                            className="px-5 py-3.5 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[100px]"
+                                        >
+                                            {referral.validating ? (
+                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                            ) : (
+                                                "Uygula"
+                                            )}
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
                         {/* Agreements */}
-                        <div className="space-y-3 pt-4">
+                        <div className="space-y-3 pt-4 border-t border-zinc-800/50 mt-4">
                             {[
                                 {
                                     key: 'subscription' as const,

@@ -259,13 +259,29 @@ function CheckoutContent() {
             {/* Top Section: Premium Plan Banner */}
             <div className="relative w-full rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-950 flex flex-col md:flex-row items-center justify-between"
                  style={{ boxShadow: '0 20px 40px rgba(0,0,0,0.6)' }}>
-                {/* Left side: Background Collage (Simulated with gradients and a placeholder or real images if available) */}
+                {/* Left side: Background Collage */}
                 <div className="w-full md:w-1/2 h-48 md:h-full relative overflow-hidden hidden md:block" style={{ minHeight: '180px' }}>
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent to-zinc-950 z-10" />
-                    <div className="absolute inset-0 grid grid-cols-4 grid-rows-2 gap-1 p-2 opacity-50">
-                        {/* Dummy squares to simulate the chef collage */}
-                        {Array.from({ length: 8 }).map((_, i) => (
-                           <div key={i} className="bg-zinc-800/80 rounded animate-pulse" style={{ animationDelay: `${i * 150}ms` }} />
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-zinc-950/50 to-zinc-950 z-10" />
+                    <div className="absolute inset-0 grid grid-cols-4 grid-rows-2 gap-1 p-2 opacity-40">
+                        {/* Course thumbnails */}
+                        {[
+                            "https://images.unsplash.com/photo-1547592166-23ac45744acd?q=80&w=2071&auto=format&fit=crop",
+                            "https://images.unsplash.com/photo-1556910103-1c02745a872f?q=80&w=2070&auto=format&fit=crop",
+                            "https://images.unsplash.com/photo-1600565193348-f74bd3c7ccdf?q=80&w=2070&auto=format&fit=crop",
+                            "https://images.unsplash.com/photo-1507048331197-7d4ac70811cf?q=80&w=1984&auto=format&fit=crop",
+                            "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?q=80&w=2070&auto=format&fit=crop",
+                            "https://images.unsplash.com/photo-1581349485608-9469926a8e5e?q=80&w=1964&auto=format&fit=crop",
+                            "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=1974&auto=format&fit=crop",
+                            "https://images.unsplash.com/photo-1577106263724-2c8e03bfe9cf?q=80&w=2070&auto=format&fit=crop"
+                        ].map((src, i) => (
+                           <div key={i} className="relative rounded overflow-hidden">
+                               <Image 
+                                   src={src} 
+                                   alt={`Course ${i+1}`} 
+                                   fill 
+                                   className="object-cover"
+                               />
+                           </div>
                         ))}
                     </div>
                 </div>
@@ -274,34 +290,36 @@ function CheckoutContent() {
                 <div className="w-full md:w-1/2 p-6 md:p-8 flex flex-col items-center md:items-end justify-center text-center md:text-right relative z-20">
                     <h2 className="text-3xl font-bold text-white mb-6">Premium Paket</h2>
                     
-                    {/* Toggle */}
-                    <div className="flex bg-zinc-900 border border-zinc-800 rounded-lg p-1 w-full max-w-sm mb-6">
+                    {/* Toggle: Aylık / Yıllık */}
+                    <div className="flex bg-zinc-900 border border-zinc-800 rounded-lg p-1 w-full max-w-sm mb-6 relative">
                         <button 
                             onClick={() => setBillingPeriod("monthly")}
                             className={`flex-1 py-3 px-4 text-sm font-semibold rounded-md transition-all ${billingPeriod === 'monthly' ? 'bg-zinc-100 text-black shadow-lg' : 'text-zinc-400 hover:text-white'}`}
                         >
-                            Peşin Ödeme
+                            Aylık Plan
                         </button>
                         <button 
                             onClick={() => setBillingPeriod("yearly")}
-                            className={`flex-1 py-3 px-4 text-sm font-semibold rounded-md transition-all ${billingPeriod === 'yearly' ? 'bg-zinc-100 text-black shadow-lg' : 'text-zinc-400 hover:text-white'}`}
+                            className={`flex flex-col items-center justify-center flex-1 py-2 px-4 text-sm font-semibold rounded-md transition-all relative ${billingPeriod === 'yearly' ? 'bg-zinc-100 text-black shadow-lg' : 'text-zinc-400 hover:text-white'}`}
                         >
-                            Taksitli Ödeme
+                            <span>Yıllık Plan</span>
+                            <span className={`text-[10px] uppercase tracking-wider font-bold mt-0.5 ${billingPeriod === 'yearly' ? 'text-green-600' : 'text-green-400'}`}>%20 İndirim</span>
                         </button>
                     </div>
 
-                    <div className="flex items-end gap-2 text-white">
-                        <span className="text-lg text-zinc-400 font-medium">Toplam Fiyat:</span>
-                        <span className="text-3xl font-bold">₺{Math.round(total)}</span>
+                    <div className="flex flex-col items-end gap-1 text-white">
+                        <div className="flex items-end gap-2">
+                            <span className="text-lg text-zinc-400 font-medium">Toplam Fiyat:</span>
+                            <span className="text-3xl font-bold text-orange-400">₺{Math.round(total)}</span>
+                        </div>
+                        {billingPeriod === 'yearly' && (
+                            <span className="text-xs text-green-400 line-through">Normalde ₺{Math.round(basePrice * 12)}</span>
+                        )}
+                        {appliedReferral && (
+                            <span className="text-xs text-green-400">%{appliedReferral.discountPercent} kod indirimi uygulandı</span>
+                        )}
                     </div>
                 </div>
-            </div>
-
-            {/* Invoice Toggle */}
-            <div className="flex items-center justify-center gap-6 mt-4 mb-2">
-                <button className="text-red-600 font-bold hover:text-red-500 transition-colors">Bireysel Fatura</button>
-                <div className="w-px h-5 bg-zinc-700" />
-                <button className="text-zinc-500 font-medium hover:text-zinc-400 transition-colors">Kurumsal Fatura</button>
             </div>
 
             {/* Bottom Section: Card Form */}
@@ -331,7 +349,15 @@ function CheckoutContent() {
                     <CustomCardForm 
                         onSuccess={handleCustomCardPayment} 
                         loading={loading} 
-                        errorMessage={paymentError} 
+                        errorMessage={paymentError}
+                        referral={{
+                            code: referralCode,
+                            setCode: setReferralCode,
+                            applied: appliedReferral,
+                            onApply: handleApplyReferral,
+                            onRemove: handleRemoveReferral,
+                            validating: validatingCode
+                        }}
                     />
                 )}
             </div>
