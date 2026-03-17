@@ -48,28 +48,9 @@ export async function POST(req: Request) {
         }
 
         // Call Iyzico API
-        const API_KEY = process.env.IYZICO_API_KEY
-        const SECRET_KEY = process.env.IYZICO_SECRET_KEY
-        const BASE_URL = process.env.IYZICO_BASE_URL || "https://sandbox-api.iyzipay.com"
+        const { cancelSubscription } = await import("@/lib/iyzico")
+        const iyzicoData = await cancelSubscription(dbUser.subscriptionReferenceCode)
 
-        if (!API_KEY || !SECRET_KEY) {
-            console.error("Iyzico API anahtarları eksik.")
-            return NextResponse.json(
-                { error: "Ödeme sistemi yapılandırma hatası" },
-                { status: 500 }
-            )
-        }
-
-        // Cancel sub from Iyzico API v2
-        const iyzicoResponse = await fetch(`${BASE_URL}/v2/subscription/subscriptions/${dbUser.subscriptionReferenceCode}/cancel`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Basic ${Buffer.from(`${API_KEY}:${SECRET_KEY}`).toString('base64')}`,
-                'Content-Type': 'application/json',
-            }
-        })
-
-        const iyzicoData = await iyzicoResponse.json()
         console.log("Iyzico iptal cevabı: ", iyzicoData)
 
         if (iyzicoData.status === 'success') {

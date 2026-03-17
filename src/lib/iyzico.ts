@@ -467,3 +467,12 @@ export const initializeSubscriptionNon3D = async (
 ): Promise<IyzicoSubscriptionNon3DResult> => {
   return makeIyzicoRequest<IyzicoSubscriptionNon3DResult>('/v2/subscription/initialize', request)
 }
+export const cancelSubscription = async (
+  subscriptionReferenceCode: string
+): Promise<IyzicoSubscriptionResult> => {
+  return makeIyzicoRequest<IyzicoSubscriptionResult>(
+    `/v2/subscription/subscriptions/${subscriptionReferenceCode}/cancel`,
+    null,
+    'POST'
+  )
+}
