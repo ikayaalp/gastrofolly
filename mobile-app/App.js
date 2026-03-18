@@ -50,6 +50,10 @@ export default function App() {
           else if (data.courseId) {
             navigationRef.navigate('CourseDetail', { courseId: data.courseId });
           }
+          // Topic ID varsa forum tartışmasına git
+          else if (data.topicId) {
+            navigationRef.navigate('Social', { screen: 'TopicDetail', params: { topicId: data.topicId } });
+          }
         }
       }
     );

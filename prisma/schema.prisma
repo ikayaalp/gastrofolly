@@ -463,6 +463,8 @@ model Notification {
   userId    String
   user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   courseId  String?
+  topicId   String?
+  postId    String?
   
   @@index([userId, isRead])
   @@index([createdAt])

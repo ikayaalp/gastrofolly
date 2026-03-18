@@ -43,17 +43,17 @@ export default function NotificationsScreen({ navigation }) {
             );
         }
 
-        // Robustly check for courseId in different possible locations
-        // Backend API sends top-level courseId. Push notifications often wrap in data.
+        // Robustly check for ids in different possible locations
         const courseId = notification.courseId || notification.data?.courseId;
+        const topicId = notification.topicId || (notification.data && notification.data.topicId);
 
         // Navigate based on type
         if (courseId) {
             console.log('Navigating to CourseDetail with courseId:', courseId);
             navigation.navigate('CourseDetail', { courseId });
-        } else if (notification.data?.topicId) {
-            // Forum topic navigation if you have the stack setup
-            // navigation.navigate('Social', { screen: 'TopicDetail', params: { topicId: notification.data.topicId }});
+        } else if (topicId) {
+            console.log('Navigating to TopicDetail with topicId:', topicId);
+            navigation.navigate('Social', { screen: 'TopicDetail', params: { topicId } });
         } else {
             console.log('No navigation target found in notification object');
         }

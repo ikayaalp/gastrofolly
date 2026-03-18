@@ -173,6 +173,8 @@ export async function POST(
             title: notifTitle,
             message: notifMessage,
             userId: targetUserId,
+            topicId: topic.id,
+            postId: post.id
           }
         });
 
