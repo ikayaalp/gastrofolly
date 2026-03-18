@@ -3,6 +3,7 @@ import { getAuthUser } from '@/lib/mobileAuth'
 import { prisma } from '@/lib/prisma'
 import { containsProfanity } from '@/lib/profanity'
 import { processCuliMention } from '@/lib/culiBot'
+import { sendPushNotification } from '@/lib/pushNotifications'
 
 export async function GET(
   request: NextRequest,
@@ -144,6 +145,55 @@ export async function POST(
         }
       }
     })
+
+    // --- Bildirim (Notification) Sistemi ---
+    try {
+      let targetUserId = topic.authorId;
+      
+      // Eğer bir kişinin yorumuna (post) yanıt verilmişse hedef o kişinin kendisidir.
+      if (parentId) {
+        const parentPost = await prisma.post.findUnique({
+          where: { id: parentId },
+          select: { authorId: true }
+        });
+        if (parentPost) {
+          targetUserId = parentPost.authorId;
+        }
+      }
+
+      // Kullanıcı kendi yorumuna veya gönderisine yanıt atmadıysa bildirim gönder
+      if (targetUserId !== user.id) {
+        const notifTitle = "Yeni Yanıt";
+        const notifMessage = `${user.name || 'Bir kullanıcı'} ${parentId ? 'yorumunuza' : 'gönderinize'} yanıt verdi.`;
+
+        // 1. Uygulama İçi (Veritabanı) Bildirim Kayıt
+        await prisma.notification.create({
+          data: {
+            type: 'FORUM_REPLY',
+            title: notifTitle,
+            message: notifMessage,
+            userId: targetUserId,
+          }
+        });
+
+        // 2. Telefon (Expo Push) Bildirimi Gönderme
+        const targetUser = await prisma.user.findUnique({
+          where: { id: targetUserId },
+          select: { pushToken: true }
+        });
+
+        if (targetUser?.pushToken) {
+          await sendPushNotification(targetUser.pushToken, notifTitle, notifMessage, {
+            type: 'FORUM_REPLY',
+            topicId: topic.id,
+            postId: post.id
+          });
+        }
+      }
+    } catch (notifError) {
+      console.error('Bildirim gönderilirken hata oluştu:', notifError);
+    }
+    // ---------------------------------------
 
     // --- Culi AI Bot Bot Integration ---
     // Eğer yorumda @culi geçiyorsa arka planda Culi'nin cevap vermesini tetikle

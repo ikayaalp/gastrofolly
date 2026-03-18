@@ -4,11 +4,35 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function IntroScreen({ navigation }) {
     useEffect(() => {
-        // Always go to Main (Home tab) - no onboarding, no login required
-        navigation.reset({
-            index: 0,
-            routes: [{ name: 'Main' }],
-        });
+        const checkOnboarding = async () => {
+            try {
+                // ⚠️ GEÇİCİ: Test için flag'i temizle – test bittikten sonra bu satırı SİL
+                await AsyncStorage.removeItem('onboardingCompleted');
+
+                const onboardingDone = await AsyncStorage.getItem('onboardingCompleted');
+                if (onboardingDone === 'true') {
+                    // Onboarding tamamlanmış, direkt Main'e git
+                    navigation.reset({
+                        index: 0,
+                        routes: [{ name: 'Main' }],
+                    });
+                } else {
+                    // İlk açılış – onboarding göster
+                    navigation.reset({
+                        index: 0,
+                        routes: [{ name: 'Onboarding' }],
+                    });
+                }
+            } catch (e) {
+                console.warn('IntroScreen error:', e);
+                navigation.reset({
+                    index: 0,
+                    routes: [{ name: 'Main' }],
+                });
+            }
+        };
+
+        checkOnboarding();
     }, [navigation]);
 
     return (

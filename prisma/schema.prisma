@@ -472,6 +472,7 @@ enum NotificationType {
   NEW_COURSE
   COURSE_UPDATE
   SYSTEM
+  FORUM_REPLY
 }
 
 

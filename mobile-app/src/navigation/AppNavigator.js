@@ -23,7 +23,8 @@ import LearnScreen from '../screens/LearnScreen';
 import WelcomeScreen from '../screens/WelcomeScreen';
 import InstructorProfileScreen from '../screens/InstructorProfileScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
-import IntroScreen from '../screens/IntroScreen';
+
+import OnboardingScreen from '../screens/OnboardingScreen';
 
 import CuliScreen from '../screens/CuliScreen';
 
@@ -177,9 +178,9 @@ export default function AppNavigator() {
         <NavigationContainer ref={navigationRef}>
             <Stack.Navigator
                 screenOptions={{ headerShown: false }}
-                initialRouteName="Intro"
+                initialRouteName="Onboarding"
             >
-                <Stack.Screen name="Intro" component={IntroScreen} />
+                <Stack.Screen name="Onboarding" component={OnboardingScreen} />
 
                 <Stack.Screen name="Welcome" component={WelcomeScreen} />
                 <Stack.Screen name="Login" component={LoginScreen} />
