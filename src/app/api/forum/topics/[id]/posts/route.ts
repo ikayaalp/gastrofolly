@@ -164,7 +164,7 @@ export async function POST(
       // Kullanıcı kendi yorumuna veya gönderisine yanıt atmadıysa bildirim gönder
       if (targetUserId !== user.id) {
         const notifTitle = "Yeni Yanıt";
-        const notifMessage = `${user.name || 'Bir kullanıcı'} ${parentId ? 'yorumunuza' : 'gönderinize'} yanıt verdi.`;
+        const notifMessage = `${post.author.name || 'Bir kullanıcı'} ${parentId ? 'yorumunuza' : 'gönderinize'} yanıt verdi.`;
 
         // 1. Uygulama İçi (Veritabanı) Bildirim Kayıt
         await prisma.notification.create({
