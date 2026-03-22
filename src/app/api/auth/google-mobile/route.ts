@@ -53,11 +53,15 @@ export async function POST(request: NextRequest) {
                 }
             })
         } else {
-            // Update existing user's image if not set
-            if (!user.image && picture) {
+            // Update existing user's image and verify email if not verified
+            const updateData: any = {}
+            if (!user.image && picture) updateData.image = picture
+            if (!user.emailVerified) updateData.emailVerified = new Date()
+
+            if (Object.keys(updateData).length > 0) {
                 user = await prisma.user.update({
                     where: { id: user.id },
-                    data: { image: picture }
+                    data: updateData
                 })
             }
         }

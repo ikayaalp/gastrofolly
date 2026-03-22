@@ -125,4 +125,15 @@ export const authOptions: NextAuthOptions = {
     signIn: "/auth/signin",
     signOut: "/",
   },
+  events: {
+    async signIn({ user, account }) {
+      // Google ile girişte emailVerified null ise doğrulanmış olarak işaretle
+      if (account?.provider === 'google' && !(user as any).emailVerified) {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { emailVerified: new Date() }
+        })
+      }
+    }
+  }
 }
