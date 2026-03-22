@@ -102,7 +102,6 @@ export default {
                 "projectId": "2c8e9c53-462a-426d-993b-42bce6d04342"
             }
         },
-        "privacyPolicyUrl": "https://culinora.net/privacy-policy",
         "termsOfServiceUrl": "https://culinora.net/terms"
     }
 };

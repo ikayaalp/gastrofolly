@@ -352,7 +352,8 @@ export default function TopicCard({
 const styles = StyleSheet.create({
     topicCard: {
         backgroundColor: '#000',
-        marginBottom: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#1f2937', // X benzeri hafif çizgi
     },
     topicHeader: {
         flexDirection: 'row',

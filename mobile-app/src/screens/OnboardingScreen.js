@@ -58,8 +58,6 @@ export default function OnboardingScreen({ navigation }) {
     // İlk açılışta onboarding tamamlandı mı kontrol et
     React.useEffect(() => {
         const check = async () => {
-            // ⚠️ GEÇİCİ TEST: Onboarding'i her seferinde göster – test bittikten sonra SİL
-            await AsyncStorage.removeItem('onboardingCompleted');
             const done = await AsyncStorage.getItem('onboardingCompleted');
             if (done === 'true') {
                 navigation.replace('Main');

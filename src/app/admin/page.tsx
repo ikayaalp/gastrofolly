@@ -9,6 +9,9 @@ import { BookOpen, Users, Wallet, TrendingUp, CreditCard, ArrowUpRight, Activity
 async function getAdminData() {
   const [users, coursesCount, enrollments, payments, recentRegistrations] = await Promise.all([
     prisma.user.findMany({
+      where: {
+        emailVerified: { not: null }
+      },
       select: {
         id: true,
         role: true,
@@ -26,6 +29,9 @@ async function getAdminData() {
       _count: true
     }),
     prisma.user.findMany({
+      where: {
+        emailVerified: { not: null }
+      },
       take: 5,
       orderBy: { createdAt: 'desc' },
       select: {

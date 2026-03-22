@@ -4,7 +4,9 @@ import { NavigationContainer, createNavigationContainerRef } from '@react-naviga
 
 export const navigationRef = createNavigationContainerRef();
 
-import { Platform, View } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { Platform, View, ActivityIndicator } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
@@ -174,11 +176,43 @@ function TabNavigator() {
 import ForgotPasswordScreen from '../screens/ForgotPasswordScreen';
 
 export default function AppNavigator() {
+    const [initialRoute, setInitialRoute] = useState(null);
+
+    useEffect(() => {
+        const checkInitialRoute = async () => {
+            try {
+                const onboardingDone = await AsyncStorage.getItem('onboardingCompleted');
+                const token = await AsyncStorage.getItem('authToken');
+
+                if (onboardingDone !== 'true') {
+                    setInitialRoute('Onboarding');
+                } else if (!token) {
+                    setInitialRoute('Welcome');
+                } else {
+                    setInitialRoute('Main');
+                }
+            } catch (error) {
+                console.log('Error checking initial route:', error);
+                setInitialRoute('Onboarding');
+            }
+        };
+
+        checkInitialRoute();
+    }, []);
+
+    if (!initialRoute) {
+        return (
+            <View style={{ flex: 1, backgroundColor: '#000', justifyContent: 'center', alignItems: 'center' }}>
+                <ActivityIndicator size="large" color="#ea580c" />
+            </View>
+        );
+    }
+
     return (
         <NavigationContainer ref={navigationRef}>
             <Stack.Navigator
                 screenOptions={{ headerShown: false }}
-                initialRouteName="Onboarding"
+                initialRouteName={initialRoute}
             >
                 <Stack.Screen name="Onboarding" component={OnboardingScreen} />
 

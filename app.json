@@ -1,12 +1,15 @@
 {
   "expo": {
-    "extra": {
-      "eas": {
-        "projectId": "0d612dfd-d69e-48be-971d-b9b4c6b52f44"
-      }
-    },
     "android": {
       "package": "com.ikayaalpp.chefcourseplatform"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "2e7fd35b-5fa1-4635-84b0-d9e7dfceb7b3"
+      }
+    },
+    "ios": {
+      "bundleIdentifier": "com.ikayaalpp.chefcourseplatform"
     }
   }
 }

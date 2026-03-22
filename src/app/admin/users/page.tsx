@@ -13,6 +13,9 @@ export default async function UsersPage() {
 
   // Kullanıcıları getir
   const users = await prisma.user.findMany({
+    where: {
+      emailVerified: { not: null }
+    },
     include: {
       payments: {
         where: {
