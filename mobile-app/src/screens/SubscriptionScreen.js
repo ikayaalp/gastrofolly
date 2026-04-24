@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     StyleSheet,
     Text,
@@ -6,27 +6,22 @@ import {
     TouchableOpacity,
     ActivityIndicator,
     ScrollView,
-    Dimensions,
-    Image,
     Platform,
     StatusBar,
-    Animated,
+    SafeAreaView,
     Linking,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import {
-    X,
-    Check,
+    ArrowLeft,
+    CheckCircle,
     Crown,
     Shield,
     Calendar,
-    ArrowRight,
     ExternalLink,
     PlayCircle,
-    BookOpen,
     Sparkles,
-    ChefHat,
     MessageCircle,
+    Check
 } from 'lucide-react-native';
 import {
     getSubscriptionStatus,
@@ -37,21 +32,19 @@ import {
 } from '../api/revenueCatService';
 import authService from '../api/authService';
 import CustomAlert from '../components/CustomAlert';
-
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+import { LinearGradient } from 'expo-linear-gradient';
 
 const TERMS_URL = 'https://culinora.net/terms';
 const PRIVACY_URL = 'https://culinora.net/privacy';
 
 const FEATURES = [
-    { icon: PlayCircle, title: 'Profesyonel Şef Eğitimleri', desc: 'Dünya çapındaki şeflerin gizli tekniklerini ve tüm video derslerini sınırsız izleyin.' },
-    { icon: BookOpen, title: 'Özel Premium Reçeteler', desc: 'Başka hiçbir yerde bulamayacağınız profesyonel mutfak reçetelerine erişin.' },
-    { icon: Sparkles, title: 'Tamamen Reklamsız Deneyim', desc: 'Dikkatiniz dağılmadan sadece gastronomiye odaklanın, kesintisiz öğrenin.' },
-    { icon: MessageCircle, title: 'Birebir Şef Desteği', desc: 'Eğitimlerde takıldığınız her an uzman eğitmenlerimize doğrudan soru sorun.' },
+    { icon: PlayCircle, title: 'Profesyonel Şef Eğitimleri', desc: 'Tüm video derslerini sınırsız izleyin.' },
+    { icon: Sparkles, title: 'Reklamsız Deneyim', desc: 'Kesintisiz öğrenmeye odaklanın.' },
+    { icon: MessageCircle, title: 'Birebir Şef Desteği', desc: 'Uzman eğitmenlerimize doğrudan soru sorun.' },
 ];
 
 export default function SubscriptionScreen({ navigation, route }) {
-    const courseId = route.params?.courseId; // Redirection target if any
+    const courseId = route.params?.courseId;
 
     const [loading, setLoading] = useState(true);
     const [packages, setPackages] = useState([]);
@@ -62,20 +55,11 @@ export default function SubscriptionScreen({ navigation, route }) {
     const [expirationDate, setExpirationDate] = useState(null);
     const [userData, setUserData] = useState(null);
 
-    // Alert state
     const [alertVisible, setAlertVisible] = useState(false);
     const [alertConfig, setAlertConfig] = useState({ title: '', message: '', buttons: [], type: 'info' });
 
-    // Animations
-    const fadeAnim = useRef(new Animated.Value(0)).current;
-    const contentTranslateY = useRef(new Animated.Value(30)).current;
-
     useEffect(() => {
         loadData();
-        Animated.parallel([
-            Animated.timing(fadeAnim, { toValue: 1, duration: 600, useNativeDriver: true }),
-            Animated.timing(contentTranslateY, { toValue: 0, duration: 600, useNativeDriver: true }),
-        ]).start();
     }, []);
 
     const loadData = async () => {
@@ -86,7 +70,6 @@ export default function SubscriptionScreen({ navigation, route }) {
             setUserData(user);
 
             const status = await getSubscriptionStatus();
-            // Backend sync: ensures we check BOTH RevenueCat and our Backend (Stripe/Web)
             const hasBackendPremium = user?.subscriptionPlan === 'Premium' && (user?.subscriptionEndDate ? new Date(user.subscriptionEndDate) > new Date() : true);
             const hasPremium = status.isPremium || hasBackendPremium;
 
@@ -112,7 +95,6 @@ export default function SubscriptionScreen({ navigation, route }) {
                     setSelectedPkg(yearlyPkg || uniquePackages[0]);
                 }
             } else if (courseId) {
-                // If they are already premium and land here with a courseId, just send them to Learn
                 navigation.replace('Learn', { courseId });
             }
         } catch (e) {
@@ -140,10 +122,7 @@ export default function SubscriptionScreen({ navigation, route }) {
 
         if (result.success) {
             const exp = result.customerInfo?.entitlements?.active?.['Culinora Pro']?.expirationDate;
-            // SYNC with backend - IMPORTANT: We use 'Premium' (case sensitive match for backend)
             await authService.syncSubscription(true, exp ? new Date(exp) : null);
-            
-            // Direct redirect instead of intermediate alert for smoother flow
             handleSuccessRedirect();
         } else {
             setAlertConfig({
@@ -161,7 +140,8 @@ export default function SubscriptionScreen({ navigation, route }) {
         const result = await restorePurchases();
         setRestoring(false);
         if (result.success && result.isPremium) {
-            await authService.syncSubscription(true, null);
+            const exp = result.customerInfo?.entitlements?.active?.['Culinora Pro']?.expirationDate;
+            await authService.syncSubscription(true, exp ? new Date(exp) : null);
             setAlertConfig({
                 title: 'Başarılı',
                 message: 'Aboneliğiniz geri yüklendi ve tüm içerikler aktif edildi.',
@@ -182,7 +162,9 @@ export default function SubscriptionScreen({ navigation, route }) {
 
     const formatDate = (date) => {
         if (!date) return '-';
-        return new Date(date).toLocaleDateString('tr-TR', { year: 'numeric', month: 'long', day: 'numeric' });
+        const d = new Date(date);
+        const months = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+        return `${d.getUTCDate()} ${months[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
     };
 
     const getPackageInfo = (pkg) => {
@@ -197,199 +179,454 @@ export default function SubscriptionScreen({ navigation, route }) {
 
     if (loading) {
         return (
-            <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#ea580c" />
-                <Text style={styles.loadingText}>Yükleniyor...</Text>
-            </View>
-        );
-    }
-
-    if (isPremium) {
-        return (
-            <View style={styles.container}>
-                <StatusBar barStyle="light-content" />
-                <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 60 }}>
-                    <View style={styles.activeHero}>
-                        <LinearGradient colors={['#ea580c', '#c2410c', '#7c2d12']} style={styles.activeHeroGradient}>
-                            <TouchableOpacity style={styles.closeBtnTop} onPress={() => navigation.goBack()}>
-                                <X size={24} color="#fff" />
-                            </TouchableOpacity>
-                            <View style={styles.activeIconWrap}><Crown size={40} color="#fff" /></View>
-                            <Text style={styles.activeTitle}>Culinora Premium</Text>
-                            <Text style={styles.activeSubtitle}>Aktif Üyelik</Text>
-                            <View style={styles.activeBadge}><Shield size={14} color="#fff" /><Text style={styles.activeBadgeText}>Premium Üye</Text></View>
-                            {expirationDate && <Text style={styles.activeDateText}>Yenileme: {formatDate(expirationDate)}</Text>}
-                        </LinearGradient>
-                    </View>
-                    <View style={styles.activeFeaturesWrap}>
-                        <Text style={styles.activeSectionTitle}>Ayrıcalıklarınız</Text>
-                        {FEATURES.map((f, i) => (
-                            <View key={i} style={styles.activeFeatureRow}>
-                                <View style={styles.activeFeatureIcon}><f.icon size={20} color="#ea580c" /></View>
-                                <View style={{ flex: 1 }}><Text style={styles.activeFeatureTitle}>{f.title}</Text><Text style={styles.activeFeatureDesc}>{f.desc}</Text></View>
-                                <Check size={18} color="#10b981" />
-                            </View>
-                        ))}
-                    </View>
-                    <View style={{ paddingHorizontal: 20, gap: 12 }}>
-                        <TouchableOpacity style={styles.primaryBtn} onPress={handleSuccessRedirect}><Text style={styles.primaryBtnText}>Hemen Başla</Text><ArrowRight size={20} color="#fff" /></TouchableOpacity>
-                        <TouchableOpacity style={styles.manageBtn} onPress={openSubscriptionManagement}><ExternalLink size={18} color="#ea580c" /><Text style={styles.manageBtnText}>Aboneliği Yönet</Text></TouchableOpacity>
-                    </View>
-                </ScrollView>
-            </View>
+            <SafeAreaView style={styles.container}>
+                <StatusBar barStyle="light-content" backgroundColor="#000" />
+                <View style={styles.header}>
+                    <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+                        <ArrowLeft size={24} color="#e5e5e5" />
+                    </TouchableOpacity>
+                    <Text style={styles.headerTitle}>Abonelik Ayarları</Text>
+                    <View style={{ width: 24 }} />
+                </View>
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color="#ea580c" />
+                    <Text style={styles.loadingText}>Abonelik bilgileri yükleniyor...</Text>
+                </View>
+            </SafeAreaView>
         );
     }
 
     return (
-        <View style={styles.container}>
-            <StatusBar barStyle="light-content" />
-            <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
-                <View style={styles.heroWrap}>
-                    <Image 
-                        source={{ uri: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=2070&auto=format&fit=crop' }} 
-                        style={styles.heroImage} 
-                    />
-                    <LinearGradient colors={['transparent', 'rgba(0,0,0,0.95)']} style={styles.heroOverlay} />
-                    <TouchableOpacity style={styles.closeBtnTop} onPress={() => navigation.goBack()}>
-                        <View style={styles.closeBtnCircle}><X size={20} color="#fff" /></View>
-                    </TouchableOpacity>
-                </View>
+        <SafeAreaView style={styles.container}>
+            <StatusBar barStyle="light-content" backgroundColor="#000" />
 
-                <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: contentTranslateY }], paddingHorizontal: 24, alignItems: 'center' }}>
-                    <Text style={styles.paywallTitle}>Culinora PRO'ya Geçin</Text>
-                    <Text style={styles.paywallSubtitle}>Tüm profesyonel mutfak tekniklerine ve tariflerine sınırsız erişim sağlayın.</Text>
+            <View style={styles.header}>
+                <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+                    <ArrowLeft size={24} color="#e5e5e5" />
+                </TouchableOpacity>
+                <Text style={styles.headerTitle}>Abonelik Ayarları</Text>
+                <View style={{ width: 24 }} />
+            </View>
 
-                    <View style={styles.featuresList}>
-                        {FEATURES.map((f, i) => (
-                            <View key={i} style={styles.featureItem}>
-                                <f.icon size={20} color="#ea580c" />
-                                <View style={{ flex: 1, alignItems: 'center' }}>
-                                    <Text style={styles.featureItemTitle}>{f.title}</Text>
-                                    <Text style={styles.featureItemDesc}>{f.desc}</Text>
-                                </View>
+            <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+                {isPremium ? (
+                    <View style={styles.premiumCard}>
+                        <View style={styles.premiumHeader}>
+                            <View style={styles.premiumIconWrap}>
+                                <Crown size={32} color="#ea580c" />
                             </View>
-                        ))}
-                    </View>
-
-                    <View style={styles.packagesWrap}>
-                        {packages.map((pkg) => {
-                            const isSelected = selectedPkg?.identifier === pkg.identifier;
-                            const info = getPackageInfo(pkg);
-                            const isYearly = pkg?.product?.subscriptionPeriod?.includes('P1Y') || pkg?.identifier?.includes('year') || pkg?.identifier?.includes('annual');
-
-                            return (
-                                <TouchableOpacity 
-                                    key={pkg.identifier} 
-                                    onPress={() => setSelectedPkg(pkg)}
-                                    activeOpacity={0.8}
-                                    style={[styles.pkgCard, isSelected && styles.pkgCardSelected]}
-                                >
-                                    <View style={styles.pkgCardLeft}>
-                                        <View style={[styles.radio, isSelected && styles.radioSelected]}>
-                                            {isSelected && <View style={styles.radioInner} />}
-                                        </View>
-                                        <View>
-                                            <Text style={[styles.pkgLabel, isSelected && styles.pkgLabelSelected]}>{info.label}</Text>
-                                            <Text style={styles.pkgDetail}>{info.detail}</Text>
-                                        </View>
-                                    </View>
-                                    <View style={{ alignItems: 'flex-end' }}>
-                                        <Text style={[styles.pkgPrice, isSelected && styles.pkgPriceSelected]}>{info.subLabel}</Text>
-                                        {isYearly && <View style={styles.bestValueBadge}><Text style={styles.bestValueText}>EN AVANTAJLI</Text></View>}
-                                    </View>
-                                </TouchableOpacity>
-                            );
-                        })}
-                    </View>
-
-                    <TouchableOpacity 
-                        style={styles.ctaBtn} 
-                        onPress={handlePurchase} 
-                        disabled={purchasing}
-                        activeOpacity={0.9}
-                    >
-                        <LinearGradient colors={['#ea580c', '#c2410c']} style={styles.ctaGradient}>
-                            {purchasing ? <ActivityIndicator color="#fff" /> : <Text style={styles.ctaText}>Devam Et</Text>}
-                        </LinearGradient>
-                    </TouchableOpacity>
-
-                    <View style={styles.footer}>
-                        <View style={styles.legalRow}>
-                            <TouchableOpacity onPress={handleRestore} disabled={restoring}>
-                                <Text style={styles.legalLink}>{restoring ? 'Yükleniyor...' : 'Satın Alımları Geri Yükle'}</Text>
-                            </TouchableOpacity>
-                            <Text style={styles.legalDot}>·</Text>
-                            <TouchableOpacity onPress={() => Linking.openURL(TERMS_URL)}>
-                                <Text style={styles.legalLink}>Koşullar</Text>
-                            </TouchableOpacity>
-                            <Text style={styles.legalDot}>·</Text>
-                            <TouchableOpacity onPress={() => Linking.openURL(PRIVACY_URL)}>
-                                <Text style={styles.legalLink}>Gizlilik</Text>
-                            </TouchableOpacity>
+                            <View style={{ flex: 1 }}>
+                                <Text style={styles.premiumTitle}>Premium Üye</Text>
+                                <Text style={styles.premiumDesc}>Tüm içeriklere erişiminiz aktif</Text>
+                            </View>
                         </View>
-                        <Text style={styles.legalNote}>Abonelik otomatik yenilenir. İstediğiniz zaman iptal edebilirsiniz.</Text>
+                        
+                        <View style={styles.divider} />
+
+                        <View style={styles.premiumDetailRow}>
+                            <Text style={styles.premiumDetailLabel}>Abonelik Durumu</Text>
+                            <View style={styles.statusBadge}>
+                                <Shield size={14} color="#10b981" />
+                                <Text style={styles.statusBadgeText}>Aktif</Text>
+                            </View>
+                        </View>
+
+                        {expirationDate && (
+                            <View style={styles.premiumDetailRow}>
+                                <Text style={styles.premiumDetailLabel}>Yenileme Tarihi</Text>
+                                <Text style={styles.premiumDetailValue}>{formatDate(expirationDate)}</Text>
+                            </View>
+                        )}
+
+                        <TouchableOpacity style={styles.manageButton} onPress={openSubscriptionManagement}>
+                            <ExternalLink size={18} color="#e5e5e5" />
+                            <Text style={styles.manageButtonText}>Aboneliği Yönet</Text>
+                        </TouchableOpacity>
                     </View>
-                </Animated.View>
+                ) : (
+                    <View style={styles.paywallContainer}>
+                        <View style={styles.paywallHeader}>
+                            <Crown size={48} color="#ea580c" />
+                            <Text style={styles.paywallTitle}>Culinora PRO</Text>
+                            <Text style={styles.paywallSubtitle}>Sınırsız erişim ile şeflerin sırlarını keşfedin.</Text>
+                        </View>
+
+                        <View style={styles.featuresList}>
+                            {FEATURES.map((f, i) => (
+                                <View key={i} style={styles.featureItem}>
+                                    <View style={styles.featureIconContainer}>
+                                        <f.icon size={20} color="#ea580c" />
+                                    </View>
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={styles.featureTitle}>{f.title}</Text>
+                                        <Text style={styles.featureDesc}>{f.desc}</Text>
+                                    </View>
+                                </View>
+                            ))}
+                        </View>
+
+                        <Text style={styles.plansTitle}>Plan Seçin</Text>
+                        <View style={styles.packagesWrap}>
+                            {packages.map((pkg) => {
+                                const isSelected = selectedPkg?.identifier === pkg.identifier;
+                                const info = getPackageInfo(pkg);
+                                const isYearly = pkg?.product?.subscriptionPeriod?.includes('P1Y') || pkg?.identifier?.includes('year') || pkg?.identifier?.includes('annual');
+
+                                return (
+                                    <TouchableOpacity 
+                                        key={pkg.identifier} 
+                                        onPress={() => setSelectedPkg(pkg)}
+                                        activeOpacity={0.8}
+                                        style={[styles.pkgCard, isSelected && styles.pkgCardSelected]}
+                                    >
+                                        <View style={styles.pkgCardLeft}>
+                                            <View style={[styles.radio, isSelected && styles.radioSelected]}>
+                                                {isSelected && <View style={styles.radioInner} />}
+                                            </View>
+                                            <View>
+                                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                                                    <Text style={[styles.pkgLabel, isSelected && styles.pkgLabelSelected]}>{info.label}</Text>
+                                                    {isYearly && <View style={styles.bestValueBadge}><Text style={styles.bestValueText}>AVANTAJLI</Text></View>}
+                                                </View>
+                                                <Text style={styles.pkgDetail}>{info.detail}</Text>
+                                            </View>
+                                        </View>
+                                        <View style={{ alignItems: 'flex-end' }}>
+                                            <Text style={[styles.pkgPrice, isSelected && styles.pkgPriceSelected]}>{info.subLabel}</Text>
+                                        </View>
+                                    </TouchableOpacity>
+                                );
+                            })}
+                        </View>
+
+                        <TouchableOpacity 
+                            style={[styles.submitButton, purchasing && styles.submitButtonDisabled]} 
+                            onPress={handlePurchase} 
+                            disabled={purchasing}
+                        >
+                            {purchasing ? (
+                                <ActivityIndicator color="white" />
+                            ) : (
+                                <Text style={styles.submitButtonText}>Devam Et</Text>
+                            )}
+                        </TouchableOpacity>
+
+                        <View style={styles.footer}>
+                            <View style={styles.legalRow}>
+                                <TouchableOpacity onPress={handleRestore} disabled={restoring}>
+                                    <Text style={styles.legalLink}>{restoring ? 'Yükleniyor...' : 'Geri Yükle'}</Text>
+                                </TouchableOpacity>
+                                <Text style={styles.legalDot}>·</Text>
+                                <TouchableOpacity onPress={() => Linking.openURL(TERMS_URL)}>
+                                    <Text style={styles.legalLink}>Koşullar</Text>
+                                </TouchableOpacity>
+                                <Text style={styles.legalDot}>·</Text>
+                                <TouchableOpacity onPress={() => Linking.openURL(PRIVACY_URL)}>
+                                    <Text style={styles.legalLink}>Gizlilik</Text>
+                                </TouchableOpacity>
+                            </View>
+                            <Text style={styles.legalNote}>Abonelik otomatik yenilenir. İstediğiniz zaman iptal edebilirsiniz.</Text>
+                        </View>
+                    </View>
+                )}
             </ScrollView>
 
             <CustomAlert visible={alertVisible} title={alertConfig.title} message={alertConfig.message} buttons={alertConfig.buttons} type={alertConfig.type} onClose={() => setAlertVisible(false)} />
-        </View>
+        </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#000' },
-    loadingContainer: { flex: 1, backgroundColor: '#000', justifyContent: 'center', alignItems: 'center' },
-    loadingText: { color: 'rgba(255,255,255,0.5)', marginTop: 12, fontSize: 14 },
-    heroWrap: { width: SCREEN_WIDTH, height: SCREEN_HEIGHT * 0.3, position: 'relative' },
-    heroImage: { width: '100%', height: '100%', resizeMode: 'cover' },
-    heroOverlay: { position: 'absolute', bottom: 0, left: 0, right: 0, height: '60%' },
-    closeBtnTop: { position: 'absolute', top: Platform.OS === 'ios' ? 60 : 40, right: 20, zIndex: 10 },
-    closeBtnCircle: { width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
-    paywallTitle: { color: '#fff', fontSize: 28, fontWeight: '900', textAlign: 'center', marginBottom: 8 },
-    paywallSubtitle: { color: 'rgba(255,255,255,0.6)', fontSize: 15, textAlign: 'center', marginBottom: 30, paddingHorizontal: 10 },
-    featuresList: { width: '100%', marginBottom: 30, gap: 20 },
-    featureItem: { alignItems: 'center', gap: 8 },
-    featureItemTitle: { color: '#fff', fontSize: 16, fontWeight: '700' },
-    featureItemDesc: { color: 'rgba(255,255,255,0.5)', fontSize: 13, textAlign: 'center', lineHeight: 18 },
-    packagesWrap: { width: '100%', gap: 12, marginBottom: 30 },
-    pkgCard: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 18, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.04)', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.1)' },
-    pkgCardSelected: { borderColor: '#ea580c', backgroundColor: 'rgba(234,88,12,0.08)' },
-    pkgCardLeft: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-    radio: { width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: 'rgba(255,255,255,0.3)', justifyContent: 'center', alignItems: 'center' },
-    radioSelected: { borderColor: '#ea580c' },
-    radioInner: { width: 12, height: 12, borderRadius: 6, backgroundColor: '#ea580c' },
-    pkgLabel: { color: '#fff', fontSize: 17, fontWeight: '700' },
-    pkgLabelSelected: { color: '#ea580c' },
-    pkgDetail: { color: 'rgba(255,255,255,0.4)', fontSize: 12, marginTop: 2 },
-    pkgPrice: { color: '#fff', fontSize: 16, fontWeight: '700' },
-    pkgPriceSelected: { color: '#fff' },
-    bestValueBadge: { backgroundColor: '#ea580c', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, marginTop: 4 },
-    bestValueText: { color: '#fff', fontSize: 9, fontWeight: '900' },
-    ctaBtn: { width: '100%', borderRadius: 20, overflow: 'hidden' },
-    ctaGradient: { paddingVertical: 18, alignItems: 'center', justifyContent: 'center' },
-    ctaText: { color: '#fff', fontSize: 18, fontWeight: '800' },
-    activeHero: { height: 280, width: SCREEN_WIDTH },
-    activeHeroGradient: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
-    activeIconWrap: { width: 80, height: 80, borderRadius: 40, backgroundColor: 'rgba(255,255,255,0.15)', justifyContent: 'center', alignItems: 'center', marginBottom: 15 },
-    activeTitle: { color: '#fff', fontSize: 26, fontWeight: '900', marginBottom: 5 },
-    activeSubtitle: { color: 'rgba(255,255,255,0.8)', fontSize: 16, marginBottom: 15 },
-    activeBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(0,0,0,0.3)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, marginBottom: 10 },
-    activeBadgeText: { color: '#fff', fontSize: 12, fontWeight: '700' },
-    activeDateText: { color: 'rgba(255,255,255,0.7)', fontSize: 13 },
-    activeFeaturesWrap: { padding: 24 },
-    activeSectionTitle: { color: '#fff', fontSize: 18, fontWeight: '800', marginBottom: 20 },
-    activeFeatureRow: { flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 16, backgroundColor: 'rgba(255,255,255,0.03)', padding: 16, borderRadius: 16 },
-    activeFeatureIcon: { width: 40, height: 40, borderRadius: 12, backgroundColor: 'rgba(234,88,12,0.1)', justifyContent: 'center', alignItems: 'center' },
-    activeFeatureTitle: { color: '#fff', fontSize: 15, fontWeight: '700', marginBottom: 2 },
-    activeFeatureDesc: { color: 'rgba(255,255,255,0.4)', fontSize: 12 },
-    primaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 18, borderRadius: 20, backgroundColor: '#ea580c', gap: 10 },
-    primaryBtnText: { color: '#fff', fontSize: 17, fontWeight: '800' },
-    manageBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, paddingVertical: 16, borderRadius: 20, borderWidth: 1, borderColor: 'rgba(234,88,12,0.2)', marginTop: 10 },
-    manageBtnText: { color: '#ea580c', fontSize: 15, fontWeight: '700' },
-    footer: { marginTop: 30, alignItems: 'center' },
-    legalRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 10 },
-    legalLink: { color: 'rgba(255,255,255,0.4)', fontSize: 12 },
-    legalDot: { color: 'rgba(255,255,255,0.2)' },
-    legalNote: { color: 'rgba(255,255,255,0.25)', fontSize: 11, textAlign: 'center' },
+    container: {
+        flex: 1,
+        backgroundColor: '#000',
+        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+    },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 20,
+        paddingTop: Platform.OS === 'android' ? 10 : 10,
+        paddingBottom: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#1a1a1a',
+    },
+    backButton: {
+        padding: 4,
+    },
+    headerTitle: {
+        color: 'white',
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    content: {
+        padding: 24,
+        paddingBottom: 40,
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    loadingText: {
+        color: '#9ca3af',
+        marginTop: 12,
+        fontSize: 14,
+    },
+
+    // Premium Card Styles
+    premiumCard: {
+        backgroundColor: '#111',
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: '#1f2937',
+        padding: 20,
+    },
+    premiumHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 16,
+    },
+    premiumIconWrap: {
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        backgroundColor: 'rgba(234,88,12,0.1)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    premiumTitle: {
+        color: 'white',
+        fontSize: 20,
+        fontWeight: 'bold',
+        marginBottom: 4,
+    },
+    premiumDesc: {
+        color: '#9ca3af',
+        fontSize: 14,
+    },
+    divider: {
+        height: 1,
+        backgroundColor: '#1f2937',
+        marginVertical: 20,
+    },
+    premiumDetailRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 16,
+    },
+    premiumDetailLabel: {
+        color: '#d1d5db',
+        fontSize: 15,
+    },
+    premiumDetailValue: {
+        color: 'white',
+        fontSize: 15,
+        fontWeight: '600',
+    },
+    statusBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 8,
+    },
+    statusBadgeText: {
+        color: '#10b981',
+        fontSize: 13,
+        fontWeight: '600',
+    },
+    manageButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 10,
+        backgroundColor: '#1f2937',
+        paddingVertical: 14,
+        borderRadius: 12,
+        marginTop: 10,
+    },
+    manageButtonText: {
+        color: '#e5e5e5',
+        fontSize: 15,
+        fontWeight: '600',
+    },
+
+    // Paywall Styles
+    paywallContainer: {
+        flex: 1,
+    },
+    paywallHeader: {
+        alignItems: 'center',
+        marginBottom: 30,
+    },
+    paywallTitle: {
+        color: 'white',
+        fontSize: 26,
+        fontWeight: '900',
+        marginTop: 12,
+        marginBottom: 8,
+    },
+    paywallSubtitle: {
+        color: '#9ca3af',
+        fontSize: 15,
+        textAlign: 'center',
+    },
+    featuresList: {
+        marginBottom: 30,
+        gap: 16,
+    },
+    featureItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 14,
+        backgroundColor: '#111',
+        padding: 16,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: '#1f2937',
+    },
+    featureIconContainer: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: 'rgba(234,88,12,0.1)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    featureTitle: {
+        color: 'white',
+        fontSize: 15,
+        fontWeight: '600',
+        marginBottom: 4,
+    },
+    featureDesc: {
+        color: '#9ca3af',
+        fontSize: 13,
+    },
+    plansTitle: {
+        color: 'white',
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 16,
+    },
+    packagesWrap: {
+        gap: 12,
+        marginBottom: 30,
+    },
+    pkgCard: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: 18,
+        borderRadius: 16,
+        backgroundColor: '#111',
+        borderWidth: 1,
+        borderColor: '#1f2937',
+    },
+    pkgCardSelected: {
+        borderColor: '#ea580c',
+        backgroundColor: 'rgba(234,88,12,0.05)',
+    },
+    pkgCardLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 14,
+    },
+    radio: {
+        width: 22,
+        height: 22,
+        borderRadius: 11,
+        borderWidth: 2,
+        borderColor: '#4b5563',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    radioSelected: {
+        borderColor: '#ea580c',
+    },
+    radioInner: {
+        width: 12,
+        height: 12,
+        borderRadius: 6,
+        backgroundColor: '#ea580c',
+    },
+    pkgLabel: {
+        color: 'white',
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    pkgLabelSelected: {
+        color: '#ea580c',
+    },
+    pkgDetail: {
+        color: '#9ca3af',
+        fontSize: 13,
+        marginTop: 4,
+    },
+    pkgPrice: {
+        color: 'white',
+        fontSize: 15,
+        fontWeight: '600',
+    },
+    pkgPriceSelected: {
+        color: '#ea580c',
+    },
+    bestValueBadge: {
+        backgroundColor: '#ea580c',
+        paddingHorizontal: 6,
+        paddingVertical: 2,
+        borderRadius: 6,
+    },
+    bestValueText: {
+        color: 'white',
+        fontSize: 10,
+        fontWeight: 'bold',
+    },
+    submitButton: {
+        backgroundColor: '#ea580c',
+        paddingVertical: 16,
+        borderRadius: 12,
+        alignItems: 'center',
+        shadowColor: '#ea580c',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 5,
+    },
+    submitButtonDisabled: {
+        opacity: 0.6,
+    },
+    submitButtonText: {
+        color: 'white',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    footer: {
+        marginTop: 24,
+        alignItems: 'center',
+    },
+    legalRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        marginBottom: 10,
+    },
+    legalLink: {
+        color: '#9ca3af',
+        fontSize: 13,
+    },
+    legalDot: {
+        color: '#4b5563',
+    },
+    legalNote: {
+        color: '#6b7280',
+        fontSize: 12,
+        textAlign: 'center',
+    },
 });
+

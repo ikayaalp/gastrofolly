@@ -120,7 +120,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
       select: { subscriptionPlan: true, subscriptionEndDate: true }
     })
 
-    if (user?.subscriptionPlan && user?.subscriptionEndDate && new Date(user.subscriptionEndDate) > new Date()) {
+    if (user?.subscriptionPlan && (!user.subscriptionEndDate || new Date(user.subscriptionEndDate) > new Date())) {
       hasActiveSubscription = true
       // Abonelik seviyesini belirle
       if (user.subscriptionPlan === 'Premium') userSubscriptionLevel = 99 // Tüm kurslara erişim

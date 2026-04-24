@@ -23,13 +23,42 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
         const { isPremium, expirationDate } = body;
 
+        const userId = decoded.userId || decoded.id || decoded.sub;
+        const existingUser = await prisma.user.findUnique({
+            where: { id: userId }
+        });
+
+        if (!existingUser) {
+            return NextResponse.json({ message: 'Kullanıcı bulunamadı' }, { status: 404 });
+        }
+
+        let newStartDate = existingUser.subscriptionStartDate;
+        if (isPremium && existingUser.subscriptionPlan !== 'Premium') {
+            newStartDate = new Date();
+        } else if (!isPremium) {
+            newStartDate = null;
+        }
+
+        let newEndDate = existingUser.subscriptionEndDate;
+        if (isPremium) {
+            if (expirationDate) {
+                newEndDate = new Date(expirationDate);
+            } else if (!existingUser.subscriptionEndDate || new Date(existingUser.subscriptionEndDate) < new Date()) {
+                const fallbackDate = new Date();
+                fallbackDate.setMonth(fallbackDate.getMonth() + 1);
+                newEndDate = fallbackDate;
+            }
+        } else {
+            newEndDate = null;
+        }
+
         // Kullanıcıyı güncelle
         const updatedUser = await prisma.user.update({
-            where: { id: decoded.userId || decoded.id || decoded.sub },
+            where: { id: userId },
             data: {
                 subscriptionPlan: isPremium ? 'Premium' : 'FREE',
-                subscriptionEndDate: expirationDate ? new Date(expirationDate) : null,
-                subscriptionStartDate: isPremium ? new Date() : null,
+                subscriptionEndDate: newEndDate,
+                subscriptionStartDate: newStartDate,
             },
         });
 

@@ -41,7 +41,8 @@ export async function GET(request: NextRequest) {
         }
 
         // Check subscription validity
-        const isSubscriptionValid = user.subscriptionEndDate && new Date(user.subscriptionEndDate) > new Date();
+        const isSubscriptionValid = user.subscriptionPlan === 'Premium' && 
+            (!user.subscriptionEndDate || new Date(user.subscriptionEndDate) > new Date());
 
         return NextResponse.json({
             user: {

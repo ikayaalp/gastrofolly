@@ -97,7 +97,8 @@ async function getCourseWithProgress(courseId: string, userId: string, requested
   // const user = await prisma.user.findUnique(...) -> KALDIRILDI
 
   // Abonelik süresi devam ediyor mu? (Plan iptal edilmiş olsa bile tarih bitmediyse devam eder)
-  const isSubscriptionValid = user?.subscriptionEndDate && new Date(user.subscriptionEndDate) > new Date()
+  const isSubscriptionValid = user?.subscriptionPlan === 'Premium' && 
+    (!user.subscriptionEndDate || new Date(user.subscriptionEndDate) > new Date())
 
   const enrollment = await prisma.enrollment.findUnique({
     where: {

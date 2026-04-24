@@ -150,7 +150,7 @@ export const restorePurchases = async () => {
         const customerInfo = await Purchases.restorePurchases();
         const isPremium = typeof customerInfo.entitlements.active['Culinora Pro'] !== 'undefined';
 
-        return { success: true, isPremium };
+        return { success: true, isPremium, customerInfo };
     } catch (error) {
         console.error('[RevenueCat] Restore hatası:', error);
         return {

@@ -33,7 +33,8 @@ import {
     Trash2,
     Share2,
     Star,
-    AlertCircle
+    AlertCircle,
+    Crown
 } from 'lucide-react-native';
 import authService from '../api/authService';
 import CustomAlert from '../components/CustomAlert';
@@ -325,21 +326,10 @@ export default function AccountScreen({ navigation }) {
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Abonelik</Text>
                     <View style={styles.sectionContent}>
-                        <View style={styles.subscriptionInfo}>
-                            <Text style={styles.subscriptionStatus}>
-                                {userData?.subscriptionPlan && userData.subscriptionPlan !== 'FREE'
-                                    ? 'Premium üyeliğiniz aktif'
-                                    : 'Abone değilsiniz'}
-                            </Text>
-                            <Text style={styles.subscriptionDesc}>
-                                {userData?.subscriptionPlan && userData.subscriptionPlan !== 'FREE'
-                                    ? 'Tüm içeriklere erişiminiz devam etmektedir.'
-                                    : 'Abone olarak mevcut eğitimleri ve yeni eklenecek tüm konuları istediğiniz zaman izleyebilirsiniz.'}
-                            </Text>
-                        </View>
                         <MenuItem
-                            icon={Award}
-                            title="Abonelik Bilgileri"
+                            icon={Crown}
+                            title="Abonelik Ayarları"
+                            subtitle={userData?.subscriptionPlan && userData.subscriptionPlan !== 'FREE' ? 'Premium Üyelik Aktif' : 'Ücretsiz Üyelik'}
                             onPress={() => navigation.navigate('Subscription')}
                         />
                     </View>

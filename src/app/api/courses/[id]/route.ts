@@ -77,7 +77,8 @@ export async function GET(
         }
 
         // Check for valid subscription
-        const hasValidSubscription = user?.subscriptionEndDate && new Date(user.subscriptionEndDate) > new Date();
+        const hasValidSubscription = user?.subscriptionPlan === 'Premium' &&
+            (!user.subscriptionEndDate || new Date(user.subscriptionEndDate) > new Date());
 
         // Process lessons to hide videoUrl if not enrolled or not free/first/subscribed
         const processedLessons = course.lessons.map((lesson, index) => {
