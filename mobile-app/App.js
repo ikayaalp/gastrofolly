@@ -5,6 +5,7 @@ import { Asset } from 'expo-asset';
 import { View, ActivityIndicator } from 'react-native';
 import AppNavigator from './src/navigation/AppNavigator';
 import notificationService from './src/api/notificationService';
+import { initRevenueCat } from './src/api/revenueCatService';
 
 import { navigationRef } from './src/navigation/AppNavigator';
 
@@ -14,6 +15,9 @@ export default function App() {
   useEffect(() => {
     async function prepare() {
       try {
+        // RevenueCat SDK'yı başlat
+        initRevenueCat();
+
         // Pre-load essential images into memory before app starts
         await Asset.loadAsync([
           require('./assets/icon.png'),

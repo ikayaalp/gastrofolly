@@ -312,7 +312,7 @@ export default function CourseDetailScreen({ route, navigation }) {
                             if (hasAccess) {
                                 navigation.navigate('Learn', { courseId: course.id });
                             } else {
-                                setShowPremiumModal(true);
+                                navigation.navigate('Subscription');
                             }
                         }}
                     >
@@ -373,7 +373,7 @@ export default function CourseDetailScreen({ route, navigation }) {
                                             if (isAccessAllowed) {
                                                 navigation.navigate('Learn', { courseId: course.id, lessonId: lesson.id });
                                             } else {
-                                                setShowPremiumModal(true);
+                                                navigation.navigate('Subscription');
                                             }
                                         }}
                                     >
@@ -473,35 +473,7 @@ export default function CourseDetailScreen({ route, navigation }) {
                 }}
             />
 
-            {/* Premium Info Modal (Reader App Pattern) */}
-            <Modal
-                visible={showPremiumModal}
-                transparent={true}
-                animationType="slide"
-                onRequestClose={() => setShowPremiumModal(false)}
-            >
-                <View style={styles.premiumModalOverlay}>
-                    <View style={styles.premiumModalContent}>
-                        <View style={styles.premiumModalHandle} />
-                        <Text style={styles.premiumModalTitle}>Premium İçerik</Text>
-                        <Text style={styles.premiumModalText}>
-                            Bu kursa ve platformdaki tüm ayrıcalıklara erişmek için Premium Culinora üyesi olmanız gerekmektedir.
-                        </Text>
-                        <View style={styles.premiumModalInfoBox}>
-                            <Lock size={16} color="#9ca3af" />
-                            <Text style={styles.premiumModalInfoText}>
-                                iOS politikaları gereği uygulama içerisinde abonelik işlemi yapılamamaktadır. Detaylar için web sitemizi ziyaret edebilirsiniz.
-                            </Text>
-                        </View>
-                        <TouchableOpacity
-                            style={styles.premiumModalCloseBtn}
-                            onPress={() => setShowPremiumModal(false)}
-                        >
-                            <Text style={styles.premiumModalCloseText}>Anladım</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </Modal>
+            {/* Premium modal kaldırıldı — artık doğrudan SubscriptionScreen'e yönlendiriliyor */}
         </View>
     );
 }

@@ -97,6 +97,7 @@ export default {
             "expo-font",
             "expo-asset"
         ],
+        "owner": "ikayaalp",
         "extra": {
             "eas": {
                 "projectId": "2c8e9c53-462a-426d-993b-42bce6d04342"

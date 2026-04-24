@@ -2,6 +2,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from './config';
 import notificationService from './notificationService';
+import { loginRevenueCat, logoutRevenueCat } from './revenueCatService';
 
 const api = axios.create({
     baseURL: config.API_BASE_URL,
@@ -90,6 +91,11 @@ const authService = {
                 }
             }
 
+            // RevenueCat kullanıcı kimliğini eşleştir
+            if (response.data.user?.id) {
+                await loginRevenueCat(response.data.user.id);
+            }
+
             return { success: true, data: response.data };
         } catch (error) {
             return {
@@ -132,6 +138,7 @@ const authService = {
             await AsyncStorage.removeItem('authToken');
             await AsyncStorage.removeItem('userData');
             await AsyncStorage.removeItem('userId');
+            await logoutRevenueCat();
             return { success: true };
         } catch (error) {
             return { success: false, error: 'Çıkış yapılamadı' };
@@ -165,6 +172,11 @@ const authService = {
                 if (response.data.user.id) {
                     await AsyncStorage.setItem('userId', response.data.user.id);
                 }
+            }
+
+            // RevenueCat kullanıcı kimliğini eşleştir
+            if (response.data.user?.id) {
+                await loginRevenueCat(response.data.user.id);
             }
 
             return { success: true, data: response.data };
@@ -254,6 +266,7 @@ const authService = {
             if (response.data.success) {
                 // Clear all local storage
                 await AsyncStorage.multiRemove(['authToken', 'userData', 'userId', 'expoPushToken', '@favorites']);
+                await logoutRevenueCat();
                 return { success: true };
             }
             return { success: false, error: response.data.error || 'Hesap silinemedi' };
@@ -264,6 +277,31 @@ const authService = {
             };
         }
     },
+
+    // Sync RevenueCat subscription status with Backend DB
+    syncSubscription: async (isPremium, expirationDate) => {
+        try {
+            const token = await AsyncStorage.getItem('authToken');
+            if (!token) return { success: false, error: 'Token bulunamadı' };
+            
+            const response = await api.post('/api/user/sync-revenuecat', {
+                isPremium,
+                expirationDate: expirationDate ? expirationDate.toISOString() : null
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (response.data.success) {
+                // Backend güncellendi, lokal kullanıcı bilgilerini de yenile
+                await authService.refreshUserData();
+                return { success: true };
+            }
+            return { success: false, error: 'Abonelik senkronize edilemedi' };
+        } catch (error) {
+            console.error('Subscription sync error:', error);
+            return { success: false, error: 'Abonelik senkronizasyonu sırasında hata oluştu' };
+        }
+    }
 };
 
 export default authService;

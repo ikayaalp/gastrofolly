@@ -424,7 +424,7 @@ export default function LearnScreen({ route, navigation }) {
             setShowLessonList(false);
             setVideoPosition(0);
         } else {
-            showAlert('Premium İçerik', 'Bu derse erişmek için Premium üye olmalısınız.');
+            navigation.navigate('Subscription');
         }
     };
 
