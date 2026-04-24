@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
 
         // Kullanıcıyı güncelle
         const updatedUser = await prisma.user.update({
-            where: { id: decoded.userId },
+            where: { id: decoded.userId || decoded.id || decoded.sub },
             data: {
                 subscriptionPlan: isPremium ? 'Premium' : 'FREE',
                 subscriptionEndDate: expirationDate ? new Date(expirationDate) : null,

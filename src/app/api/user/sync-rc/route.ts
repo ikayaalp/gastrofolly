@@ -1,21 +1,49 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/core/lib/getServerSession";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import prisma from "@/lib/prisma";
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import jwt from 'jsonwebtoken';
 
-export async function POST(req: Request) {
-  try {
-    const session = await getServerSession(authOptions as any);
-    if (!session || !session.user || !session.user.id) {
-      // Also support Bearer token for mobile app if next-auth isn't passing session correctly via API
-      const authHeader = req.headers.get("authorization");
-      if (!authHeader?.startsWith("Bearer ")) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-      }
-      // Usually mobile app sends Bearer token. Wait, mobile app uses next-auth session or custom JWT?
-      // Let's assume the mobile app passes the token that your current auth supports.
-      // But looking at mobile app's auth, it gets a token. We need to verify that token or decode it.
+export async function POST(request: NextRequest) {
+    try {
+        // Token'ı başlık (header) kısmından al
+        const authHeader = request.headers.get('authorization');
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return NextResponse.json({ message: 'Yetkisiz erişim' }, { status: 401 });
+        }
+
+        const token = authHeader.split(' ')[1];
+
+        // Token'ı doğrula
+        let decoded: any;
+        try {
+            decoded = jwt.verify(token, process.env.NEXTAUTH_SECRET!);
+        } catch (err) {
+            return NextResponse.json({ message: 'Geçersiz token' }, { status: 401 });
+        }
+
+        const body = await request.json();
+        const { isPremium, expirationDate } = body;
+
+        // Kullanıcıyı güncelle
+        const updatedUser = await prisma.user.update({
+            where: { id: decoded.userId || decoded.id || decoded.sub },
+            data: {
+                subscriptionPlan: isPremium ? 'Premium' : 'FREE',
+                subscriptionEndDate: expirationDate ? new Date(expirationDate) : null,
+                subscriptionStartDate: isPremium ? new Date() : null,
+            },
+        });
+
+        return NextResponse.json({ 
+            success: true, 
+            message: 'Abonelik durumu güncellendi',
+            user: {
+                subscriptionPlan: updatedUser.subscriptionPlan,
+                subscriptionEndDate: updatedUser.subscriptionEndDate
+            }
+        });
+
+    } catch (error) {
+        console.error('Sync RC error:', error);
+        return NextResponse.json({ message: 'Sunucu hatası' }, { status: 500 });
     }
-
-    // Let's rely on standard backend logic from other routes.
-    // Wait, let's see how `api/user/profile` gets the user id.
+}
