@@ -312,7 +312,7 @@ export default function CourseDetailScreen({ route, navigation }) {
                             if (hasAccess) {
                                 navigation.navigate('Learn', { courseId: course.id });
                             } else {
-                                navigation.navigate('Subscription');
+                                navigation.navigate('Subscription', { courseId: course.id });
                             }
                         }}
                     >
@@ -373,7 +373,7 @@ export default function CourseDetailScreen({ route, navigation }) {
                                             if (isAccessAllowed) {
                                                 navigation.navigate('Learn', { courseId: course.id, lessonId: lesson.id });
                                             } else {
-                                                navigation.navigate('Subscription');
+                                                navigation.navigate('Subscription', { courseId: course.id });
                                             }
                                         }}
                                     >

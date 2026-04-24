@@ -48,7 +48,7 @@ export default {
         "slug": "chef-2-0",
 
         "scheme": "chef2",
-        "version": "1.0.3",
+        "version": "1.0.4",
         "orientation": "portrait",
         "icon": "./assets/icon_blackBg.png",
         "userInterfaceStyle": "dark",
