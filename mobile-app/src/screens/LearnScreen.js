@@ -397,21 +397,15 @@ export default function LearnScreen({ route, navigation }) {
     };
 
     const checkAccess = (lesson, index) => {
+        // If server says user has global access, all lessons are unlocked
+        if (course?.hasAccess) return true;
+        
         // First lesson is always free
         if (index === 0) return true;
         // Free lessons are accessible
         if (lesson.isFree) return true;
 
-        // Subcription check
-        let hasPremiumAccess = false;
-
-        // Find user data from current state (assuming it's loaded in useEffect)
-        // Wait, LearnScreen does not store userData state, it fetches course.
-        // Let's rely on course payload. Does course payload have access info?
-        // Let's add an API call or use the passed token/asyncStorage.
-        // Actually, LearnScreen might rely on the backend filtering the URLs.
-        // Let's rely on videoUrl as a fallback, but we should improve it.
-        // For now, if videoUrl exists, we assume access. 
+        // If videoUrl exists (already filtered by backend), assume access
         if (lesson.videoUrl) return true;
 
         return false;

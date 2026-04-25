@@ -228,29 +228,13 @@ export default function CourseDetailScreen({ route, navigation }) {
         );
     }
 
-    const checkAccess = () => {
-        let hasPremiumAccess = false;
-        const hasValidPlanName = userData?.subscriptionPlan && userData.subscriptionPlan !== 'FREE';
-        let isDateValid = false;
-
-        if (userData?.subscriptionEndDate) {
-            isDateValid = new Date(userData.subscriptionEndDate) > new Date();
-        } else {
-            isDateValid = hasValidPlanName;
-        }
-
-        if (hasValidPlanName && isDateValid) {
-            hasPremiumAccess = true;
-        }
-
-        return hasPremiumAccess;
-    };
-
     const levelInfo = getLevelInfo(course.level);
     const avgRating = calculateAverageRating(course.reviews || []);
     const totalDuration = getTotalDuration(course.lessons || []);
     const isEnrolled = course.isEnrolled || false;
-    const hasAccess = checkAccess();
+    
+    // SERVER is the single source of truth. If the backend says the user has access, all locks lift.
+    const hasAccess = course?.hasAccess || false;
 
     const displayImageUrl = course?.imageUrl || initialImageUrl || 'https://images.unsplash.com/photo-1556910103-1c02745a30bf?q=80&w=800';
     const displayTitle = course?.title || initialTitle || 'Yükleniyor...';

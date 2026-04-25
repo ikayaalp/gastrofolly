@@ -45,8 +45,6 @@ const PRIVACY_URL = 'https://culinora.net/privacy';
 
 const FEATURES = [
     { icon: PlayCircle, title: 'Profesyonel Şef Eğitimleri', desc: 'Dünya çapındaki şeflerin gizli tekniklerini ve tüm video derslerini sınırsız izleyin.' },
-    { icon: BookOpen, title: 'Özel Premium Reçeteler', desc: 'Başka hiçbir yerde bulamayacağınız profesyonel mutfak reçetelerine erişin.' },
-    { icon: Sparkles, title: 'Tamamen Reklamsız Deneyim', desc: 'Dikkatiniz dağılmadan sadece gastronomiye odaklanın, kesintisiz öğrenin.' },
     { icon: MessageCircle, title: 'Birebir Şef Desteği', desc: 'Eğitimlerde takıldığınız her an uzman eğitmenlerimize doğrudan soru sorun.' },
 ];
 
@@ -206,12 +204,11 @@ export default function SubscriptionScreen({ navigation, route }) {
         const id = pkg?.identifier || '';
         const period = pkg?.product?.subscriptionPeriod;
         if (period?.includes('P1Y') || id.includes('year') || id.includes('annual')) {
-            const monthlyPrice = (pkg.product.price / 12).toFixed(2);
             return { 
                 label: 'Yıllık', 
                 billedAmount: pkg.product.priceString + '/yıl',
-                monthlyCalc: 'aylık ' + monthlyPrice + ' ' + pkg.product.currencyCode + ' olarak hesaplanır',
-                detail: '12 ay boyunca geçerli, otomatik yenilenir',
+                monthlyCalc: null, // Removed the long 'aylık şu kadar' text to fix layout
+                detail: 'Her yıl otomatik yenilenir',
                 duration: '12 Ay',
                 fullPrice: pkg.product.priceString
             };
@@ -397,7 +394,7 @@ const styles = StyleSheet.create({
     packagesWrap: { width: '100%', gap: 12, marginBottom: 20 },
     pkgCard: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 18, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.04)', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.1)' },
     pkgCardSelected: { borderColor: '#ea580c', backgroundColor: 'rgba(234,88,12,0.08)' },
-    pkgCardLeft: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+    pkgCardLeft: { flexDirection: 'row', alignItems: 'center', gap: 14, flex: 1 },
     radio: { width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: 'rgba(255,255,255,0.3)', justifyContent: 'center', alignItems: 'center' },
     radioSelected: { borderColor: '#ea580c' },
     radioInner: { width: 12, height: 12, borderRadius: 6, backgroundColor: '#ea580c' },
