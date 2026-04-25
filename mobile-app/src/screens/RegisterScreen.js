@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, Image } from 'react-native';
-import { ChefHat, Mail, Lock, User, Phone, Eye, EyeOff } from 'lucide-react-native';
+import { ChefHat, Mail, Lock, User, Eye, EyeOff } from 'lucide-react-native';
 import authService from '../api/authService';
 import CustomAlert from '../components/CustomAlert';
 import AuthBackground from '../components/AuthBackground';
@@ -9,7 +9,7 @@ import Logo from '../components/Logo';
 export default function RegisterScreen({ navigation }) {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
-    const [phoneNumber, setPhoneNumber] = useState('');
+
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -28,39 +28,15 @@ export default function RegisterScreen({ navigation }) {
         setAlertVisible(true);
     };
 
-    // Telefon numarasını formatla: 5XX XXX XX XX
-    const formatPhoneInput = (text) => {
-        // Sadece rakamları al
-        let digits = text.replace(/\D/g, '');
-        // Başında 0 varsa kaldır
-        if (digits.startsWith('0')) digits = digits.substring(1);
-        // Maksimum 10 rakam
-        digits = digits.substring(0, 10);
-        // Formatla: 5XX XXX XX XX
-        let formatted = '';
-        if (digits.length > 0) formatted = digits.substring(0, 3);
-        if (digits.length > 3) formatted += ' ' + digits.substring(3, 6);
-        if (digits.length > 6) formatted += ' ' + digits.substring(6, 8);
-        if (digits.length > 8) formatted += ' ' + digits.substring(8, 10);
-        return formatted;
-    };
 
-    const handlePhoneChange = (text) => {
-        setPhoneNumber(formatPhoneInput(text));
-    };
 
     const handleRegister = async () => {
-        if (!name || !email || !phoneNumber || !password || !confirmPassword) {
-            showAlert('Hata', 'Lütfen tüm alanları doldurun', [{ text: 'Tamam' }], 'error');
+        if (!name || !email || !password || !confirmPassword) {
+            showAlert('Hata', 'Lütfen gerekli alanları doldurun', [{ text: 'Tamam' }], 'error');
             return;
         }
 
-        // Telefon numarası 10 haneli olmalı
-        const cleanPhone = phoneNumber.replace(/\D/g, '');
-        if (cleanPhone.length !== 10 || !cleanPhone.startsWith('5')) {
-            showAlert('Hata', 'Geçerli bir telefon numarası girin (5XX XXX XX XX)', [{ text: 'Tamam' }], 'error');
-            return;
-        }
+
 
         if (password !== confirmPassword) {
             showAlert('Hata', 'Şifreler eşleşmiyor!', [{ text: 'Tamam' }], 'error');
@@ -68,9 +44,7 @@ export default function RegisterScreen({ navigation }) {
         }
 
         setLoading(true);
-        // +90 ile birleştirip gönder
-        const fullPhone = '+90' + cleanPhone;
-        const result = await authService.register(name, email, password, fullPhone);
+        const result = await authService.register(name, email, password);
         setLoading(false);
 
         if (result.success) {
@@ -137,19 +111,7 @@ export default function RegisterScreen({ navigation }) {
                         />
                     </View>
 
-                    <View style={styles.inputContainer}>
-                        <Phone color="#9ca3af" size={20} style={styles.inputIcon} />
-                        <Text style={styles.phonePrefix}>+90</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="5XX XXX XX XX"
-                            placeholderTextColor="#6b7280"
-                            value={phoneNumber}
-                            onChangeText={handlePhoneChange}
-                            keyboardType="phone-pad"
-                            maxLength={13}
-                        />
-                    </View>
+
 
                     <View style={styles.inputContainer}>
                         <Lock color="#9ca3af" size={20} style={styles.inputIcon} />
@@ -282,12 +244,7 @@ const styles = StyleSheet.create({
     eyeButton: {
         padding: 8,
     },
-    phonePrefix: {
-        color: '#9ca3af',
-        fontSize: 16,
-        fontWeight: '600',
-        marginRight: 8,
-    },
+
     input: {
         flex: 1,
         color: 'white',

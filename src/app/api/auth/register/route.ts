@@ -20,9 +20,9 @@ export async function POST(request: NextRequest) {
     const { name, email, password, phoneNumber } = await request.json()
 
     // Validasyon
-    if (!name || !email || !password || !phoneNumber) {
+    if (!name || !email || !password) {
       return NextResponse.json(
-        { message: "Tüm alanlar gereklidir" },
+        { message: "Ad, e-posta ve şifre gereklidir" },
         { status: 400 }
       )
     }
