@@ -81,19 +81,34 @@ export default function SubscriptionScreen({ navigation, route }) {
     const loadData = async () => {
         try {
             setLoading(true);
+            // Always refresh from backend first - backend is the source of truth
             let user = await authService.refreshUserData();
             if (!user) user = await authService.getCurrentUser();
             setUserData(user);
 
-            const status = await getSubscriptionStatus();
-            // Backend sync: ensures we check BOTH RevenueCat and our Backend (Stripe/Web)
+            // Backend is the PRIMARY source of truth for premium status
             const hasBackendPremium = user?.subscriptionPlan === 'Premium' && (user?.subscriptionEndDate ? new Date(user.subscriptionEndDate) > new Date() : true);
-            const hasPremium = status.isPremium || hasBackendPremium;
 
-            setIsPremium(hasPremium);
-            setExpirationDate(status.expirationDate || (user?.subscriptionEndDate ? new Date(user.subscriptionEndDate) : null));
+            // Check RevenueCat as secondary - only to sync NEW purchases TO backend
+            const status = await getSubscriptionStatus();
+            
+            // If RevenueCat says premium but backend doesn't, sync RC→Backend and re-check
+            if (status.isPremium && !hasBackendPremium) {
+                console.log('[Subscription] RevenueCat premium but backend not — syncing...');
+                await authService.syncSubscription(true, status.expirationDate);
+                // Re-fetch user after sync to get updated backend status
+                user = await authService.refreshUserData();
+                if (!user) user = await authService.getCurrentUser();
+                setUserData(user);
+            }
 
-            if (!hasPremium) {
+            // Final premium check — always from backend
+            const finalBackendPremium = user?.subscriptionPlan === 'Premium' && (user?.subscriptionEndDate ? new Date(user.subscriptionEndDate) > new Date() : true);
+            
+            setIsPremium(finalBackendPremium);
+            setExpirationDate(user?.subscriptionEndDate ? new Date(user.subscriptionEndDate) : status.expirationDate);
+
+            if (!finalBackendPremium) {
                 const availablePackages = await getOfferings();
                 const uniquePackages = [];
                 const seenPeriods = new Set();

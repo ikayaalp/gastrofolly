@@ -41,7 +41,9 @@ export default function HomeScreen({ navigation }) {
     const loadData = async () => {
         setLoading(true);
 
-        const user = await authService.getCurrentUser();
+        // Always refresh from backend to get latest subscription status
+        let user = await authService.refreshUserData();
+        if (!user) user = await authService.getCurrentUser();
         if (user) {
             setUserName(user.name || 'Kullanıcı');
         }

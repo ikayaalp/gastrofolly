@@ -29,8 +29,9 @@ export default function CoursesScreen({ navigation }) {
                 return;
             }
 
-            // Check subscription status
-            const user = await authService.getCurrentUser();
+            // Always refresh from backend to get latest subscription status
+            let user = await authService.refreshUserData();
+            if (!user) user = await authService.getCurrentUser();
             if (!user || !user.subscriptionPlan || user.subscriptionPlan === 'FREE') {
                 setCourses([]); // Clear courses if no active subscription
                 setLoading(false);
