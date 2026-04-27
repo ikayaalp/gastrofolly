@@ -40,6 +40,22 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ message: 'Kullanıcı bulunamadı' }, { status: 404 });
         }
 
+        // ⚠️ Süresi dolmuş aboneliği temizle (Lazy cleanup)
+        if (user.subscriptionPlan === 'Premium' && user.subscriptionEndDate && new Date(user.subscriptionEndDate) < new Date()) {
+            await prisma.user.update({
+                where: { id: user.id },
+                data: {
+                    subscriptionPlan: 'FREE',
+                    subscriptionStartDate: null,
+                    subscriptionEndDate: null
+                }
+            });
+            user.subscriptionPlan = 'FREE';
+            user.subscriptionStartDate = null;
+            user.subscriptionEndDate = null;
+            console.log(`[Lazy Cleanup] User ${user.id} subscription expired. Updated DB to FREE.`);
+        }
+
         // Check subscription validity
         const isSubscriptionValid = user.subscriptionPlan === 'Premium' && 
             (!user.subscriptionEndDate || new Date(user.subscriptionEndDate) > new Date());

@@ -96,6 +96,16 @@ export const authOptions: NextAuthOptions = {
         })
 
         if (user) {
+          // Lazy cleanup
+          if (user.subscriptionPlan === 'Premium' && user.subscriptionEndDate && new Date(user.subscriptionEndDate) < new Date()) {
+              await prisma.user.update({
+                  where: { id: token.sub },
+                  data: { subscriptionPlan: 'FREE', subscriptionStartDate: null, subscriptionEndDate: null }
+              });
+              user.subscriptionPlan = 'FREE';
+              user.subscriptionEndDate = null;
+          }
+
           (session.user as any).subscriptionPlan = user.subscriptionPlan;
           (session.user as any).subscriptionEndDate = user.subscriptionEndDate;
           (session.user as any).subscriptionCancelled = user.subscriptionCancelled;

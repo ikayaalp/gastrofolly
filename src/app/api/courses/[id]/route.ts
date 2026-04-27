@@ -80,6 +80,8 @@ export async function GET(
         const hasValidSubscription = user?.subscriptionPlan === 'Premium' &&
             (!user.subscriptionEndDate || new Date(user.subscriptionEndDate) > new Date());
 
+        console.log(`[Course Access] User: ${user?.id || 'anonymous'} | Plan: ${user?.subscriptionPlan || 'none'} | EndDate: ${user?.subscriptionEndDate || 'null'} | hasAccess: ${!!hasValidSubscription}`);
+
         // Process lessons to hide videoUrl if not enrolled or not free/first/subscribed
         const processedLessons = course.lessons.map((lesson, index) => {
             // STRICT ACCESS: removed 'enrollment' check. Only subscribed users or free lessons.

@@ -32,10 +32,33 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ message: 'Kullanıcı bulunamadı' }, { status: 404 });
         }
 
+        // ⚠️ CRITICAL: Web'den gelen abonelikleri korumak için,
+        // RevenueCat "premium değil" dediğinde mevcut veritabanı değerini EZMİYORUZ.
+        // Sadece RevenueCat premium diyorsa → DB'yi güncelle.
+        // RC premium değilse → DB'deki mevcut aboneliğe dokunma.
+
+        // Mevcut DB'de geçerli bir abonelik var mı kontrol et
+        const hasExistingValidSubscription = existingUser.subscriptionPlan === 'Premium' &&
+            (!existingUser.subscriptionEndDate || new Date(existingUser.subscriptionEndDate) > new Date());
+
+        if (!isPremium && hasExistingValidSubscription) {
+            // RevenueCat premium değil AMA veritabanında geçerli bir abonelik var (web'den alınmış olabilir)
+            // Bu durumda HİÇBİR ŞEY YAPMA — mevcut aboneliği koru
+            console.log(`[sync-rc] RC says not premium, but user ${userId} has valid DB subscription — keeping it.`);
+            return NextResponse.json({ 
+                success: true, 
+                message: 'Mevcut web aboneliği korundu',
+                user: {
+                    subscriptionPlan: existingUser.subscriptionPlan,
+                    subscriptionEndDate: existingUser.subscriptionEndDate
+                }
+            });
+        }
+
         let newStartDate = existingUser.subscriptionStartDate;
         if (isPremium && existingUser.subscriptionPlan !== 'Premium') {
             newStartDate = new Date();
-        } else if (!isPremium) {
+        } else if (!isPremium && !hasExistingValidSubscription) {
             newStartDate = null;
         }
 
@@ -48,7 +71,7 @@ export async function POST(request: NextRequest) {
                 fallbackDate.setMonth(fallbackDate.getMonth() + 1);
                 newEndDate = fallbackDate;
             }
-        } else {
+        } else if (!hasExistingValidSubscription) {
             newEndDate = null;
         }
 
@@ -56,7 +79,7 @@ export async function POST(request: NextRequest) {
         const updatedUser = await prisma.user.update({
             where: { id: userId },
             data: {
-                subscriptionPlan: isPremium ? 'Premium' : 'FREE',
+                subscriptionPlan: isPremium ? 'Premium' : (hasExistingValidSubscription ? existingUser.subscriptionPlan : 'FREE'),
                 subscriptionEndDate: newEndDate,
                 subscriptionStartDate: newStartDate,
             },

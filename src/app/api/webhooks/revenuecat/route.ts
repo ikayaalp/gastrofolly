@@ -103,17 +103,24 @@ export async function POST(request: NextRequest) {
             console.log(`[RC Webhook] ✅ User ${appUserId} → Premium (expires: ${expirationDate?.toISOString() || 'lifetime'})`);
 
         } else if (REVOKE_EVENTS.includes(eventType)) {
-            // ❌ Premium erişimi kaldır
-            await prisma.user.update({
-                where: { id: appUserId },
-                data: {
-                    subscriptionPlan: 'FREE',
-                    subscriptionEndDate: null,
-                    subscriptionStartDate: null,
-                },
-            });
+            // ❌ App Store aboneliği sona erdi/ödeme sorunu
+            // Ama web'den (Iyzico) geçerli bir abonelik varsa, onu silme!
+            const hasWebSubscription = user.subscriptionReferenceCode && 
+                user.subscriptionEndDate && new Date(user.subscriptionEndDate) > new Date();
 
-            console.log(`[RC Webhook] ❌ User ${appUserId} → FREE (${eventType})`);
+            if (hasWebSubscription) {
+                console.log(`[RC Webhook] ⚠️ User ${appUserId} RC expired, but has valid web subscription — keeping Premium.`);
+            } else {
+                await prisma.user.update({
+                    where: { id: appUserId },
+                    data: {
+                        subscriptionPlan: 'FREE',
+                        subscriptionEndDate: null,
+                        subscriptionStartDate: null,
+                    },
+                });
+                console.log(`[RC Webhook] ❌ User ${appUserId} → FREE (${eventType})`);
+            }
 
         } else if (CANCELLATION_EVENTS.includes(eventType)) {
             // ⚠️ İptal edildi ama mevcut dönem sonuna kadar erişim devam eder

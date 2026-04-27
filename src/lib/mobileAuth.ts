@@ -36,6 +36,16 @@ export async function getAuthUser(request: NextRequest): Promise<MobileUser | nu
             });
 
             if (user) {
+                // Lazy cleanup
+                if (user.subscriptionPlan === 'Premium' && user.subscriptionEndDate && new Date(user.subscriptionEndDate) < new Date()) {
+                    await prisma.user.update({
+                        where: { id: user.id },
+                        data: { subscriptionPlan: 'FREE', subscriptionStartDate: null, subscriptionEndDate: null }
+                    });
+                    user.subscriptionPlan = 'FREE';
+                    user.subscriptionEndDate = null;
+                }
+
                 return {
                     id: user.id,
                     email: user.email,
@@ -78,6 +88,16 @@ export async function getAuthUser(request: NextRequest): Promise<MobileUser | nu
 
         if (!user) {
             return null;
+        }
+
+        // Lazy cleanup
+        if (user.subscriptionPlan === 'Premium' && user.subscriptionEndDate && new Date(user.subscriptionEndDate) < new Date()) {
+            await prisma.user.update({
+                where: { id: user.id },
+                data: { subscriptionPlan: 'FREE', subscriptionStartDate: null, subscriptionEndDate: null }
+            });
+            user.subscriptionPlan = 'FREE';
+            user.subscriptionEndDate = null;
         }
 
         return {
