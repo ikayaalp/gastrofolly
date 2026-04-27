@@ -133,9 +133,11 @@ export async function sendPushToAllUsers(
         }
     })
 
-    const pushTokens = usersWithTokens
-        .map(u => u.pushToken)
-        .filter((token): token is string => token !== null)
+    const pushTokens = Array.from(new Set(
+        usersWithTokens
+            .map(u => u.pushToken)
+            .filter((token): token is string => token !== null)
+    ))
 
     if (pushTokens.length === 0) {
         console.log('No users with push tokens found')

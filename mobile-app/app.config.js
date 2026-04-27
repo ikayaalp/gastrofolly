@@ -58,7 +58,7 @@ export default {
             "backgroundColor": "#000000"
         },
         "ios": {
-            "buildNumber": "29",
+            "buildNumber": "31",
             "supportsTablet": true,
             "bundleIdentifier": "com.chef2.app",
             "infoPlist": {
@@ -99,10 +99,10 @@ export default {
             "expo-asset",
             "expo-apple-authentication"
         ],
-        "owner": "ikayaalpp",
+        "owner": "ismailkayaalp",
         "extra": {
             "eas": {
-                "projectId": "b516f8ca-586e-4c27-8895-4eeb55549f80"
+                "projectId": "63124923-17bd-4207-98cb-8913b8321006"
             }
         },
         "termsOfServiceUrl": "https://culinora.net/terms"
