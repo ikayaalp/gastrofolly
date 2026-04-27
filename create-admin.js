@@ -16,7 +16,7 @@ async function createAdmin() {
         image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200'
       }
     })
-    
+
     console.log('🎉 Admin kullanıcısı oluşturuldu!')
     console.log('📧 Email: admin@gastrofolly.com')
     console.log('👤 İsim:', admin.name)
@@ -27,7 +27,7 @@ async function createAdmin() {
     console.log('2. /auth/signin adresine gidin')
     console.log('3. Email: admin@gastrofolly.com ile giriş yapın')
     console.log('4. /admin/videos adresine gidin')
-    
+
   } catch (error) {
     console.error('❌ Hata:', error)
   } finally {
