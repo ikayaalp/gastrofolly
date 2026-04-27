@@ -336,6 +336,7 @@ const styles = StyleSheet.create({
     },
     loginLink: {
         alignItems: 'center',
+        marginTop: 24,
     },
     loginLinkText: {
         color: '#9ca3af',

@@ -8,7 +8,8 @@ import {
     Switch,
     StatusBar,
     SafeAreaView,
-    Platform
+    Platform,
+    Linking
 } from 'react-native';
 import {
     ArrowLeft,
@@ -21,7 +22,8 @@ import {
     ChevronRight,
     Globe,
     Shield,
-    Trash2
+    Trash2,
+    Star
 } from 'lucide-react-native';
 import authService from '../api/authService';
 import CustomAlert from '../components/CustomAlert';
@@ -196,6 +198,20 @@ export default function SettingsScreen({ navigation }) {
                     </SettingSection>
 
                     <SettingSection title="Destek">
+                        <SettingItem
+                            icon={Star}
+                            title="Uygulamayı Değerlendir"
+                            onPress={() => {
+                                const pkg = 'com.chef2.app';
+                                const itunesItemId = '6478952516';
+                                
+                                if (Platform.OS === 'ios') {
+                                    Linking.openURL(`itms-apps://itunes.apple.com/app/id${itunesItemId}?action=write-review`);
+                                } else {
+                                    Linking.openURL(`market://details?id=${pkg}`);
+                                }
+                            }}
+                        />
                         <SettingItem
                             icon={HelpCircle}
                             title="Yardım Merkezi"

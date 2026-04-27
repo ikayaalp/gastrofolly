@@ -369,7 +369,16 @@ export default function AccountScreen({ navigation }) {
                         <MenuItem
                             icon={Star}
                             title="Uygulamayı Değerlendir"
-                            onPress={() => showAlert('Bilgi', 'Uygulama mağazada yayınlandığında değerlendirebilirsiniz.', [{ text: 'Tamam' }], 'info')}
+                            onPress={() => {
+                                const pkg = 'com.chef2.app';
+                                const itunesItemId = '6478952516'; // TODO: iOS App ID'nizi buraya yazın
+                                
+                                if (Platform.OS === 'ios') {
+                                    Linking.openURL(`itms-apps://itunes.apple.com/app/id${itunesItemId}?action=write-review`);
+                                } else {
+                                    Linking.openURL(`market://details?id=${pkg}`);
+                                }
+                            }}
                         />
                         <MenuItem
                             icon={HelpCircle}
