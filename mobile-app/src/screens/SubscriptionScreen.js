@@ -139,7 +139,8 @@ export default function SubscriptionScreen({ navigation, route }) {
         if (courseId) {
             navigation.replace('Learn', { courseId });
         } else {
-            navigation.goBack();
+            // Redirect to Home tab instead of just going back
+            navigation.navigate('Main', { screen: 'Home' });
         }
     };
 

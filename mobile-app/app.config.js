@@ -58,7 +58,7 @@ export default {
             "backgroundColor": "#000000"
         },
         "ios": {
-            "buildNumber": "27",
+            "buildNumber": "28",
             "supportsTablet": true,
             "bundleIdentifier": "com.chef2.app",
             "infoPlist": {
@@ -96,7 +96,8 @@ export default {
             ],
             "expo-web-browser",
             "expo-font",
-            "expo-asset"
+            "expo-asset",
+            "expo-apple-authentication"
         ],
         "owner": "ikayaalpp",
         "extra": {

@@ -187,6 +187,48 @@ const authService = {
         }
     },
 
+    // Apple login
+    appleLogin: async (identityToken, email, name) => {
+        try {
+            const response = await api.post(config.API_ENDPOINTS.APPLE_LOGIN, {
+                identityToken,
+                email,
+                name,
+            });
+
+            // Save token if provided
+            if (response.data.token) {
+                await AsyncStorage.setItem('authToken', response.data.token);
+
+                // Push token'ı backend'e gönder
+                const pushToken = await AsyncStorage.getItem('expoPushToken');
+                if (pushToken) {
+                    await notificationService.sendTokenToBackend(pushToken);
+                }
+            }
+
+            // Save user data if provided
+            if (response.data.user) {
+                await AsyncStorage.setItem('userData', JSON.stringify(response.data.user));
+                if (response.data.user.id) {
+                    await AsyncStorage.setItem('userId', response.data.user.id);
+                }
+            }
+
+            // RevenueCat kullanıcı kimliğini eşleştir
+            if (response.data.user?.id) {
+                await loginRevenueCat(response.data.user.id);
+            }
+
+            return { success: true, data: response.data };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.response?.data?.message || 'Apple ile giriş başarısız oldu',
+            };
+        }
+    },
+
     // Get current user data
     getCurrentUser: async () => {
         try {

@@ -5,6 +5,10 @@ import authService from '../api/authService';
 import CustomAlert from '../components/CustomAlert';
 import AuthBackground from '../components/AuthBackground';
 import Logo from '../components/Logo';
+import useGoogleAuth from '../hooks/useGoogleAuth';
+import GoogleIcon from '../components/GoogleIcon';
+import useAppleAuth from '../hooks/useAppleAuth';
+import Svg, { Path } from 'react-native-svg';
 
 export default function RegisterScreen({ navigation }) {
     const [name, setName] = useState('');
@@ -27,6 +31,16 @@ export default function RegisterScreen({ navigation }) {
         setAlertConfig({ title, message, buttons, type });
         setAlertVisible(true);
     };
+
+    const { googleLoading, promptAsync, request } = useGoogleAuth({
+        onSuccess: () => navigation.replace('Main'),
+        onError: (msg) => showAlert('Hata', msg, [{ text: 'Tamam' }], 'error'),
+    });
+
+    const { appleLoading, promptAppleAsync } = useAppleAuth({
+        onSuccess: () => navigation.replace('Main'),
+        onError: (msg) => showAlert('Hata', msg, [{ text: 'Tamam' }], 'error'),
+    });
 
 
 
@@ -163,6 +177,40 @@ export default function RegisterScreen({ navigation }) {
                     </View>
 
                     <TouchableOpacity
+                        style={[styles.googleButton, (googleLoading || !request) && styles.registerButtonDisabled]}
+                        onPress={() => promptAsync()}
+                        disabled={googleLoading || !request}
+                    >
+                        {googleLoading ? (
+                            <ActivityIndicator color="#333" />
+                        ) : (
+                            <>
+                                <GoogleIcon size={20} />
+                                <Text style={styles.googleButtonText}>Google ile Kayıt Ol</Text>
+                            </>
+                        )}
+                    </TouchableOpacity>
+
+                    {Platform.OS === 'ios' && (
+                        <TouchableOpacity
+                            style={[styles.appleButton, appleLoading && styles.registerButtonDisabled]}
+                            onPress={promptAppleAsync}
+                            disabled={appleLoading}
+                        >
+                            {appleLoading ? (
+                                <ActivityIndicator color="#fff" />
+                            ) : (
+                                <>
+                                    <Svg width={20} height={20} viewBox="0 0 24 24" fill="#fff">
+                                        <Path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
+                                    </Svg>
+                                    <Text style={styles.appleButtonText}>Apple ile Kayıt Ol</Text>
+                                </>
+                            )}
+                        </TouchableOpacity>
+                    )}
+
+                    <TouchableOpacity
                         style={styles.loginLink}
                         onPress={() => navigation.navigate('Login')}
                     >
@@ -296,5 +344,41 @@ const styles = StyleSheet.create({
     loginLinkBold: {
         color: '#f97316',
         fontWeight: 'bold',
+    },
+    googleButton: {
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        paddingVertical: 14,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 10,
+        marginBottom: 16,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    googleButtonText: {
+        color: '#333',
+        fontSize: 15,
+        fontWeight: '600',
+    },
+    appleButton: {
+        backgroundColor: '#000',
+        borderRadius: 12,
+        paddingVertical: 14,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 10,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.3)',
+    },
+    appleButtonText: {
+        color: '#fff',
+        fontSize: 15,
+        fontWeight: '600',
     },
 });
