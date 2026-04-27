@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
         const userEmail = decoded.email || email;
 
         // 1. Önce bu Apple ID ile (Account tablosunda) eşleşen bir kullanıcı var mı bak
-        let account = await prisma.account.findUnique({
+        const account = await prisma.account.findUnique({
             where: {
                 provider_providerAccountId: {
                     provider: 'apple',
@@ -86,7 +86,8 @@ export async function POST(request: NextRequest) {
             include: { user: true }
         });
 
-        let user = account?.user;
+        // Kullanıcı değişkenini tipini belirterek tanımlayalım
+        let user: any = account?.user;
 
         if (!user && userEmail) {
             // 2. Eğer Apple ID ile bulamadıysak, email ile mevcut bir kullanıcı var mı bak
