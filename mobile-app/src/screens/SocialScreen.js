@@ -134,17 +134,16 @@ export default function SocialScreen({ navigation }) {
         }
         const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ['images', 'videos'],
-            allowsEditing: false,
-            allowsMultipleSelection: true,
-            selectionLimit: 10,
+            allowsEditing: true,
             quality: 0.8,
             videoMaxDuration: 60,
         });
-        if (!result.canceled && result.assets) {
-            setSelectedMedias(result.assets.map(a => ({
-                uri: a.uri,
-                type: a.type === 'video' ? 'video' : 'image',
-            })));
+        if (!result.canceled && result.assets[0]) {
+            const newMedia = {
+                uri: result.assets[0].uri,
+                type: result.assets[0].type === 'video' ? 'video' : 'image',
+            };
+            setSelectedMedias(prev => [...prev, newMedia].slice(0, 10));
         }
     };
 
@@ -162,7 +161,7 @@ export default function SocialScreen({ navigation }) {
             quality: 0.8,
         });
         if (!result.canceled && result.assets[0]) {
-            setSelectedMedias([{ uri: result.assets[0].uri, type: 'image' }]);
+            setSelectedMedias(prev => [...prev, { uri: result.assets[0].uri, type: 'image' }].slice(0, 10));
         }
     };
 

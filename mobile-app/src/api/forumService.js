@@ -209,12 +209,21 @@ const forumService = {
             const formData = new FormData();
             const filename = uri.split('/').pop();
             const match = /\.(\w+)$/.exec(filename);
-            const ext = match ? match[1] : type === 'video' ? 'mp4' : 'jpg';
-            const mimeType = type === 'video' ? `video/${ext}` : `image/${ext}`;
+            const ext = match ? match[1].toLowerCase() : type === 'video' ? 'mp4' : 'jpg';
+            
+            // Correct MIME type mapping (iOS exports .mov as quicktime)
+            let mimeType;
+            if (type === 'video') {
+                const videoMimeMap = { mp4: 'video/mp4', mov: 'video/quicktime', m4v: 'video/mp4', webm: 'video/webm' };
+                mimeType = videoMimeMap[ext] || 'video/mp4';
+            } else {
+                const imageMimeMap = { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', gif: 'image/gif', heic: 'image/jpeg' };
+                mimeType = imageMimeMap[ext] || 'image/jpeg';
+            }
 
             formData.append('file', {
                 uri,
-                name: filename,
+                name: filename || `media_${Date.now()}.${ext}`,
                 type: mimeType,
             });
 

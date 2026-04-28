@@ -9,7 +9,7 @@ const MAX_IMAGE_SIZE = 50 * 1024 * 1024 // 50MB
 const MAX_VIDEO_SIZE = 100 * 1024 * 1024 // 100MB
 
 // Desteklenen formatlar
-const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif']
 const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/quicktime', 'video/webm']
 
 export async function POST(request: NextRequest) {
