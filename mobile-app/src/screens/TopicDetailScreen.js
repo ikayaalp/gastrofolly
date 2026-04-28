@@ -86,23 +86,9 @@ export default function TopicDetailScreen({ route, navigation }) {
             if (result.success) {
                 setTopic(result.data.topic);
 
-                // Organize comments with replies
-                const allPosts = result.data.posts || [];
-                const mainComments = allPosts.filter(p => !p.parentId);
-                const replies = allPosts.filter(p => p.parentId);
-
-                // Sort main comments: Newest first
-                mainComments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-                // Attach replies to parent comments
-                const commentsWithReplies = mainComments.map(comment => ({
-                    ...comment,
-                    replies: replies
-                        .filter(r => r.parentId === comment.id)
-                        .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)) // Replies: Oldest first
-                }));
-
-                setComments(commentsWithReplies);
+                // Backend already returns structured data (main comments with nested replies)
+                // and correctly sorted (main: newest first, replies: oldest first).
+                setComments(result.data.posts || []);
 
                 // Check if user has liked this topic
                 const likedResult = await forumService.getLikedTopics();

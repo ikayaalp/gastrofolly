@@ -95,12 +95,7 @@ export default function SearchScreen({ navigation }) {
                             {item.instructor?.name || 'Eğitmen'}
                         </Text>
                     </View>
-                    {item.averageRating > 0 && (
-                        <View style={styles.ratingRow}>
-                            <Star size={12} color="#fbbf24" fill="#fbbf24" />
-                            <Text style={styles.ratingText}>{item.averageRating?.toFixed(1)}</Text>
-                        </View>
-                    )}
+
                 </View>
             </View>
             <ChevronRight size={20} color="#374151" />

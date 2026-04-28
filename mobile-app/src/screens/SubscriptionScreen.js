@@ -331,6 +331,17 @@ export default function SubscriptionScreen({ navigation, route }) {
                         })}
                     </View>
 
+                    <TouchableOpacity 
+                        style={styles.ctaBtn} 
+                        onPress={handlePurchase} 
+                        disabled={purchasing}
+                        activeOpacity={0.9}
+                    >
+                        <LinearGradient colors={['#ea580c', '#c2410c']} style={styles.ctaGradient}>
+                            {purchasing ? <ActivityIndicator color="#fff" /> : <Text style={styles.ctaText}>Devam Et</Text>}
+                        </LinearGradient>
+                    </TouchableOpacity>
+
                     {/* Subscription Info - Apple Required */}
                     {selectedPkg && (
                         <View style={styles.subscriptionInfoBox}>
@@ -342,17 +353,6 @@ export default function SubscriptionScreen({ navigation, route }) {
                             <Text style={styles.subscriptionInfoText}>• Abonelik, mevcut dönemin bitiminden en az 24 saat önce iptal edilmezse otomatik yenilenir.</Text>
                         </View>
                     )}
-
-                    <TouchableOpacity 
-                        style={styles.ctaBtn} 
-                        onPress={handlePurchase} 
-                        disabled={purchasing}
-                        activeOpacity={0.9}
-                    >
-                        <LinearGradient colors={['#ea580c', '#c2410c']} style={styles.ctaGradient}>
-                            {purchasing ? <ActivityIndicator color="#fff" /> : <Text style={styles.ctaText}>Devam Et</Text>}
-                        </LinearGradient>
-                    </TouchableOpacity>
 
                     <View style={styles.footer}>
                         <View style={styles.legalLinksRow}>

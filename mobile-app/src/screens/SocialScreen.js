@@ -125,26 +125,28 @@ export default function SocialScreen({ navigation }) {
         setAlertVisible(true);
     };
 
-    // Pick image from gallery
+    // Pick media (images + videos) from gallery
     const pickImage = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (status !== 'granted') {
-            showAlert('İzin Gerekli', 'Fotoğraf seçmek için galeri izni gerekiyor.', [{ text: 'Tamam' }], 'warning');
+            showAlert('İzin Gerekli', 'Medya seçmek için galeri izni gerekiyor.', [{ text: 'Tamam' }], 'warning');
             return;
         }
         const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ['images'],
+            mediaTypes: ['images', 'videos'],
             allowsEditing: false,
             allowsMultipleSelection: true,
             selectionLimit: 10,
             quality: 0.8,
+            videoMaxDuration: 60,
         });
         if (!result.canceled && result.assets) {
-            setSelectedMedias(result.assets.map(a => ({ uri: a.uri, type: 'image' })));
+            setSelectedMedias(result.assets.map(a => ({
+                uri: a.uri,
+                type: a.type === 'video' ? 'video' : 'image',
+            })));
         }
     };
-
-
 
     // Pick image from camera
     const pickImageFromCamera = async () => {
@@ -161,22 +163,6 @@ export default function SocialScreen({ navigation }) {
         });
         if (!result.canceled && result.assets[0]) {
             setSelectedMedias([{ uri: result.assets[0].uri, type: 'image' }]);
-        }
-    };
-    const pickVideo = async () => {
-        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (status !== 'granted') {
-            showAlert('İzin Gerekli', 'Video seçmek için galeri izni gerekiyor.', [{ text: 'Tamam' }], 'warning');
-            return;
-        }
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ['videos'],
-            allowsEditing: true,
-            quality: 0.7,
-            videoMaxDuration: 60, // 60 seconds max
-        });
-        if (!result.canceled && result.assets[0]) {
-            setSelectedMedias([{ uri: result.assets[0].uri, type: 'video' }]);
         }
     };
 
@@ -789,12 +775,6 @@ export default function SocialScreen({ navigation }) {
                                 onPress={pickImageFromCamera}
                             >
                                 <Camera size={24} color="#ea580c" />
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={styles.toolbarButton}
-                                onPress={pickVideo}
-                            >
-                                <Film size={24} color="#ea580c" />
                             </TouchableOpacity>
                         </View>
 

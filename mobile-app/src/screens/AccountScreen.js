@@ -371,7 +371,7 @@ export default function AccountScreen({ navigation }) {
                             title="Uygulamayı Değerlendir"
                             onPress={() => {
                                 const pkg = 'com.chef2.app';
-                                const itunesItemId = '6478952516'; // TODO: iOS App ID'nizi buraya yazın
+                                const itunesItemId = '6760206517'; // Culinora iOS App ID
                                 
                                 if (Platform.OS === 'ios') {
                                     Linking.openURL(`itms-apps://itunes.apple.com/app/id${itunesItemId}?action=write-review`);
