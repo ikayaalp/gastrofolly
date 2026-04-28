@@ -5,12 +5,12 @@ import {
     View,
     FlatList,
     TouchableOpacity,
-    Image,
     SafeAreaView,
     StatusBar,
     Platform,
     ActivityIndicator
 } from 'react-native';
+import { Image } from 'expo-image';
 import { ArrowLeft, Heart, Trash2, BookOpen } from 'lucide-react-native';
 import favoriteService from '../services/favoritesService';
 import CustomAlert from '../components/CustomAlert';
@@ -74,8 +74,11 @@ export default function FavoritesScreen({ navigation }) {
             activeOpacity={0.8}
         >
             <Image
-                source={{ uri: item.imageUrl || 'https://images.unsplash.com/photo-1556910103-1c02745a30bf?q=80&w=400' }}
+                source={item.imageUrl || 'https://images.unsplash.com/photo-1556910103-1c02745a30bf?q=80&w=400'}
                 style={styles.courseImage}
+                contentFit="cover"
+                cachePolicy="memory-disk"
+                transition={200}
             />
             <View style={styles.courseInfo}>
                 <Text style={styles.courseTitle} numberOfLines={2}>{item.title}</Text>
@@ -202,7 +205,6 @@ const styles = StyleSheet.create({
     courseImage: {
         width: 90,
         height: 90,
-        resizeMode: 'cover',
     },
     courseInfo: {
         flex: 1,

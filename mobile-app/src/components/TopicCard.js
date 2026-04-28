@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList, Dimensions, Modal, TouchableWithoutFeedback } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Dimensions, Modal, TouchableWithoutFeedback } from 'react-native';
+import { Image } from 'expo-image';
 import { ThumbsUp, MessageCircle, Clock, Film, Image as ImageIcon, User, Bookmark, MoreVertical } from 'lucide-react-native';
 import { Video, ResizeMode } from 'expo-av';
 
@@ -55,8 +56,10 @@ export default function TopicCard({
                     <View style={styles.topicAuthorAvatar}>
                         {item.author?.image ? (
                             <Image
-                                source={{ uri: item.author.image }}
+                                source={item.author.image}
                                 style={styles.avatarImage}
+                                contentFit="cover"
+                                cachePolicy="memory-disk"
                             />
                         ) : (
                             <User size={20} color="#fff" />
@@ -217,9 +220,11 @@ export default function TopicCard({
                                         }}
                                     >
                                         <Image
-                                            source={{ uri: url }}
+                                            source={url}
                                             style={[styles.topicMediaImage, { width: width, height: width }]}
-                                            resizeMode="cover"
+                                            contentFit="cover"
+                                            cachePolicy="memory-disk"
+                                            transition={200}
                                         />
                                     </TouchableOpacity>
                                 )}
@@ -239,9 +244,11 @@ export default function TopicCard({
                             activeOpacity={0.9}
                         >
                             <Image
-                                source={{ uri: mediaUrls[0] }}
+                                source={mediaUrls[0]}
                                 style={[styles.topicMediaImage, { width: width, height: width }]}
-                                resizeMode="cover"
+                                contentFit="cover"
+                                cachePolicy="memory-disk"
+                                transition={200}
                             />
                         </TouchableOpacity>
                     )}

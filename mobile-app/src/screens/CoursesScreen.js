@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { StyleSheet, Text, View, FlatList, Image, TouchableOpacity, ActivityIndicator, RefreshControl, StatusBar, Platform, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl, StatusBar, Platform, ScrollView } from 'react-native';
+import { Image } from 'expo-image';
 import { useFocusEffect, CommonActions } from '@react-navigation/native';
 import { ChefHat, Star, BookOpen, User, Clock } from 'lucide-react-native';
 import courseService from '../api/courseService';
@@ -87,7 +88,7 @@ export default function CoursesScreen({ navigation }) {
                 activeOpacity={0.9}
             >
                 <View style={styles.imageContainer}>
-                    <Image source={{ uri: imageUrl }} style={styles.courseImage} />
+                    <Image source={imageUrl} style={styles.courseImage} contentFit="cover" cachePolicy="memory-disk" transition={200} />
                     <View style={styles.imageOverlay}>
                         <View style={styles.playButtonWrapper}>
                             <View style={styles.playIconContainer}>

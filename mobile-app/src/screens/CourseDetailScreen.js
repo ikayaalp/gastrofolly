@@ -3,7 +3,6 @@ import {
     StyleSheet,
     Text,
     View,
-    Image,
     ScrollView,
     TouchableOpacity,
     ActivityIndicator,
@@ -13,6 +12,7 @@ import {
     Platform,
     StatusBar,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import Logo from '../components/Logo';
 import {
@@ -256,8 +256,11 @@ export default function CourseDetailScreen({ route, navigation }) {
                 {/* Course Image */}
                 <View style={styles.imageContainer}>
                     <Image
-                        source={{ uri: course.imageUrl || 'https://images.unsplash.com/photo-1556910103-1c02745a30bf?q=80&w=800' }}
+                        source={course.imageUrl || 'https://images.unsplash.com/photo-1556910103-1c02745a30bf?q=80&w=800'}
                         style={styles.courseImage}
+                        contentFit="cover"
+                        cachePolicy="memory-disk"
+                        transition={200}
                     />
                     <LinearGradient
                         colors={['transparent', 'rgba(0,0,0,0.8)']}
@@ -324,8 +327,10 @@ export default function CourseDetailScreen({ route, navigation }) {
                             <View style={styles.instructorAvatar}>
                                 {course.instructor.image ? (
                                     <Image
-                                        source={{ uri: course.instructor.image }}
+                                        source={course.instructor.image}
                                         style={{ width: '100%', height: '100%', borderRadius: 20 }}
+                                        contentFit="cover"
+                                        cachePolicy="memory-disk"
                                     />
                                 ) : (
                                     <ChefHat size={20} color="white" />

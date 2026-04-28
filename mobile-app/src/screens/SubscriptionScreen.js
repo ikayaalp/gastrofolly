@@ -7,12 +7,12 @@ import {
     ActivityIndicator,
     ScrollView,
     Dimensions,
-    Image,
     Platform,
     StatusBar,
     Animated,
     Linking,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
     X,
@@ -274,8 +274,11 @@ export default function SubscriptionScreen({ navigation, route }) {
             <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
                 <View style={styles.heroWrap}>
                     <Image 
-                        source={{ uri: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=2070&auto=format&fit=crop' }} 
-                        style={styles.heroImage} 
+                        source='https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=800&auto=format&fit=crop'
+                        style={styles.heroImage}
+                        contentFit="cover"
+                        transition={200}
+                        cachePolicy="memory-disk"
                     />
                     <LinearGradient colors={['transparent', 'rgba(0,0,0,0.95)']} style={styles.heroOverlay} />
                     <TouchableOpacity style={styles.closeBtnTop} onPress={() => navigation.goBack()}>
@@ -382,7 +385,7 @@ const styles = StyleSheet.create({
     loadingContainer: { flex: 1, backgroundColor: '#000', justifyContent: 'center', alignItems: 'center' },
     loadingText: { color: 'rgba(255,255,255,0.5)', marginTop: 12, fontSize: 14 },
     heroWrap: { width: SCREEN_WIDTH, height: SCREEN_HEIGHT * 0.3, position: 'relative' },
-    heroImage: { width: '100%', height: '100%', resizeMode: 'cover' },
+    heroImage: { width: '100%', height: '100%' },
     heroOverlay: { position: 'absolute', bottom: 0, left: 0, right: 0, height: '60%' },
     closeBtnTop: { position: 'absolute', top: Platform.OS === 'ios' ? 60 : 40, right: 20, zIndex: 10 },
     closeBtnCircle: { width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
