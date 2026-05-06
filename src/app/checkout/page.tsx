@@ -32,8 +32,8 @@ function CheckoutContent() {
 
   // Plan bilgileri
   const plans: Record<string, { price: number, icon: LucideIcon, color: string }> = {
-    "Premium": { price: 20, icon: Crown, color: "from-orange-600 to-red-600" },
-    "Premium Yıllık": { price: 20, icon: Crown, color: "from-orange-600 to-red-600" }
+    "Premium": { price: 299, icon: Crown, color: "from-orange-600 to-red-600" },
+    "Premium Yıllık": { price: 299, icon: Crown, color: "from-orange-600 to-red-600" }
   }
 
   const selectedPlan = planName && plans[planName] ? plans[planName] : null

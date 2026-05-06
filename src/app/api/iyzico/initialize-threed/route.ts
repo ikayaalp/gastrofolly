@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Fiyat Hesaplama (Aynı mantık initialize-payment/route.ts'den alındı)
-        const basePrice = 20 // Test için 20 TL
+        const basePrice = 299 // Premium Üyelik: 299 TL
         let price: number
 
         if (billingPeriod === 'yearly') {

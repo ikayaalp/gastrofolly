@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Fiyat hesaplama
-        const basePrice = 20 // TL
+        const basePrice = 299 // TL
         let price: number
 
         if (billingPeriod === "yearly") {
