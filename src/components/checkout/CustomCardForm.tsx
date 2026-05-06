@@ -243,7 +243,7 @@ export default function CustomCardForm({ onSuccess, loading, errorMessage, refer
     const [formData, setFormData] = useState({ cardHolderName: "", cardNumber: "", expireDate: "", cvc: "" })
     const [localSubmit, setLocalSubmit] = useState(false)
     const [agreements, setAgreements] = useState({ subscription: false, preliminary: false })
-    const [modalContent, setModalContent] = useState<{ title: string, url: string } | null>(null)
+    const [modalContent, setModalContent] = useState<{ title: string, contentKey: string } | null>(null)
     const [errors, setErrors] = useState<Record<string, string>>({})
     const [cardType, setCardType] = useState<"visa" | "mastercard" | "troy" | "unknown">("unknown")
     const [cardFlipped, setCardFlipped] = useState(false)
@@ -478,18 +478,18 @@ export default function CustomCardForm({ onSuccess, loading, errorMessage, refer
                                 {
                                     key: 'subscription' as const,
                                     label: 'Premium Abonelik Sözleşmesini',
-                                    url: '/mesafeli-satis-sozlesmesi',
+                                    contentKey: 'subscription',
                                     title: 'Premium Abonelik Sözleşmesi',
                                     suffix: ' kabul ediyorum.'
                                 },
                                 {
                                     key: 'preliminary' as const,
                                     label: 'Premium Abonelik Ön Bilgilendirme Formunu',
-                                    url: '/on-bilgilendirme-formu',
+                                    contentKey: 'preliminary',
                                     title: 'Premium Abonelik Ön Bilgilendirme Formu',
                                     suffix: ' onaylıyorum.'
                                 }
-                            ].map(({ key, label, url, title, suffix }) => (
+                            ].map(({ key, label, contentKey, title, suffix }) => (
                                 <div
                                     key={key}
                                     className="flex items-start gap-3 cursor-pointer group"
@@ -510,7 +510,7 @@ export default function CustomCardForm({ onSuccess, loading, errorMessage, refer
                                     <p className="text-xs text-zinc-500 leading-relaxed select-none">
                                         <button
                                             type="button"
-                                            onClick={(e) => { e.stopPropagation(); setModalContent({ title, url }) }}
+                                            onClick={(e) => { e.stopPropagation(); setModalContent({ title, contentKey }) }}
                                             className="text-orange-400 hover:text-orange-300 underline underline-offset-2 transition-colors"
                                         >
                                             {label}
@@ -622,12 +622,111 @@ export default function CustomCardForm({ onSuccess, loading, errorMessage, refer
                                     <X className="w-4 h-4" />
                                 </button>
                             </div>
-                            <div className="flex-1 overflow-y-auto">
-                                <iframe
-                                    src={modalContent.url}
-                                    className="w-full h-[70vh] border-none"
-                                    title={modalContent.title}
-                                />
+                            <div className="flex-1 overflow-y-auto p-6 sm:p-8">
+                                {modalContent.contentKey === 'subscription' ? (
+                                    <div className="prose prose-sm max-w-none text-zinc-700 space-y-6">
+                                        <p className="text-xs text-zinc-400">Son Güncelleme: 13 Mart 2026</p>
+
+                                        <div className="bg-zinc-50 p-5 rounded-xl border border-zinc-200">
+                                            <h2 className="text-lg font-bold text-zinc-900 mb-3">1. Taraflar</h2>
+                                            <p className="text-sm text-zinc-600 leading-relaxed">
+                                                İşbu sözleşme, bir tarafta Culinora (Bundan sonra SATICI olarak anılacaktır) ile diğer tarafta platform üzerinden hizmet satın alan KULLANICI (Bundan sonra ALICI olarak anılacaktır) arasında akdedilmiştir.
+                                            </p>
+                                        </div>
+
+                                        <div>
+                                            <h2 className="text-lg font-bold text-zinc-900 mb-3">2. Konu</h2>
+                                            <p className="text-sm text-zinc-600 leading-relaxed">
+                                                İşbu sözleşmenin konusu, ALICI&apos;nın SATICI&apos;ya ait platform üzerinden dijital ortamda siparişini verdiği hizmetin satışı ve teslimi ile ilgili olarak 6502 sayılı Tüketicinin Korunması Hakkında Kanun ve Mesafeli Sözleşmeler Yönetmeliği hükümleri gereğince tarafların hak ve yükümlülüklerinin belirlenmesidir.
+                                            </p>
+                                        </div>
+
+                                        <div>
+                                            <h2 className="text-lg font-bold text-zinc-900 mb-3">3. Hizmet Bedeli ve Ödeme</h2>
+                                            <p className="text-sm text-zinc-600 leading-relaxed">
+                                                Hizmetin türü, miktarı, satış bedeli ve ödeme şekli, siparişin sonlandığı andaki bilgilerden oluşmaktadır. ALICI, satın aldığı hizmetin bedelini seçtiği ödeme yöntemi ile ödemeyi kabul eder. Premium Abonelik ücreti aylık 399 ₺&apos;dir. Yıllık planda %20 indirim uygulanır.
+                                            </p>
+                                        </div>
+
+                                        <div>
+                                            <h2 className="text-lg font-bold text-zinc-900 mb-3">4. Hizmetin Teslimi</h2>
+                                            <p className="text-sm text-zinc-600 leading-relaxed">
+                                                Dijital içerik hizmetleri, ödeme işleminin onaylanmasının ardından anında ALICI&apos;nın kullanımına sunulur. ALICI, abonelik süresi boyunca platformdaki tüm eğitim içeriklerine, video derslere ve tariflere sınırsız erişim hakkına sahip olur.
+                                            </p>
+                                        </div>
+
+                                        <div>
+                                            <h2 className="text-lg font-bold text-zinc-900 mb-3">5. Abonelik ve İptal</h2>
+                                            <p className="text-sm text-zinc-600 leading-relaxed">
+                                                Abonelik, seçilen periyoda (aylık veya yıllık) göre otomatik olarak yenilenir. ALICI, aboneliğini dilediği zaman hesap ayarlarından veya info@culinora.net adresine e-posta göndererek iptal edebilir. İptal işlemi, mevcut abonelik döneminin sonunda geçerli olur. Kullanılmayan süre için iade yapılmaz.
+                                            </p>
+                                        </div>
+
+                                        <div>
+                                            <h2 className="text-lg font-bold text-zinc-900 mb-3">6. Genel Hükümler</h2>
+                                            <p className="text-sm text-zinc-600 leading-relaxed">
+                                                ALICI, platformda sunulan içeriklerin telif haklarının SATICI&apos;ya ait olduğunu kabul eder. İçeriklerin kopyalanması, dağıtılması veya izinsiz paylaşılması yasaktır. SATICI, platform içeriğini önceden bildirimde bulunmaksızın değiştirme veya güncelleme hakkını saklı tutar.
+                                            </p>
+                                        </div>
+
+                                        <div className="bg-orange-50 border border-orange-200 p-5 rounded-xl">
+                                            <h2 className="text-base font-bold text-zinc-900 mb-2">Cayma Hakkı Bilgilendirmesi</h2>
+                                            <p className="text-sm text-zinc-600 leading-relaxed">
+                                                Dijital içerik hizmetleri, ALICI&apos;nın onayı ile anında ifa edilen hizmetler kapsamında olduğundan, içeriğe erişim sağlandığı andan itibaren 6502 sayılı Kanun&apos;un 53/ğ maddesi uyarınca cayma hakkı kullanılamaz.
+                                            </p>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="prose prose-sm max-w-none text-zinc-700 space-y-6">
+                                        <p className="text-xs text-zinc-400">Son Güncelleme: 13 Mart 2026</p>
+
+                                        <div className="bg-zinc-50 p-5 rounded-xl border border-zinc-200">
+                                            <h2 className="text-lg font-bold text-zinc-900 mb-3">1. Satıcı Bilgileri</h2>
+                                            <p className="text-sm text-zinc-600 leading-relaxed">
+                                                Unvan: Culinora<br />
+                                                E-posta: info@culinora.net<br />
+                                                Web: culinora.net
+                                            </p>
+                                        </div>
+
+                                        <div>
+                                            <h2 className="text-lg font-bold text-zinc-900 mb-3">2. Hizmetin Temel Özellikleri</h2>
+                                            <p className="text-sm text-zinc-600 leading-relaxed">
+                                                ALICI&apos;ya sunulan hizmet, Culinora platformu üzerindeki dijital eğitim içeriklerine, video derslere, tariflere ve premium topluluk alanına abonelik süresince sınırsız erişim hakkı sağlanmasıdır. Hizmet kapsamında eğitmenlerle doğrudan iletişim ve tamamlama sertifikaları da sunulmaktadır.
+                                            </p>
+                                        </div>
+
+                                        <div>
+                                            <h2 className="text-lg font-bold text-zinc-900 mb-3">3. Hizmet Bedeli</h2>
+                                            <p className="text-sm text-zinc-600 leading-relaxed">
+                                                Premium Aylık Plan: 399 ₺ / ay<br />
+                                                Premium Yıllık Plan: 3.840 ₺ / yıl (%20 indirimli, aylık 320 ₺&apos;ye denk gelir)<br /><br />
+                                                Tüm fiyatlara KDV dahildir. Ödeme, iyzico güvenli ödeme altyapısı üzerinden kredi kartı / banka kartı ile gerçekleştirilir.
+                                            </p>
+                                        </div>
+
+                                        <div>
+                                            <h2 className="text-lg font-bold text-zinc-900 mb-3">4. Ödeme ve Teslimat</h2>
+                                            <p className="text-sm text-zinc-600 leading-relaxed">
+                                                Ödeme işlemi tamamlandıktan sonra hizmet anında dijital ortamda ALICI&apos;nın kullanımına sunulur. Hizmetin ifası için fiziksel bir teslimat gerekmemektedir. ALICI, ödeme sonrası anında tüm içeriklere web ve mobil uygulama üzerinden erişim sağlayabilir.
+                                            </p>
+                                        </div>
+
+                                        <div>
+                                            <h2 className="text-lg font-bold text-zinc-900 mb-3">5. Abonelik Yenileme ve İptal</h2>
+                                            <p className="text-sm text-zinc-600 leading-relaxed">
+                                                Abonelik, seçilen periyoda göre otomatik olarak yenilenir. ALICI, yenileme tarihinden önce aboneliğini iptal edebilir. İptal işlemi hesap ayarları sayfasından veya info@culinora.net adresine yazılarak yapılabilir. İptal sonrası mevcut dönem sonuna kadar erişim devam eder.
+                                            </p>
+                                        </div>
+
+                                        <div className="bg-orange-50 border border-orange-200 p-5 rounded-xl">
+                                            <h2 className="text-base font-bold text-zinc-900 mb-2">Önemli Bilgi</h2>
+                                            <p className="text-sm text-zinc-600 leading-relaxed">
+                                                ALICI, işbu ön bilgilendirme formunu onaylayarak satışa konu hizmetin temel nitelikleri, satış fiyatı, ödeme şekli ve teslimata ilişkin tüm ön bilgileri okuyup bilgi sahibi olduğunu kabul ve beyan eder. Dijital içerik hizmetleri, ALICI&apos;nın onayı ile anında ifa edildiğinden cayma hakkı bulunmamaktadır.
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </motion.div>
                     </motion.div>

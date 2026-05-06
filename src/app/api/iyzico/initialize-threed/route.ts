@@ -36,16 +36,17 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        // Fiyat Hesaplama (Aynı mantık initialize-payment/route.ts'den alındı)
-        const basePrice = 299 // Premium Üyelik: 299 TL
+        // Fiyat Hesaplama
+        const monthlyPrice = 399 // Premium Üyelik: 399 TL
+        const yearlyBasePrice = 400 // Yıllık plan aylık baz: 400 TL
         let price: number
 
         if (billingPeriod === 'yearly') {
-            price = Math.round(basePrice * 12 * 0.8)
+            price = Math.round(yearlyBasePrice * 12 * 0.8)
         } else if (billingPeriod === '6monthly') {
-            price = Math.round(basePrice * 6 * 0.9)
+            price = Math.round(yearlyBasePrice * 6 * 0.9)
         } else {
-            price = basePrice
+            price = monthlyPrice
         }
 
         if (referralCode) {

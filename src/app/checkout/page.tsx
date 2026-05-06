@@ -32,8 +32,8 @@ function CheckoutContent() {
 
   // Plan bilgileri
   const plans: Record<string, { price: number, icon: LucideIcon, color: string }> = {
-    "Premium": { price: 299, icon: Crown, color: "from-orange-600 to-red-600" },
-    "Premium Yıllık": { price: 299, icon: Crown, color: "from-orange-600 to-red-600" }
+    "Premium": { price: 399, icon: Crown, color: "from-orange-600 to-red-600" },
+    "Premium Yıllık": { price: 399, icon: Crown, color: "from-orange-600 to-red-600" }
   }
 
   const selectedPlan = planName && plans[planName] ? plans[planName] : null
@@ -72,8 +72,9 @@ function CheckoutContent() {
   // Fiyat hesaplamaları
   const basePrice = selectedPlan?.price || 0
   const monthlyPrice = basePrice
-  const sixMonthlyPrice = basePrice * 6 * 0.9
-  const yearlyPrice = basePrice * 12 * 0.8
+  const yearlyBasePrice = 400
+  const sixMonthlyPrice = yearlyBasePrice * 6 * 0.9
+  const yearlyPrice = Math.round(yearlyBasePrice * 12 * 0.8)
 
   const originalPrice = billingPeriod === "monthly" ? monthlyPrice : basePrice * 12
   // Dönem indirimi

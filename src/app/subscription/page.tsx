@@ -39,7 +39,7 @@ function SubscriptionContent() {
     const plans = [
         {
             name: "Premium",
-            price: "299",
+            price: "399",
             period: "Aylık",
             icon: Crown,
             color: "from-orange-600 to-red-600",
@@ -236,9 +236,10 @@ function SubscriptionContent() {
                     <div className="flex justify-center mb-16">
                         {(() => {
                             const isYearly = billingPeriod === "yearly"
-                            const basePrice = 299
-                            const yearlyPrice = Math.round(basePrice * 12 * 0.8)
-                            const displayPrice = isYearly ? yearlyPrice.toString() : basePrice.toString()
+                            const monthlyPrice = 399
+                            const yearlyBasePrice = 400
+                            const yearlyPrice = Math.round(yearlyBasePrice * 12 * 0.8)
+                            const displayPrice = isYearly ? yearlyPrice.toString() : monthlyPrice.toString()
                             const displayPeriod = isYearly ? "yıl" : "ay"
 
                             const plan = {

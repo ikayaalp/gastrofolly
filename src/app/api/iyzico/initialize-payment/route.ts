@@ -64,19 +64,20 @@ export async function POST(request: NextRequest) {
         }
 
         // Billing period'a göre fiyat hesapla
-        // Üyelik fiyatı: 299 TL
-        const basePrice = 299
+        // Üyelik fiyatı
+        const monthlyPrice = 399 // TL
+        const yearlyBasePrice = 400 // TL (aylık baz)
         let price: number
         let periodLabel: string
 
         if (billingPeriod === 'yearly') {
-            price = Math.round(basePrice * 12 * 0.8) // %20 indirim
+            price = Math.round(yearlyBasePrice * 12 * 0.8) // %20 indirim
             periodLabel = "Yıllık"
         } else if (billingPeriod === '6monthly') {
-            price = Math.round(basePrice * 6 * 0.9) // %10 indirim
+            price = Math.round(yearlyBasePrice * 6 * 0.9) // %10 indirim
             periodLabel = "6 Aylık"
         } else {
-            price = basePrice
+            price = monthlyPrice
             periodLabel = "Aylık"
         }
 
