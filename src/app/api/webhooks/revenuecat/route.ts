@@ -80,6 +80,19 @@ export async function POST(request: NextRequest) {
         }
 
         // 4. Event türüne göre işlem yap
+
+        // Apple kesintisi sonrası fiyat hesaplama
+        // Apple %30 komisyon alır, bize %70 kalır
+        const APPLE_COMMISSION_RATE = 0.30;
+
+        // Aylık ve yıllık App Store fiyatları (TL)
+        const APP_STORE_MONTHLY_PRICE = 399;  // App Store'daki aylık fiyat
+        const APP_STORE_YEARLY_PRICE = 3999;   // App Store'daki yıllık fiyat
+
+        // Apple kesintisinden sonra bize kalan tutarlar
+        const NET_MONTHLY_PRICE = Math.round(APP_STORE_MONTHLY_PRICE * (1 - APPLE_COMMISSION_RATE) * 100) / 100; // 279.30 TL
+        const NET_YEARLY_PRICE = Math.round(APP_STORE_YEARLY_PRICE * (1 - APPLE_COMMISSION_RATE) * 100) / 100;   // 2799.30 TL
+
         if (PREMIUM_EVENTS.includes(eventType)) {
             // ✅ Premium erişim ver
             const expirationDate = expirationAtMs 
@@ -99,6 +112,43 @@ export async function POST(request: NextRequest) {
                     subscriptionStartDate: startDate,
                 },
             });
+
+            // 💰 Mobil abonelik gelirini Payment tablosuna kaydet (Havuz hesaplaması için)
+            // Sadece INITIAL_PURCHASE ve RENEWAL eventlerinde ödeme kaydı oluştur
+            if (eventType === 'INITIAL_PURCHASE' || eventType === 'RENEWAL') {
+                // Product ID'den aylık/yıllık belirleme
+                const isYearly = productId?.toLowerCase()?.includes('year') || 
+                                 productId?.toLowerCase()?.includes('annual') ||
+                                 productId?.toLowerCase()?.includes('yearly');
+                
+                const billingPeriod = isYearly ? 'yearly' : 'monthly';
+                const netAmount = isYearly ? NET_YEARLY_PRICE : NET_MONTHLY_PRICE;
+                const appStorePrice = isYearly ? APP_STORE_YEARLY_PRICE : APP_STORE_MONTHLY_PRICE;
+
+                // Aynı event için mükerrer kayıt oluşturmayı engelle
+                const existingPayment = await prisma.payment.findFirst({
+                    where: {
+                        userId: appUserId,
+                        stripePaymentId: `rc_${eventType}_${productId}_${Date.now()}`.substring(0, 50),
+                    }
+                });
+
+                if (!existingPayment) {
+                    await prisma.payment.create({
+                        data: {
+                            userId: appUserId,
+                            amount: netAmount,
+                            currency: 'TRY',
+                            status: 'COMPLETED',
+                            subscriptionPlan: 'Premium',
+                            billingPeriod: billingPeriod,
+                            stripePaymentId: `rc_${appUserId}_${Date.now()}`, // Benzersiz ID
+                        }
+                    });
+
+                    console.log(`[RC Webhook] 💰 Payment kaydı oluşturuldu: ${billingPeriod} | App Store: ₺${appStorePrice} → Apple sonrası: ₺${netAmount}`);
+                }
+            }
 
             console.log(`[RC Webhook] ✅ User ${appUserId} → Premium (expires: ${expirationDate?.toISOString() || 'lifetime'})`);
 

@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { Users, Wallet, TrendingUp, Clock, Info } from "lucide-react"
+import { Users, Wallet, TrendingUp, Clock, Info, Smartphone } from "lucide-react"
 
 function calculatePoolShare(instructors: any[], poolTotal: number) {
     const instructorsWithPoints = instructors.map(instructor => ({
@@ -37,20 +37,56 @@ export default async function PoolManagementPage() {
 
     const TODAY_START = new Date('2026-02-21T10:00:00.000Z')
 
-    // Bugünden öncesi: sabit 100 TL (tarihsel kasa)
+    // Bugünden öncesi: sabit tarihsel kasa
     const preRevenue = 85
 
-    // Bugünden sonrası: gerçek Iyzico ödemelerinin toplamı
+    // Web (Iyzico) abonelik ödemeleri
     const iyzicoPayments = await prisma.payment.aggregate({
         where: {
             status: 'COMPLETED',
             subscriptionPlan: { not: null },
-            createdAt: { gte: TODAY_START }
+            createdAt: { gte: TODAY_START },
+            stripePaymentId: { not: { startsWith: 'rc_' } } // RevenueCat ödemeleri hariç
         },
         _sum: { amount: true }
     })
-    const postRevenue = iyzicoPayments._sum.amount || 0
+    const webRevenue = iyzicoPayments._sum.amount || 0
 
+    // Mobil (Apple/RevenueCat) abonelik ödemeleri (Apple kesintisi sonrası net tutarlar)
+    const mobilePayments = await prisma.payment.aggregate({
+        where: {
+            status: 'COMPLETED',
+            subscriptionPlan: { not: null },
+            stripePaymentId: { startsWith: 'rc_' } // Sadece RevenueCat ödemeleri
+        },
+        _sum: { amount: true }
+    })
+    const mobileRevenue = mobilePayments._sum.amount || 0
+
+    // Mobil abonelik detayları (aylık/yıllık adet)
+    const mobileMonthlyCount = await prisma.payment.count({
+        where: {
+            status: 'COMPLETED',
+            stripePaymentId: { startsWith: 'rc_' },
+            billingPeriod: 'monthly'
+        }
+    })
+    const mobileYearlyCount = await prisma.payment.count({
+        where: {
+            status: 'COMPLETED',
+            stripePaymentId: { startsWith: 'rc_' },
+            billingPeriod: 'yearly'
+        }
+    })
+
+    // Apple kesintisi öncesi brüt tutarlar (gösterim amaçlı)
+    const APPLE_MONTHLY_GROSS = 399
+    const APPLE_YEARLY_GROSS = 3999
+    const APPLE_MONTHLY_NET = Math.round(APPLE_MONTHLY_GROSS * 0.70 * 100) / 100  // 279.30 TL
+    const APPLE_YEARLY_NET = Math.round(APPLE_YEARLY_GROSS * 0.70 * 100) / 100    // 2799.30 TL
+    const mobileGrossRevenue = (mobileMonthlyCount * APPLE_MONTHLY_GROSS) + (mobileYearlyCount * APPLE_YEARLY_GROSS)
+
+    const postRevenue = webRevenue + mobileRevenue
     const TOTAL_REVENUE = preRevenue + postRevenue
     const POOL_TOTAL = TOTAL_REVENUE * 0.25
 
@@ -159,6 +195,66 @@ export default async function PoolManagementPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Gelir Kaynağı Detayları - SADECE ADMİN GÖRÜR */}
+            {!isInstructor && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Web (Iyzico) Geliri */}
+                    <div className="bg-black border border-gray-800 rounded-xl p-6 relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+                        <div className="flex items-center space-x-4 relative z-10 mb-4">
+                            <div className="bg-orange-500/20 p-3 rounded-xl">
+                                <TrendingUp className="h-6 w-6 text-orange-400" />
+                            </div>
+                            <div>
+                                <p className="text-2xl font-bold text-white">₺{webRevenue.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</p>
+                                <p className="text-gray-400 text-sm font-medium">Web Abonelik Geliri (Iyzico)</p>
+                            </div>
+                        </div>
+                        <p className="text-xs text-gray-500">Web sitesi üzerinden alınan abonelikler</p>
+                    </div>
+
+                    {/* Mobil (Apple) Geliri */}
+                    <div className="bg-black border border-gray-800 rounded-xl p-6 relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-cyan-500/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+                        <div className="flex items-center space-x-4 relative z-10 mb-4">
+                            <div className="bg-cyan-500/20 p-3 rounded-xl">
+                                <Smartphone className="h-6 w-6 text-cyan-400" />
+                            </div>
+                            <div>
+                                <p className="text-2xl font-bold text-white">₺{mobileRevenue.toLocaleString('tr-TR', { maximumFractionDigits: 2 })}</p>
+                                <p className="text-gray-400 text-sm font-medium">Mobil Abonelik Geliri (Apple Sonrası)</p>
+                            </div>
+                        </div>
+                        <div className="space-y-2 mt-3">
+                            <div className="flex items-center justify-between text-xs">
+                                <span className="text-gray-500">App Store Brüt Toplam:</span>
+                                <span className="text-gray-400 font-medium">₺{mobileGrossRevenue.toLocaleString('tr-TR')}</span>
+                            </div>
+                            <div className="flex items-center justify-between text-xs">
+                                <span className="text-gray-500">Apple Komisyonu (%30):</span>
+                                <span className="text-red-400 font-medium">-₺{(mobileGrossRevenue - mobileRevenue).toLocaleString('tr-TR', { maximumFractionDigits: 2 })}</span>
+                            </div>
+                            <div className="border-t border-gray-800 pt-2 flex items-center justify-between text-xs">
+                                <span className="text-gray-500">Net Gelir (Havuza Giren):</span>
+                                <span className="text-green-400 font-medium">₺{mobileRevenue.toLocaleString('tr-TR', { maximumFractionDigits: 2 })}</span>
+                            </div>
+                            <div className="flex gap-4 mt-2 pt-2 border-t border-gray-800/50">
+                                <div className="text-xs">
+                                    <span className="text-gray-600">Aylık: </span>
+                                    <span className="text-gray-400">{mobileMonthlyCount} adet</span>
+                                    <span className="text-gray-600 ml-1">(₺{APPLE_MONTHLY_GROSS} → ₺{APPLE_MONTHLY_NET})</span>
+                                </div>
+                                <div className="text-xs">
+                                    <span className="text-gray-600">Yıllık: </span>
+                                    <span className="text-gray-400">{mobileYearlyCount} adet</span>
+                                    <span className="text-gray-600 ml-1">(₺{APPLE_YEARLY_GROSS} → ₺{APPLE_YEARLY_NET})</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Gelir Dağılımı (Pie Chart) - EĞİTMENDEN GİZLE */}

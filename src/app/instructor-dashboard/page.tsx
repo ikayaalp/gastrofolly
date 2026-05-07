@@ -5,17 +5,22 @@ import { prisma } from "@/lib/prisma"
 import InstructorDashboardClient from "./InstructorDashboardClient"
 
 async function getInstructorData(userId: string) {
-  // 1. Toplam Havuz Parası (Tüm enrollment gelirleri)
-  const allEnrollments = await prisma.enrollment.findMany({
-    include: {
-      course: {
-        select: { price: true }
-      }
-    }
+  // 1. Toplam Havuz Parası (Tüm abonelik gelirleri: Iyzico + Apple/RevenueCat)
+  const TODAY_START = new Date('2026-02-21T10:00:00.000Z')
+  const preRevenue = 85
+
+  const allPayments = await prisma.payment.aggregate({
+    where: {
+      status: 'COMPLETED',
+      subscriptionPlan: { not: null },
+      createdAt: { gte: TODAY_START }
+    },
+    _sum: { amount: true }
   })
+  const postRevenue = allPayments._sum.amount || 0
 
   // Toplam havuz miktarı
-  const totalPool = allEnrollments.reduce((acc, curr) => acc + curr.course.price, 0)
+  const totalPool = (preRevenue + postRevenue) * 0.25
 
   // 2. Eğitmenin İzlenme Detayları (Katsayı Sistemi Kaldırıldı: 1 Dk = 1 Puan)
   const instructorProgress = await prisma.progress.findMany({
