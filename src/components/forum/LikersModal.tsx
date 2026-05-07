@@ -57,17 +57,7 @@ export default function LikersModal({ isOpen, onClose, type, targetId, likeCount
     }
   }
 
-  const formatTimeAgo = (dateString: string) => {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
 
-    if (diffInSeconds < 60) return 'Az önce'
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} dk önce`
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} sa önce`
-    if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)} gün önce`
-    return date.toLocaleDateString('tr-TR')
-  }
 
   if (!isOpen) return null
 
@@ -150,9 +140,6 @@ export default function LikersModal({ isOpen, onClose, type, targetId, likeCount
                   <div className="flex-1 min-w-0">
                     <p className="text-[#e7e9ea] font-semibold text-sm truncate">
                       {liker.name || 'Anonim'}
-                    </p>
-                    <p className="text-[#71767b] text-xs">
-                      {formatTimeAgo(liker.likedAt)}
                     </p>
                   </div>
 

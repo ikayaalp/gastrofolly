@@ -12,18 +12,6 @@ import { Image } from 'expo-image';
 import { X, User, ThumbsUp } from 'lucide-react-native';
 import forumService from '../api/forumService';
 
-const formatTimeAgo = (dateString) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-    if (diffInSeconds < 60) return 'Az önce';
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} dk önce`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} sa önce`;
-    if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)} gün önce`;
-    return date.toLocaleDateString('tr-TR');
-};
-
 export default function LikersModal({ visible, onClose, type, targetId, likeCount }) {
     const [likers, setLikers] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -78,7 +66,6 @@ export default function LikersModal({ visible, onClose, type, targetId, likeCoun
             </View>
             <View style={styles.likerInfo}>
                 <Text style={styles.likerName}>{item.name || 'Anonim'}</Text>
-                <Text style={styles.likerTime}>{formatTimeAgo(item.likedAt)}</Text>
             </View>
             <ThumbsUp size={14} color="#ea580c" fill="#ea580c" />
         </View>
