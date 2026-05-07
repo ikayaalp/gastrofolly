@@ -4,6 +4,7 @@ import { useState, memo } from 'react'
 import Link from 'next/link'
 import { ThumbsUp, MessageCircle, MoreHorizontal, User, Play, Clock, Bookmark, ChefHat } from 'lucide-react'
 import HashtagText from './HashtagText'
+import LikersModal from './LikersModal'
 import ConfirmationModal from '@/components/ui/ConfirmationModal'
 import { getOptimizedMediaUrl } from '@/lib/utils'
 
@@ -60,6 +61,7 @@ const TopicCard = ({ topic, isLiked, onLike, isSaved, onSave, currentUserId }: T
     const [votingLoading, setVotingLoading] = useState<string | null>(null)
     const [internalPollData, setInternalPollData] = useState(topic.poll)
     const [alertState, setAlertState] = useState<{ isOpen: boolean, message: string }>({ isOpen: false, message: '' })
+    const [showLikersModal, setShowLikersModal] = useState(false)
 
     // Check if current user has voted (client-side approximation if we don't have user ID handy easily, 
     // but the API response includes votes by user. Ideally we need current User ID.
@@ -303,16 +305,26 @@ const TopicCard = ({ topic, isLiked, onLike, isSaved, onSave, currentUserId }: T
                         {!internalPollData && (
                             <div className="flex items-center space-x-3 text-[#71767b] text-xs font-bold pt-1 pb-1">
                                 {/* Vote Button */}
-                                <button
-                                    onClick={handleLike}
-                                    className={`flex items-center space-x-1.5 px-3 py-2 rounded-full transition-all duration-200 ${isLiked
-                                        ? 'bg-orange-500/10 text-orange-500'
-                                        : 'hover:bg-white/5 text-[#71767b] hover:text-[#e7e9ea]'
-                                        }`}
-                                >
-                                    <ThumbsUp className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
-                                    <span className="text-sm">{topic.likeCount}</span>
-                                </button>
+                                <div className="flex items-center">
+                                    <button
+                                        onClick={handleLike}
+                                        className={`flex items-center space-x-1.5 pl-3 pr-1 py-2 rounded-l-full transition-all duration-200 ${isLiked
+                                            ? 'bg-orange-500/10 text-orange-500'
+                                            : 'hover:bg-white/5 text-[#71767b] hover:text-[#e7e9ea]'
+                                            }`}
+                                    >
+                                        <ThumbsUp className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
+                                    </button>
+                                    <button
+                                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (topic.likeCount > 0) setShowLikersModal(true); }}
+                                        className={`pl-1 pr-3 py-2 rounded-r-full transition-all duration-200 ${isLiked
+                                            ? 'bg-orange-500/10 text-orange-500'
+                                            : 'hover:bg-white/5 text-[#71767b] hover:text-[#e7e9ea]'
+                                            } ${topic.likeCount > 0 ? 'hover:underline cursor-pointer' : ''}`}
+                                    >
+                                        <span className="text-sm">{topic.likeCount}</span>
+                                    </button>
+                                </div>
 
                                 <Link href={`/chef-sosyal/topic/${topic.id}`} className="flex items-center space-x-1.5 px-3 py-2 hover:bg-white/5 rounded-full transition-colors group cursor-pointer text-[#71767b] hover:text-[#e7e9ea]">
                                     <MessageCircle className="h-4 w-4" />
@@ -372,6 +384,15 @@ const TopicCard = ({ topic, isLiked, onLike, isSaved, onSave, currentUserId }: T
                 confirmText="Tamam"
                 showCancelButton={false}
                 isDanger={true}
+            />
+
+            {/* Likers Modal */}
+            <LikersModal
+                isOpen={showLikersModal}
+                onClose={() => setShowLikersModal(false)}
+                type="topic"
+                targetId={topic.id}
+                likeCount={topic.likeCount}
             />
         </>
     )

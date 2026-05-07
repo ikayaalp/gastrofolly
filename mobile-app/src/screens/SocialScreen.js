@@ -48,6 +48,7 @@ import CustomAlert from '../components/CustomAlert';
 import ImageViewerModal from '../components/ImageViewerModal';
 import TopicCard from '../components/TopicCard';
 import LoginRequiredModal from '../components/LoginRequiredModal';
+import LikersModal from '../components/LikersModal';
 
 const formatDuration = (millis) => {
     if (!millis) return 'Video';
@@ -91,6 +92,14 @@ export default function SocialScreen({ navigation }) {
     const [videoDurations, setVideoDurations] = useState({});
     const [videoProgress, setVideoProgress] = useState({});
     const [searchTerm, setSearchTerm] = useState('');
+
+    // Likers Modal State
+    const [likersModal, setLikersModal] = useState({
+        visible: false,
+        type: 'topic',
+        targetId: '',
+        likeCount: 0
+    });
 
     // Custom Video Controls
     const videoRef = useRef(null);
@@ -534,6 +543,10 @@ export default function SocialScreen({ navigation }) {
         await videoRef.current.setPositionAsync(newPos);
     };
 
+    const handleShowLikers = useCallback((targetId, type, likeCount) => {
+        setLikersModal({ visible: true, type, targetId, likeCount });
+    }, []);
+
     const renderTopicItem = useCallback(({ item }) => (
         <TopicCard
             item={item}
@@ -556,8 +569,9 @@ export default function SocialScreen({ navigation }) {
             onReport={handleReport}
             onBlock={handleBlock}
             onVotePoll={handleVotePoll}
+            onShowLikers={handleShowLikers}
         />
-    ), [playingVideoId, videoProgress, videoDurations, likedTopics, savedTopics, handleLike, formatTimeAgo, navigation]);
+    ), [playingVideoId, videoProgress, videoDurations, likedTopics, savedTopics, handleLike, formatTimeAgo, navigation, handleShowLikers]);
 
     if (loading) {
         return (
@@ -803,6 +817,15 @@ export default function SocialScreen({ navigation }) {
                 visible={!!fullscreenImageUrl}
                 imageUrl={fullscreenImageUrl}
                 onClose={() => setFullscreenImageUrl(null)}
+            />
+
+            {/* Likers Modal */}
+            <LikersModal
+                visible={likersModal.visible}
+                onClose={() => setLikersModal(prev => ({ ...prev, visible: false }))}
+                type={likersModal.type}
+                targetId={likersModal.targetId}
+                likeCount={likersModal.likeCount}
             />
 
             {/* Fullscreen Video Player Modal */}

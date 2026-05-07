@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation"
 import LeftSidebar from "@/components/forum/LeftSidebar"
 import RightSidebar from "@/components/forum/RightSidebar"
 import HashtagText from "@/components/forum/HashtagText"
+import LikersModal from "@/components/forum/LikersModal"
 import ConfirmationModal from "@/components/ui/ConfirmationModal"
 import { getOptimizedMediaUrl } from "@/lib/utils"
 
@@ -132,6 +133,19 @@ export default function TopicDetailClient({ session, topic, categories, initialI
   });
 
   const [deleteLoading, setDeleteLoading] = useState(false);
+
+  // Likers Modal State
+  const [likersModal, setLikersModal] = useState<{
+    isOpen: boolean;
+    type: 'topic' | 'post';
+    targetId: string;
+    likeCount: number;
+  }>({
+    isOpen: false,
+    type: 'topic',
+    targetId: '',
+    likeCount: 0
+  });
 
   const handleImageClick = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -368,10 +382,17 @@ export default function TopicDetailClient({ session, topic, categories, initialI
               )}
 
               <div className="flex items-center space-x-3 text-[#71767b] text-xs font-bold pt-1 border-t border-gray-800/50 mt-2">
-                <button onClick={handleLike} className={`flex items-center space-x-1.5 px-3 py-2 rounded-full transition-all duration-200 ${isLiked ? 'bg-orange-500/10 text-orange-500' : 'hover:bg-white/5 text-[#71767b] hover:text-[#e7e9ea]'}`}>
-                  <ThumbsUp className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
-                  <span className="text-sm">{likeCount}</span>
-                </button>
+                <div className="flex items-center">
+                  <button onClick={handleLike} className={`flex items-center space-x-1.5 pl-3 pr-1 py-2 rounded-l-full transition-all duration-200 ${isLiked ? 'bg-orange-500/10 text-orange-500' : 'hover:bg-white/5 text-[#71767b] hover:text-[#e7e9ea]'}`}>
+                    <ThumbsUp className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
+                  </button>
+                  <button
+                    onClick={() => { if (likeCount > 0) setLikersModal({ isOpen: true, type: 'topic', targetId: topic.id, likeCount }); }}
+                    className={`pl-1 pr-3 py-2 rounded-r-full transition-all duration-200 ${isLiked ? 'bg-orange-500/10 text-orange-500' : 'hover:bg-white/5 text-[#71767b] hover:text-[#e7e9ea]'} ${likeCount > 0 ? 'hover:underline cursor-pointer' : ''}`}
+                  >
+                    <span className="text-sm">{likeCount}</span>
+                  </button>
+                </div>
                 <div className="flex items-center space-x-1.5 px-3 py-2 hover:bg-white/5 rounded-full transition-colors cursor-pointer text-[#71767b] hover:text-[#e7e9ea]">
                   <MessageCircle className="h-4 w-4" />
                   <span className="text-sm">{comments.length} Yorum</span>
@@ -440,7 +461,11 @@ export default function TopicDetailClient({ session, topic, categories, initialI
                       </div>
                       <div className="text-sm text-[#e7e9ea] mb-2 whitespace-pre-wrap">{renderCommentContent(comment.content)}</div>
                       <div className="flex items-center space-x-4">
-                        <button onClick={() => handleCommentLike(comment.id)} className={`flex items-center space-x-1 text-xs font-bold ${likedComments.has(comment.id) ? 'text-orange-500' : 'text-gray-500 hover:text-gray-300'}`}><ThumbsUp className={`h-3 w-3 ${likedComments.has(comment.id) ? 'fill-current' : ''}`} /><span>{comment.likeCount || 0}</span></button>
+                        <button onClick={() => handleCommentLike(comment.id)} className={`flex items-center space-x-1 text-xs font-bold ${likedComments.has(comment.id) ? 'text-orange-500' : 'text-gray-500 hover:text-gray-300'}`}><ThumbsUp className={`h-3 w-3 ${likedComments.has(comment.id) ? 'fill-current' : ''}`} /></button>
+                        <button
+                          onClick={() => { if ((comment.likeCount || 0) > 0) setLikersModal({ isOpen: true, type: 'post', targetId: comment.id, likeCount: comment.likeCount || 0 }); }}
+                          className={`text-xs font-bold ${likedComments.has(comment.id) ? 'text-orange-500' : 'text-gray-500 hover:text-gray-300'} ${(comment.likeCount || 0) > 0 ? 'hover:underline cursor-pointer' : ''}`}
+                        ><span>{comment.likeCount || 0}</span></button>
                         <button onClick={() => handleReplyTo(comment.id, comment.author.name || 'anonim')} className={`flex items-center space-x-1 text-xs font-bold ${replyingTo === comment.id ? 'text-orange-500' : 'text-gray-500 hover:text-gray-300'}`}><MessageCircle className="h-3 w-3" /><span>Yanıtla</span></button>
                         {session?.user && comment.author.id === session.user.id && <button onClick={() => handleDeleteCommentClick(comment.id)} className="text-xs font-bold text-red-500 hover:text-red-400">Sil</button>}
                       </div>
@@ -459,7 +484,11 @@ export default function TopicDetailClient({ session, topic, categories, initialI
                                 </div>
                                 <div className="text-sm text-[#e7e9ea] mb-2 whitespace-pre-wrap">{renderCommentContent(reply.content)}</div>
                                 <div className="flex items-center space-x-4">
-                                  <button onClick={() => handleCommentLike(reply.id)} className={`flex items-center space-x-1 text-xs font-bold ${likedComments.has(reply.id) ? 'text-orange-500' : 'text-gray-500 hover:text-gray-300'}`}><ThumbsUp className={`h-3 w-3 ${likedComments.has(reply.id) ? 'fill-current' : ''}`} /><span>{reply.likeCount || 0}</span></button>
+                                  <button onClick={() => handleCommentLike(reply.id)} className={`flex items-center space-x-1 text-xs font-bold ${likedComments.has(reply.id) ? 'text-orange-500' : 'text-gray-500 hover:text-gray-300'}`}><ThumbsUp className={`h-3 w-3 ${likedComments.has(reply.id) ? 'fill-current' : ''}`} /></button>
+                                  <button
+                                    onClick={() => { if ((reply.likeCount || 0) > 0) setLikersModal({ isOpen: true, type: 'post', targetId: reply.id, likeCount: reply.likeCount || 0 }); }}
+                                    className={`text-xs font-bold ${likedComments.has(reply.id) ? 'text-orange-500' : 'text-gray-500 hover:text-gray-300'} ${(reply.likeCount || 0) > 0 ? 'hover:underline cursor-pointer' : ''}`}
+                                  ><span>{reply.likeCount || 0}</span></button>
                                   <button onClick={() => handleReplyTo(comment.id, reply.author.name || 'anonim')} className="flex items-center space-x-1 text-xs font-bold text-gray-500 hover:text-gray-300"><MessageCircle className="h-3 w-3" /><span>Yanıtla</span></button>
                                   {session?.user && reply.author.id === session.user.id && <button onClick={() => handleDeleteCommentClick(reply.id)} className="text-xs font-bold text-red-500 hover:text-red-400">Sil</button>}
                                 </div>
@@ -524,6 +553,15 @@ export default function TopicDetailClient({ session, topic, categories, initialI
         confirmText="Tamam"
         showCancelButton={false}
         isDanger={alertModal.type === 'error'}
+      />
+
+      {/* Likers Modal */}
+      <LikersModal
+        isOpen={likersModal.isOpen}
+        onClose={() => setLikersModal(prev => ({ ...prev, isOpen: false }))}
+        type={likersModal.type}
+        targetId={likersModal.targetId}
+        likeCount={likersModal.likeCount}
       />
     </div>
   )

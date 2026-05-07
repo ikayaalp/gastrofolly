@@ -35,6 +35,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CommonActions } from '@react-navigation/native';
 import CustomAlert from '../components/CustomAlert';
 import ImageViewerModal from '../components/ImageViewerModal';
+import LikersModal from '../components/LikersModal';
 
 export default function TopicDetailScreen({ route, navigation }) {
     const insets = useSafeAreaInsets();
@@ -67,6 +68,14 @@ export default function TopicDetailScreen({ route, navigation }) {
     const [blockedUsers, setBlockedUsers] = useState(new Set());
     const [showOptionsModal, setShowOptionsModal] = useState(false);
     const [selectedItemToReport, setSelectedItemToReport] = useState({}); // { id, type, authorId, authorName }
+
+    // Likers Modal State
+    const [likersModal, setLikersModal] = useState({
+        visible: false,
+        type: 'topic',
+        targetId: '',
+        likeCount: 0
+    });
 
     const showAlert = (title, message, buttons = [{ text: 'Tamam' }], type = 'info') => {
         setAlertConfig({ title, message, buttons, type });
@@ -547,19 +556,30 @@ export default function TopicDetailScreen({ route, navigation }) {
 
             {/* Action Bar - Reddit Style */}
             <View style={styles.actionBar}>
-                <TouchableOpacity
-                    style={[styles.actionButton, isLiked && styles.actionButtonActive]}
-                    onPress={handleTopicLike}
-                >
-                    <ThumbsUp
-                        size={16}
-                        color={isLiked ? '#ea580c' : '#6b7280'}
-                        fill={isLiked ? '#ea580c' : 'transparent'}
-                    />
-                    <Text style={[styles.actionButtonText, isLiked && styles.actionButtonTextActive]}>
-                        {topic.likeCount || 0}
-                    </Text>
-                </TouchableOpacity>
+                <View style={styles.likeGroup}>
+                    <TouchableOpacity
+                        style={[styles.actionButton, isLiked && styles.actionButtonActive]}
+                        onPress={handleTopicLike}
+                    >
+                        <ThumbsUp
+                            size={16}
+                            color={isLiked ? '#ea580c' : '#6b7280'}
+                            fill={isLiked ? '#ea580c' : 'transparent'}
+                        />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={() => {
+                            if ((topic.likeCount || 0) > 0) {
+                                setLikersModal({ visible: true, type: 'topic', targetId: topic.id, likeCount: topic.likeCount || 0 });
+                            }
+                        }}
+                        activeOpacity={(topic.likeCount || 0) > 0 ? 0.6 : 1}
+                    >
+                        <Text style={[styles.actionButtonText, isLiked && styles.actionButtonTextActive]}>
+                            {topic.likeCount || 0}
+                        </Text>
+                    </TouchableOpacity>
+                </View>
 
                 <View style={styles.actionButton}>
                     <MessageCircle size={16} color="#6b7280" />
@@ -616,6 +636,15 @@ export default function TopicDetailScreen({ route, navigation }) {
                                 onPress={() => handleCommentLike(reply.id)}
                             >
                                 <ThumbsUp size={12} color={likedComments.has(reply.id) ? '#fff' : '#6b7280'} />
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    if ((reply.likeCount || 0) > 0) {
+                                        setLikersModal({ visible: true, type: 'post', targetId: reply.id, likeCount: reply.likeCount || 0 });
+                                    }
+                                }}
+                                activeOpacity={(reply.likeCount || 0) > 0 ? 0.6 : 1}
+                            >
                                 <Text style={[styles.likeButtonText, likedComments.has(reply.id) && styles.likeButtonTextActive]}>
                                     {reply.likeCount || 0}
                                 </Text>
@@ -686,6 +715,15 @@ export default function TopicDetailScreen({ route, navigation }) {
                                 onPress={() => handleCommentLike(item.id)}
                             >
                                 <ThumbsUp size={14} color={likedComments.has(item.id) ? '#fff' : '#6b7280'} />
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    if ((item.likeCount || 0) > 0) {
+                                        setLikersModal({ visible: true, type: 'post', targetId: item.id, likeCount: item.likeCount || 0 });
+                                    }
+                                }}
+                                activeOpacity={(item.likeCount || 0) > 0 ? 0.6 : 1}
+                            >
                                 <Text style={[styles.likeButtonText, likedComments.has(item.id) && styles.likeButtonTextActive]}>
                                     {item.likeCount || 0}
                                 </Text>
@@ -847,6 +885,15 @@ export default function TopicDetailScreen({ route, navigation }) {
                 onClose={() => setFullscreenImageUrl(null)}
             />
 
+            {/* Likers Modal */}
+            <LikersModal
+                visible={likersModal.visible}
+                onClose={() => setLikersModal(prev => ({ ...prev, visible: false }))}
+                type={likersModal.type}
+                targetId={likersModal.targetId}
+                likeCount={likersModal.likeCount}
+            />
+
             {/* Options Modal */}
             <Modal
                 transparent={true}
@@ -996,6 +1043,18 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
         borderTopWidth: 1,
         borderTopColor: '#1a1a1a',
+    },
+    actionBar: {
+        flexDirection: 'row',
+        gap: 24,
+        paddingVertical: 12,
+        borderTopWidth: 1,
+        borderTopColor: '#1a1a1a',
+    },
+    likeGroup: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
     },
     actionButton: {
         flexDirection: 'row',

@@ -32,7 +32,8 @@ export default function TopicCard({
     onHashtagPress,
     onReport,
     onBlock,
-    onVotePoll
+    onVotePoll,
+    onShowLikers
 }) {
     const [activeSlide, setActiveSlide] = useState(0);
     const [showOptionsModal, setShowOptionsModal] = useState(false);
@@ -316,20 +317,32 @@ export default function TopicCard({
 
             {/* Actions */}
             <View style={styles.actionBar}>
-                <TouchableOpacity
-                    style={[styles.actionButton, isLiked && styles.actionButtonActive]}
-                    onPress={(e) => {
-                        if (onLike) {
+                <View style={styles.likeGroup}>
+                    <TouchableOpacity
+                        style={[styles.actionButton, isLiked && styles.actionButtonActive]}
+                        onPress={(e) => {
+                            if (onLike) {
+                                e.stopPropagation();
+                                onLike(item.id);
+                            }
+                        }}
+                    >
+                        <ThumbsUp size={16} color={isLiked ? '#ea580c' : '#6b7280'} fill={isLiked ? '#ea580c' : 'transparent'} />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={(e) => {
                             e.stopPropagation();
-                            onLike(item.id);
-                        }
-                    }}
-                >
-                    <ThumbsUp size={16} color={isLiked ? '#ea580c' : '#6b7280'} fill={isLiked ? '#ea580c' : 'transparent'} />
-                    <Text style={[styles.actionButtonText, isLiked && styles.actionButtonTextActive]}>
-                        {item.likeCount || 0}
-                    </Text>
-                </TouchableOpacity>
+                            if ((item.likeCount || 0) > 0 && onShowLikers) {
+                                onShowLikers(item.id, 'topic', item.likeCount || 0);
+                            }
+                        }}
+                        activeOpacity={(item.likeCount || 0) > 0 ? 0.6 : 1}
+                    >
+                        <Text style={[styles.actionButtonText, isLiked && styles.actionButtonTextActive]}>
+                            {item.likeCount || 0}
+                        </Text>
+                    </TouchableOpacity>
+                </View>
 
                 <View style={styles.actionButton}>
                     <MessageCircle size={20} color="#6b7280" />
@@ -473,6 +486,11 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingVertical: 12,
         gap: 20,
+    },
+    likeGroup: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
     },
     actionButton: {
         flexDirection: 'row',

@@ -296,6 +296,34 @@ const forumService = {
         }
     },
 
+    // Get users who liked a topic
+    getTopicLikers: async (topicId) => {
+        try {
+            const response = await api.get(`/api/forum/topic-likers?topicId=${topicId}`);
+            return { success: true, data: response.data };
+        } catch (error) {
+            console.error('Topic likers error:', error);
+            return {
+                success: false,
+                error: error.response?.data?.message || 'Beğenenler yüklenemedi',
+            };
+        }
+    },
+
+    // Get users who liked a post (comment)
+    getPostLikers: async (postId) => {
+        try {
+            const response = await api.get(`/api/forum/post-likers?postId=${postId}`);
+            return { success: true, data: response.data };
+        } catch (error) {
+            console.error('Post likers error:', error);
+            return {
+                success: false,
+                error: error.response?.data?.message || 'Beğenenler yüklenemedi',
+            };
+        }
+    },
+
     // Delete a topic (discussion) - only own topics
     deleteTopic: async (topicId) => {
         try {
