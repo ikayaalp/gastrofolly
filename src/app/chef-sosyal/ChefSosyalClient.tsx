@@ -98,6 +98,9 @@ export default function ChefSosyalClient({
   const [sortBy, setSortBy] = useState(initialSortParam)
   const [searchTerm, setSearchTerm] = useState(initialSearchParam)
   const [loading, setLoading] = useState(false)
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [showNewTopicModal, setShowNewTopicModal] = useState(false)
   const [activeTab, setActiveTab] = useState<'post' | 'image'>('post') // Modal tab state
   const [showEulaModal, setShowEulaModal] = useState(false)
@@ -147,10 +150,13 @@ export default function ChefSosyalClient({
     setSortBy(sort)
     setSearchTerm(search)
 
+    setPage(1)
+    setHasMore(true)
+
     // Sadece başlangıç yüklemesi değilse ve filtreler değiştiyse yükle
     // Not: initialTopics zaten prop olarak geliyor ama router.refresh bazen yavaş kalabiliyor.
     // Client-side fetch ile daha hızlı ve loading indicator'lı sonuç alıyoruz.
-    loadTopics()
+    loadTopics(false, 1)
   }, [searchParams])
 
   // Arama İşlemi
@@ -288,19 +294,68 @@ export default function ChefSosyalClient({
   }, []);
 
   // Client side fetching logic (for actions that don't change URL like refresh button, though mostly we use URL now)
-  const loadTopics = async () => {
-    setLoading(true)
+  const loadTopics = async (isLoadMore = false, specificPage?: number) => {
+    if (isLoadMore && (!hasMore || loadingMore || loading)) return
+
+    if (isLoadMore) {
+      setLoadingMore(true)
+    } else {
+      setLoading(true)
+    }
+
     try {
+      const targetPage = specificPage || (isLoadMore ? page + 1 : 1)
       const params = new URLSearchParams(searchParams.toString())
+      params.set('page', targetPage.toString())
+      params.set('limit', '10')
+
       const response = await fetch(`/api/forum/topics?${params.toString()}`)
       const data = await response.json()
-      setTopics(data.topics)
+      
+      if (isLoadMore) {
+        setTopics(prev => {
+          const newTopics = data.topics || []
+          const existingIds = new Set(prev.map((t: any) => t.id))
+          const filteredNew = newTopics.filter((t: any) => !existingIds.has(t.id))
+          return [...prev, ...filteredNew]
+        })
+      } else {
+        setTopics(data.topics || [])
+      }
+
+      setPage(targetPage)
+      if (data.pagination) {
+        setHasMore(targetPage < data.pagination.pages)
+      } else {
+        setHasMore((data.topics || []).length === 10)
+      }
     } catch (error) {
       console.error('Error loading topics:', error)
     } finally {
-      setLoading(false)
+      if (!isLoadMore) {
+        setLoading(false)
+      }
+      setLoadingMore(false)
     }
   }
+
+  // Infinite scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      if (
+        window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 800 &&
+        hasMore &&
+        !loading &&
+        !loadingMore &&
+        sortBy !== 'saved'
+      ) {
+        loadTopics(true)
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [hasMore, loading, loadingMore, sortBy, page, searchParams])
 
   // Sıralama değiştiğinde
   const handleSortChange = (sort: string) => {
@@ -657,6 +712,12 @@ export default function ChefSosyalClient({
             {!loading && sortBy !== 'saved' && topics.length === 0 && (
               <div className="text-center py-12 text-gray-500">
                 {searchTerm ? 'Aradığınız kriterlere uygun sonuç bulunamadı.' : 'Henüz hiç içerik yok. İlk paylasımı sen yap!'}
+              </div>
+            )}
+
+            {loadingMore && (
+              <div className="flex justify-center py-6">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500"></div>
               </div>
             )}
           </div>

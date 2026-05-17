@@ -65,6 +65,9 @@ export default function SocialScreen({ navigation }) {
     const [topics, setTopics] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
+    const [loadingMore, setLoadingMore] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [sortBy, setSortBy] = useState('newest');
     const [likedTopics, setLikedTopics] = useState(new Set());
@@ -187,31 +190,52 @@ export default function SocialScreen({ navigation }) {
         }
     };
 
-    const loadData = async () => {
+    const loadData = async (isLoadMore = false) => {
+        if (isLoadMore && (!hasMore || loadingMore || loading)) return;
+
         try {
             const token = await AsyncStorage.getItem('authToken');
+            const targetPage = isLoadMore ? page + 1 : 1;
+
+            if (isLoadMore) {
+                setLoadingMore(true);
+            }
 
             const [categoriesResult, topicsResult, trendingResult] = await Promise.all([
-                forumService.getCategories(),
-                forumService.getTopics(selectedCategory, sortBy, 20, searchTerm),
-                forumService.getTrendingHashtags(),
+                !isLoadMore ? forumService.getCategories() : Promise.resolve({success: true, data: categories}),
+                forumService.getTopics(selectedCategory, sortBy, 20, searchTerm, targetPage),
+                !isLoadMore ? forumService.getTrendingHashtags() : Promise.resolve({success: true, data: {hashtags: trendingHashtags}}),
             ]);
 
-            if (categoriesResult.success) {
+            if (!isLoadMore && categoriesResult.success) {
                 setCategories(categoriesResult.data || []);
             }
-            //deneme
 
-            if (trendingResult.success) {
+            if (!isLoadMore && trendingResult.success) {
                 setTrendingHashtags(trendingResult.data?.hashtags || []);
             }
 
             if (topicsResult.success) {
-                setTopics(topicsResult.data.topics || []);
+                const newTopics = topicsResult.data.topics || [];
+                if (isLoadMore) {
+                    setTopics(prev => {
+                        const existingIds = new Set(prev.map(t => t.id));
+                        const filteredNew = newTopics.filter(t => !existingIds.has(t.id));
+                        return [...prev, ...filteredNew];
+                    });
+                } else {
+                    setTopics(newTopics);
+                }
+                
+                setPage(targetPage);
+                if (topicsResult.data.pagination) {
+                    setHasMore(targetPage < topicsResult.data.pagination.pages);
+                } else {
+                    setHasMore(newTopics.length === 20);
+                }
             }
 
-            // Only fetch liked topics if logged inggh
-            if (token) {
+            if (token && !isLoadMore) {
                 const likedResult = await forumService.getLikedTopics();
                 if (likedResult.success && likedResult.data.likedTopicIds) {
                     setLikedTopics(new Set(likedResult.data.likedTopicIds));
@@ -220,21 +244,28 @@ export default function SocialScreen({ navigation }) {
         } catch (error) {
             console.error('Error loading data:', error);
         } finally {
-            setLoading(false);
-            setRefreshing(false);
+            if (!isLoadMore) {
+                setLoading(false);
+                setRefreshing(false);
+            }
+            setLoadingMore(false);
         }
     };
 
     useFocusEffect(
         useCallback(() => {
             checkLoginStatus();
-            loadData();
+            setHasMore(true);
+            setPage(1);
+            loadData(false);
         }, [selectedCategory, sortBy, searchTerm])
     );
 
     const onRefresh = () => {
         setRefreshing(true);
-        loadData();
+        setHasMore(true);
+        setPage(1);
+        loadData(false);
     };
 
     const handleCategoryChange = (categorySlug, newSearchTerm = '') => {
@@ -666,6 +697,13 @@ export default function SocialScreen({ navigation }) {
                 refreshControl={
                     < RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ea580c" />
                 }
+                onEndReached={() => {
+                    if (sortBy !== 'saved' && hasMore) {
+                        loadData(true);
+                    }
+                }}
+                onEndReachedThreshold={0.5}
+                ListFooterComponent={loadingMore ? <ActivityIndicator style={{ margin: 20 }} color="#ea580c" /> : null}
                 onViewableItemsChanged={onViewableItemsChanged}
                 viewabilityConfig={viewabilityConfig}
                 ListEmptyComponent={

@@ -48,7 +48,7 @@ export default {
         "slug": "chef-2-0",
 
         "scheme": "chef2",
-        "version": "1.1.1",
+        "version": "1.1.2",
         "orientation": "portrait",
         "icon": "./assets/icon_blackBg.png",
         "userInterfaceStyle": "dark",
@@ -58,7 +58,7 @@ export default {
             "backgroundColor": "#000000"
         },
         "ios": {
-            "buildNumber": "33",
+            "buildNumber": "34",
             "supportsTablet": true,
             "bundleIdentifier": "com.chef2.app",
             "infoPlist": {
