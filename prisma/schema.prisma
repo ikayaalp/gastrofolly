@@ -68,6 +68,7 @@ model User {
   subscriptionEndDate   DateTime? // Abonelik bitiş tarihi
   subscriptionReferenceCode String? // Iyzico Abonelik Referans Kodu (İptal için gerekli)
   subscriptionCancelled Boolean   @default(false) // Abonelik iptal edildi mi (dönem sonunda silinecek)
+  bio                   String?   // Profil açıklaması
   pushToken             String?   // Expo Push Notification token
   referralCode          String?   @unique // Fenomen referral kodu
   discountPercent       Int       @default(10) // Fenomen indirim oranı (%)
@@ -95,6 +96,8 @@ model User {
   referralEarnings Referral[] @relation("InfluencerReferrals")
   referredPayments Referral[] @relation("ReferredUserReferrals")
   aiConversations  AiConversation[]
+  followers        Follow[] @relation("UserFollowing")
+  following        Follow[] @relation("UserFollowers")
 }
 
 enum UserRole {
@@ -519,4 +522,19 @@ model AiMessage {
   createdAt      DateTime       @default(now())
 
   @@index([conversationId, createdAt])
+}
+
+// Takip Modeli
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("UserFollowers", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("UserFollowing", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
 }
