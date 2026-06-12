@@ -34,9 +34,15 @@ export async function POST(req: Request) {
             )
         }
 
-        if (!dbUser.subscriptionPlan || !dbUser.subscriptionReferenceCode) {
+        if (!dbUser.subscriptionReferenceCode) {
+            if (dbUser.subscriptionPlan) {
+                return NextResponse.json(
+                    { error: 'Bu abonelik mobil uygulama üzerinden (App Store veya Google Play) başlatılmış. Lütfen iptal işlemini telefonunuzun abonelik ayarlarından yapın.' },
+                    { status: 400 }
+                )
+            }
             return NextResponse.json(
-                { error: "Aktif bir aboneliğiniz veya abonelik referans kodunuz bulunmuyor." },
+                { error: 'İptal edilecek aktif bir iyzico aboneliği bulunamadı.' },
                 { status: 400 }
             )
         }

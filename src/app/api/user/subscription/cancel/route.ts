@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import jwt from 'jsonwebtoken';
+import { cancelSubscription } from '@/lib/iyzico';
 
 export async function POST(request: NextRequest) {
     try {
@@ -37,6 +38,17 @@ export async function POST(request: NextRequest) {
 
         if (currentUser.subscriptionCancelled) {
             return NextResponse.json({ message: 'Aboneliğiniz zaten iptal edilmiş' }, { status: 400 });
+        }
+
+        // İyzico tarafında iptal işlemini yap (eğer iyzico aboneliği ise)
+        if (currentUser.subscriptionReferenceCode) {
+            try {
+                const cancelResult = await cancelSubscription(currentUser.subscriptionReferenceCode);
+                console.log(`[Mobile Cancel] Iyzico iptal sonucu:`, cancelResult.status);
+            } catch (err) {
+                console.error(`[Mobile Cancel] Iyzico iptal hatası:`, err);
+                // Iyzico'da zaten iptal edilmiş veya bulunamamış olabilir, işlemi durdurma
+            }
         }
 
         // Abonelik dönem süresi kontrol et
