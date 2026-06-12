@@ -164,7 +164,7 @@ export async function POST(request: NextRequest) {
                 await prisma.user.update({
                     where: { id: appUserId },
                     data: {
-                        subscriptionPlan: 'FREE',
+                        subscriptionPlan: null,
                         subscriptionEndDate: null,
                         subscriptionStartDate: null,
                     },

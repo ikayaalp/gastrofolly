@@ -89,7 +89,8 @@ export async function GET(request: NextRequest) {
                 subscriptionPlan: null,
                 subscriptionStartDate: null,
                 subscriptionEndDate: null,
-                subscriptionCancelled: false
+                subscriptionCancelled: false,
+                subscriptionReferenceCode: null,
             }
         })
 

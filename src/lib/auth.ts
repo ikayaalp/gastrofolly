@@ -100,9 +100,9 @@ export const authOptions: NextAuthOptions = {
           if (user.subscriptionPlan === 'Premium' && user.subscriptionEndDate && new Date(user.subscriptionEndDate) < new Date()) {
               await prisma.user.update({
                   where: { id: token.sub },
-                  data: { subscriptionPlan: 'FREE', subscriptionStartDate: null, subscriptionEndDate: null }
+                  data: { subscriptionPlan: null, subscriptionStartDate: null, subscriptionEndDate: null }
               });
-              user.subscriptionPlan = 'FREE';
+              user.subscriptionPlan = null;
               user.subscriptionEndDate = null;
           }
 

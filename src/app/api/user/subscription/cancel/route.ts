@@ -39,20 +39,34 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ message: 'Aboneliğiniz zaten iptal edilmiş' }, { status: 400 });
         }
 
-        // Aboneliği iptal olarak işaretle (dönem sonuna kadar erişim devam eder)
-        // Yeni Kural:
-        // 1. subscriptionCancelled = true yap
-        // 2. subscriptionEndDate'e kadar premium erişim devam eder
-        // 3. Dönem sonunda cron job ile subscription temizlenecek
-        // 4. Progress kayıtları KORUNUR (dönem sonuna kadar erişim var)
-        // 5. Enrollment kayıtları KORUNUR (kursiyer sayısı değişmez)
+        // Abonelik dönem süresi kontrol et
+        const isExpired = !currentUser.subscriptionEndDate ||
+            (currentUser.subscriptionEndDate && new Date(currentUser.subscriptionEndDate) <= new Date())
 
-        const user = await prisma.user.update({
-            where: { id: userId },
-            data: {
-                subscriptionCancelled: true
-            }
-        });
+        let user;
+        if (isExpired) {
+            // Süre zaten dolmuş - hemen FREE'ye çevir
+            user = await prisma.user.update({
+                where: { id: userId },
+                data: {
+                    subscriptionPlan: null,
+                    subscriptionStartDate: null,
+                    subscriptionEndDate: null,
+                    subscriptionReferenceCode: null,
+                    subscriptionCancelled: false,
+                }
+            });
+            console.log(`[Mobile Cancel] ✅ User ${userId} → FREE (süre zaten dolmuş)`);
+        } else {
+            // Süre hâlâ geçerli - dönem sonuna kadar erişim devam etsin
+            user = await prisma.user.update({
+                where: { id: userId },
+                data: {
+                    subscriptionCancelled: true
+                }
+            });
+            console.log(`[Mobile Cancel] ⚠️ User ${userId} → Cancelled (erişim ${currentUser.subscriptionEndDate} tarihine kadar devam eder)`);
+        }
 
         // Calculate if subscription is still valid (until endDate)
         const isSubscriptionValid = user.subscriptionEndDate

@@ -23,6 +23,7 @@ export async function POST(req: Request) {
                 subscriptionReferenceCode: true,
                 subscriptionCancelled: true,
                 subscriptionPlan: true,
+                subscriptionEndDate: true,
             }
         })
 
@@ -54,13 +55,33 @@ export async function POST(req: Request) {
         console.log("Iyzico iptal cevabı: ", iyzicoData)
 
         if (iyzicoData.status === 'success') {
-            // Update DB to mark as cancelled
-            await prisma.user.update({
-                where: { id: userId },
-                data: {
-                    subscriptionCancelled: true
-                }
-            })
+            // Abonelik dönem süresi kontrol et
+            const isExpired = !dbUser.subscriptionEndDate || 
+                (dbUser.subscriptionEndDate && new Date(dbUser.subscriptionEndDate) <= new Date())
+
+            if (isExpired) {
+                // Süre zaten dolmuş - hemen FREE'ye çevir
+                await prisma.user.update({
+                    where: { id: userId },
+                    data: {
+                        subscriptionPlan: null,
+                        subscriptionStartDate: null,
+                        subscriptionEndDate: null,
+                        subscriptionReferenceCode: null,
+                        subscriptionCancelled: false,
+                    }
+                })
+                console.log(`[Iyzico Cancel] ✅ User ${userId} → FREE (süre zaten dolmuş)`)
+            } else {
+                // Süre hâlâ geçerli - dönem sonuna kadar erişim devam etsin
+                await prisma.user.update({
+                    where: { id: userId },
+                    data: {
+                        subscriptionCancelled: true
+                    }
+                })
+                console.log(`[Iyzico Cancel] ⚠️ User ${userId} → Cancelled (erişim ${dbUser.subscriptionEndDate} tarihine kadar devam eder)`)
+            }
 
             return NextResponse.json({
                 success: true,

@@ -45,12 +45,14 @@ export async function GET(request: NextRequest) {
             await prisma.user.update({
                 where: { id: user.id },
                 data: {
-                    subscriptionPlan: 'FREE',
+                    subscriptionPlan: null,
                     subscriptionStartDate: null,
-                    subscriptionEndDate: null
+                    subscriptionEndDate: null,
+                    subscriptionReferenceCode: null,
+                    subscriptionCancelled: false,
                 }
             });
-            user.subscriptionPlan = 'FREE';
+            user.subscriptionPlan = null;
             user.subscriptionStartDate = null;
             user.subscriptionEndDate = null;
             console.log(`[Lazy Cleanup] User ${user.id} subscription expired. Updated DB to FREE.`);

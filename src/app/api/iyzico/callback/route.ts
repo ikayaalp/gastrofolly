@@ -118,7 +118,9 @@ export async function GET(request: NextRequest) {
                   data: {
                     subscriptionPlan: payment.subscriptionPlan,
                     subscriptionStartDate: new Date(),
-                    subscriptionEndDate: endDate
+                    subscriptionEndDate: endDate,
+                    subscriptionReferenceCode: result.referenceCode || null,
+                    subscriptionCancelled: false,
                   }
                 })
                 console.log(`✅ Subscription updated for user ${userId}: ${payment.subscriptionPlan}`)
@@ -276,7 +278,9 @@ export async function GET(request: NextRequest) {
               data: {
                 subscriptionPlan: payment.subscriptionPlan,
                 subscriptionStartDate: new Date(),
-                subscriptionEndDate: endDate
+                subscriptionEndDate: endDate,
+                subscriptionReferenceCode: null,
+                subscriptionCancelled: false,
               }
             })
             console.log(`✅ Subscription updated for user ${userId}: ${payment.subscriptionPlan}`)
@@ -461,7 +465,9 @@ export async function GET(request: NextRequest) {
             data: {
               subscriptionPlan: payment.subscriptionPlan,
               subscriptionStartDate: new Date(),
-              subscriptionEndDate: endDate
+              subscriptionEndDate: endDate,
+              subscriptionReferenceCode: result.referenceCode || null,
+              subscriptionCancelled: false,
             }
           })
           console.log(`✅ Subscription updated for user ${userId}: ${payment.subscriptionPlan} (Until: ${endDate.toISOString()})`)
@@ -772,7 +778,9 @@ export async function POST(request: NextRequest) {
             data: {
               subscriptionPlan: payment.subscriptionPlan,
               subscriptionStartDate: new Date(),
-              subscriptionEndDate: endDate
+              subscriptionEndDate: endDate,
+              subscriptionReferenceCode: result.referenceCode || null,
+              subscriptionCancelled: false,
             }
           })
           console.log(`✅ Subscription updated: ${userId} -> ${payment.subscriptionPlan} until ${endDate.toISOString()}`)

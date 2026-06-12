@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
         const updatedUser = await prisma.user.update({
             where: { id: userId },
             data: {
-                subscriptionPlan: isPremium ? 'Premium' : (hasExistingValidSubscription ? existingUser.subscriptionPlan : 'FREE'),
+                subscriptionPlan: isPremium ? 'Premium' : (hasExistingValidSubscription ? existingUser.subscriptionPlan : null),
                 subscriptionEndDate: newEndDate,
                 subscriptionStartDate: newStartDate,
             },
