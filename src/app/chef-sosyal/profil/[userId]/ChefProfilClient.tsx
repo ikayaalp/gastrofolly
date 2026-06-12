@@ -18,6 +18,7 @@ interface Profile {
     id: string
     name: string | null
     image: string | null
+    coverImage: string | null
     bio: string | null
     role: string
     createdAt: string
@@ -287,8 +288,18 @@ export default function ChefProfilClient({
             {/* Content */}
             <div className="max-w-[700px] mx-auto">
                 {/* Cover / Banner */}
-                <div className="relative h-44 sm:h-52 mt-14">
-                    <div className="absolute inset-0 bg-gradient-to-br from-orange-700 via-orange-900 to-black"></div>
+                <div className="relative h-44 sm:h-52 mt-14 overflow-hidden">
+                    {profile.coverImage ? (
+                        <Image
+                            src={profile.coverImage}
+                            alt="Cover"
+                            fill
+                            className="object-cover"
+                            priority
+                        />
+                    ) : (
+                        <div className="absolute inset-0 bg-gradient-to-br from-orange-700 via-orange-900 to-black"></div>
+                    )}
                     <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNCI+PHBhdGggZD0iTTM2IDM0djZoLTZWMzRoNnptLTYtNnY2SDI0VjI4aDZ6bTEyIDZ2Nmg2VjM0aC02em0tMTIgMHY2aDZWNDBoLTZ6bS02IDZ2Nmg2VjQwSDI0eiIvPjwvZz48L2c+PC9zdmc+')] opacity-50"></div>
                     {/* Decorative cooking elements */}
                     <div className="absolute bottom-4 right-6 opacity-10">

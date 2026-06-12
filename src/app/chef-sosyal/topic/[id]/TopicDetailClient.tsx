@@ -338,13 +338,15 @@ export default function TopicDetailClient({ session, topic, categories, initialI
           <div className="flex bg-[#0a0a0a] border border-gray-800 rounded-md overflow-hidden mb-4 p-3">
             {/* Left: Avatar Column */}
             <div className="flex-shrink-0 mr-3">
-              {topic.author.image ? <img src={getOptimizedMediaUrl(topic.author.image, 'IMAGE')} className="w-10 h-10 rounded-full object-cover" /> : <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center"><User className="w-6 h-6 text-gray-400" /></div>}
+              <Link href={`/chef-sosyal/profil/${topic.author.id}`}>
+                {topic.author.image ? <img src={getOptimizedMediaUrl(topic.author.image, 'IMAGE')} className="w-10 h-10 rounded-full object-cover hover:opacity-80 transition-opacity" /> : <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-gray-600 transition-colors"><User className="w-6 h-6 text-gray-400" /></div>}
+              </Link>
             </div>
 
             {/* Right: Content Column */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center text-sm text-[#71767b] mb-1 space-x-1 flex-wrap">
-                <span className="font-bold text-[#e7e9ea] hover:underline cursor-pointer">{topic.author.name || 'anonim'}</span>
+                <Link href={`/chef-sosyal/profil/${topic.author.id}`} className="font-bold text-[#e7e9ea] hover:underline cursor-pointer">{topic.author.name || 'anonim'}</Link>
                 <span className="text-[#71767b]">•</span>
                 <span className="text-[#71767b]">{formatTimeAgo(topic.createdAt.toString())}</span>
                 <span className="text-[#71767b]">•</span>
@@ -451,11 +453,13 @@ export default function TopicDetailClient({ session, topic, categories, initialI
                 {comments.map(comment => (
                   <div key={comment.id} className="flex space-x-2">
                     <div className="flex-shrink-0">
-                      {comment.author.image ? <img src={getOptimizedMediaUrl(comment.author.image, 'IMAGE')} className="w-8 h-8 rounded-full object-cover" /> : <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center"><User className="h-4 w-4 text-gray-400" /></div>}
+                      <Link href={`/chef-sosyal/profil/${comment.author.id}`}>
+                        {comment.author.image ? <img src={getOptimizedMediaUrl(comment.author.image, 'IMAGE')} className="w-8 h-8 rounded-full object-cover hover:opacity-80 transition-opacity" /> : <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center hover:bg-gray-600 transition-colors"><User className="h-4 w-4 text-gray-400" /></div>}
+                      </Link>
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center space-x-1 text-sm text-[#71767b] mb-1 flex-wrap">
-                        <span className="font-bold text-[#e7e9ea]">{comment.author.name}</span>
+                        <Link href={`/chef-sosyal/profil/${comment.author.id}`} className="font-bold text-[#e7e9ea] hover:underline cursor-pointer">{comment.author.name}</Link>
                         <span className="text-[#71767b]">•</span>
                         <span className="text-[#71767b]">{formatTimeAgo(comment.createdAt.toString())}</span>
                       </div>
@@ -474,11 +478,13 @@ export default function TopicDetailClient({ session, topic, categories, initialI
                           {comment.replies.map(reply => (
                             <div key={reply.id} className="flex space-x-2 relative">
                               <div className="flex-shrink-0">
-                                {reply.author.image ? <img src={getOptimizedMediaUrl(reply.author.image, 'IMAGE')} className="w-6 h-6 rounded-full object-cover" /> : <div className="w-6 h-6 bg-gray-700 rounded-full flex items-center justify-center"><User className="h-3 w-3 text-gray-400" /></div>}
+                                <Link href={`/chef-sosyal/profil/${reply.author.id}`}>
+                                  {reply.author.image ? <img src={getOptimizedMediaUrl(reply.author.image, 'IMAGE')} className="w-6 h-6 rounded-full object-cover hover:opacity-80 transition-opacity" /> : <div className="w-6 h-6 bg-gray-700 rounded-full flex items-center justify-center hover:bg-gray-600 transition-colors"><User className="h-3 w-3 text-gray-400" /></div>}
+                                </Link>
                               </div>
                               <div className="flex-1">
                                 <div className="flex items-center space-x-1 text-sm text-[#71767b] mb-1 flex-wrap">
-                                  <span className="font-bold text-[#e7e9ea]">{reply.author.name}</span>
+                                  <Link href={`/chef-sosyal/profil/${reply.author.id}`} className="font-bold text-[#e7e9ea] hover:underline cursor-pointer">{reply.author.name}</Link>
                                   <span className="text-[#71767b]">•</span>
                                   <span className="text-[#71767b]">{formatTimeAgo(reply.createdAt.toString())}</span>
                                 </div>

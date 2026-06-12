@@ -13,17 +13,28 @@ export default function ProfilePage() {
     const router = useRouter();
     const [name, setName] = useState('');
     const [image, setImage] = useState('');
+    const [coverImage, setCoverImage] = useState('');
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
+    const [uploadingCover, setUploadingCover] = useState(false);
 
     // Modal States
     const [showPhotoModal, setShowPhotoModal] = useState(false);
+    const [showCoverModal, setShowCoverModal] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const coverInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         if (session?.user) {
             setName(session.user.name || '');
             setImage(session.user.image || '');
+            
+            // Eğer session'da coverImage yoksa veritabanından kendi profilini çek
+            fetch(`/api/forum/profile/${(session.user as any).id}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.user?.coverImage) setCoverImage(data.user.coverImage);
+                }).catch(() => {});
         }
     }, [session]);
 
@@ -86,6 +97,46 @@ export default function ProfilePage() {
         }
     };
 
+    const handleCoverFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (file.size > 50 * 1024 * 1024) {
+            toast.error('Dosya boyutu 50MB\'dan küçük olmalıdır');
+            if (coverInputRef.current) coverInputRef.current.value = '';
+            return;
+        }
+
+        setUploadingCover(true);
+
+        try {
+            const configRes = await fetch('/api/auth/cloudinary-params');
+            if (!configRes.ok) throw new Error('Yükleme konfigürasyonu alınamadı');
+            const { cloudName, uploadPreset } = await configRes.json();
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', uploadPreset);
+            formData.append('folder', 'forum-media');
+
+            const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+                method: 'POST',
+                body: formData,
+            });
+
+            const uploadData = await uploadRes.json();
+            if (!uploadRes.ok) throw new Error(uploadData.error?.message || 'Yükleme başarısız');
+
+            setCoverImage(uploadData.secure_url);
+            toast.success('Kapak fotoğrafı yüklendi');
+        } catch (error: any) {
+            toast.error(error.message || 'Fotoğraf yüklenirken hata oluştu');
+        } finally {
+            setUploadingCover(false);
+            if (coverInputRef.current) coverInputRef.current.value = '';
+        }
+    };
+
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
@@ -94,7 +145,7 @@ export default function ProfilePage() {
             const res = await fetch('/api/user/update-profile', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, image }),
+                body: JSON.stringify({ name, image, coverImage }),
             });
 
             const data = await res.json();
@@ -128,8 +179,61 @@ export default function ProfilePage() {
                     <h1 className="text-3xl font-bold text-white mb-8">Profili Düzenle</h1>
 
                     <form onSubmit={handleSave} className="space-y-8">
+                        {/* Cover Image Section */}
+                        <div className="flex flex-col gap-4">
+                            <h3 className="text-lg font-medium text-white">Kapak Fotoğrafı</h3>
+                            <div className="relative group w-full h-40 sm:h-48 rounded-xl overflow-hidden border border-zinc-800 bg-zinc-900">
+                                {coverImage ? (
+                                    <Image
+                                        src={coverImage}
+                                        alt="Cover"
+                                        fill
+                                        className="object-cover"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-zinc-600 bg-gradient-to-br from-zinc-800 to-black">
+                                        Sosyal profiliniz için bir kapak fotoğrafı yükleyin
+                                    </div>
+                                )}
+                                {uploadingCover && (
+                                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                                        <Loader2 className="w-8 h-8 text-orange-500 animate-spin" />
+                                    </div>
+                                )}
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => coverInputRef.current?.click()}
+                                        disabled={uploadingCover}
+                                        className="bg-orange-600 px-4 py-2 rounded-full text-sm font-bold text-white hover:bg-orange-700 transition-colors flex items-center gap-2"
+                                    >
+                                        <Camera className="w-4 h-4" /> Değiştir
+                                    </button>
+                                    {coverImage && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowCoverModal(true)}
+                                            className="bg-red-600/80 px-4 py-2 rounded-full text-sm font-bold text-white hover:bg-red-700 transition-colors"
+                                        >
+                                            Kaldır
+                                        </button>
+                                    )}
+                                </div>
+                                <input
+                                    type="file"
+                                    ref={coverInputRef}
+                                    onChange={handleCoverFileChange}
+                                    accept="image/*"
+                                    className="hidden"
+                                />
+                            </div>
+                            <p className="text-zinc-400 text-sm">
+                                Sosyal profilinizde banner olarak görünecektir. Önerilen boyut: 1500x500px.
+                            </p>
+                        </div>
+
                         {/* Avatar Section */}
-                        <div className="flex flex-col items-center sm:flex-row sm:items-start gap-6">
+                        <div className="flex flex-col items-center sm:flex-row sm:items-start gap-6 border-t border-zinc-800 pt-6">
                             <div className="relative group">
                                 <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-orange-600 bg-zinc-800 relative">
                                     {image ? (
@@ -356,6 +460,35 @@ export default function ProfilePage() {
                 }}
                 title="Profil Fotoğrafını Kaldır"
                 message="Profil fotoğrafınızı kaldırmak istediğinize emin misiniz?"
+                confirmText="Evet, Kaldır"
+                isDanger={true}
+                isLoading={loading}
+            />
+
+            {/* Cover Remove Modal */}
+            <ConfirmationModal
+                isOpen={showCoverModal}
+                onClose={() => setShowCoverModal(false)}
+                onConfirm={async () => {
+                    setLoading(true);
+                    try {
+                        const res = await fetch('/api/user/update-profile', {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ name, image, coverImage: null }),
+                        });
+                        if (!res.ok) throw new Error('İşlem başarısız');
+                        setCoverImage('');
+                        toast.success('Kapak fotoğrafı kaldırıldı');
+                        setShowCoverModal(false);
+                    } catch (error: any) {
+                        toast.error(error.message || 'Hata oluştu');
+                    } finally {
+                        setLoading(false);
+                    }
+                }}
+                title="Kapak Fotoğrafını Kaldır"
+                message="Profil kapak fotoğrafınızı kaldırmak istediğinize emin misiniz?"
                 confirmText="Evet, Kaldır"
                 isDanger={true}
                 isLoading={loading}

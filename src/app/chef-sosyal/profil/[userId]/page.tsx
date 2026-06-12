@@ -33,6 +33,7 @@ export default async function ChefProfilPage({ params }: PageProps) {
       name: true,
       image: true,
       bio: true,
+      coverImage: true,
       role: true,
       createdAt: true,
       _count: {

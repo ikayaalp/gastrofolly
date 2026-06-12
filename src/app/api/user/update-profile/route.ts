@@ -11,14 +11,15 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "Giriş yapmanız gerekiyor" }, { status: 401 })
     }
 
-    const { name, image, phoneNumber, bio } = await request.json()
+    const { name, image, phoneNumber, bio, coverImage } = await request.json()
 
-    // Email artık değiştirilemez, sadece name, phoneNumber, image ve bio güncellenir
+    // Email artık değiştirilemez, sadece name, phoneNumber, image, bio ve coverImage güncellenir
     const updateData: any = {}
     if (name !== undefined) updateData.name = name || null
     if (phoneNumber !== undefined) updateData.phoneNumber = phoneNumber || null
     if (image !== undefined) updateData.image = image || null
     if (bio !== undefined) updateData.bio = bio || null
+    if (coverImage !== undefined) updateData.coverImage = coverImage || null
 
     const updatedUser = await prisma.user.update({
       where: { id: user.id },

@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { ChefHat, Search, Bell, Plus, MessageCircle, ThumbsUp, Clock, User, Home, BookOpen, Users, Image as ImageIcon, Play, Menu, X, Filter, Type, ArrowDown, Camera, Film, Bookmark } from "lucide-react"
 import UserDropdown from "@/components/ui/UserDropdown"
@@ -135,10 +135,64 @@ export default function ChefSosyalClient({
     type: 'error'
   });
 
-  // Props değiştiğinde (URL değişimi sonrası yeni veri geldiğinde) state'i güncelle
+  // State'i session storage'dan yükle veya props'tan al
   useEffect(() => {
-    setTopics(initialTopics)
-  }, [initialTopics])
+    const key = `chef-sosyal-state`;
+    const stored = sessionStorage.getItem(key);
+    let shouldUpdateFromProps = true;
+
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        if (
+          parsed.category === searchParams.get('category') &&
+          parsed.search === searchParams.get('search') &&
+          parsed.sort === searchParams.get('sort') &&
+          parsed.topics &&
+          parsed.topics.length >= initialTopics.length
+        ) {
+          setTopics(parsed.topics);
+          setPage(parsed.page);
+          setHasMore(parsed.hasMore);
+          shouldUpdateFromProps = false;
+          
+          setTimeout(() => {
+            window.scrollTo({ top: parsed.scrollY, behavior: 'instant' });
+          }, 100);
+        }
+      } catch (e) {
+        console.error("Session restore error", e);
+      }
+    }
+
+    if (shouldUpdateFromProps) {
+      setTopics(initialTopics);
+    }
+  }, [initialTopics, searchParams]);
+
+  // State ve scroll değişikliklerini kaydet
+  useEffect(() => {
+    const saveState = () => {
+      const key = `chef-sosyal-state`;
+      sessionStorage.setItem(key, JSON.stringify({
+        category: searchParams.get('category'),
+        search: searchParams.get('search'),
+        sort: searchParams.get('sort'),
+        topics,
+        page,
+        hasMore,
+        scrollY: window.scrollY
+      }));
+    };
+
+    const interval = setInterval(saveState, 500);
+    return () => {
+      clearInterval(interval);
+      saveState();
+    };
+  }, [topics, page, hasMore, searchParams]);
+
+  const isFirstMount = useRef(true);
 
   // URL parametreleri değiştiğinde state'i güncelle ve konuları yükle
   useEffect(() => {
@@ -150,12 +204,14 @@ export default function ChefSosyalClient({
     setSortBy(sort)
     setSearchTerm(search)
 
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      return; // Skip initial fetch to allow session storage restore to work
+    }
+
     setPage(1)
     setHasMore(true)
 
-    // Sadece başlangıç yüklemesi değilse ve filtreler değiştiyse yükle
-    // Not: initialTopics zaten prop olarak geliyor ama router.refresh bazen yavaş kalabiliyor.
-    // Client-side fetch ile daha hızlı ve loading indicator'lı sonuç alıyoruz.
     loadTopics(false, 1)
   }, [searchParams])
 

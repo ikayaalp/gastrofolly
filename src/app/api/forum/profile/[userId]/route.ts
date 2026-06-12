@@ -29,6 +29,7 @@ export async function GET(
         name: true,
         image: true,
         bio: true,
+        coverImage: true,
         role: true,
         createdAt: true,
         _count: {

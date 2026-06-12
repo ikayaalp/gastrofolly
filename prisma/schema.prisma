@@ -69,6 +69,7 @@ model User {
   subscriptionReferenceCode String? // Iyzico Abonelik Referans Kodu (İptal için gerekli)
   subscriptionCancelled Boolean   @default(false) // Abonelik iptal edildi mi (dönem sonunda silinecek)
   bio                   String?   // Profil açıklaması
+  coverImage            String?   // Profil kapak fotoğrafı
   pushToken             String?   // Expo Push Notification token
   referralCode          String?   @unique // Fenomen referral kodu
   discountPercent       Int       @default(10) // Fenomen indirim oranı (%)
