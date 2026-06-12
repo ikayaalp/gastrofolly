@@ -163,7 +163,14 @@ export default function ProfilePage() {
             });
 
             toast.success('Profil başarıyla güncellendi');
-            router.refresh();
+            if ((session?.user as any)?.id) {
+                // Kısa bir gecikme ile yönlendir ki toast mesajı okunabilsin
+                setTimeout(() => {
+                    router.push(`/chef-sosyal/profil/${(session?.user as any).id}`);
+                }, 500);
+            } else {
+                router.refresh();
+            }
         } catch (error: any) {
             console.error('Update error:', error);
             toast.error(error.message || 'Profil güncellenirken hata oluştu');
