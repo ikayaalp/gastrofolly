@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { X, User, ThumbsUp, Loader2 } from 'lucide-react'
 import { getOptimizedMediaUrl } from '@/lib/utils'
 
@@ -122,25 +123,27 @@ export default function LikersModal({ isOpen, onClose, type, targetId, likeCount
                 >
                   {/* Avatar */}
                   <div className="flex-shrink-0">
-                    {liker.image ? (
-                      <img
-                        src={getOptimizedMediaUrl(liker.image, 'IMAGE')}
-                        alt={liker.name || ''}
-                        className="w-10 h-10 rounded-full object-cover border border-gray-800"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center border border-gray-700">
-                        <User className="w-5 h-5 text-gray-400" />
-                      </div>
-                    )}
+                    <Link href={`/chef-sosyal/profil/${liker.id}`} onClick={onClose}>
+                      {liker.image ? (
+                        <img
+                          src={getOptimizedMediaUrl(liker.image, 'IMAGE')}
+                          alt={liker.name || ''}
+                          className="w-10 h-10 rounded-full object-cover border border-gray-800 hover:opacity-80 transition-opacity"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center border border-gray-700 hover:bg-gray-700 transition-colors">
+                          <User className="w-5 h-5 text-gray-400" />
+                        </div>
+                      )}
+                    </Link>
                   </div>
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-[#e7e9ea] font-semibold text-sm truncate">
+                    <Link href={`/chef-sosyal/profil/${liker.id}`} onClick={onClose} className="text-[#e7e9ea] font-semibold text-sm truncate hover:underline cursor-pointer block">
                       {liker.name || 'Anonim'}
-                    </p>
+                    </Link>
                   </div>
 
                   {/* Like icon indicator */}
