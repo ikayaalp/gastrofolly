@@ -429,23 +429,23 @@ export default async function CoursePage({ params }: CoursePageProps) {
                 const isFirstLesson = index === 0;
                 const canAccess = isEnrolled || isFirstLesson;
                 
-                return (
-                  <div key={lesson.id} className="p-6 md:p-8 flex flex-col md:flex-row gap-6 md:gap-8 items-start md:items-center hover:bg-white/[0.02] transition-colors group">
+                const LessonContent = (
+                  <div className={`p-6 md:p-8 flex flex-col md:flex-row gap-6 md:gap-8 items-start md:items-center transition-colors group ${canAccess ? 'cursor-pointer hover:bg-white/[0.04]' : 'hover:bg-white/[0.02] opacity-80'}`}>
                     {/* Thumbnail */}
                     <div className="relative w-full md:w-56 aspect-[16/9] rounded-xl overflow-hidden shrink-0 bg-[#1a1a1a] border border-white/5">
                       {course.imageUrl && (
                         <Image src={course.imageUrl} fill className="object-cover opacity-60 group-hover:opacity-80 transition-opacity" alt="" />
                       )}
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="bg-black/50 backdrop-blur-sm p-3 rounded-full group-hover:bg-orange-600/90 transition-colors">
-                          <Play className="w-6 h-6 text-white" />
+                        <div className={`bg-black/50 backdrop-blur-sm p-3 rounded-full transition-colors ${canAccess ? 'group-hover:bg-orange-600/90' : ''}`}>
+                          {canAccess ? <Play className="w-6 h-6 text-white" /> : <Lock className="w-6 h-6 text-white/50" />}
                         </div>
                       </div>
                     </div>
                     
                     {/* Lesson Info */}
                     <div className="flex-1 min-w-0">
-                      <h4 className="text-white font-medium text-lg mb-2">Bölüm {index + 1} - {lesson.title}</h4>
+                      <h4 className={`font-medium text-lg mb-2 ${canAccess ? 'text-white group-hover:text-orange-400 transition-colors' : 'text-gray-300'}`}>Bölüm {index + 1} - {lesson.title}</h4>
                       {lesson.description && (
                         <p className="text-gray-500 text-sm line-clamp-2 leading-relaxed font-light">{lesson.description}</p>
                       )}
@@ -459,19 +459,13 @@ export default async function CoursePage({ params }: CoursePageProps) {
                       </div>
                       
                       {isEnrolled ? (
-                        <Link href={`/learn/${course.id}?lesson=${lesson.id}`} className="bg-orange-600 hover:bg-orange-500 text-white px-6 py-2.5 rounded-lg text-sm font-bold transition-colors w-full md:w-auto text-center">
+                        <div className="bg-orange-600 hover:bg-orange-500 text-white px-6 py-2.5 rounded-lg text-sm font-bold transition-colors w-full md:w-auto text-center">
                           İzle
-                        </Link>
+                        </div>
                       ) : isFirstLesson ? (
-                        <FreeLessonModal
-                          lesson={lesson}
-                          courseTitle={course.title}
-                          customTrigger={
-                            <button className="bg-[#1a1a1a] border border-green-500/30 hover:border-green-500 hover:bg-green-500/10 text-green-500 px-6 py-2.5 rounded-lg text-sm font-bold transition-all w-full md:w-auto">
-                              Ücretsiz İzle
-                            </button>
-                          }
-                        />
+                        <div className="bg-[#1a1a1a] border border-green-500/30 text-green-500 px-6 py-2.5 rounded-lg text-sm font-bold transition-all w-full md:w-auto text-center group-hover:bg-green-500/10 group-hover:border-green-500">
+                          Ücretsiz İzle
+                        </div>
                       ) : (
                         <div className="bg-[#1a1a1a] text-gray-500 px-6 py-2.5 rounded-lg text-sm font-medium flex items-center justify-center gap-2 border border-white/5 w-full md:w-auto cursor-not-allowed">
                           <Lock className="w-4 h-4" /> Kilitli
@@ -479,7 +473,28 @@ export default async function CoursePage({ params }: CoursePageProps) {
                       )}
                     </div>
                   </div>
-                )
+                );
+
+                if (isEnrolled) {
+                  return (
+                    <Link key={lesson.id} href={`/learn/${course.id}?lesson=${lesson.id}`} className="block">
+                      {LessonContent}
+                    </Link>
+                  )
+                }
+
+                if (isFirstLesson) {
+                  return (
+                    <FreeLessonModal
+                      key={lesson.id}
+                      lesson={lesson}
+                      courseTitle={course.title}
+                      customTrigger={LessonContent}
+                    />
+                  )
+                }
+
+                return <div key={lesson.id}>{LessonContent}</div>;
               })}
             </div>
           </div>
