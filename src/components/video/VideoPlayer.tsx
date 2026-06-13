@@ -65,19 +65,6 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
     }, 3000);
   };
 
-  // Watermark Animation Logic
-  const [watermarkPos, setWatermarkPos] = useState({ top: '10%', left: '10%' });
-  useEffect(() => {
-    const interval = setInterval(() => {
-      // Rastgele pozisyon (köşelere çok yaklaşmasın diye %10 ile %80 arası)
-      const randomTop = Math.floor(Math.random() * 70) + 10;
-      const randomLeft = Math.floor(Math.random() * 70) + 10;
-      setWatermarkPos({ top: `${randomTop}%`, left: `${randomLeft}%` });
-    }, 8000); // Her 8 saniyede bir yer değiştir
-
-    return () => clearInterval(interval);
-  }, []);
-
   useEffect(() => {
     // cleanup timer on unmount
     return () => {
@@ -387,19 +374,6 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
       onMouseMove={triggerControls}
       onTouchMove={triggerControls}
     >
-      {/* Dynamic Watermark */}
-      {userEmail && isPlaying && (
-        <div 
-          className="absolute text-white/30 text-xs md:text-sm font-medium pointer-events-none z-40 transition-all duration-1000 ease-in-out"
-          style={{
-            top: watermarkPos.top,
-            left: watermarkPos.left,
-            textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
-          }}
-        >
-          {userEmail}
-        </div>
-      )}
       {lesson.videoUrl && lesson.videoUrl.trim() !== "" ? (
         isYouTubeUrl(lesson.videoUrl) ? (
           // YouTube Player
