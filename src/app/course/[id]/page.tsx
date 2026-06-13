@@ -270,7 +270,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
         </div>
 
         {/* Desktop Background & Content Wrapper */}
-        <div className="relative w-full md:min-h-[50vh] flex items-center pt-8 md:pt-32 pb-16 overflow-hidden -mt-24 md:mt-0">
+        <div className="relative w-full md:min-h-[85vh] flex items-center pt-8 md:pt-32 pb-16 overflow-hidden -mt-24 md:mt-0">
           
           {/* Desktop Background Image */}
           <div className="hidden md:block absolute inset-0">
