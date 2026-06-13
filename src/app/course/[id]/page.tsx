@@ -9,7 +9,6 @@ import {
   ChefHat,
   Clock,
   Play,
-  CheckCircle,
   Lock,
   Home,
   BookOpen,
@@ -18,15 +17,13 @@ import {
   Users,
   Award,
   Monitor,
-  Smartphone,
-  ArrowRight,
-  Sparkles,
   Shield,
-  ChevronRight
+  ArrowRight,
+  ChevronRight,
+  Gift
 } from "lucide-react"
 import FavoriteButton from "@/components/course/FavoriteButton"
 import ShareButton from "@/components/course/ShareButton"
-import CommentsSection from "@/components/course/CommentsSection"
 import UserDropdown from "@/components/ui/UserDropdown"
 import NotificationDropdown from "@/components/ui/NotificationDropdown"
 import FreeLessonModal from "@/components/course/FreeLessonModal"
@@ -104,7 +101,6 @@ export default async function CoursePage({ params }: CoursePageProps) {
     notFound()
   }
 
-  // Taslak kurs kontrolü: Sadece eğitmen ve admin görebilir
   if (!course.isPublished) {
     const isInstructor = session?.user?.id === course.instructorId
     const isAdmin = session?.user?.role === 'ADMIN'
@@ -114,7 +110,6 @@ export default async function CoursePage({ params }: CoursePageProps) {
     }
   }
 
-  // Kullanıcının abonelik durumunu kontrol et
   let hasActiveSubscription = false
   let userSubscriptionLevel = 0
 
@@ -140,10 +135,6 @@ export default async function CoursePage({ params }: CoursePageProps) {
     (hasActiveSubscription && userSubscriptionLevel >= courseLevelValue)
     : false
 
-  const averageRating = course.reviews.length > 0
-    ? course.reviews.reduce((acc: number, review: { rating: number }) => acc + review.rating, 0) / course.reviews.length
-    : 0
-
   const totalDuration = course.lessons.reduce((acc: number, lesson: { duration: number | null }) => acc + (lesson.duration || 0), 0)
 
   let hasProgress = false
@@ -156,8 +147,6 @@ export default async function CoursePage({ params }: CoursePageProps) {
     })
     hasProgress = !!userProgress
   }
-
-  const levelLabel = course.level === 'BEGINNER' ? 'Başlangıç' : course.level === 'INTERMEDIATE' ? 'Orta Seviye' : 'İleri Seviye'
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -180,46 +169,40 @@ export default async function CoursePage({ params }: CoursePageProps) {
     }
   }
 
-  const totalHours = Math.floor(totalDuration / 60)
-  const totalMins = totalDuration % 60
-  const durationText = totalHours > 0 ? `${totalHours} saat ${totalMins > 0 ? `${totalMins} dk` : ''}` : `${totalDuration} dk`
+  // Description splitting for summary
+  const summaryPoints = course.description
+    ? course.description.split('. ').slice(0, 4).filter(s => s.length > 5)
+    : ["Bu eğitimde yeni teknikler öğreneceksiniz."]
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-[#050505]">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
       {/* ═══ HEADER (Desktop) ═══ */}
-      <header className="hidden md:block fixed top-0 left-0 right-0 z-50 bg-black/30 backdrop-blur-sm border-b border-black">
+      <header className="hidden md:block fixed top-0 left-0 right-0 z-50 bg-black/50 backdrop-blur-md border-b border-white/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-8">
-              <Link href="/home" className="flex items-center gap-0.5">
+              <Link href="/home" className="flex items-center gap-0.5 hover:opacity-80 transition-opacity">
                 <div className="relative w-10 h-10">
                   <Image src="/logo.png" alt="C" fill className="object-contain" />
                 </div>
                 <span className="text-2xl font-bold tracking-tight">
-                  <span className="text-orange-500" style={{ marginLeft: "-6px" }}>ulin</span><span className="text-white" style={{ marginLeft: "0px" }}>ora</span>
+                  <span className="text-orange-600" style={{ marginLeft: "-6px" }}>ulin</span><span className="text-white" style={{ marginLeft: "0px" }}>ora</span>
                 </span>
-                {session?.user?.role === 'ADMIN' && (
-                  <span className="bg-orange-600 text-white px-2 py-1 rounded text-sm font-medium">Admin</span>
-                )}
               </Link>
               {session?.user && (
                 <nav className="hidden md:flex space-x-6">
-                  <Link href="/home" className="text-gray-300 hover:text-white transition-colors">Ana Sayfa</Link>
-                  <Link href="/my-courses" className="text-gray-300 hover:text-white transition-colors">Kurslarım</Link>
+                  <Link href="/home" className="text-gray-300 hover:text-white text-sm font-medium transition-colors">Ana Sayfa</Link>
+                  <Link href="/my-courses" className="text-gray-300 hover:text-white text-sm font-medium transition-colors">Kurslarım</Link>
                   {session.user.role === 'ADMIN' && (
-                    <>
-                      <Link href="/admin" className="text-gray-300 hover:text-white transition-colors">Admin Paneli</Link>
-                      <Link href="/admin/courses" className="text-gray-300 hover:text-white transition-colors">Kurs Yönetimi</Link>
-                    </>
+                    <Link href="/admin" className="text-gray-300 hover:text-white text-sm font-medium transition-colors">Admin Paneli</Link>
                   )}
-                  <Link href="/culi" className="text-gray-300 hover:text-white transition-colors">Culi</Link>
-                  <Link href="/chef-sosyal" className="text-gray-300 hover:text-white transition-colors">Chef Sosyal</Link>
-                  <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">İletişim</Link>
+                  <Link href="/culi" className="text-gray-300 hover:text-white text-sm font-medium transition-colors">Culi</Link>
+                  <Link href="/chef-sosyal" className="text-gray-300 hover:text-white text-sm font-medium transition-colors">Chef Sosyal</Link>
                 </nav>
               )}
             </div>
@@ -228,8 +211,8 @@ export default async function CoursePage({ params }: CoursePageProps) {
                 <UserDropdown />
               ) : (
                 <>
-                  <Link href="/auth/signin" className="text-gray-300 hover:text-orange-500">Giriş Yap</Link>
-                  <Link href="/auth/signup" className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors">Kayıt Ol</Link>
+                  <Link href="/auth/signin" className="text-gray-300 hover:text-orange-500 text-sm font-medium">Giriş Yap</Link>
+                  <Link href="/auth/signup" className="bg-orange-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-orange-700 transition-colors shadow-lg shadow-orange-600/20">Kayıt Ol</Link>
                 </>
               )}
             </div>
@@ -238,18 +221,15 @@ export default async function CoursePage({ params }: CoursePageProps) {
       </header>
 
       {/* ═══ HEADER (Mobile) ═══ */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-black/30 backdrop-blur-sm border-b border-black">
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-black/50 backdrop-blur-md border-b border-white/5">
         <div className="flex justify-between items-center py-3 px-4">
           <Link href="/home" className="flex items-center gap-0.5">
             <div className="relative w-8 h-8">
               <Image src="/logo.png" alt="C" fill className="object-contain" />
             </div>
             <span className="text-lg font-bold tracking-tight">
-              <span className="text-orange-500" style={{ marginLeft: "-6px" }}>ulin</span><span className="text-white" style={{ marginLeft: "0px" }}>ora</span>
+              <span className="text-orange-600" style={{ marginLeft: "-6px" }}>ulin</span><span className="text-white" style={{ marginLeft: "0px" }}>ora</span>
             </span>
-            {session?.user?.role === 'ADMIN' && (
-              <span className="bg-orange-600 text-white px-2 py-1 rounded text-xs font-medium">Admin</span>
-            )}
           </Link>
           <div className="flex items-center space-x-3">
             {session?.user ? (
@@ -264,35 +244,35 @@ export default async function CoursePage({ params }: CoursePageProps) {
         </div>
       </div>
 
-
       {/* ═══════════════════════════════════════════════════════════ */}
-      {/* HERO — Neoskola-style cinematic full-width hero             */}
+      {/* HERO — NEOSKOLA STYLE                                        */}
       {/* ═══════════════════════════════════════════════════════════ */}
-      <section className="relative w-full bg-black">
-        {/* Mobile Image (Visible only on small screens) */}
-        <div className="md:hidden relative w-full aspect-video mt-14">
+      <section className="relative w-full bg-[#050505]">
+        
+        {/* Mobile Background Image */}
+        <div className="md:hidden relative w-full aspect-[4/5] mt-14">
           {course.imageUrl ? (
             <Image
               src={course.imageUrl}
               alt={course.title}
               fill
               priority
-              className="object-cover"
+              className="object-cover object-top"
               sizes="100vw"
             />
           ) : (
-            <div className="absolute inset-0 bg-gradient-to-br from-orange-900 via-black to-black flex items-center justify-center">
-               <ChefHat className="h-12 w-12 text-white/20" />
+            <div className="absolute inset-0 bg-gradient-to-br from-[#1a0f05] via-[#050505] to-[#050505] flex items-center justify-center">
+               <ChefHat className="h-12 w-12 text-white/10" />
             </div>
           )}
-          {/* Subtle bottom gradient to blend with content below */}
-          <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black to-transparent" />
+          {/* Gradients */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/50 to-[#050505]" />
         </div>
 
-        {/* Desktop Background & Unified Content Wrapper */}
-        <div className="relative w-full md:min-h-[80vh] flex items-end pt-6 md:pt-24 overflow-hidden">
+        {/* Desktop Background & Content Wrapper */}
+        <div className="relative w-full md:min-h-[85vh] flex items-center pt-8 md:pt-24 pb-8 overflow-hidden -mt-24 md:mt-0">
           
-          {/* Desktop Background Image (Hidden on mobile) */}
+          {/* Desktop Background Image */}
           <div className="hidden md:block absolute inset-0">
             {course.imageUrl ? (
               <Image
@@ -300,340 +280,263 @@ export default async function CoursePage({ params }: CoursePageProps) {
                 alt={course.title}
                 fill
                 priority
-                className="object-cover"
+                className="object-cover object-center scale-105" // slight scale for cinematic feel
                 sizes="100vw"
               />
             ) : (
-              <div className="absolute inset-0 bg-gradient-to-br from-orange-900 via-black to-black" />
+              <div className="absolute inset-0 bg-gradient-to-br from-[#1a0f05] via-[#050505] to-[#050505]" />
             )}
-            {/* Desktop Gradients */}
-            <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+            {/* Cinematic Gradients to match screenshot */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[#050505] via-[#050505]/90 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/40 to-transparent" />
           </div>
 
-          {/* Content overlay */}
-          <div className="relative z-10 w-full pb-8 md:pb-16">
-            <div className="max-w-6xl mx-auto px-4 md:px-8">
-
-
-
-            <div className="max-w-2xl">
-              {/* Instructor Name — large, like Neoskola */}
-              <Link href={`/instructor/${course.instructor.id}`} className="inline-flex items-center gap-3 group mb-4">
-                <img
-                  src={course.instructor.image || "/api/placeholder/48/48"}
-                  alt={course.instructor.name || "Eğitmen"}
-                  className="w-12 h-12 rounded-full border-2 border-white/20 group-hover:border-orange-500/50 transition-colors object-cover"
-                />
-                <div>
-                  <p className="text-white text-lg md:text-xl font-bold group-hover:text-orange-400 transition-colors">
-                    {course.instructor.name}
-                  </p>
-                  <p className="text-gray-500 text-xs">Eğitmen</p>
+          {/* Content layer */}
+          <div className="relative z-10 w-full pt-16 md:pt-0">
+            <div className="max-w-6xl mx-auto px-4 md:px-8 flex flex-col md:flex-row justify-between items-end gap-10">
+              
+              {/* Left: Text Content */}
+              <div className="w-full md:max-w-2xl text-center md:text-left">
+                {/* Instructor Name First */}
+                <h1 className="text-3xl md:text-5xl lg:text-[3.5rem] font-medium text-white leading-tight mb-2 tracking-tight">
+                  {course.instructor.name}
+                </h1>
+                
+                {/* Course Title */}
+                <h2 className="text-xl md:text-3xl lg:text-4xl font-light text-gray-300 mb-6 tracking-wide">
+                  {course.title}
+                </h2>
+                
+                {/* Badges row */}
+                <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 mb-6">
+                  {course.category && (
+                    <span className="bg-white/10 backdrop-blur-sm text-gray-200 text-xs font-semibold px-3 py-1.5 rounded uppercase tracking-wider">
+                      {course.category.name}
+                    </span>
+                  )}
+                  <span className="text-gray-400 text-sm tracking-wide">
+                    {course._count.lessons} Ders • {course.lessons.length} Bölüm
+                  </span>
                 </div>
-              </Link>
-
-              {/* Title — hero-sized */}
-              <h1 className="text-3xl md:text-5xl lg:text-[3.5rem] font-bold text-white leading-[1.1] mb-5">
-                {course.title}
-              </h1>
-
-              {/* Description */}
-              <p className="text-gray-400 text-sm md:text-base leading-relaxed mb-8 max-w-lg">
-                {course.description}
-              </p>
-
-              {/* Stats row */}
-              <div className="flex items-center gap-6 text-sm text-gray-400">
-                <div className="flex items-center gap-2">
-                  <Play className="h-4 w-4 text-orange-500" />
-                  <span><span className="text-white font-semibold">{course._count.lessons}</span> Ders</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-orange-500" />
-                  <span className="text-white font-semibold">{durationText}</span>
+                
+                {/* Description snippet */}
+                <p className="text-gray-400 text-sm md:text-base leading-relaxed mb-10 max-w-lg mx-auto md:mx-0 font-light">
+                  {course.description?.substring(0, 180)}{course.description && course.description.length > 180 ? '...' : ''}
+                </p>
+                
+                {/* Trailer Button */}
+                <div className="flex items-center justify-center md:justify-start">
+                  <FreeLessonModal 
+                    lesson={course.lessons[0]}
+                    courseTitle={course.title}
+                    customTrigger={
+                      <button className="border border-white/30 hover:border-white text-white px-8 py-3 rounded-lg flex items-center gap-3 transition-all bg-white/5 backdrop-blur-sm group">
+                        <Play className="w-4 h-4 fill-white group-hover:scale-110 transition-transform" />
+                        <span className="text-sm font-medium tracking-wide">Trailer</span>
+                      </button>
+                    }
+                  />
                 </div>
               </div>
+
+              {/* Right: Floating CTA Card (Desktop only) */}
+              <div className="hidden md:block w-full max-w-[340px] bg-[#1a1a1a]/95 backdrop-blur-xl rounded-3xl p-7 border border-white/10 shadow-2xl">
+                <div className="mb-6 text-center">
+                  <h3 className="text-white font-bold text-lg mb-1 tracking-wide">Tüm Eğitimlere Erişim</h3>
+                  <p className="text-gray-400 text-sm">Aylık <span className="text-white font-semibold">299 ₺</span></p>
+                </div>
+                
+                {isEnrolled ? (
+                  <Link href={`/learn/${course.id}`} className="block w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-4 px-4 rounded-xl text-center transition-colors shadow-lg shadow-orange-600/25">
+                    <Play className="inline w-5 h-5 mr-2 -mt-0.5 fill-white" /> Kursa Başla
+                  </Link>
+                ) : (
+                  <div className="space-y-3">
+                    <Link href="/subscription?plan=Premium" className="block w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-4 px-4 rounded-xl text-center transition-colors shadow-lg shadow-orange-600/25">
+                      <Play className="inline w-5 h-5 mr-2 -mt-0.5" /> Üyeliğini Başlat
+                    </Link>
+                    <button className="block w-full border border-white/20 hover:border-white/40 hover:bg-white/5 text-white font-medium py-3.5 px-4 rounded-xl text-center transition-colors">
+                      <Gift className="inline w-4 h-4 mr-2 -mt-0.5" /> Hediye Et
+                    </button>
+                  </div>
+                )}
+                <p className="text-center text-[#555] text-[10px] mt-4">İstediğiniz zaman iptal edebilirsiniz.</p>
+              </div>
+
             </div>
           </div>
         </div>
       </section>
 
-
       {/* ═══════════════════════════════════════════════════════════ */}
-      {/* MAIN CONTENT + SIDEBAR                                     */}
+      {/* MAIN GRID LAYOUT                                             */}
       {/* ═══════════════════════════════════════════════════════════ */}
-      <div className="max-w-6xl mx-auto px-4 md:px-8 py-10 md:py-14 pb-32 md:pb-16">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 lg:gap-14">
-
-          {/* ─── LEFT: Main ─── */}
-          <div className="lg:col-span-2 space-y-10">
-
-            {/* Mobile CTA */}
-            <div className="block lg:hidden">
-              {isEnrolled ? (
-                <Link
-                  href={`/learn/${course.id}`}
-                  className={`group w-full text-white py-4 px-6 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${hasProgress
-                    ? 'bg-green-600 hover:bg-green-500'
-                    : 'bg-orange-600 hover:bg-orange-500'
-                    }`}
-                >
-                  <Play className="h-5 w-5" />
-                  {hasProgress ? 'Kursa Devam Et' : 'Kursa Başla'}
-                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                </Link>
-              ) : (
-                <div className="rounded-2xl border border-white/[0.08] bg-[#111] p-6 text-center">
-                  <Crown className="h-8 w-8 text-orange-500 mx-auto mb-3" />
-                  <h3 className="text-lg font-bold text-white mb-1">Premium Üyelik Gerekli</h3>
-                  <p className="text-gray-500 text-sm mb-4">Bu kursa erişmek için abone olun.</p>
-                  <div className="mb-4">
-                    <span className="text-3xl font-bold text-white">299 ₺</span>
-                    <span className="text-sm text-gray-500 ml-1">/ Aylık</span>
-                  </div>
-                  <Link
-                    href="/subscription?plan=Premium"
-                    className="group w-full text-white py-3.5 px-6 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 bg-orange-600 hover:bg-orange-500"
-                  >
-                    Premium Ol
-                    <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                  </Link>
-                </div>
-              )}
-
-              <div className="grid grid-cols-2 gap-3 mt-4">
-                <FavoriteButton
-                  courseId={course.id}
-                  title={course.title}
-                  price={course.price}
-                  discountedPrice={course.discountedPrice || undefined}
-                  imageUrl={course.imageUrl || undefined}
-                  instructor={{ name: course.instructor.name || 'Unknown' }}
-                  category={course.category}
-                  level={course.level}
-                  _count={course._count}
-                />
-                <ShareButton courseId={course.id} courseTitle={course.title} />
-              </div>
+      <div className="max-w-6xl mx-auto px-4 md:px-8 py-12 md:py-20 pb-32">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+          
+          {/* --- TOP ROW --- */}
+          {/* Left: About Course */}
+          <div className="lg:col-span-2 bg-[#121212] rounded-3xl border border-white/5 overflow-hidden">
+            <div className="bg-[#1a1a1a] px-8 py-5 border-b border-white/5">
+              <h3 className="text-sm font-bold text-gray-300 tracking-widest uppercase">Eğitim Hakkında</h3>
             </div>
-
-
-            {/* ─── CURRICULUM ─── */}
-            <section>
-              <h2 className="text-xl md:text-2xl font-bold text-white mb-1">Müfredat</h2>
-              <p className="text-sm text-gray-500 mb-6">{course._count.lessons} ders &middot; {durationText} toplam süre</p>
-
-              <div className="space-y-2">
-                {course.lessons.map((lesson: { id: string; isFree?: boolean | null; duration?: number | null; title: string; description?: string | null }, index: number) => {
-                  const isFirstLesson = index === 0
-                  const canAccess = isEnrolled || isFirstLesson
-
-                  const lessonContent = (
-                    <div className={`group flex items-center gap-4 px-5 py-4 rounded-xl border transition-all duration-200 ${
-                      canAccess
-                        ? 'border-white/[0.06] hover:border-orange-500/30 hover:bg-white/[0.02] cursor-pointer'
-                        : 'border-white/[0.04] opacity-50'
-                    }`}>
-                      {/* Number */}
-                      <span className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold ${
-                        canAccess ? 'bg-orange-500/10 text-orange-400' : 'bg-white/[0.04] text-gray-600'
-                      }`}>
-                        {String(index + 1).padStart(2, '0')}
-                      </span>
-
-                      {/* Info */}
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-medium text-white truncate group-hover:text-orange-300 transition-colors">
-                          {lesson.title}
-                        </h3>
-                        {lesson.description && (
-                          <p className="hidden md:block text-xs text-gray-600 mt-0.5 truncate">{lesson.description}</p>
-                        )}
-                      </div>
-
-                      {/* Badges */}
-                      <div className="hidden sm:flex items-center gap-2 shrink-0">
-                        {isFirstLesson && !isEnrolled && (
-                          <span className="text-[10px] font-semibold text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full">
-                            Önizleme
-                          </span>
-                        )}
-                        {!isFirstLesson && lesson.isFree && !isEnrolled && (
-                          <span className="text-[10px] font-semibold text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full">
-                            Ücretsiz
-                          </span>
-                        )}
-                        {!canAccess && !lesson.isFree && (
-                          <Lock className="h-3.5 w-3.5 text-gray-600" />
-                        )}
-                      </div>
-
-                      {/* Duration */}
-                      {lesson.duration && (
-                        <span className="shrink-0 text-xs text-gray-600 tabular-nums">{lesson.duration} dk</span>
-                      )}
-                    </div>
-                  )
-
-                  if (isEnrolled) {
-                    return (
-                      <Link key={lesson.id} href={`/learn/${course.id}?lesson=${lesson.id}`}>
-                        {lessonContent}
-                      </Link>
-                    )
-                  }
-
-                  if (isFirstLesson) {
-                    return (
-                      <FreeLessonModal
-                        key={lesson.id}
-                        lesson={{
-                          id: lesson.id,
-                          title: lesson.title,
-                          description: lesson.description || null,
-                          videoUrl: (course.lessons[0] as { videoUrl?: string | null }).videoUrl || null,
-                          duration: lesson.duration || null
-                        }}
-                        courseTitle={course.title}
-                      />
-                    )
-                  }
-
-                  return <div key={lesson.id}>{lessonContent}</div>
-                })}
-              </div>
-            </section>
-
-            {/* Yorumlar Bölümü Kaldırıldı */}
+            <div className="p-8">
+              <p className="text-gray-400 text-sm md:text-[15px] leading-relaxed font-light whitespace-pre-wrap">
+                {course.description}
+              </p>
+            </div>
           </div>
 
+          {/* Right: Course Summary */}
+          <div className="lg:col-span-1 bg-[#121212] rounded-3xl border border-white/5 overflow-hidden">
+            <div className="bg-[#1a1a1a] px-8 py-5 border-b border-white/5">
+              <h3 className="text-sm font-bold text-gray-300 tracking-widest uppercase">Eğitim Özeti</h3>
+            </div>
+            <div className="p-8 flex flex-col justify-between h-[calc(100%-65px)]">
+              <ul className="space-y-4">
+                {summaryPoints.map((point, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <ArrowRight className="w-4 h-4 text-orange-600 shrink-0 mt-0.5" />
+                    <span className="text-gray-300 text-sm font-light leading-snug">{point}.</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
 
-          {/* ─── RIGHT: Sidebar ─── */}
-          <div className="hidden lg:block lg:col-span-1">
-            <div className="sticky top-24 space-y-6">
+          {/* --- MIDDLE ROW --- */}
+          {/* Left: About Instructor */}
+          <div className="lg:col-span-2 bg-[#121212] rounded-3xl border border-white/5 overflow-hidden">
+            <div className="bg-[#1a1a1a] px-8 py-5 border-b border-white/5">
+              <h3 className="text-sm font-bold text-gray-300 tracking-widest uppercase">Eğitmen Hakkında</h3>
+            </div>
+            <div className="p-8">
+              <p className="text-gray-400 text-sm md:text-[15px] leading-relaxed font-light">
+                {course.instructor.bio || `${course.instructor.name} gastronomi dünyasında uzmanlaşmış ve tecrübelerini Culinora'da paylaşan değerli bir şeftir. Eğitimlerinde hem teorik hem pratik bilgilere yer verir.`}
+              </p>
+            </div>
+          </div>
 
-              {/* CTA Card */}
-              <div className="rounded-2xl border border-white/[0.06] bg-[#111] p-6">
-                {isEnrolled ? (
-                  <Link
-                    href={`/learn/${course.id}`}
-                    className={`group w-full text-white py-3.5 px-6 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${hasProgress
-                      ? 'bg-green-600 hover:bg-green-500'
-                      : 'bg-orange-600 hover:bg-orange-500'
-                      }`}
-                  >
-                    <Play className="h-5 w-5" />
-                    {hasProgress ? 'Kursa Devam Et' : 'Kursa Başla'}
-                    <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                  </Link>
-                ) : (
-                  <>
-                    <div className="text-center mb-5">
-                      <Crown className="h-8 w-8 text-orange-500 mx-auto mb-3" />
-                      <h3 className="text-lg font-bold text-white mb-1">Premium Üyelik</h3>
-                      <p className="text-gray-500 text-sm mb-4">Tüm kurslara sınırsız erişim.</p>
-                      <div className="mb-5">
-                        <span className="text-3xl font-bold text-white">299 ₺</span>
-                        <span className="text-sm text-gray-500 ml-1">/ Aylık</span>
+          {/* Right: Instructor Photo Card */}
+          <div className="lg:col-span-1 relative rounded-3xl overflow-hidden aspect-[4/3] border border-white/5 group">
+            <Image 
+              src={course.instructor.image || "/api/placeholder/400/300"} 
+              alt={course.instructor.name || "Eğitmen"} 
+              fill 
+              className="object-cover group-hover:scale-105 transition-transform duration-700" 
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+            <div className="absolute bottom-4 left-4 right-4 bg-black/80 backdrop-blur-md rounded-2xl p-4 flex items-center gap-4 border border-white/10">
+              <div className="w-1 h-10 bg-orange-600 rounded-full" />
+              <div>
+                <p className="text-white font-bold text-[15px]">{course.instructor.name}</p>
+                <p className="text-gray-400 text-xs tracking-wide">Eğitmen</p>
+              </div>
+            </div>
+          </div>
+
+          {/* --- BOTTOM ROW --- */}
+          {/* Curriculum List */}
+          <div className="lg:col-span-3 bg-[#121212] rounded-3xl border border-white/5 overflow-hidden mt-2">
+            <div className="bg-[#1a1a1a] px-8 py-6 border-b border-white/5 flex items-center justify-between">
+              <h3 className="text-sm font-bold text-gray-300 tracking-widest uppercase">Dersler ve Bölümler</h3>
+            </div>
+            
+            <div className="divide-y divide-white/5">
+              {course.lessons.map((lesson: { id: string; title: string; description: string | null; videoUrl: string | null; duration: number | null }, index: number) => {
+                const isFirstLesson = index === 0;
+                const canAccess = isEnrolled || isFirstLesson;
+                
+                return (
+                  <div key={lesson.id} className="p-6 md:p-8 flex flex-col md:flex-row gap-6 md:gap-8 items-start md:items-center hover:bg-white/[0.02] transition-colors group">
+                    {/* Thumbnail */}
+                    <div className="relative w-full md:w-56 aspect-[16/9] rounded-xl overflow-hidden shrink-0 bg-[#1a1a1a] border border-white/5">
+                      {course.imageUrl && (
+                        <Image src={course.imageUrl} fill className="object-cover opacity-60 group-hover:opacity-80 transition-opacity" alt="" />
+                      )}
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="bg-black/50 backdrop-blur-sm p-3 rounded-full group-hover:bg-orange-600/90 transition-colors">
+                          <Play className="w-6 h-6 text-white" />
+                        </div>
                       </div>
                     </div>
-                    <Link
-                      href="/subscription?plan=Premium"
-                      className="group w-full text-white py-3.5 px-6 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 bg-orange-600 hover:bg-orange-500"
-                    >
-                      Premium Ol
-                      <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                    </Link>
-                  </>
-                )}
-              </div>
-
-              {/* Actions */}
-              <div className="grid grid-cols-2 gap-3">
-                <FavoriteButton
-                  courseId={course.id}
-                  title={course.title}
-                  price={course.price}
-                  discountedPrice={course.discountedPrice || undefined}
-                  imageUrl={course.imageUrl || undefined}
-                  instructor={{ name: course.instructor.name || 'Unknown' }}
-                  category={course.category}
-                  level={course.level}
-                  _count={course._count}
-                />
-                <ShareButton courseId={course.id} courseTitle={course.title} />
-              </div>
-
-              {/* Course Includes */}
-              <div className="rounded-2xl border border-white/[0.06] bg-[#111] p-5">
-                <h3 className="text-xs font-semibold text-gray-400 mb-4 uppercase tracking-widest">Bu Kurs İçerir</h3>
-                <ul className="space-y-3">
-                  <li className="flex items-center gap-3 text-sm text-gray-400">
-                    <Play className="h-4 w-4 text-orange-500 shrink-0" />
-                    <span>{course._count.lessons} video ders</span>
-                  </li>
-                  <li className="flex items-center gap-3 text-sm text-gray-400">
-                    <Clock className="h-4 w-4 text-orange-500 shrink-0" />
-                    <span>{durationText} içerik</span>
-                  </li>
-                  <li className="flex items-center gap-3 text-sm text-gray-400">
-                    <Award className="h-4 w-4 text-orange-500 shrink-0" />
-                    <span>Tamamlama sertifikası</span>
-                  </li>
-                  <li className="flex items-center gap-3 text-sm text-gray-400">
-                    <Monitor className="h-4 w-4 text-orange-500 shrink-0" />
-                    <span>Masaüstü & mobil erişim</span>
-                  </li>
-                  <li className="flex items-center gap-3 text-sm text-gray-400">
-                    <Shield className="h-4 w-4 text-orange-500 shrink-0" />
-                    <span>Ömür boyu erişim</span>
-                  </li>
-                </ul>
-              </div>
-
-              {/* Instructor Card */}
-              <Link href={`/instructor/${course.instructor.id}`} className="block group">
-                <div className="rounded-2xl border border-white/[0.06] bg-[#111] p-5 hover:border-orange-500/20 transition-colors">
-                  <p className="text-xs font-semibold text-gray-400 mb-3 uppercase tracking-widest">Eğitmen</p>
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={course.instructor.image || "/api/placeholder/48/48"}
-                      alt={course.instructor.name || "Eğitmen"}
-                      className="w-12 h-12 rounded-full border border-white/10 object-cover"
-                    />
-                    <div>
-                      <p className="text-white font-semibold text-sm group-hover:text-orange-400 transition-colors">
-                        {course.instructor.name}
-                      </p>
-                      <p className="text-xs text-gray-500">Profili Görüntüle →</p>
+                    
+                    {/* Lesson Info */}
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-white font-medium text-lg mb-2">Bölüm {index + 1} - {lesson.title}</h4>
+                      {lesson.description && (
+                        <p className="text-gray-500 text-sm line-clamp-2 leading-relaxed font-light">{lesson.description}</p>
+                      )}
+                    </div>
+                    
+                    {/* Lesson Actions */}
+                    <div className="flex flex-row md:flex-col items-center md:items-end justify-between w-full md:w-auto gap-4 shrink-0 mt-4 md:mt-0">
+                      <div className="flex items-center gap-1.5 text-gray-400 text-sm font-medium bg-white/5 px-3 py-1.5 rounded-lg">
+                        <Clock className="w-4 h-4" />
+                        <span>{lesson.duration || "0"}:00</span>
+                      </div>
+                      
+                      {isEnrolled ? (
+                        <Link href={`/learn/${course.id}?lesson=${lesson.id}`} className="bg-orange-600 hover:bg-orange-500 text-white px-6 py-2.5 rounded-lg text-sm font-bold transition-colors w-full md:w-auto text-center">
+                          İzle
+                        </Link>
+                      ) : isFirstLesson ? (
+                        <FreeLessonModal
+                          lesson={lesson}
+                          courseTitle={course.title}
+                          customTrigger={
+                            <button className="bg-[#1a1a1a] border border-green-500/30 hover:border-green-500 hover:bg-green-500/10 text-green-500 px-6 py-2.5 rounded-lg text-sm font-bold transition-all w-full md:w-auto">
+                              Ücretsiz İzle
+                            </button>
+                          }
+                        />
+                      ) : (
+                        <div className="bg-[#1a1a1a] text-gray-500 px-6 py-2.5 rounded-lg text-sm font-medium flex items-center justify-center gap-2 border border-white/5 w-full md:w-auto cursor-not-allowed">
+                          <Lock className="w-4 h-4" /> Kilitli
+                        </div>
+                      )}
                     </div>
                   </div>
-                </div>
-              </Link>
+                )
+              })}
             </div>
           </div>
         </div>
       </div>
 
+      {/* Sticky Bottom Bar for Mobile Only */}
+      {!isEnrolled && (
+        <div className="md:hidden fixed bottom-[60px] left-0 right-0 z-40 bg-[#1a1a1a]/95 backdrop-blur-xl border-t border-white/10 p-4 pb-4">
+          <div className="flex items-center justify-between max-w-sm mx-auto">
+            <div>
+              <p className="text-white font-bold text-sm">Premium Paket</p>
+              <p className="text-gray-400 text-xs">Aylık 299 ₺</p>
+            </div>
+            <Link href="/subscription?plan=Premium" className="bg-orange-600 hover:bg-orange-500 text-white px-6 py-3 rounded-xl text-sm font-bold transition-colors shadow-lg shadow-orange-600/25 flex items-center gap-2">
+              <Play className="w-4 h-4 fill-current" /> Başlat
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* Mobile Bottom Navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-sm border-t border-black">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#050505]/95 backdrop-blur-xl border-t border-white/5 pb-safe">
         <div className="flex justify-around items-center py-2">
-          <Link href="/home" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+          <Link href="/home" className="flex flex-col items-center py-2 px-3 text-gray-500 hover:text-white transition-colors">
             <Home className="h-6 w-6" />
-            <span className="text-xs font-medium mt-1">Ana Sayfa</span>
+            <span className="text-[10px] font-medium mt-1">Ana Sayfa</span>
           </Link>
-          <Link href="/my-courses" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+          <Link href="/my-courses" className="flex flex-col items-center py-2 px-3 text-gray-500 hover:text-white transition-colors">
             <BookOpen className="h-6 w-6" />
-            <span className="text-xs font-medium mt-1">Kurslarım</span>
+            <span className="text-[10px] font-medium mt-1">Kurslarım</span>
           </Link>
-          <Link href="/chef-sosyal" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+          <Link href="/chef-sosyal" className="flex flex-col items-center py-2 px-3 text-gray-500 hover:text-white transition-colors">
             <Users className="h-6 w-6" />
-            <span className="text-xs font-medium mt-1">Sosyal</span>
+            <span className="text-[10px] font-medium mt-1">Sosyal</span>
           </Link>
-          <Link href="/chef-sor" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+          <Link href="/chef-sor" className="flex flex-col items-center py-2 px-3 text-gray-500 hover:text-white transition-colors">
             <MessageCircle className="h-6 w-6" />
-            <span className="text-xs font-medium mt-1">Chef&apos;e Sor</span>
+            <span className="text-[10px] font-medium mt-1">Chef&apos;e Sor</span>
           </Link>
         </div>
       </div>

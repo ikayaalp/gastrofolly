@@ -13,9 +13,10 @@ interface FreeLessonModalProps {
         duration: number | null
     }
     courseTitle: string
+    customTrigger?: React.ReactNode
 }
 
-export default function FreeLessonModal({ lesson, courseTitle }: FreeLessonModalProps) {
+export default function FreeLessonModal({ lesson, courseTitle, customTrigger }: FreeLessonModalProps) {
     const [isOpen, setIsOpen] = useState(false)
 
     // YouTube URL kontrolü
@@ -26,6 +27,11 @@ export default function FreeLessonModal({ lesson, courseTitle }: FreeLessonModal
     return (
         <>
             {/* Trigger Button */}
+            {customTrigger ? (
+                <div onClick={() => setIsOpen(true)} className="cursor-pointer">
+                    {customTrigger}
+                </div>
+            ) : (
             <button
                 onClick={() => setIsOpen(true)}
                 className="w-full text-left"
@@ -72,6 +78,7 @@ export default function FreeLessonModal({ lesson, courseTitle }: FreeLessonModal
                     </div>
                 </div>
             </button>
+            )}
 
             {/* Video Modal */}
             {isOpen && (
