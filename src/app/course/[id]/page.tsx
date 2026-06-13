@@ -27,7 +27,6 @@ import ShareButton from "@/components/course/ShareButton"
 import UserDropdown from "@/components/ui/UserDropdown"
 import NotificationDropdown from "@/components/ui/NotificationDropdown"
 import FreeLessonModal from "@/components/course/FreeLessonModal"
-import AIAssistantWidget from "@/components/ai/AIAssistantWidget"
 
 interface CoursePageProps {
   params: Promise<{
@@ -378,9 +377,6 @@ export default async function CoursePage({ params }: CoursePageProps) {
                   <Link href="/subscription?plan=Premium" className="block w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-4 px-4 rounded-xl text-center transition-colors shadow-lg shadow-orange-600/25">
                     <Play className="inline w-5 h-5 mr-2 -mt-0.5" /> Üyeliğini Başlat
                   </Link>
-                  <button className="block w-full border border-white/10 hover:border-white/30 hover:bg-white/5 text-white font-medium py-4 px-4 rounded-xl text-center transition-colors">
-                    <Gift className="inline w-4 h-4 mr-2 -mt-0.5" /> Hediye Et
-                  </button>
                 </div>
              )}
              <p className="text-center text-[#555] text-xs mt-6">İstediğiniz zaman iptal edebilirsiniz.</p>
@@ -522,7 +518,6 @@ export default async function CoursePage({ params }: CoursePageProps) {
         </div>
       </div>
 
-      <AIAssistantWidget />
     </div>
   )
 }
