@@ -250,14 +250,14 @@ export default async function CoursePage({ params }: CoursePageProps) {
       <section className="relative w-full bg-[#050505]">
         
         {/* Mobile Background Image */}
-        <div className="md:hidden relative w-full aspect-[4/5] mt-14">
+        <div className="md:hidden relative w-full aspect-video mt-14">
           {course.imageUrl ? (
             <Image
               src={course.imageUrl}
               alt={course.title}
               fill
               priority
-              className="object-cover object-top"
+              className="object-cover object-center"
               sizes="100vw"
             />
           ) : (
@@ -270,7 +270,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
         </div>
 
         {/* Desktop Background & Content Wrapper */}
-        <div className="relative w-full md:min-h-[85vh] flex items-center pt-8 md:pt-24 pb-8 overflow-hidden -mt-24 md:mt-0">
+        <div className="relative w-full md:min-h-[50vh] flex items-center pt-8 md:pt-32 pb-16 overflow-hidden -mt-24 md:mt-0">
           
           {/* Desktop Background Image */}
           <div className="hidden md:block absolute inset-0">
@@ -338,31 +338,6 @@ export default async function CoursePage({ params }: CoursePageProps) {
                   />
                 </div>
               </div>
-
-              {/* Right: Floating CTA Card (Desktop only) */}
-              <div className="hidden md:block w-full max-w-[340px] bg-[#1a1a1a]/95 backdrop-blur-xl rounded-3xl p-7 border border-white/10 shadow-2xl">
-                <div className="mb-6 text-center">
-                  <h3 className="text-white font-bold text-lg mb-1 tracking-wide">Tüm Eğitimlere Erişim</h3>
-                  <p className="text-gray-400 text-sm">Aylık <span className="text-white font-semibold">299 ₺</span></p>
-                </div>
-                
-                {isEnrolled ? (
-                  <Link href={`/learn/${course.id}`} className="block w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-4 px-4 rounded-xl text-center transition-colors shadow-lg shadow-orange-600/25">
-                    <Play className="inline w-5 h-5 mr-2 -mt-0.5 fill-white" /> Kursa Başla
-                  </Link>
-                ) : (
-                  <div className="space-y-3">
-                    <Link href="/subscription?plan=Premium" className="block w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-4 px-4 rounded-xl text-center transition-colors shadow-lg shadow-orange-600/25">
-                      <Play className="inline w-5 h-5 mr-2 -mt-0.5" /> Üyeliğini Başlat
-                    </Link>
-                    <button className="block w-full border border-white/20 hover:border-white/40 hover:bg-white/5 text-white font-medium py-3.5 px-4 rounded-xl text-center transition-colors">
-                      <Gift className="inline w-4 h-4 mr-2 -mt-0.5" /> Hediye Et
-                    </button>
-                  </div>
-                )}
-                <p className="text-center text-[#555] text-[10px] mt-4">İstediğiniz zaman iptal edebilirsiniz.</p>
-              </div>
-
             </div>
           </div>
         </div>
@@ -387,21 +362,28 @@ export default async function CoursePage({ params }: CoursePageProps) {
             </div>
           </div>
 
-          {/* Right: Course Summary */}
-          <div className="lg:col-span-1 bg-[#121212] rounded-3xl border border-white/5 overflow-hidden">
-            <div className="bg-[#1a1a1a] px-8 py-5 border-b border-white/5">
-              <h3 className="text-sm font-bold text-gray-300 tracking-widest uppercase">Eğitim Özeti</h3>
-            </div>
-            <div className="p-8 flex flex-col justify-between h-[calc(100%-65px)]">
-              <ul className="space-y-4">
-                {summaryPoints.map((point, i) => (
-                  <li key={i} className="flex items-start gap-3">
-                    <ArrowRight className="w-4 h-4 text-orange-600 shrink-0 mt-0.5" />
-                    <span className="text-gray-300 text-sm font-light leading-snug">{point}.</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+          {/* Right: CTA Card */}
+          <div className="lg:col-span-1 bg-[#121212] rounded-3xl border border-white/5 overflow-hidden flex flex-col justify-center p-8 relative">
+             <div className="mb-6 text-center">
+                <h3 className="text-white font-bold text-xl mb-2 tracking-wide">Tüm Eğitimlere Erişim</h3>
+                <p className="text-gray-400 text-sm">Aylık <span className="text-white font-semibold">299 ₺</span></p>
+             </div>
+             
+             {isEnrolled ? (
+                <Link href={`/learn/${course.id}`} className="block w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-4 px-4 rounded-xl text-center transition-colors shadow-lg shadow-orange-600/25">
+                  <Play className="inline w-5 h-5 mr-2 -mt-0.5 fill-white" /> Kursa Başla
+                </Link>
+             ) : (
+                <div className="space-y-4">
+                  <Link href="/subscription?plan=Premium" className="block w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-4 px-4 rounded-xl text-center transition-colors shadow-lg shadow-orange-600/25">
+                    <Play className="inline w-5 h-5 mr-2 -mt-0.5" /> Üyeliğini Başlat
+                  </Link>
+                  <button className="block w-full border border-white/10 hover:border-white/30 hover:bg-white/5 text-white font-medium py-4 px-4 rounded-xl text-center transition-colors">
+                    <Gift className="inline w-4 h-4 mr-2 -mt-0.5" /> Hediye Et
+                  </button>
+                </div>
+             )}
+             <p className="text-center text-[#555] text-xs mt-6">İstediğiniz zaman iptal edebilirsiniz.</p>
           </div>
 
           {/* --- MIDDLE ROW --- */}
@@ -504,20 +486,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
         </div>
       </div>
 
-      {/* Sticky Bottom Bar for Mobile Only */}
-      {!isEnrolled && (
-        <div className="md:hidden fixed bottom-[60px] left-0 right-0 z-40 bg-[#1a1a1a]/95 backdrop-blur-xl border-t border-white/10 p-4 pb-4">
-          <div className="flex items-center justify-between max-w-sm mx-auto">
-            <div>
-              <p className="text-white font-bold text-sm">Premium Paket</p>
-              <p className="text-gray-400 text-xs">Aylık 299 ₺</p>
-            </div>
-            <Link href="/subscription?plan=Premium" className="bg-orange-600 hover:bg-orange-500 text-white px-6 py-3 rounded-xl text-sm font-bold transition-colors shadow-lg shadow-orange-600/25 flex items-center gap-2">
-              <Play className="w-4 h-4 fill-current" /> Başlat
-            </Link>
-          </div>
-        </div>
-      )}
+
 
       {/* Mobile Bottom Navigation */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#050505]/95 backdrop-blur-xl border-t border-white/5 pb-safe">
