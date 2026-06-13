@@ -265,32 +265,55 @@ export default async function CoursePage({ params }: CoursePageProps) {
       </div>
 
 
-
       {/* ═══════════════════════════════════════════════════════════ */}
       {/* HERO — Neoskola-style cinematic full-width hero             */}
       {/* ═══════════════════════════════════════════════════════════ */}
-      <section className="relative w-full min-h-[70vh] md:min-h-[80vh] flex items-end pt-20 md:pt-24 overflow-hidden">
-        {/* Background Image — full bleed */}
-        {course.imageUrl ? (
-          <Image
-            src={course.imageUrl}
-            alt={course.title}
-            fill
-            priority
-            className="object-cover"
-            sizes="100vw"
-          />
-        ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-orange-900 via-black to-black" />
-        )}
+      <section className="relative w-full bg-black">
+        {/* Mobile Image (Visible only on small screens) */}
+        <div className="md:hidden relative w-full aspect-video mt-14">
+          {course.imageUrl ? (
+            <Image
+              src={course.imageUrl}
+              alt={course.title}
+              fill
+              priority
+              className="object-cover"
+              sizes="100vw"
+            />
+          ) : (
+            <div className="absolute inset-0 bg-gradient-to-br from-orange-900 via-black to-black flex items-center justify-center">
+               <ChefHat className="h-12 w-12 text-white/20" />
+            </div>
+          )}
+          {/* Subtle bottom gradient to blend with content below */}
+          <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black to-transparent" />
+        </div>
 
-        {/* Gradient overlays for readability */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+        {/* Desktop Background & Unified Content Wrapper */}
+        <div className="relative w-full md:min-h-[80vh] flex items-end pt-6 md:pt-24 overflow-hidden">
+          
+          {/* Desktop Background Image (Hidden on mobile) */}
+          <div className="hidden md:block absolute inset-0">
+            {course.imageUrl ? (
+              <Image
+                src={course.imageUrl}
+                alt={course.title}
+                fill
+                priority
+                className="object-cover"
+                sizes="100vw"
+              />
+            ) : (
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-900 via-black to-black" />
+            )}
+            {/* Desktop Gradients */}
+            <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+          </div>
 
-        {/* Content overlay */}
-        <div className="relative z-10 w-full pb-12 md:pb-16">
-          <div className="max-w-6xl mx-auto px-4 md:px-8">
+          {/* Content overlay */}
+          <div className="relative z-10 w-full pb-8 md:pb-16">
+            <div className="max-w-6xl mx-auto px-4 md:px-8">
 
 
 
