@@ -350,7 +350,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
           
           {/* --- TOP ROW --- */}
           {/* Left: About Course */}
-          <div className="lg:col-span-2 bg-[#121212] rounded-3xl border border-white/5 overflow-hidden">
+          <div className="lg:col-span-3 bg-[#121212] rounded-3xl border border-white/5 overflow-hidden">
             <div className="bg-[#1a1a1a] px-8 py-5 border-b border-white/5">
               <h3 className="text-sm font-bold text-gray-300 tracking-widest uppercase">Eğitim Hakkında</h3>
             </div>
@@ -359,27 +359,6 @@ export default async function CoursePage({ params }: CoursePageProps) {
                 {course.description}
               </p>
             </div>
-          </div>
-
-          {/* Right: CTA Card */}
-          <div className="lg:col-span-1 bg-[#121212] rounded-3xl border border-white/5 overflow-hidden flex flex-col justify-center p-8 relative">
-             <div className="mb-6 text-center">
-                <h3 className="text-white font-bold text-xl mb-2 tracking-wide">Tüm Eğitimlere Erişim</h3>
-                <p className="text-gray-400 text-sm">Aylık <span className="text-white font-semibold">299 ₺</span></p>
-             </div>
-             
-             {isEnrolled ? (
-                <Link href={`/learn/${course.id}`} className="block w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-4 px-4 rounded-xl text-center transition-colors shadow-lg shadow-orange-600/25">
-                  <Play className="inline w-5 h-5 mr-2 -mt-0.5 fill-white" /> Kursa Başla
-                </Link>
-             ) : (
-                <div className="space-y-4">
-                  <Link href="/subscription?plan=Premium" className="block w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-4 px-4 rounded-xl text-center transition-colors shadow-lg shadow-orange-600/25">
-                    <Play className="inline w-5 h-5 mr-2 -mt-0.5" /> Üyeliğini Başlat
-                  </Link>
-                </div>
-             )}
-             <p className="text-center text-[#555] text-xs mt-6">İstediğiniz zaman iptal edebilirsiniz.</p>
           </div>
 
           {/* --- MIDDLE ROW --- */}
@@ -517,6 +496,23 @@ export default async function CoursePage({ params }: CoursePageProps) {
           </Link>
         </div>
       </div>
+
+      {/* Floating Premium CTA (Bottom Right) */}
+      {!isEnrolled && (
+        <div className="fixed bottom-6 right-6 z-50 hidden md:block">
+          <div className="bg-[#1a1a1a]/95 backdrop-blur-xl rounded-2xl p-5 border border-orange-500/30 shadow-2xl shadow-orange-600/20 w-72 transform hover:-translate-y-1 transition-transform duration-300">
+            <div className="mb-4">
+              <h3 className="text-white font-bold text-sm mb-1 tracking-wide flex items-center gap-2">
+                <Crown className="w-4 h-4 text-orange-500" /> Tüm Eğitimlere Erişim
+              </h3>
+              <p className="text-gray-400 text-xs">Aylık <span className="text-white font-semibold">299 ₺</span></p>
+            </div>
+            <Link href="/subscription?plan=Premium" className="block w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-2.5 px-4 rounded-xl text-center transition-colors text-sm shadow-lg shadow-orange-600/25">
+              Üyeliği Başlat
+            </Link>
+          </div>
+        </div>
+      )}
 
     </div>
   )
