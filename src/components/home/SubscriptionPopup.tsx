@@ -8,6 +8,7 @@ import Image from "next/image"
 
 interface SubscriptionPopupProps {
     isVisible: boolean
+    monthlyPrice?: number
 }
 
 const features = [
@@ -17,7 +18,7 @@ const features = [
     { icon: Award, text: "Resmi tamamlama sertifikaları" },
 ]
 
-export default function SubscriptionPopup({ isVisible }: SubscriptionPopupProps) {
+export default function SubscriptionPopup({ isVisible, monthlyPrice = 399 }: SubscriptionPopupProps) {
     const [isOpen, setIsOpen] = useState(false)
 
     useEffect(() => {
@@ -144,7 +145,7 @@ export default function SubscriptionPopup({ isVisible }: SubscriptionPopupProps)
                                         <p className="text-gray-400 text-xs">İstediğin zaman iptal edebilirsin</p>
                                     </div>
                                     <div className="ml-auto text-right">
-                                        <p className="text-orange-400 font-black text-xl">399 ₺</p>
+                                        <p className="text-orange-400 font-black text-xl">{monthlyPrice} ₺</p>
                                         <p className="text-gray-500 text-xs">/ay</p>
                                     </div>
                                 </motion.div>

@@ -46,13 +46,15 @@ interface LandingPageProps {
     initialCategories: Category[];
     initialUserCourses: any[];
     initialInstructors: Instructor[];
+    monthlyPrice?: number;
 }
 
 export default function LandingPageClient({
     initialFeatured,
     initialCategories,
     initialUserCourses,
-    initialInstructors
+    initialInstructors,
+    monthlyPrice = 399
 }: LandingPageProps) {
     const router = useRouter();
     const { data: session, status } = useSession();
@@ -287,6 +289,7 @@ export default function LandingPageClient({
                     </div>
                 </div>
             </section>
+            <SubscriptionPopup isVisible={showSubscriptionPopup} monthlyPrice={monthlyPrice} />
 
             {/* Subscription Banner */}
             <section className="py-8 bg-gradient-to-br from-orange-900/20 via-black to-purple-900/20 border-y border-orange-500/20 mb-8">
@@ -327,7 +330,7 @@ export default function LandingPageClient({
                                         <div className="flex items-baseline gap-2 text-white">
                                             <span className="text-gray-500 text-sm line-through decoration-orange-600">499 ₺</span>
                                             <span className="text-gray-400 text-sm">yerine</span>
-                                            <span className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-600">399 ₺</span>
+                                            <span className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-600">{monthlyPrice} ₺</span>
                                             <span className="text-gray-400 text-sm font-light">/ Aylık</span>
                                         </div>
 

@@ -132,12 +132,17 @@ async function getLandingData() {
   });
 
   // Execute all queries in parallel
-  const [categoriesData, featured, userCourses, dbInstructors] = await Promise.all([
+  const [categoriesData, featured, userCourses, dbInstructors, activePlan] = await Promise.all([
     categoriesPromise,
     featuredPromise,
     userCoursesPromise,
-    instructorsPromise
+    instructorsPromise,
+    prisma.subscriptionPlan.findFirst({
+      where: { isActive: true, interval: 'monthly' }
+    })
   ]);
+
+  const monthlyPrice = activePlan?.price || 399;
 
   // 5. Sample Instructors (Mock - High Quality AI Images)
   const sampleInstructors = [
@@ -191,7 +196,7 @@ async function getLandingData() {
       courseCount: c._count.courses
     }));
 
-  return { categories, featured: formattedFeatured, userCourses, instructors };
+  return { categories, featured: formattedFeatured, userCourses, instructors, monthlyPrice };
 }
 
 import { redirect } from "next/navigation";
@@ -205,15 +210,16 @@ export default async function LandingPage() {
   }
 
   // Server Component Data Fetching
-  const { categories, featured, userCourses, instructors } = await getLandingData();
+  const data = await getLandingData();
 
   return (
     <>
       <LandingPageClient
-        initialCategories={categories}
-        initialFeatured={featured}
-        initialUserCourses={userCourses}
-        initialInstructors={instructors}
+        initialCategories={data.categories}
+        initialFeatured={data.featured}
+        initialUserCourses={data.userCourses}
+        initialInstructors={data.instructors}
+        monthlyPrice={data.monthlyPrice}
       />
       <AIAssistantWidget />
     </>

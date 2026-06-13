@@ -151,7 +151,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
   const activePlan = await prisma.subscriptionPlan.findFirst({
     where: { isActive: true, interval: 'monthly' }
   })
-  const displayPrice = activePlan ? activePlan.price : 299
+  const displayPrice = activePlan ? activePlan.price : 399
 
   const jsonLd = {
     "@context": "https://schema.org",
