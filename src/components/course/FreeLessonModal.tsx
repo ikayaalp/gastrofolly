@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { X, Play, ChefHat } from "lucide-react"
-import YouTubePlayer from "@/components/video/YouTubePlayer"
+import Hls from "hls.js"
 
 interface FreeLessonModalProps {
     lesson: {
@@ -18,11 +18,41 @@ interface FreeLessonModalProps {
 
 export default function FreeLessonModal({ lesson, courseTitle, customTrigger }: FreeLessonModalProps) {
     const [isOpen, setIsOpen] = useState(false)
+    const videoRef = useRef<HTMLVideoElement>(null)
 
-    // YouTube URL kontrolü
-    const isYouTubeUrl = (url: string) => {
-        return url.includes('youtube.com') || url.includes('youtu.be')
-    }
+    useEffect(() => {
+        if (!isOpen || !lesson.videoUrl || !videoRef.current) return;
+
+        const video = videoRef.current;
+        // Transform url to hls (.m3u8) format if it's cloudinary mp4
+        let finalUrl = lesson.videoUrl;
+        if (finalUrl.includes('res.cloudinary.com') && finalUrl.endsWith('.mp4')) {
+            finalUrl = finalUrl.replace('/upload/', '/upload/sp_auto/');
+            finalUrl = finalUrl.replace('.mp4', '.m3u8');
+        }
+
+        if (Hls.isSupported() && finalUrl.endsWith('.m3u8')) {
+            const hls = new Hls({
+                capLevelToPlayerSize: true,
+                maxBufferLength: 30,
+            });
+            hls.loadSource(finalUrl);
+            hls.attachMedia(video);
+            hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                video.play().catch(e => console.log('Autoplay prevented:', e));
+            });
+
+            return () => {
+                hls.destroy();
+            };
+        } else {
+            // Safari / native HLS support
+            video.src = finalUrl;
+            video.addEventListener('loadedmetadata', () => {
+                video.play().catch(e => console.log('Autoplay prevented:', e));
+            });
+        }
+    }, [isOpen, lesson.videoUrl]);
 
     return (
         <>
@@ -32,52 +62,52 @@ export default function FreeLessonModal({ lesson, courseTitle, customTrigger }: 
                     {customTrigger}
                 </div>
             ) : (
-            <button
-                onClick={() => setIsOpen(true)}
-                className="w-full text-left"
-            >
-                <div className="flex flex-col sm:flex-row justify-between p-4 border border-black rounded-lg transition-colors gap-3 hover:border-orange-500/50 cursor-pointer">
-                    <div className="flex items-start flex-1 min-w-0">
-                        <div className="bg-orange-500/20 text-orange-500 w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold mr-3 shrink-0 mt-0.5">
-                            1
-                        </div>
+                <button
+                    onClick={() => setIsOpen(true)}
+                    className="w-full text-left"
+                >
+                    <div className="flex flex-col sm:flex-row justify-between p-4 border border-black rounded-lg transition-colors gap-3 hover:border-orange-500/50 cursor-pointer">
                         <div className="flex items-start flex-1 min-w-0">
-                            <div className="shrink-0 mr-2 mt-1">
-                                <Play className="h-4 w-4 text-green-500" />
+                            <div className="bg-orange-500/20 text-orange-500 w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold mr-3 shrink-0 mt-0.5">
+                                1
                             </div>
-                            <div className="flex-1 min-w-0 pr-0 sm:pr-4">
-                                <div className="flex items-start justify-between gap-2">
-                                    <h3 className="font-semibold text-white text-sm sm:text-base leading-snug break-words">
-                                        {lesson.title}
-                                    </h3>
-                                    {lesson.duration && (
-                                        <span className="text-xs text-gray-400 whitespace-nowrap pt-0.5">
-                                            {lesson.duration || 0} dk
-                                        </span>
-                                    )}
+                            <div className="flex items-start flex-1 min-w-0">
+                                <div className="shrink-0 mr-2 mt-1">
+                                    <Play className="h-4 w-4 text-green-500" />
                                 </div>
-                                {lesson.description && (
-                                    <p className="hidden sm:block text-xs sm:text-sm text-gray-400 mt-2 line-clamp-3 sm:line-clamp-none leading-relaxed">
-                                        {lesson.description}
-                                    </p>
-                                )}
-                                {/* Mobile only badge */}
-                                <div className="flex sm:hidden mt-2">
-                                    <span className="bg-green-500/20 text-green-500 px-2 py-1 rounded text-[10px] font-semibold whitespace-nowrap">
-                                        Ücretsiz Önizleme
-                                    </span>
+                                <div className="flex-1 min-w-0 pr-0 sm:pr-4">
+                                    <div className="flex items-start justify-between gap-2">
+                                        <h3 className="font-semibold text-white text-sm sm:text-base leading-snug break-words">
+                                            {lesson.title}
+                                        </h3>
+                                        {lesson.duration && (
+                                            <span className="text-xs text-gray-400 whitespace-nowrap pt-0.5">
+                                                {lesson.duration || 0} dk
+                                            </span>
+                                        )}
+                                    </div>
+                                    {lesson.description && (
+                                        <p className="hidden sm:block text-xs sm:text-sm text-gray-400 mt-2 line-clamp-3 sm:line-clamp-none leading-relaxed">
+                                            {lesson.description}
+                                        </p>
+                                    )}
+                                    {/* Mobile only badge */}
+                                    <div className="flex sm:hidden mt-2">
+                                        <span className="bg-green-500/20 text-green-500 px-2 py-1 rounded text-[10px] font-semibold whitespace-nowrap">
+                                            Ücretsiz Önizleme
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+                        {/* Desktop only badge */}
+                        <div className="hidden sm:flex flex-col justify-center shrink-0">
+                            <span className="bg-green-500/20 text-green-500 px-2 py-1 rounded text-xs font-semibold whitespace-nowrap">
+                                Ücretsiz Önizleme
+                            </span>
+                        </div>
                     </div>
-                    {/* Desktop only badge */}
-                    <div className="hidden sm:flex flex-col justify-center shrink-0">
-                        <span className="bg-green-500/20 text-green-500 px-2 py-1 rounded text-xs font-semibold whitespace-nowrap">
-                            Ücretsiz Önizleme
-                        </span>
-                    </div>
-                </div>
-            </button>
+                </button>
             )}
 
             {/* Video Modal */}
@@ -106,23 +136,16 @@ export default function FreeLessonModal({ lesson, courseTitle, customTrigger }: 
                         {/* Video Content */}
                         <div className="relative aspect-video bg-black">
                             {lesson.videoUrl && lesson.videoUrl.trim() !== "" ? (
-                                isYouTubeUrl(lesson.videoUrl) ? (
-                                    <YouTubePlayer
-                                        videoUrl={lesson.videoUrl}
-                                        onReady={() => { }}
-                                    />
-                                ) : (
-                                    <video
-                                        className="w-full h-full object-contain"
-                                        controls
-                                        controlsList="nodownload"
-                                        onContextMenu={(e) => e.preventDefault()}
-                                        autoPlay
-                                    >
-                                        <source src={lesson.videoUrl} type="video/mp4" />
-                                        Tarayıcınız video oynatmayı desteklemiyor.
-                                    </video>
-                                )
+                                <video
+                                    ref={videoRef}
+                                    className="w-full h-full object-contain"
+                                    controls
+                                    controlsList="nodownload"
+                                    onContextMenu={(e) => e.preventDefault()}
+                                    playsInline
+                                >
+                                    Tarayıcınız video oynatmayı desteklemiyor.
+                                </video>
                             ) : (
                                 <div className="flex items-center justify-center h-full text-white">
                                     <div className="text-center">
@@ -148,8 +171,7 @@ export default function FreeLessonModal({ lesson, courseTitle, customTrigger }: 
                         </div>
                     </div>
                 </div >
-            )
-            }
+            )}
         </>
     )
 }
