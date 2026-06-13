@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { randomUUID } from 'crypto';
 
 export async function POST(request: NextRequest) {
     try {
@@ -50,12 +51,22 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // Generate a new session ID for concurrent login prevention
+        const newSessionId = randomUUID();
+
+        // Update currentSessionId in DB
+        await prisma.user.update({
+            where: { id: user.id },
+            data: { currentSessionId: newSessionId }
+        });
+
         // Generate JWT token
         const token = jwt.sign(
             {
                 userId: user.id,
                 email: user.email,
                 role: user.role,
+                sessionId: newSessionId,
             },
             process.env.NEXTAUTH_SECRET!,
             { expiresIn: '30d' } // 30 days for mobile

@@ -72,6 +72,7 @@ export async function getAuthUser(request: NextRequest): Promise<MobileUser | nu
             userId: string;
             email: string;
             role?: string;
+            sessionId?: string;
         };
 
         // Verify user still exists
@@ -82,11 +83,18 @@ export async function getAuthUser(request: NextRequest): Promise<MobileUser | nu
                 email: true,
                 role: true,
                 subscriptionEndDate: true,
-                subscriptionPlan: true
+                subscriptionPlan: true,
+                currentSessionId: true,
             }
         });
 
         if (!user) {
+            return null;
+        }
+
+        // Single-device login check
+        if (user.currentSessionId && decoded.sessionId !== user.currentSessionId) {
+            console.log(`[MobileAuth] Rejecting old session for user: ${user.id}`);
             return null;
         }
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import jwt from 'jsonwebtoken'
+import { randomUUID } from 'crypto'
 
 interface AppleTokenPayload {
     iss: string
@@ -142,14 +143,24 @@ export async function POST(request: NextRequest) {
             throw new Error('NEXTAUTH_SECRET server variable is missing');
         }
 
-        // Generate JWT token for mobile app
+        // Generate a new session ID for concurrent login prevention
+        const newSessionId = randomUUID()
+
+        // Update currentSessionId in DB
+        await prisma.user.update({
+            where: { id: user.id },
+            data: { currentSessionId: newSessionId }
+        })
+
+        // Generate JWT token
         const token = jwt.sign(
             {
                 userId: user.id,
                 email: user.email,
                 role: user.role,
+                sessionId: newSessionId,
             },
-            process.env.NEXTAUTH_SECRET,
+            process.env.NEXTAUTH_SECRET!,
             { expiresIn: '30d' }
         )
 

@@ -4,6 +4,7 @@ import GoogleProvider from "next-auth/providers/google"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
+import { randomUUID } from "crypto"
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -71,6 +72,16 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, trigger, session }) {
       if (user) {
         token.role = user.role
+        
+        // Generate new session ID on login
+        const newSessionId = randomUUID()
+        token.sessionId = newSessionId
+        
+        // Save to DB
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { currentSessionId: newSessionId }
+        })
       }
       if (trigger === "update" && session?.user) {
         token.name = session.user.name
@@ -87,15 +98,23 @@ export const authOptions: NextAuthOptions = {
         const user = await prisma.user.findUnique({
           where: { id: token.sub },
           select: {
+            id: true,
             subscriptionPlan: true,
             subscriptionEndDate: true,
             subscriptionCancelled: true,
             phoneNumber: true,
             referralCode: true,
+            currentSessionId: true,
           }
         })
 
         if (user) {
+          // Single-device login check
+          if (user.currentSessionId && token.sessionId !== user.currentSessionId) {
+            console.log(`[NextAuth] Kicking out old session for user: ${user.id}`);
+            return { error: 'ConcurrentLogin' } as any;
+          }
+
           // Lazy cleanup
           if (user.subscriptionPlan === 'Premium' && user.subscriptionEndDate && new Date(user.subscriptionEndDate) < new Date()) {
               await prisma.user.update({

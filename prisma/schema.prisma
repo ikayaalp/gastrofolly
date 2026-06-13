@@ -78,6 +78,8 @@ model User {
   referredByUser User?  @relation("UserReferrals", fields: [referredBy], references: [id])
   referrals      User[] @relation("UserReferrals")
 
+  currentSessionId String?
+
   accounts      Account[]
   sessions      Session[]
   enrollments   Enrollment[]
