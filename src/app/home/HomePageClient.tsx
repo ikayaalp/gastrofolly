@@ -66,6 +66,7 @@ interface HomePageClientProps {
   categories: Category[]
   userEnrollments: UserEnrollment[]
   session: { user: { id: string; name?: string | null; email?: string | null; image?: string | null; role?: string } } | null
+  monthlyPrice?: number
 }
 
 export default function HomePageClient({
@@ -74,7 +75,8 @@ export default function HomePageClient({
   recentCourses,
   categories,
   userEnrollments,
-  session
+  session,
+  monthlyPrice = 399
 }: HomePageClientProps) {
   // recentCourses yoksa featuredCourses'u kullan (aynı sorgu, optimize edildi)
   const recentCoursesData = recentCourses || featuredCourses
@@ -308,7 +310,7 @@ export default function HomePageClient({
       />
 
       {/* Abonelik Pop-up */}
-      <SubscriptionPopup isVisible={showSubscriptionPopup} />
+      <SubscriptionPopup isVisible={showSubscriptionPopup} monthlyPrice={monthlyPrice} />
     </div>
   )
 }

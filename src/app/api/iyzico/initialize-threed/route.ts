@@ -37,17 +37,18 @@ export async function POST(request: NextRequest) {
         }
 
         // Fiyat Hesaplama
-        const monthlyPrice = 399 // Premium Üyelik: 399 TL
-        const yearlyBasePrice = 400 // Yıllık plan aylık baz: 400 TL
-        let price: number
+        const activePlan = await prisma.subscriptionPlan.findFirst({
+            where: { isActive: true, interval: billingPeriod === 'yearly' ? 'yearly' : 'monthly' }
+        })
 
-        if (billingPeriod === 'yearly') {
-            price = Math.round(yearlyBasePrice * 12 * 0.8)
-        } else if (billingPeriod === '6monthly') {
-            price = Math.round(yearlyBasePrice * 6 * 0.9)
-        } else {
-            price = monthlyPrice
+        if (!activePlan) {
+            return NextResponse.json(
+                { error: "Seçilen periyot için geçerli bir abonelik planı bulunamadı. Lütfen Admin Paneli üzerinden yapılandırın." },
+                { status: 400 }
+            )
         }
+
+        let price = activePlan.price
 
         if (referralCode) {
             try {

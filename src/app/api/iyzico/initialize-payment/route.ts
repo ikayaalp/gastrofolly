@@ -64,22 +64,19 @@ export async function POST(request: NextRequest) {
         }
 
         // Billing period'a göre fiyat hesapla
-        // Üyelik fiyatı
-        const monthlyPrice = 399 // TL
-        const yearlyBasePrice = 400 // TL (aylık baz)
-        let price: number
-        let periodLabel: string
+        const activePlan = await prisma.subscriptionPlan.findFirst({
+            where: { isActive: true, interval: billingPeriod === 'yearly' ? 'yearly' : 'monthly' }
+        })
 
-        if (billingPeriod === 'yearly') {
-            price = Math.round(yearlyBasePrice * 12 * 0.8) // %20 indirim
-            periodLabel = "Yıllık"
-        } else if (billingPeriod === '6monthly') {
-            price = Math.round(yearlyBasePrice * 6 * 0.9) // %10 indirim
-            periodLabel = "6 Aylık"
-        } else {
-            price = monthlyPrice
-            periodLabel = "Aylık"
+        if (!activePlan || !activePlan.iyzicoPlanCode) {
+            return NextResponse.json(
+                { error: "Seçilen periyot için geçerli bir abonelik planı veya Iyzico Plan Kodu bulunamadı. Lütfen Admin Paneli üzerinden yapılandırın." },
+                { status: 400 }
+            )
         }
+
+        let price = activePlan.price
+        let periodLabel = billingPeriod === 'yearly' ? "Yıllık" : "Aylık"
 
         // Referral indirim uygula (eğer varsa)
         if (referralCode) {
@@ -165,9 +162,7 @@ export async function POST(request: NextRequest) {
         }
         const identityNumber = generateSafeIdentityNumber(user.id)
 
-        const pricingPlanReferenceCode = billingPeriod === 'yearly'
-            ? "320d1389-1f42-4509-9d71-d250778ef913" // Yıllık Plan Kodu
-            : "b10db468-1d22-440f-80e2-fe53443e05a4" // Aylık Plan Kodu
+        const pricingPlanReferenceCode = activePlan.iyzicoPlanCode
 
         // İyzico Abonelik Ödeme İsteği
         const paymentRequest: IyzicoSubscriptionCheckoutRequest = {

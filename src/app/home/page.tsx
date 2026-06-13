@@ -48,7 +48,8 @@ async function getHomeData(userId?: string) {
     featuredCourses,
     popularCourses,
     categories,
-    userCourses
+    userCourses,
+    activePlan
   ] = await Promise.all([
     // Öne çıkan kurslar (en yeni)
     prisma.course.findMany({
@@ -106,7 +107,10 @@ async function getHomeData(userId?: string) {
         _count: { select: { lessons: true, enrollments: true } }
       },
       take: 6
-    }) : []
+    }) : [],
+    prisma.subscriptionPlan.findFirst({
+      where: { isActive: true, interval: 'monthly' }
+    })
   ])
 
   // Map courses to the expected "userEnrollments" structure for the client component
@@ -118,7 +122,8 @@ async function getHomeData(userId?: string) {
     featuredCourses,
     popularCourses,
     categories,
-    userEnrollments
+    userEnrollments,
+    activePlan
   }
 }
 
@@ -133,7 +138,8 @@ export default async function HomePage() {
     featuredCourses,
     popularCourses,
     categories,
-    userEnrollments
+    userEnrollments,
+    activePlan
   } = await getHomeData(session.user.id)
 
   return (
@@ -144,6 +150,7 @@ export default async function HomePage() {
         categories={categories as any}
         userEnrollments={userEnrollments as any}
         session={session}
+        monthlyPrice={activePlan?.price || 399}
       />
       <AIAssistantWidget />
     </>

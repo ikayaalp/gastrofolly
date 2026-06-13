@@ -289,7 +289,6 @@ export default function LandingPageClient({
                     </div>
                 </div>
             </section>
-            <SubscriptionPopup isVisible={showSubscriptionPopup} monthlyPrice={monthlyPrice} />
 
             {/* Subscription Banner */}
             <section className="py-8 bg-gradient-to-br from-orange-900/20 via-black to-purple-900/20 border-y border-orange-500/20 mb-8">
