@@ -91,6 +91,8 @@ export default function LearnScreen({ route, navigation }) {
     const [currentUserId, setCurrentUserId] = useState(null);
     const [alertVisible, setAlertVisible] = useState(false);
     const [authToken, setAuthToken] = useState(null);
+    const [userEmail, setUserEmail] = useState(null);
+    const [watermarkPos, setWatermarkPos] = useState({ top: '10%', left: '10%' });
     const [alertConfig, setAlertConfig] = useState({
         title: '',
         message: '',
@@ -171,7 +173,17 @@ export default function LearnScreen({ route, navigation }) {
     // Load course and progress data
     useEffect(() => {
         loadCourseData();
-    }, [courseId]);
+    }, [courseId, lessonId]);
+
+    // Watermark Animation
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const randomTop = Math.floor(Math.random() * 70) + 10;
+            const randomLeft = Math.floor(Math.random() * 60) + 10;
+            setWatermarkPos({ top: `${randomTop}%`, left: `${randomLeft}%` });
+        }, 8000);
+        return () => clearInterval(interval);
+    }, []);
 
     const loadCourseData = async () => {
         try {
@@ -182,8 +194,22 @@ export default function LearnScreen({ route, navigation }) {
                 const userData = JSON.parse(userDataStr);
                 setCurrentUserId(userData.id || userData.userId);
             }
-
-            setAuthToken(token);
+            if (token) {
+                setAuthToken(token);
+                
+                // Get user email for watermark
+                const userDataStr = await AsyncStorage.getItem('userData');
+                if (userDataStr) {
+                    try {
+                        const userData = JSON.parse(userDataStr);
+                        if (userData && userData.email) {
+                            setUserEmail(userData.email);
+                        }
+                    } catch (e) {
+                        console.log('Error parsing user data', e);
+                    }
+                }
+            }
 
             // Fetch course details
             const headers = token ? { Authorization: `Bearer ${token}` } : {};
@@ -598,6 +624,31 @@ export default function LearnScreen({ route, navigation }) {
                                 <Text style={styles.noVideoText}>Bu derse erişiminiz yok</Text>
                             </LinearGradient>
                         </View>
+                    )}
+
+                    {/* Dynamic Watermark */}
+                    {userEmail && isPlaying && (
+                        <Animated.View
+                            style={{
+                                position: 'absolute',
+                                top: watermarkPos.top,
+                                left: watermarkPos.left,
+                                zIndex: 10,
+                                opacity: 0.3,
+                                pointerEvents: 'none'
+                            }}
+                        >
+                            <Text style={{
+                                color: '#ffffff',
+                                fontSize: 12,
+                                fontWeight: 'bold',
+                                textShadowColor: 'rgba(0, 0, 0, 0.75)',
+                                textShadowOffset: { width: 1, height: 1 },
+                                textShadowRadius: 2
+                            }}>
+                                {userEmail}
+                            </Text>
+                        </Animated.View>
                     )}
 
                     {/* Buffering Indicator */}

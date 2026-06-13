@@ -404,6 +404,7 @@ export default async function LearnPage({ params, searchParams }: LearnPageProps
             lesson={currentLesson}
             course={course}
             userId={session.user.id}
+            userEmail={session.user.email}
             isCompleted={isCompleted}
             previousLesson={previousLesson}
             nextLesson={nextLesson}

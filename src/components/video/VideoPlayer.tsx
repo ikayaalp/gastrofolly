@@ -24,13 +24,14 @@ interface VideoPlayerProps {
     }
   }
   userId: string
+  userEmail?: string | null
   isCompleted: boolean
   previousLesson?: Lesson | null
   nextLesson?: Lesson | null
   hasFullAccess?: boolean // Kullanıcının diğer derslere erişimi var mı?
 }
 
-export default function VideoPlayer({ lesson, course, userId, isCompleted, previousLesson, nextLesson, hasFullAccess = true }: VideoPlayerProps) {
+export default function VideoPlayer({ lesson, course, userId, userEmail, isCompleted, previousLesson, nextLesson, hasFullAccess = true }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const [isPlaying, setIsPlaying] = useState(false)
@@ -63,6 +64,19 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
       setShowControls(false);
     }, 3000);
   };
+
+  // Watermark Animation Logic
+  const [watermarkPos, setWatermarkPos] = useState({ top: '10%', left: '10%' });
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Rastgele pozisyon (köşelere çok yaklaşmasın diye %10 ile %80 arası)
+      const randomTop = Math.floor(Math.random() * 70) + 10;
+      const randomLeft = Math.floor(Math.random() * 70) + 10;
+      setWatermarkPos({ top: `${randomTop}%`, left: `${randomLeft}%` });
+    }, 8000); // Her 8 saniyede bir yer değiştir
+
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     // cleanup timer on unmount
@@ -366,12 +380,26 @@ export default function VideoPlayer({ lesson, course, userId, isCompleted, previ
   return (
     <div
       ref={playerContainerRef}
-      className={`relative w-full h-[50vh] md:aspect-video md:h-[75vh] bg-black group flex-shrink-0 ${isFullscreen ? 'w-screen h-screen max-w-none max-h-none !rounded-none fullscreen-active z-[10000]' : ''}`}
+      className={`relative w-full h-[50vh] md:aspect-video md:h-[75vh] bg-black group flex-shrink-0 select-none ${isFullscreen ? 'w-screen h-screen max-w-none max-h-none !rounded-none fullscreen-active z-[10000]' : ''}`}
       style={isFullscreen ? { minHeight: '100vh', minWidth: '100vw' } : {}}
       onClick={handleVideoAreaClick}
+      onContextMenu={(e) => e.preventDefault()} // Sağ tık kapat (Anti-Download)
       onMouseMove={triggerControls}
       onTouchMove={triggerControls}
     >
+      {/* Dynamic Watermark */}
+      {userEmail && isPlaying && (
+        <div 
+          className="absolute text-white/30 text-xs md:text-sm font-medium pointer-events-none z-40 transition-all duration-1000 ease-in-out"
+          style={{
+            top: watermarkPos.top,
+            left: watermarkPos.left,
+            textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
+          }}
+        >
+          {userEmail}
+        </div>
+      )}
       {lesson.videoUrl && lesson.videoUrl.trim() !== "" ? (
         isYouTubeUrl(lesson.videoUrl) ? (
           // YouTube Player
