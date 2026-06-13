@@ -119,7 +119,7 @@ export default function FreeLessonModal({ lesson, courseTitle, customTrigger }: 
                     </button>
 
                     <div 
-                        className="bg-[#0a0a0a] border border-gray-800 rounded-xl w-full max-w-5xl max-h-[90vh] flex flex-col shadow-2xl shadow-orange-500/10 overflow-hidden relative z-[105]"
+                        className="bg-[#0a0a0a] border border-gray-800 rounded-xl w-[95vw] max-w-7xl max-h-[90vh] flex flex-col shadow-2xl shadow-orange-500/10 overflow-hidden relative z-[105]"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Modal Header */}
@@ -142,7 +142,7 @@ export default function FreeLessonModal({ lesson, courseTitle, customTrigger }: 
                         </div>
 
                         {/* Video Content */}
-                        <div className="relative flex-1 min-h-0 bg-black flex items-center justify-center">
+                        <div className="relative flex-1 min-h-[50vh] bg-black flex items-center justify-center">
                             {lesson.videoUrl && lesson.videoUrl.trim() !== "" ? (
                                 <video
                                     ref={videoRef}
