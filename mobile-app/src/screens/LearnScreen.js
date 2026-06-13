@@ -516,16 +516,28 @@ export default function LearnScreen({ route, navigation }) {
         }
     };
 
-    // Helper to get full video URL
+    // Helper to get full video URL and convert to HLS if Cloudinary
     const getVideoUrl = (url) => {
         if (!url) return null;
-        if (url.startsWith('http')) return url;
-        // Prepend API_BASE_URL if relative
-        const cleanUrl = url.startsWith('/') ? url.substring(1) : url;
-        const baseUrl = config.API_BASE_URL.endsWith('/') ? config.API_BASE_URL : `${config.API_BASE_URL}/`;
-        const fullUrl = `${baseUrl}${cleanUrl}`;
+        
+        let fullUrl = url;
+        if (!url.startsWith('http')) {
+            const cleanUrl = url.startsWith('/') ? url.substring(1) : url;
+            const baseUrl = config.API_BASE_URL.endsWith('/') ? config.API_BASE_URL : `${config.API_BASE_URL}/`;
+            fullUrl = `${baseUrl}${cleanUrl}`;
+        }
+
+        // Convert Cloudinary MP4 to HLS (m3u8)
+        if (fullUrl.includes('cloudinary.com/')) {
+            let hlsUrl = fullUrl.replace(/\.(mp4|mov|webm)$/i, '.m3u8');
+            if (hlsUrl.includes('/upload/') && !hlsUrl.includes('/upload/sp_auto/')) {
+                hlsUrl = hlsUrl.replace('/upload/', '/upload/sp_auto/');
+            }
+            fullUrl = hlsUrl;
+        }
+
         // Debug log
-        console.log('Final Video URL:', fullUrl);
+        console.log('Final Video URL (HLS):', fullUrl);
         return fullUrl;
     };
 

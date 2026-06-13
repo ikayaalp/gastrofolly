@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from "react"
 import { Play, Pause, Volume2, VolumeX, Maximize, RotateCcw, RotateCw, SkipBack, SkipForward } from "lucide-react"
 import YouTubePlayer from "./YouTubePlayer"
+import Hls from "hls.js"
 
 // Lesson tipi interface olarak tanımlanıyor
 interface Lesson {
@@ -72,6 +73,17 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
     };
   }, []);
 
+  const getCloudinaryHlsUrl = (url: string) => {
+    if (!url.includes('cloudinary.com/')) return url;
+    let hlsUrl = url.replace(/\.(mp4|mov|webm)$/i, '.m3u8');
+    if (hlsUrl.includes('/upload/') && !hlsUrl.includes('/upload/sp_auto/')) {
+      hlsUrl = hlsUrl.replace('/upload/', '/upload/sp_auto/');
+    }
+    return hlsUrl;
+  };
+
+  const hlsRef = useRef<Hls | null>(null);
+
   useEffect(() => {
     const video = videoRef.current
     if (!video) return
@@ -106,6 +118,58 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
       video.removeEventListener('error', handleError)
     }
   }, [])
+
+  // HLS Setup Effect
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !lesson.videoUrl || isYouTubeUrl(lesson.videoUrl)) return;
+
+    const url = getCloudinaryHlsUrl(lesson.videoUrl);
+
+    if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      // Safari natively supports HLS
+      video.src = url;
+    } else if (Hls.isSupported()) {
+      const hls = new Hls({
+        debug: false,
+        enableWorker: true
+      });
+      hls.loadSource(url);
+      hls.attachMedia(video);
+      hlsRef.current = hls;
+
+      hls.on(Hls.Events.MANIFEST_PARSED, function() {
+        console.log('HLS manifest parsed');
+      });
+
+      hls.on(Hls.Events.ERROR, function (event, data) {
+        if (data.fatal) {
+          console.error('HLS error:', data);
+          switch(data.type) {
+            case Hls.ErrorTypes.NETWORK_ERROR:
+              hls.startLoad();
+              break;
+            case Hls.ErrorTypes.MEDIA_ERROR:
+              hls.recoverMediaError();
+              break;
+            default:
+              hls.destroy();
+              break;
+          }
+        }
+      });
+    } else {
+      // Fallback
+      video.src = lesson.videoUrl;
+    }
+
+    return () => {
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
+      }
+    };
+  }, [lesson.videoUrl]);
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -400,7 +464,6 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
                 setIsPlaying(false)
               }}
             >
-              <source src={lesson.videoUrl} type="video/mp4" />
               Tarayıcınız video oynatmayı desteklemiyor.
             </video>
 
