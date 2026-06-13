@@ -351,9 +351,6 @@ export default async function CoursePage({ params }: CoursePageProps) {
             <div className="absolute bottom-16 right-12 lg:right-24 z-20 hidden md:block">
               <div className="bg-[#121212]/95 backdrop-blur-2xl rounded-3xl p-6 border border-orange-500/20 shadow-[0_0_50px_-12px_rgba(234,88,12,0.25)] w-80 transform hover:-translate-y-1 transition-all duration-300 group">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="bg-orange-500/10 p-2.5 rounded-xl">
-                    <Sparkles className="w-5 h-5 text-orange-500 group-hover:scale-110 transition-transform" />
-                  </div>
                   <div>
                     <h3 className="text-white font-bold text-base tracking-wide">Premium Ol</h3>
                     <p className="text-gray-400 text-xs">Tüm eğitimlere sınırsız erişim</p>
@@ -382,11 +379,11 @@ export default async function CoursePage({ params }: CoursePageProps) {
           
           {/* --- TOP ROW --- */}
           {/* Left: About Course */}
-          <div className="lg:col-span-3 bg-[#121212] rounded-3xl border border-white/5 overflow-hidden">
-            <div className="bg-[#1a1a1a] px-8 py-5 border-b border-white/5">
-              <h3 className="text-sm font-bold text-gray-300 tracking-widest uppercase">Eğitim Hakkında</h3>
+          <div className="lg:col-span-3 bg-black rounded-xl border border-white/10 overflow-hidden">
+            <div className="bg-[#222] px-6 py-4">
+              <h3 className="text-[15px] font-bold text-white tracking-widest uppercase">EĞİTİM HAKKINDA</h3>
             </div>
-            <div className="p-8">
+            <div className="p-6 md:p-8">
               <p className="text-gray-400 text-sm md:text-[15px] leading-relaxed font-light whitespace-pre-wrap">
                 {course.description}
               </p>
@@ -395,11 +392,11 @@ export default async function CoursePage({ params }: CoursePageProps) {
 
           {/* --- MIDDLE ROW --- */}
           {/* Left: About Instructor */}
-          <div className="lg:col-span-2 bg-[#121212] rounded-3xl border border-white/5 overflow-hidden">
-            <div className="bg-[#1a1a1a] px-8 py-5 border-b border-white/5">
-              <h3 className="text-sm font-bold text-gray-300 tracking-widest uppercase">Eğitmen Hakkında</h3>
+          <div className="lg:col-span-2 bg-black rounded-xl border border-white/10 overflow-hidden">
+            <div className="bg-[#222] px-6 py-4">
+              <h3 className="text-[15px] font-bold text-white tracking-widest uppercase">EĞİTMEN HAKKINDA</h3>
             </div>
-            <div className="p-8">
+            <div className="p-6 md:p-8">
               <p className="text-gray-400 text-sm md:text-[15px] leading-relaxed font-light">
                 {course.instructor.bio || `${course.instructor.name} gastronomi dünyasında uzmanlaşmış ve tecrübelerini Culinora'da paylaşan değerli bir şeftir. Eğitimlerinde hem teorik hem pratik bilgilere yer verir.`}
               </p>
@@ -426,9 +423,9 @@ export default async function CoursePage({ params }: CoursePageProps) {
 
           {/* --- BOTTOM ROW --- */}
           {/* Curriculum List */}
-          <div className="lg:col-span-3 bg-[#121212] rounded-3xl border border-white/5 overflow-hidden mt-2">
-            <div className="bg-[#1a1a1a] px-8 py-6 border-b border-white/5 flex items-center justify-between">
-              <h3 className="text-sm font-bold text-gray-300 tracking-widest uppercase">Dersler ve Bölümler</h3>
+          <div className="lg:col-span-3 bg-black rounded-xl border border-white/10 overflow-hidden mt-2">
+            <div className="bg-[#222] px-6 py-4 flex items-center justify-between">
+              <h3 className="text-[15px] font-bold text-white tracking-widest uppercase">EĞİTİM İÇERİĞİ</h3>
             </div>
             
             <div className="divide-y divide-white/5">

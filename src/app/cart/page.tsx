@@ -20,11 +20,6 @@ export default function CartPage() {
   return (
     <div className="min-h-screen bg-black flex items-center justify-center">
       <div className="max-w-2xl mx-auto px-4 text-center">
-        {/* Icon */}
-        <div className="bg-gradient-to-br from-red-600 to-orange-600 rounded-full p-6 w-24 h-24 mx-auto mb-8 flex items-center justify-center">
-          <Sparkles className="h-12 w-12 text-white" />
-        </div>
-
         {/* Message */}
         <h1 className="text-4xl font-bold text-white mb-4">
           Artık Premium Üyelik Sistemi Kullanıyoruz!

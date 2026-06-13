@@ -67,7 +67,6 @@ export default function SubscriptionPopup({ isVisible, monthlyPrice = 399 }: Sub
                                     <p className="text-white font-bold text-sm leading-none">Premium Üyelik</p>
                                 </div>
                                 <div className="ml-auto flex items-center gap-1.5 bg-white/15 backdrop-blur-sm border border-white/20 rounded-full px-3 py-1">
-                                    <Sparkles className="h-3 w-3 text-yellow-300" />
                                     <span className="text-white text-[10px] font-bold uppercase tracking-wider">Premium</span>
                                 </div>
                                 {/* Close Button integrated in header */}
@@ -88,7 +87,6 @@ export default function SubscriptionPopup({ isVisible, monthlyPrice = 399 }: Sub
                                     transition={{ delay: 0.15 }}
                                     className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-600/20 to-red-600/20 border border-orange-500/30 rounded-full px-4 py-1.5 mb-4"
                                 >
-                                    <Sparkles className="h-3.5 w-3.5 text-orange-400" />
                                     <span className="text-orange-400 font-semibold text-xs">Premium Üyelik Fırsatı</span>
                                 </motion.div>
 

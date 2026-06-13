@@ -3,7 +3,7 @@
 import { useSession } from "next-auth/react"
 import Link from "next/link"
 import Image from "next/image"
-import { ChefHat, Check, Sparkles, BookOpen, Home, Users, MessageCircle, Loader2, Tag, X, LucideIcon, CheckCircle2 } from "lucide-react"
+import { ChefHat, Check, BookOpen, Home, Users, MessageCircle, Loader2, Tag, X, LucideIcon, CheckCircle2 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import UserDropdown from "@/components/ui/UserDropdown"
 import { useState, Suspense, useEffect } from "react"
@@ -36,9 +36,9 @@ function CheckoutContent({ monthlyPrice, yearlyPrice }: CheckoutClientProps) {
   const [paymentSuccess, setPaymentSuccess] = useState(false)
 
   // Plan bilgileri
-  const plans: Record<string, { price: number, icon: LucideIcon, color: string }> = {
-    "Premium": { price: monthlyPrice, icon: Sparkles, color: "from-orange-600 to-red-600" },
-    "Premium Yıllık": { price: yearlyPrice, icon: Sparkles, color: "from-orange-600 to-red-600" }
+  const plans: Record<string, { price: number, color: string }> = {
+    "Premium": { price: monthlyPrice, color: "from-orange-600 to-red-600" },
+    "Premium Yıllık": { price: yearlyPrice, color: "from-orange-600 to-red-600" }
   }
 
   const selectedPlan = planName && plans[planName] ? plans[planName] : null
@@ -186,7 +186,7 @@ function CheckoutContent({ monthlyPrice, yearlyPrice }: CheckoutClientProps) {
     return null
   }
 
-  const Icon = selectedPlan.icon
+
 
   return (
     <div className="min-h-screen bg-black">

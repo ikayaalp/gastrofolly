@@ -1,14 +1,13 @@
 "use client"
 
 import Link from "next/link"
-import { Sparkles, ArrowRight, BookOpen, Zap } from "lucide-react"
+import { ArrowRight, BookOpen, Zap } from "lucide-react"
 
 export default function SubscriptionBanner() {
     const plans = [
         {
             name: "Premium",
             price: "399",
-            icon: Sparkles,
             color: "from-orange-600 to-red-600",
             borderColor: "border-orange-500/50",
 
@@ -21,10 +20,7 @@ export default function SubscriptionBanner() {
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-orange-600/10 via-transparent to-transparent"></div>
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-purple-600/10 via-transparent to-transparent"></div>
 
-            {/* Animated Sparkles */}
-            <div className="absolute top-4 right-4 animate-pulse">
-                <Sparkles className="h-6 w-6 text-orange-400" />
-            </div>
+            {/* Animated Sparkles Removed */}
 
             <div className="relative z-10">
                 {/* Header */}
@@ -43,20 +39,11 @@ export default function SubscriptionBanner() {
                 {/* Plans Grid */}
                 <div className="flex justify-center mb-6">
                     {plans.map((plan) => {
-                        const Icon = plan.icon
                         return (
                             <div
                                 key={plan.name}
                                 className={`relative w-full max-w-sm bg-black/40 backdrop-blur-sm border-2 ${plan.borderColor} rounded-xl p-6 transition-all duration-300 hover:scale-105`}
                             >
-
-
-                                {/* Icon */}
-                                <div className="flex justify-center mb-4">
-                                    <div className={`bg-gradient-to-br ${plan.color} rounded-full p-3`}>
-                                        <Icon className="h-6 w-6 text-white" />
-                                    </div>
-                                </div>
 
                                 {/* Plan Name */}
                                 <h3 className="text-xl font-bold text-white text-center mb-2">{plan.name}</h3>
