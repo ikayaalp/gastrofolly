@@ -58,11 +58,13 @@ import axios from 'axios';
 import config from '../api/config';
 import { TextInput } from 'react-native';
 import CustomAlert from '../components/CustomAlert';
+import { usePreventScreenCapture } from 'expo-screen-capture';
 
 // Removed static dimensions to use useWindowDimensions hook
 // const { width, height } = Dimensions.get('window');
 
 export default function LearnScreen({ route, navigation }) {
+    usePreventScreenCapture();
     const { width, height } = useWindowDimensions();
     const insets = useSafeAreaInsets();
     const { courseId, lessonId } = route.params;
