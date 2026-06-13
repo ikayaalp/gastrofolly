@@ -113,10 +113,7 @@ export default function FreeLessonModal({ lesson, courseTitle, customTrigger }: 
             {/* Video Modal */}
             {isOpen && (
                 <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-[100] p-4" onClick={() => setIsOpen(false)}>
-                    {/* Explicit outer close button for safety */}
-                    <button onClick={() => setIsOpen(false)} className="absolute top-4 right-4 md:top-8 md:right-8 text-white/50 hover:text-white bg-black/50 hover:bg-black p-3 rounded-full transition-all z-[110]">
-                        <X className="w-8 h-8" />
-                    </button>
+
 
                     <div 
                         className="bg-[#0a0a0a] border border-gray-800 rounded-xl w-[95vw] max-w-7xl max-h-[90vh] flex flex-col shadow-2xl shadow-orange-500/10 overflow-hidden relative z-[105]"
