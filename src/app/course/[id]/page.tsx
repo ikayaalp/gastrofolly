@@ -291,32 +291,10 @@ export default async function CoursePage({ params }: CoursePageProps) {
         {/* Content overlay */}
         <div className="relative z-10 w-full pb-12 md:pb-16">
           <div className="max-w-6xl mx-auto px-4 md:px-8">
-            {/* Breadcrumb */}
-            <nav className="flex items-center gap-2 text-xs text-gray-400 mb-8">
-              <Link href="/home" className="hover:text-white transition-colors">Ana Sayfa</Link>
-              <ChevronRight className="h-3 w-3 text-gray-600" />
-              {course.category && (
-                <>
-                  <span>{course.category.name}</span>
-                  <ChevronRight className="h-3 w-3 text-gray-600" />
-                </>
-              )}
-              <span className="text-gray-300 truncate">{course.title}</span>
-            </nav>
+
+
 
             <div className="max-w-2xl">
-              {/* Category + Level */}
-              <div className="flex flex-wrap items-center gap-3 mb-5">
-                {course.category && (
-                  <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-orange-400 bg-orange-500/10 px-3 py-1 rounded-full border border-orange-500/20">
-                    {course.category.name}
-                  </span>
-                )}
-                <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-gray-400">
-                  {levelLabel}
-                </span>
-              </div>
-
               {/* Instructor Name — large, like Neoskola */}
               <Link href={`/instructor/${course.instructor.id}`} className="inline-flex items-center gap-3 group mb-4">
                 <img
