@@ -339,6 +339,23 @@ export default async function CoursePage({ params }: CoursePageProps) {
               </div>
             </div>
           </div>
+
+          {/* Absolute Premium CTA (Bottom Right of Hero) */}
+          {!isEnrolled && (
+            <div className="absolute bottom-8 right-8 z-20 hidden md:block">
+              <div className="bg-[#1a1a1a]/95 backdrop-blur-xl rounded-2xl p-5 border border-orange-500/30 shadow-2xl shadow-orange-600/20 w-72 transform hover:-translate-y-1 transition-transform duration-300">
+                <div className="mb-4">
+                  <h3 className="text-white font-bold text-sm mb-1 tracking-wide flex items-center gap-2">
+                    <Crown className="w-4 h-4 text-orange-500" /> Tüm Eğitimlere Erişim
+                  </h3>
+                  <p className="text-gray-400 text-xs">Aylık <span className="text-white font-semibold">299 ₺</span></p>
+                </div>
+                <Link href="/subscription?plan=Premium" className="block w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-2.5 px-4 rounded-xl text-center transition-colors text-sm shadow-lg shadow-orange-600/25">
+                  Üyeliği Başlat
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
@@ -375,7 +392,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
           </div>
 
           {/* Right: Instructor Photo Card */}
-          <div className="lg:col-span-1 relative rounded-3xl overflow-hidden aspect-[4/3] border border-white/5 group">
+          <Link href={`/instructor/${course.instructor.id}`} className="block lg:col-span-1 relative rounded-3xl overflow-hidden aspect-[4/3] border border-white/5 group">
             <Image 
               src={course.instructor.image || "/api/placeholder/400/300"} 
               alt={course.instructor.name || "Eğitmen"} 
@@ -383,14 +400,14 @@ export default async function CoursePage({ params }: CoursePageProps) {
               className="object-cover group-hover:scale-105 transition-transform duration-700" 
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
-            <div className="absolute bottom-4 left-4 right-4 bg-black/80 backdrop-blur-md rounded-2xl p-4 flex items-center gap-4 border border-white/10">
+            <div className="absolute bottom-4 left-4 right-4 bg-black/80 backdrop-blur-md rounded-2xl p-4 flex items-center gap-4 border border-white/10 group-hover:border-orange-500/30 transition-colors">
               <div className="w-1 h-10 bg-orange-600 rounded-full" />
               <div>
-                <p className="text-white font-bold text-[15px]">{course.instructor.name}</p>
-                <p className="text-gray-400 text-xs tracking-wide">Eğitmen</p>
+                <p className="text-white font-bold text-[15px] group-hover:text-orange-400 transition-colors">{course.instructor.name}</p>
+                <p className="text-gray-400 text-xs tracking-wide">Eğitmen Profili &rarr;</p>
               </div>
             </div>
-          </div>
+          </Link>
 
           {/* --- BOTTOM ROW --- */}
           {/* Curriculum List */}
@@ -497,22 +514,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
         </div>
       </div>
 
-      {/* Floating Premium CTA (Bottom Right) */}
-      {!isEnrolled && (
-        <div className="fixed bottom-6 right-6 z-50 hidden md:block">
-          <div className="bg-[#1a1a1a]/95 backdrop-blur-xl rounded-2xl p-5 border border-orange-500/30 shadow-2xl shadow-orange-600/20 w-72 transform hover:-translate-y-1 transition-transform duration-300">
-            <div className="mb-4">
-              <h3 className="text-white font-bold text-sm mb-1 tracking-wide flex items-center gap-2">
-                <Crown className="w-4 h-4 text-orange-500" /> Tüm Eğitimlere Erişim
-              </h3>
-              <p className="text-gray-400 text-xs">Aylık <span className="text-white font-semibold">299 ₺</span></p>
-            </div>
-            <Link href="/subscription?plan=Premium" className="block w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-2.5 px-4 rounded-xl text-center transition-colors text-sm shadow-lg shadow-orange-600/25">
-              Üyeliği Başlat
-            </Link>
-          </div>
-        </div>
-      )}
+
 
     </div>
   )
