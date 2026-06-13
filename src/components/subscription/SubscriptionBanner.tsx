@@ -1,14 +1,14 @@
 "use client"
 
 import Link from "next/link"
-import { Crown, Sparkles, ArrowRight, BookOpen, Zap } from "lucide-react"
+import { Sparkles, ArrowRight, BookOpen, Zap } from "lucide-react"
 
 export default function SubscriptionBanner() {
     const plans = [
         {
             name: "Premium",
             price: "399",
-            icon: Crown,
+            icon: Sparkles,
             color: "from-orange-600 to-red-600",
             borderColor: "border-orange-500/50",
 

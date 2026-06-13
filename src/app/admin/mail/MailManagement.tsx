@@ -9,7 +9,7 @@ import {
     XCircle,
     Users,
     Loader2,
-    Crown,
+    Sparkles,
     Check
 } from "lucide-react"
 
@@ -243,7 +243,7 @@ export default function MailManagement({ users }: MailManagementProps) {
                                                     {user.name || "İsimsiz"}
                                                 </p>
                                                 {user.subscriptionPlan && (
-                                                    <Crown className="h-3.5 w-3.5 text-orange-400 flex-shrink-0" />
+                                                    <Sparkles className="h-3.5 w-3.5 text-orange-400 flex-shrink-0" />
                                                 )}
                                             </div>
                                             <p className="text-xs text-gray-500 truncate">{user.email}</p>

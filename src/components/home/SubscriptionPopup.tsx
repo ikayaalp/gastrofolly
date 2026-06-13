@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { X, Crown, Sparkles, Check, ArrowRight, BookOpen, Users, Award, Zap } from "lucide-react"
+import { X, Sparkles, Check, ArrowRight, BookOpen, Users, Award, Zap } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 
@@ -66,7 +66,7 @@ export default function SubscriptionPopup({ isVisible }: SubscriptionPopupProps)
                                     <p className="text-white font-bold text-sm leading-none">Premium Üyelik</p>
                                 </div>
                                 <div className="ml-auto flex items-center gap-1.5 bg-white/15 backdrop-blur-sm border border-white/20 rounded-full px-3 py-1">
-                                    <Crown className="h-3 w-3 text-yellow-300" />
+                                    <Sparkles className="h-3 w-3 text-yellow-300" />
                                     <span className="text-white text-[10px] font-bold uppercase tracking-wider">Premium</span>
                                 </div>
                                 {/* Close Button integrated in header */}

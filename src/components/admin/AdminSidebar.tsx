@@ -54,6 +54,11 @@ const sidebarItems = [
         icon: Star
     },
     {
+        title: "Abonelikler",
+        href: "/admin/subscriptions",
+        icon: CreditCard
+    },
+    {
         title: "Havuz & Finans",
         href: "/admin/pool",
         icon: CreditCard

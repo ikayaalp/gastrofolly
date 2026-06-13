@@ -3,7 +3,7 @@
 import { useState, useRef } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import { User, Mail, Lock, Camera, Save, Eye, EyeOff, Calendar, Award, Crown } from "lucide-react"
+import { User, Mail, Lock, Camera, Save, Eye, EyeOff, Calendar, Award, Sparkles } from "lucide-react"
 import ConfirmationModal from '@/components/ui/ConfirmationModal'
 
 interface UserData {
@@ -266,7 +266,7 @@ export default function SettingsClient({ user }: SettingsClientProps) {
 
   const tabs = [
     { id: "profile", name: "Profil Bilgileri", icon: User },
-    { id: "subscription", name: "Premium", icon: Crown },
+    { id: "subscription", name: "Premium", icon: Sparkles },
     { id: "password", name: "Şifre Değiştir", icon: Lock },
     { id: "account", name: "Hesap Bilgileri", icon: Award }
   ]
@@ -459,7 +459,7 @@ export default function SettingsClient({ user }: SettingsClientProps) {
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center space-x-4">
                       <div className="bg-orange-600 rounded-full p-3">
-                        <Crown className="h-8 w-8 text-white" />
+                        <Sparkles className="h-8 w-8 text-white" />
                       </div>
                       <div>
                         <h3 className="text-xl font-bold text-white">{user.subscriptionPlan}</h3>
@@ -508,7 +508,7 @@ export default function SettingsClient({ user }: SettingsClientProps) {
             ) : (
               <div className="text-center py-12 bg-gray-900/30 rounded-xl border border-gray-800">
                 <div className="bg-gray-800 rounded-full p-4 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                  <Crown className="h-8 w-8 text-gray-500" />
+                  <Sparkles className="h-8 w-8 text-gray-500" />
                 </div>
                 <h3 className="text-lg font-semibold text-white mb-2">Premium Üyelik Bulunamadı</h3>
                 <p className="text-gray-400 mb-6 max-w-md mx-auto">

@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import Footer from "@/components/layout/Footer";
 import AutoScrollCourses from "@/components/home/AutoScrollCourses";
 import FAQSection from "@/components/home/FAQSection";
-import { Crown, Award, BookOpen, Smartphone } from "lucide-react";
+import { Sparkles, Award, BookOpen, Smartphone } from "lucide-react";
 import InstructorsSection from "@/components/home/InstructorsSection";
 import MobileAppSection from "@/components/home/MobileAppSection";
 

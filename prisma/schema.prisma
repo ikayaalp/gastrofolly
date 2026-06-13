@@ -48,59 +48,59 @@ model VerificationToken {
 
 // Kullanıcı modeli
 model User {
-  id                    String    @id @default(cuid())
-  name                  String?
-  email                 String    @unique
-  emailVerified         DateTime?
-  image                 String?
-  password              String?   // Hashlenmiş şifre
-  firebaseUid           String?   @unique // Firebase Authentication UID
-  verificationCode      String?   // 6 haneli doğrulama kodu
-  verificationCodeExpiry DateTime? // Kodun geçerlilik süresi
-  resetToken            String?   // Şifre sıfırlama token
-  resetTokenExpiry      DateTime? // Token geçerlilik süresi
-  phoneNumber           String?   // Telefon numarası
-  role                  UserRole  @default(STUDENT)
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
-  subscriptionPlan      String?   // "Commis", "Chef D party", "Executive"
-  subscriptionStartDate DateTime? // Abonelik başlangıç tarihi
-  subscriptionEndDate   DateTime? // Abonelik bitiş tarihi
+  id                        String    @id @default(cuid())
+  name                      String?
+  email                     String    @unique
+  emailVerified             DateTime?
+  image                     String?
+  password                  String? // Hashlenmiş şifre
+  firebaseUid               String?   @unique // Firebase Authentication UID
+  verificationCode          String? // 6 haneli doğrulama kodu
+  verificationCodeExpiry    DateTime? // Kodun geçerlilik süresi
+  resetToken                String? // Şifre sıfırlama token
+  resetTokenExpiry          DateTime? // Token geçerlilik süresi
+  phoneNumber               String? // Telefon numarası
+  role                      UserRole  @default(STUDENT)
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
+  subscriptionPlan          String? // "Commis", "Chef D party", "Executive"
+  subscriptionStartDate     DateTime? // Abonelik başlangıç tarihi
+  subscriptionEndDate       DateTime? // Abonelik bitiş tarihi
   subscriptionReferenceCode String? // Iyzico Abonelik Referans Kodu (İptal için gerekli)
-  subscriptionCancelled Boolean   @default(false) // Abonelik iptal edildi mi (dönem sonunda silinecek)
-  bio                   String?   // Profil açıklaması
-  coverImage            String?   // Profil kapak fotoğrafı
-  pushToken             String?   // Expo Push Notification token
-  referralCode          String?   @unique // Fenomen referral kodu
-  discountPercent       Int       @default(10) // Fenomen indirim oranı (%)
-  referredBy            String?   // Bu kullanıcıyı getiren fenomenin ID'si
+  subscriptionCancelled     Boolean   @default(false) // Abonelik iptal edildi mi (dönem sonunda silinecek)
+  bio                       String? // Profil açıklaması
+  coverImage                String? // Profil kapak fotoğrafı
+  pushToken                 String? // Expo Push Notification token
+  referralCode              String?   @unique // Fenomen referral kodu
+  discountPercent           Int       @default(10) // Fenomen indirim oranı (%)
+  referredBy                String? // Bu kullanıcıyı getiren fenomenin ID'si
 
   referredByUser User?  @relation("UserReferrals", fields: [referredBy], references: [id])
   referrals      User[] @relation("UserReferrals")
 
   currentSessionId String?
 
-  accounts      Account[]
-  sessions      Session[]
-  enrollments   Enrollment[]
-  reviews       Review[]
-  progress      Progress[]
-  createdCourses Course[] @relation("CourseInstructor")
-  payments      Payment[]
-  topics        Topic[]
-  posts         Post[]
-  topicLikes    TopicLike[]
-  postLikes     PostLike[]
-  messages      Message[]
-  certificates  Certificate[]
-  notifications Notification[]
-  stories       Story[]
-  pollVotes     PollVote[]
-  referralEarnings Referral[] @relation("InfluencerReferrals")
-  referredPayments Referral[] @relation("ReferredUserReferrals")
+  accounts         Account[]
+  sessions         Session[]
+  enrollments      Enrollment[]
+  reviews          Review[]
+  progress         Progress[]
+  createdCourses   Course[]         @relation("CourseInstructor")
+  payments         Payment[]
+  topics           Topic[]
+  posts            Post[]
+  topicLikes       TopicLike[]
+  postLikes        PostLike[]
+  messages         Message[]
+  certificates     Certificate[]
+  notifications    Notification[]
+  stories          Story[]
+  pollVotes        PollVote[]
+  referralEarnings Referral[]       @relation("InfluencerReferrals")
+  referredPayments Referral[]       @relation("ReferredUserReferrals")
   aiConversations  AiConversation[]
-  followers        Follow[] @relation("UserFollowing")
-  following        Follow[] @relation("UserFollowers")
+  followers        Follow[]         @relation("UserFollowing")
+  following        Follow[]         @relation("UserFollowers")
 }
 
 enum UserRole {
@@ -125,32 +125,32 @@ model Category {
 
 // Kurs modeli
 model Course {
-  id          String      @id @default(cuid())
-  title       String
-  description String
-  price       Float
-  isFree      Boolean     @default(false)
-  discountRate Float?     // İndirim oranı (0-100 arası)
-  discountedPrice Float?  // İndirimli fiyat (otomatik hesaplanır)
-  accessibleByPlans String[] @default([]) // "COMMIS", "CHEF_DE_PARTIE", "EXECUTIVE"
-  imageUrl    String?
-  level       CourseLevel @default(BEGINNER)
-  duration    Int? // dakika cinsinden
-  isPublished Boolean     @default(false)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id                String      @id @default(cuid())
+  title             String
+  description       String
+  price             Float
+  isFree            Boolean     @default(false)
+  discountRate      Float? // İndirim oranı (0-100 arası)
+  discountedPrice   Float? // İndirimli fiyat (otomatik hesaplanır)
+  accessibleByPlans String[]    @default([]) // "COMMIS", "CHEF_DE_PARTIE", "EXECUTIVE"
+  imageUrl          String?
+  level             CourseLevel @default(BEGINNER)
+  duration          Int? // dakika cinsinden
+  isPublished       Boolean     @default(false)
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
 
   instructorId String
   instructor   User     @relation("CourseInstructor", fields: [instructorId], references: [id])
   categoryId   String
   category     Category @relation(fields: [categoryId], references: [id])
 
-  lessons     Lesson[]
-  enrollments Enrollment[]
-  reviews     Review[]
-  progress    Progress[]
-  payments    Payment[]
-  messages    Message[]
+  lessons      Lesson[]
+  enrollments  Enrollment[]
+  reviews      Review[]
+  progress     Progress[]
+  payments     Payment[]
+  messages     Message[]
   certificates Certificate[]
   stories      Story[]
 }
@@ -233,13 +233,13 @@ model Payment {
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
-  userId   String
-  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  courseId String?
-  course   Course? @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  userId           String
+  user             User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId         String?
+  course           Course? @relation(fields: [courseId], references: [id], onDelete: Cascade)
   subscriptionPlan String? // Abonelik ödemesi ise plan adı
-  billingPeriod String? // "monthly" or "yearly"
-  discountCode String? // Kullanılan indirim kodu
+  billingPeriod    String? // "monthly" or "yearly"
+  discountCode     String? // Kullanılan indirim kodu
 }
 
 enum PaymentStatus {
@@ -253,11 +253,11 @@ enum PaymentStatus {
 model DiscountCode {
   id            String   @id @default(cuid())
   code          String   @unique
-  discountType  String   // "PERCENTAGE" or "FIXED"
-  discountValue Float    // 20 for 20% or 50 for 50₺
+  discountType  String // "PERCENTAGE" or "FIXED"
+  discountValue Float // 20 for 20% or 50 for 50₺
   validFrom     DateTime
   validUntil    DateTime
-  maxUses       Int?     // null = unlimited
+  maxUses       Int? // null = unlimited
   usedCount     Int      @default(0)
   isActive      Boolean  @default(true)
   createdAt     DateTime @default(now())
@@ -270,12 +270,12 @@ model Referral {
   influencerId   String
   referredUserId String
   paymentId      String?
-  amount         Float    // Ödeme tutarı
-  commission     Float    // Kazanılan komisyon (%10)
+  amount         Float // Ödeme tutarı
+  commission     Float // Kazanılan komisyon (%10)
   createdAt      DateTime @default(now())
 
-  influencer   User     @relation("InfluencerReferrals", fields: [influencerId], references: [id], onDelete: Cascade)
-  referredUser User     @relation("ReferredUserReferrals", fields: [referredUserId], references: [id], onDelete: Cascade)
+  influencer   User @relation("InfluencerReferrals", fields: [influencerId], references: [id], onDelete: Cascade)
+  referredUser User @relation("ReferredUserReferrals", fields: [referredUserId], references: [id], onDelete: Cascade)
 
   @@index([influencerId])
   @@index([referredUserId])
@@ -296,29 +296,29 @@ model ForumCategory {
 
 // Forum Başlık modeli
 model Topic {
-  id          String   @id @default(cuid())
-  title       String
-  content     String
-  slug        String   @unique
-  isPinned    Boolean  @default(false)
-  isLocked    Boolean  @default(false)
-  viewCount   Int      @default(0)
-  likeCount   Int      @default(0)
-  mediaUrl    String?  // Eklenen medya URL'i (Cloudinary)
-  mediaType   String?  // "IMAGE" veya "VIDEO"
+  id           String   @id @default(cuid())
+  title        String
+  content      String
+  slug         String   @unique
+  isPinned     Boolean  @default(false)
+  isLocked     Boolean  @default(false)
+  viewCount    Int      @default(0)
+  likeCount    Int      @default(0)
+  mediaUrl     String? // Eklenen medya URL'i (Cloudinary)
+  mediaType    String? // "IMAGE" veya "VIDEO"
   thumbnailUrl String? // Video için önizleme görseli
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   authorId   String
-  author     User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  author     User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
   categoryId String
   category   ForumCategory @relation(fields: [categoryId], references: [id])
 
-  posts Post[]
-  likes TopicLike[]
-  hashtags Hashtag[] @relation("TopicHashtags")
-  
+  posts    Post[]
+  likes    TopicLike[]
+  hashtags Hashtag[]   @relation("TopicHashtags")
+
   poll Poll?
 
   @@index([createdAt])
@@ -343,9 +343,9 @@ model Poll {
 }
 
 model PollOption {
-  id        String   @id @default(cuid())
-  text      String
-  
+  id   String @id @default(cuid())
+  text String
+
   pollId String
   poll   Poll   @relation(fields: [pollId], references: [id], onDelete: Cascade)
 
@@ -374,13 +374,13 @@ model Hashtag {
   name      String   @unique // e.g., "yemektarifleri"
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
-  topics    Topic[]  @relation("TopicHashtags")
+
+  topics Topic[] @relation("TopicHashtags")
 }
 
 // Forum Beğeni modeli
 model TopicLike {
-  id      String   @id @default(cuid())
+  id        String   @id @default(cuid())
   createdAt DateTime @default(now())
 
   userId  String
@@ -393,35 +393,35 @@ model TopicLike {
 
 // Forum Mesaj modeli
 model Post {
-  id        String   @id @default(cuid())
-  content   String
-  likeCount Int      @default(0)
-  parentId  String?
-  mediaUrl    String?  // Eklenen medya URL'i (Cloudinary)
-  mediaType   String?  // "IMAGE" veya "VIDEO"
+  id           String   @id @default(cuid())
+  content      String
+  likeCount    Int      @default(0)
+  parentId     String?
+  mediaUrl     String? // Eklenen medya URL'i (Cloudinary)
+  mediaType    String? // "IMAGE" veya "VIDEO"
   thumbnailUrl String? // Video için önizleme görseli
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   authorId String
   author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
   topicId  String
   topic    Topic  @relation(fields: [topicId], references: [id], onDelete: Cascade)
-  
-  parent   Post?   @relation("PostReplies", fields: [parentId], references: [id], onDelete: Cascade)
-  replies  Post[]  @relation("PostReplies")
-  likes    PostLike[]
+
+  parent  Post?      @relation("PostReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies Post[]     @relation("PostReplies")
+  likes   PostLike[]
 }
 
 // Forum Yorum Beğeni modeli
 model PostLike {
-  id      String   @id @default(cuid())
+  id        String   @id @default(cuid())
   createdAt DateTime @default(now())
 
-  userId  String
-  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  postId  String
-  post    Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@unique([userId, postId])
 }
@@ -430,7 +430,7 @@ model PostLike {
 model Message {
   id        String   @id @default(cuid())
   content   String
-  parentId  String?  // Yanıt mesajı için
+  parentId  String? // Yanıt mesajı için
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -438,22 +438,22 @@ model Message {
   user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   courseId String
   course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  
-  parent   Message? @relation("MessageReplies", fields: [parentId], references: [id], onDelete: Cascade)
-  replies  Message[] @relation("MessageReplies")
+
+  parent  Message?  @relation("MessageReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies Message[] @relation("MessageReplies")
 }
 
 // Sertifika modeli
 model Certificate {
-  id          String   @id @default(cuid())
-  userId      String
-  courseId    String
-  courseName  String
-  issuedAt    DateTime @default(now())
-  
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  
+  id         String   @id @default(cuid())
+  userId     String
+  courseId   String
+  courseName String
+  issuedAt   DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
   @@unique([userId, courseId])
 }
 
@@ -465,13 +465,13 @@ model Notification {
   message   String
   isRead    Boolean          @default(false)
   createdAt DateTime         @default(now())
-  
-  userId    String
-  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  courseId  String?
-  topicId   String?
-  postId    String?
-  
+
+  userId   String
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId String?
+  topicId  String?
+  postId   String?
+
   @@index([userId, isRead])
   @@index([createdAt])
 }
@@ -483,24 +483,23 @@ enum NotificationType {
   FORUM_REPLY
 }
 
-
 // Hikaye Modeli
 model Story {
-  id          String   @id @default(cuid())
-  mediaUrl    String   // Resim veya Video URL
-  mediaType   String   // "IMAGE" veya "VIDEO"
-  duration    Int      @default(5000) // Ms cinsinden süre
-  createdAt   DateTime @default(now())
-  expiresAt   DateTime // Hikayenin yayından kalkacağı zaman
+  id        String   @id @default(cuid())
+  mediaUrl  String // Resim veya Video URL
+  mediaType String // "IMAGE" veya "VIDEO"
+  duration  Int      @default(5000) // Ms cinsinden süre
+  createdAt DateTime @default(now())
+  expiresAt DateTime // Hikayenin yayından kalkacağı zaman
 
-  courseId    String?
-  course      Course?  @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  
-  creatorId   String
-  creator     User     @relation(fields: [creatorId], references: [id], onDelete: Cascade)
-  
-  title       String?  // Hikaye başlığı
-  coverImage  String?  // Hikaye kapak resmi URL
+  courseId String?
+  course   Course? @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  creatorId String
+  creator   User   @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+
+  title      String? // Hikaye başlığı
+  coverImage String? // Hikaye kapak resmi URL
 }
 
 // Culi AI Sohbet modeli
@@ -540,4 +539,16 @@ model Follow {
   @@unique([followerId, followingId])
   @@index([followerId])
   @@index([followingId])
+}
+
+// Abonelik Planlari
+model SubscriptionPlan {
+  id              String   @id @default(cuid())
+  name            String   @unique
+  price           Float
+  interval        String   @default("monthly")
+  iyzicoPlanCode  String?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }

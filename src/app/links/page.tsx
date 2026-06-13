@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ChefHat, Crown, Play, Users, ArrowRight, Instagram, Globe } from "lucide-react";
+import { ChefHat, Sparkles, Play, Users, ArrowRight, Instagram, Globe } from "lucide-react";
 
 export const metadata = {
     title: 'Gastrofolly x Culinora | Linkler',
@@ -12,7 +12,7 @@ export default function LinksPage() {
         {
             title: "🚀 Hemen Premium Üye Ol",
             description: "Gastrofolly takipçilerine özel indirimli fiyatla başla.",
-            icon: Crown,
+            icon: Sparkles,
             href: "/subscription",
             primary: true,
             color: "bg-gradient-to-r from-orange-600 to-red-600"

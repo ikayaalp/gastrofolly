@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ChefHat, Crown } from 'lucide-react'
+import { ChefHat, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 
 export default function CartPage() {
@@ -22,7 +22,7 @@ export default function CartPage() {
       <div className="max-w-2xl mx-auto px-4 text-center">
         {/* Icon */}
         <div className="bg-gradient-to-br from-red-600 to-orange-600 rounded-full p-6 w-24 h-24 mx-auto mb-8 flex items-center justify-center">
-          <Crown className="h-12 w-12 text-white" />
+          <Sparkles className="h-12 w-12 text-white" />
         </div>
 
         {/* Message */}

@@ -14,7 +14,7 @@ import {
   GraduationCap,
   CreditCard,
   TrendingUp,
-  Crown
+  Sparkles
 } from "lucide-react"
 
 
@@ -156,7 +156,7 @@ export default function UserManagement({ users, totalRevenue }: UserManagementPr
         <div className="bg-black border border-gray-800 rounded-xl p-6">
           <div className="flex items-center space-x-3">
             <div className="bg-purple-500/20 p-3 rounded-lg">
-              <Crown className="h-6 w-6 text-purple-400" />
+              <Sparkles className="h-6 w-6 text-purple-400" />
             </div>
             <div>
               <div className="flex items-baseline space-x-2">
