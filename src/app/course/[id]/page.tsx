@@ -430,25 +430,22 @@ export default async function CoursePage({ params }: CoursePageProps) {
                 const canAccess = isEnrolled || isFirstLesson;
                 
                 const LessonContent = (
-                  <div className={`p-6 md:p-8 flex flex-col md:flex-row gap-6 md:gap-8 items-start md:items-center transition-colors group ${canAccess ? 'cursor-pointer hover:bg-white/[0.04]' : 'hover:bg-white/[0.02] opacity-80'}`}>
-                    {/* Thumbnail */}
-                    <div className="relative w-full md:w-56 aspect-[16/9] rounded-xl overflow-hidden shrink-0 bg-[#1a1a1a] border border-white/5">
-                      {course.imageUrl && (
-                        <Image src={course.imageUrl} fill className="object-cover opacity-60 group-hover:opacity-80 transition-opacity" alt="" />
-                      )}
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className={`bg-black/50 backdrop-blur-sm p-3 rounded-full transition-colors ${canAccess ? 'group-hover:bg-orange-600/90' : ''}`}>
-                          {canAccess ? <Play className="w-6 h-6 text-white" /> : <Lock className="w-6 h-6 text-white/50" />}
-                        </div>
+                  <div className={`p-4 md:p-8 flex flex-col sm:flex-row gap-4 md:gap-8 items-start sm:items-center transition-colors group ${canAccess ? 'cursor-pointer hover:bg-white/[0.04]' : 'hover:bg-white/[0.02] opacity-80'}`}>
+                    <div className="flex flex-row items-center gap-4 flex-1 w-full min-w-0">
+                      {/* Lesson Number */}
+                      <div className={`w-12 h-12 md:w-16 md:h-16 shrink-0 flex items-center justify-center rounded-xl border border-white/5 transition-colors ${canAccess ? 'bg-orange-500/10 group-hover:bg-orange-500/20' : 'bg-white/5'}`}>
+                         <span className={`text-xl md:text-2xl font-bold transition-colors ${canAccess ? 'text-orange-500' : 'text-gray-500'}`}>
+                            {(index + 1).toString().padStart(2, '0')}
+                         </span>
                       </div>
-                    </div>
-                    
-                    {/* Lesson Info */}
-                    <div className="flex-1 min-w-0">
-                      <h4 className={`font-medium text-lg mb-2 ${canAccess ? 'text-white group-hover:text-orange-400 transition-colors' : 'text-gray-300'}`}>Bölüm {index + 1} - {lesson.title}</h4>
-                      {lesson.description && (
-                        <p className="text-gray-500 text-sm line-clamp-2 leading-relaxed font-light">{lesson.description}</p>
-                      )}
+                      
+                      {/* Lesson Info */}
+                      <div className="flex-1 min-w-0">
+                        <h4 className={`font-medium text-base md:text-lg mb-1 ${canAccess ? 'text-white group-hover:text-orange-400 transition-colors' : 'text-gray-300'} truncate md:whitespace-normal`}>Bölüm {index + 1} - {lesson.title}</h4>
+                        {lesson.description && (
+                          <p className="text-gray-500 text-xs md:text-sm line-clamp-1 md:line-clamp-2 leading-relaxed font-light">{lesson.description}</p>
+                        )}
+                      </div>
                     </div>
                     
                     {/* Lesson Actions */}
