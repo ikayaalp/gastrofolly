@@ -412,36 +412,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
                   </div>
                 </Link>
 
-                {/* Divider */}
-                <div className="h-8 w-px bg-white/10 hidden md:block" />
 
-                {/* Rating */}
-                {averageRating > 0 && (
-                  <div className="flex items-center gap-1.5">
-                    <div className="flex items-center gap-0.5">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <Star
-                          key={star}
-                          className={`h-4 w-4 ${star <= Math.round(averageRating)
-                            ? 'text-amber-400 fill-amber-400'
-                            : 'text-gray-600'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                    <span className="text-amber-400 font-semibold text-sm">{averageRating.toFixed(1)}</span>
-                    <span className="text-gray-500 text-xs">({course._count.reviews})</span>
-                  </div>
-                )}
-
-                {/* Divider */}
-                <div className="h-8 w-px bg-white/10 hidden md:block" />
-
-                {/* Students Count */}
-                <div className="flex items-center gap-1.5 text-gray-400">
-                  <Users className="h-4 w-4" />
-                  <span className="text-sm">{course._count.enrollments} öğrenci</span>
-                </div>
               </div>
             </div>
           </div>
@@ -453,7 +424,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
       {/* STATS BAR — Floating glass bar (desktop) */}
       {/* ═══════════════════════════════════════════════════════════ */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-8 -mt-6 md:-mt-8 mb-8">
-        <div className="grid grid-cols-3 md:grid-cols-3 gap-3 md:gap-0 md:flex md:items-center md:justify-around bg-white/[0.04] border border-white/[0.08] backdrop-blur-xl rounded-2xl p-4 md:py-5 md:px-8">
+        <div className="grid grid-cols-2 md:grid-cols-2 gap-3 md:gap-0 md:flex md:items-center md:justify-around bg-white/[0.04] border border-white/[0.08] backdrop-blur-xl rounded-2xl p-4 md:py-5 md:px-8">
           <div className="flex flex-col items-center">
             <div className="flex items-center gap-2 mb-1">
               <Play className="h-4 w-4 md:h-5 md:w-5 text-orange-400" />
@@ -474,15 +445,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
             <span className="text-[10px] md:text-xs text-gray-500 uppercase tracking-wider">Toplam Süre</span>
           </div>
 
-          <div className="hidden md:block h-8 w-px bg-white/10" />
 
-          <div className="flex flex-col items-center">
-            <div className="flex items-center gap-2 mb-1">
-              <GraduationCap className="h-4 w-4 md:h-5 md:w-5 text-orange-400" />
-              <span className="text-xl md:text-2xl font-bold text-white">{course._count.enrollments}</span>
-            </div>
-            <span className="text-[10px] md:text-xs text-gray-500 uppercase tracking-wider">Öğrenci</span>
-          </div>
         </div>
       </div>
 
