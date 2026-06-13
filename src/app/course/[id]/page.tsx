@@ -342,15 +342,24 @@ export default async function CoursePage({ params }: CoursePageProps) {
 
           {/* Absolute Premium CTA (Bottom Right of Hero) */}
           {!isEnrolled && (
-            <div className="absolute bottom-8 right-8 z-20 hidden md:block">
-              <div className="bg-[#1a1a1a]/95 backdrop-blur-xl rounded-2xl p-5 border border-orange-500/30 shadow-2xl shadow-orange-600/20 w-72 transform hover:-translate-y-1 transition-transform duration-300">
-                <div className="mb-4">
-                  <h3 className="text-white font-bold text-sm mb-1 tracking-wide flex items-center gap-2">
-                    Tüm Eğitimlere Erişim
-                  </h3>
-                  <p className="text-gray-400 text-xs">Aylık <span className="text-white font-semibold">299 ₺</span></p>
+            <div className="absolute bottom-16 right-12 lg:right-24 z-20 hidden md:block">
+              <div className="bg-[#121212]/95 backdrop-blur-2xl rounded-3xl p-6 border border-orange-500/20 shadow-[0_0_50px_-12px_rgba(234,88,12,0.25)] w-80 transform hover:-translate-y-1 transition-all duration-300 group">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="bg-orange-500/10 p-2.5 rounded-xl">
+                    <Crown className="w-5 h-5 text-orange-500 group-hover:scale-110 transition-transform" />
+                  </div>
+                  <div>
+                    <h3 className="text-white font-bold text-base tracking-wide">Premium Ol</h3>
+                    <p className="text-gray-400 text-xs">Tüm eğitimlere sınırsız erişim</p>
+                  </div>
                 </div>
-                <Link href="/subscription?plan=Premium" className="block w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-2.5 px-4 rounded-xl text-center transition-colors text-sm shadow-lg shadow-orange-600/25">
+                
+                <div className="bg-[#1a1a1a] rounded-xl p-3 mb-4 border border-white/5 flex items-center justify-between">
+                  <span className="text-gray-400 text-sm">Aylık</span>
+                  <span className="text-white font-bold text-lg">299 ₺</span>
+                </div>
+
+                <Link href="/subscription?plan=Premium" className="block w-full bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 text-white font-bold py-3.5 px-4 rounded-xl text-center transition-all text-sm shadow-[0_0_20px_-5px_rgba(234,88,12,0.4)]">
                   Üyeliği Başlat
                 </Link>
               </div>
