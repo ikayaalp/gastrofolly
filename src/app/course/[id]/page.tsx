@@ -265,98 +265,93 @@ export default async function CoursePage({ params }: CoursePageProps) {
       </div>
 
 
+
       {/* ═══════════════════════════════════════════════════════════ */}
-      {/* HERO — Instructor-first, dark banner like Neoskola         */}
+      {/* HERO — Neoskola-style cinematic full-width hero             */}
       {/* ═══════════════════════════════════════════════════════════ */}
-      <section className="relative bg-gradient-to-b from-[#111] to-black pt-20 md:pt-24 pb-10 md:pb-16 border-b border-white/[0.06]">
-        <div className="max-w-6xl mx-auto px-4 md:px-8">
+      <section className="relative w-full min-h-[70vh] md:min-h-[80vh] flex items-end pt-20 md:pt-24 overflow-hidden">
+        {/* Background Image — full bleed */}
+        {course.imageUrl ? (
+          <Image
+            src={course.imageUrl}
+            alt={course.title}
+            fill
+            priority
+            className="object-cover"
+            sizes="100vw"
+          />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-orange-900 via-black to-black" />
+        )}
 
-          {/* Breadcrumb */}
-          <nav className="flex items-center gap-2 text-xs text-gray-500 mb-8 md:mb-10">
-            <Link href="/home" className="hover:text-white transition-colors">Ana Sayfa</Link>
-            <ChevronRight className="h-3 w-3" />
-            {course.category && (
-              <>
-                <span>{course.category.name}</span>
-                <ChevronRight className="h-3 w-3" />
-              </>
-            )}
-            <span className="text-gray-400 truncate">{course.title}</span>
-          </nav>
+        {/* Gradient overlays for readability */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
 
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12 items-start">
+        {/* Content overlay */}
+        <div className="relative z-10 w-full pb-12 md:pb-16">
+          <div className="max-w-6xl mx-auto px-4 md:px-8">
+            {/* Breadcrumb */}
+            <nav className="flex items-center gap-2 text-xs text-gray-400 mb-8">
+              <Link href="/home" className="hover:text-white transition-colors">Ana Sayfa</Link>
+              <ChevronRight className="h-3 w-3 text-gray-600" />
+              {course.category && (
+                <>
+                  <span>{course.category.name}</span>
+                  <ChevronRight className="h-3 w-3 text-gray-600" />
+                </>
+              )}
+              <span className="text-gray-300 truncate">{course.title}</span>
+            </nav>
 
-            {/* Left — Text content (3 cols) */}
-            <div className="lg:col-span-3 order-2 lg:order-1">
-              {/* Category + Level pills */}
-              <div className="flex flex-wrap items-center gap-2 mb-5">
+            <div className="max-w-2xl">
+              {/* Category + Level */}
+              <div className="flex flex-wrap items-center gap-3 mb-5">
                 {course.category && (
-                  <span className="text-[11px] font-semibold uppercase tracking-widest text-orange-400">
+                  <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-orange-400 bg-orange-500/10 px-3 py-1 rounded-full border border-orange-500/20">
                     {course.category.name}
                   </span>
                 )}
-                <span className="text-gray-600">•</span>
-                <span className="text-[11px] font-semibold uppercase tracking-widest text-gray-500">
+                <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-gray-400">
                   {levelLabel}
                 </span>
               </div>
 
-              {/* Title */}
-              <h1 className="text-3xl md:text-4xl lg:text-[2.75rem] font-bold text-white leading-tight mb-5">
-                {course.title}
-              </h1>
-
-              {/* Description */}
-              <p className="text-gray-400 text-[15px] md:text-base leading-relaxed mb-8 max-w-xl">
-                {course.description}
-              </p>
-
-              {/* Instructor row */}
-              <Link href={`/instructor/${course.instructor.id}`} className="inline-flex items-center gap-3 group mb-8">
+              {/* Instructor Name — large, like Neoskola */}
+              <Link href={`/instructor/${course.instructor.id}`} className="inline-flex items-center gap-3 group mb-4">
                 <img
                   src={course.instructor.image || "/api/placeholder/48/48"}
                   alt={course.instructor.name || "Eğitmen"}
-                  className="w-11 h-11 rounded-full border-2 border-white/10 group-hover:border-orange-500/50 transition-colors object-cover"
+                  className="w-12 h-12 rounded-full border-2 border-white/20 group-hover:border-orange-500/50 transition-colors object-cover"
                 />
                 <div>
-                  <p className="text-white text-sm font-semibold group-hover:text-orange-400 transition-colors">
+                  <p className="text-white text-lg md:text-xl font-bold group-hover:text-orange-400 transition-colors">
                     {course.instructor.name}
                   </p>
                   <p className="text-gray-500 text-xs">Eğitmen</p>
                 </div>
               </Link>
 
-              {/* Quick Stats — horizontal pills */}
-              <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-gray-500">
+              {/* Title — hero-sized */}
+              <h1 className="text-3xl md:text-5xl lg:text-[3.5rem] font-bold text-white leading-[1.1] mb-5">
+                {course.title}
+              </h1>
+
+              {/* Description */}
+              <p className="text-gray-400 text-sm md:text-base leading-relaxed mb-8 max-w-lg">
+                {course.description}
+              </p>
+
+              {/* Stats row */}
+              <div className="flex items-center gap-6 text-sm text-gray-400">
                 <div className="flex items-center gap-2">
                   <Play className="h-4 w-4 text-orange-500" />
                   <span><span className="text-white font-semibold">{course._count.lessons}</span> Ders</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-orange-500" />
-                  <span><span className="text-white font-semibold">{durationText}</span></span>
+                  <span className="text-white font-semibold">{durationText}</span>
                 </div>
-              </div>
-            </div>
-
-            {/* Right — Course Image (2 cols) */}
-            <div className="lg:col-span-2 order-1 lg:order-2">
-              <div className="relative aspect-[16/10] rounded-2xl overflow-hidden bg-gray-900 shadow-2xl shadow-black/50">
-                {course.imageUrl ? (
-                  <Image
-                    src={course.imageUrl}
-                    alt={course.title}
-                    fill
-                    priority
-                    className="object-cover"
-                    sizes="(max-width: 768px) 100vw, 40vw"
-                  />
-                ) : (
-                  <div className="absolute inset-0 bg-gradient-to-br from-orange-700 via-orange-900 to-black flex items-center justify-center">
-                    <ChefHat className="h-20 w-20 text-white/20" />
-                  </div>
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
               </div>
             </div>
           </div>
