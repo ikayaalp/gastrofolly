@@ -3,6 +3,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from './config';
 import notificationService from './notificationService';
 import { loginRevenueCat, logoutRevenueCat } from './revenueCatService';
+import { navigationRef } from '../navigation/AppNavigator';
+import { Alert } from 'react-native';
 
 const api = axios.create({
     baseURL: config.API_BASE_URL,
@@ -22,6 +24,49 @@ api.interceptors.request.use(
         return config;
     },
     (error) => {
+        return Promise.reject(error);
+    }
+);
+
+// Response interceptor to catch 401 Unauthorized
+api.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+        if (error.response && error.response.status === 401) {
+            const url = error.config?.url || '';
+            // Ignore login/register endpoints to avoid confusing alerts on wrong password
+            if (!url.includes('/login') && !url.includes('/register') && !url.includes('/apple-mobile') && !url.includes('/google-mobile')) {
+                const isLoggingOut = await AsyncStorage.getItem('isLoggingOut');
+                if (!isLoggingOut) {
+                    await AsyncStorage.setItem('isLoggingOut', 'true');
+                    
+                    // Clear user data silently
+                    await authService.logout();
+
+                    Alert.alert(
+                        "Oturum Kapatıldı ⚠️",
+                        "Hesabınıza başka bir cihazdan giriş yapıldı. Güvenliğiniz için oturumunuz sonlandırılıyor.",
+                        [
+                            { 
+                                text: "Tamam", 
+                                onPress: () => {
+                                    if (navigationRef.isReady()) {
+                                        navigationRef.reset({
+                                            index: 0,
+                                            routes: [{ name: 'Welcome' }],
+                                        });
+                                    }
+                                }
+                            }
+                        ]
+                    );
+
+                    setTimeout(() => {
+                        AsyncStorage.removeItem('isLoggingOut');
+                    }, 5000);
+                }
+            }
+        }
         return Promise.reject(error);
     }
 );
