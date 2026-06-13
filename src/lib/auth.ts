@@ -112,7 +112,8 @@ export const authOptions: NextAuthOptions = {
           // Single-device login check
           if (user.currentSessionId && token.sessionId !== user.currentSessionId) {
             console.log(`[NextAuth] Kicking out old session for user: ${user.id}`);
-            return { error: 'ConcurrentLogin' } as any;
+            // Return session with error flag so client can show toast before logging out
+            (session as any).error = 'ConcurrentLogin';
           }
 
           // Lazy cleanup
