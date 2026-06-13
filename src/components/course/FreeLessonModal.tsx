@@ -119,7 +119,7 @@ export default function FreeLessonModal({ lesson, courseTitle, customTrigger }: 
                     </button>
 
                     <div 
-                        className="bg-[#0a0a0a] border border-gray-800 rounded-xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl shadow-orange-500/10 overflow-hidden relative z-[105]"
+                        className="bg-[#0a0a0a] border border-gray-800 rounded-xl w-full max-w-5xl max-h-[90vh] flex flex-col shadow-2xl shadow-orange-500/10 overflow-hidden relative z-[105]"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Modal Header */}

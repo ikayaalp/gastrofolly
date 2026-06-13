@@ -346,7 +346,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
               <div className="bg-[#1a1a1a]/95 backdrop-blur-xl rounded-2xl p-5 border border-orange-500/30 shadow-2xl shadow-orange-600/20 w-72 transform hover:-translate-y-1 transition-transform duration-300">
                 <div className="mb-4">
                   <h3 className="text-white font-bold text-sm mb-1 tracking-wide flex items-center gap-2">
-                    <Crown className="w-4 h-4 text-orange-500" /> Tüm Eğitimlere Erişim
+                    Tüm Eğitimlere Erişim
                   </h3>
                   <p className="text-gray-400 text-xs">Aylık <span className="text-white font-semibold">299 ₺</span></p>
                 </div>
