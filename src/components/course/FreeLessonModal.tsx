@@ -112,8 +112,16 @@ export default function FreeLessonModal({ lesson, courseTitle, customTrigger }: 
 
             {/* Video Modal */}
             {isOpen && (
-                <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-50 p-4">
-                    <div className="bg-[#0a0a0a] border border-gray-800 rounded-xl w-full max-w-4xl shadow-2xl shadow-orange-500/10 overflow-hidden">
+                <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-[100] p-4" onClick={() => setIsOpen(false)}>
+                    {/* Explicit outer close button for safety */}
+                    <button onClick={() => setIsOpen(false)} className="absolute top-4 right-4 md:top-8 md:right-8 text-white/50 hover:text-white bg-black/50 hover:bg-black p-3 rounded-full transition-all z-[110]">
+                        <X className="w-8 h-8" />
+                    </button>
+
+                    <div 
+                        className="bg-[#0a0a0a] border border-gray-800 rounded-xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl shadow-orange-500/10 overflow-hidden relative z-[105]"
+                        onClick={(e) => e.stopPropagation()}
+                    >
                         {/* Modal Header */}
                         <div className="p-4 border-b border-gray-800 flex items-center justify-between">
                             <div className="flex items-center space-x-3">
@@ -134,11 +142,11 @@ export default function FreeLessonModal({ lesson, courseTitle, customTrigger }: 
                         </div>
 
                         {/* Video Content */}
-                        <div className="relative aspect-video bg-black">
+                        <div className="relative flex-1 min-h-0 bg-black flex items-center justify-center">
                             {lesson.videoUrl && lesson.videoUrl.trim() !== "" ? (
                                 <video
                                     ref={videoRef}
-                                    className="w-full h-full object-contain"
+                                    className="w-full h-full max-h-[60vh] object-contain"
                                     controls
                                     controlsList="nodownload"
                                     onContextMenu={(e) => e.preventDefault()}

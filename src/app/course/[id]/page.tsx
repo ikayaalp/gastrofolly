@@ -330,9 +330,9 @@ export default async function CoursePage({ params }: CoursePageProps) {
                     lesson={course.lessons[0]}
                     courseTitle={course.title}
                     customTrigger={
-                      <button className="border border-white/30 hover:border-white text-white px-8 py-3 rounded-lg flex items-center gap-3 transition-all bg-white/5 backdrop-blur-sm group">
+                      <button className="bg-orange-600 hover:bg-orange-500 text-white px-8 py-3 rounded-lg flex items-center gap-3 transition-all shadow-lg shadow-orange-600/20 group">
                         <Play className="w-4 h-4 fill-white group-hover:scale-110 transition-transform" />
-                        <span className="text-sm font-medium tracking-wide">Trailer</span>
+                        <span className="text-sm font-bold tracking-wide">Kurs tanıtımı</span>
                       </button>
                     }
                   />
