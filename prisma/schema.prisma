@@ -552,3 +552,22 @@ model SubscriptionPlan {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
+
+// Finans Kayıtları (Gelir/Gider)
+model FinanceRecord {
+  id          String      @id @default(cuid())
+  type        FinanceType // INCOME or EXPENSE
+  amount      Float
+  title       String
+  description String?
+  category    String?     // Opsiyonel kategori (Örn: Maaş, Reklam, Hosting)
+  documentUrl String?     // Fatura resmi (optional)
+  date        DateTime    // Gelir/Gider tarihi
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+enum FinanceType {
+  INCOME
+  EXPENSE
+}

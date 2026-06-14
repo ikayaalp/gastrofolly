@@ -64,6 +64,11 @@ const sidebarItems = [
         icon: CreditCard
     },
     {
+        title: "Gelir & Gider",
+        href: "/admin/finance",
+        icon: BookOpen
+    },
+    {
         title: "Bildirimler",
         href: "/admin/notifications",
         icon: Bell
