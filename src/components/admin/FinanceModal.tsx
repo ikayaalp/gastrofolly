@@ -207,11 +207,10 @@ export default function FinanceModal({ isOpen, onClose, onSuccess }: FinanceModa
             />
           </div>
 
-          {type === "EXPENSE" && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-300">Fatura / Belge Resmi</label>
-              
-              {!documentUrl ? (
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-300">Dekont / Fatura / Belge Resmi</label>
+            
+            {!documentUrl ? (
                 <div 
                   onClick={() => fileInputRef.current?.click()}
                   className="border-2 border-dashed border-neutral-800 rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:border-orange-500 hover:bg-neutral-800/50 transition-all"
@@ -250,15 +249,14 @@ export default function FinanceModal({ isOpen, onClose, onSuccess }: FinanceModa
                   </div>
                 </div>
               )}
-              <input
-                type="file"
-                ref={fileInputRef}
-                className="hidden"
-                accept="image/*"
-                onChange={handleFileUpload}
-              />
-            </div>
-          )}
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  className="hidden"
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                />
+              </div>
 
           <div className="pt-4 flex items-center justify-end space-x-4 border-t border-neutral-800">
             <button
