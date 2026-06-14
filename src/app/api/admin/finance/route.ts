@@ -33,6 +33,14 @@ export async function GET(req: Request) {
       where: whereClause,
       orderBy: {
         date: 'desc'
+      },
+      include: {
+        createdBy: {
+          select: {
+            name: true,
+            email: true
+          }
+        }
       }
     })
 
@@ -66,7 +74,8 @@ export async function POST(req: Request) {
         description,
         category,
         documentUrl,
-        date: new Date(date)
+        date: new Date(date),
+        createdById: session.user.id
       }
     })
 

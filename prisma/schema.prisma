@@ -101,6 +101,7 @@ model User {
   aiConversations  AiConversation[]
   followers        Follow[]         @relation("UserFollowing")
   following        Follow[]         @relation("UserFollowers")
+  financeRecords   FinanceRecord[]
 }
 
 enum UserRole {
@@ -565,6 +566,9 @@ model FinanceRecord {
   date        DateTime    // Gelir/Gider tarihi
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
+
+  createdById String?
+  createdBy   User?       @relation(fields: [createdById], references: [id], onDelete: SetNull)
 }
 
 enum FinanceType {

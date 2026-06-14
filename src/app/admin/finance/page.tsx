@@ -15,6 +15,10 @@ interface FinanceRecord {
   documentUrl?: string
   date: string
   createdAt: string
+  createdBy?: {
+    name: string | null
+    email: string
+  }
 }
 
 export default function FinancePage() {
@@ -82,18 +86,43 @@ export default function FinancePage() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-white">Gelir & Gider Yönetimi</h1>
           <p className="text-gray-400 mt-1 text-sm">Aylık finansal durumunuzu ve faturalarınızı takip edin.</p>
         </div>
-        <div className="flex items-center space-x-3">
-          <input 
-            type="month"
-            value={selectedMonth}
-            onChange={(e) => setSelectedMonth(e.target.value)}
-            className="bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-orange-500"
-          />
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center space-x-2">
+            <select 
+              value={selectedMonth.split('-')[1]}
+              onChange={(e) => setSelectedMonth(`${selectedMonth.split('-')[0]}-${e.target.value}`)}
+              className="bg-neutral-900 border border-neutral-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-orange-500 cursor-pointer appearance-none"
+              style={{ backgroundImage: 'none' }}
+            >
+              <option value="01">Ocak</option>
+              <option value="02">Şubat</option>
+              <option value="03">Mart</option>
+              <option value="04">Nisan</option>
+              <option value="05">Mayıs</option>
+              <option value="06">Haziran</option>
+              <option value="07">Temmuz</option>
+              <option value="08">Ağustos</option>
+              <option value="09">Eylül</option>
+              <option value="10">Ekim</option>
+              <option value="11">Kasım</option>
+              <option value="12">Aralık</option>
+            </select>
+            <select
+              value={selectedMonth.split('-')[0]}
+              onChange={(e) => setSelectedMonth(`${e.target.value}-${selectedMonth.split('-')[1]}`)}
+              className="bg-neutral-900 border border-neutral-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-orange-500 cursor-pointer appearance-none"
+              style={{ backgroundImage: 'none' }}
+            >
+              {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - 5 + i).map(year => (
+                <option key={year} value={year}>{year}</option>
+              ))}
+            </select>
+          </div>
           <button
             onClick={() => setIsModalOpen(true)}
             className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2.5 rounded-xl font-medium text-sm flex items-center transition-colors shadow-lg shadow-orange-900/20"
@@ -148,16 +177,16 @@ export default function FinancePage() {
 
       {/* Kayıtlar Tablosu */}
       <div className="bg-neutral-900/50 backdrop-blur-sm border border-neutral-800 rounded-2xl overflow-hidden">
-        <div className="p-4 border-b border-neutral-800 flex items-center justify-between">
+        <div className="p-4 border-b border-neutral-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <h3 className="text-lg font-medium text-white">İşlem Geçmişi</h3>
-          <div className="relative">
+          <div className="relative w-full sm:w-auto">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
             <input 
               type="text" 
               placeholder="Başlık veya kategori ara..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="bg-neutral-950 border border-neutral-800 rounded-xl pl-9 pr-4 py-2 text-sm text-white focus:outline-none focus:border-orange-500 w-64"
+              className="bg-neutral-950 border border-neutral-800 rounded-xl pl-9 pr-4 py-2 text-sm text-white focus:outline-none focus:border-orange-500 w-full sm:w-64"
             />
           </div>
         </div>
@@ -179,6 +208,7 @@ export default function FinancePage() {
                 <tr className="bg-neutral-950/50 border-b border-neutral-800 text-xs uppercase text-gray-500">
                   <th className="py-4 px-6 font-medium">İşlem</th>
                   <th className="py-4 px-6 font-medium">Tarih</th>
+                  <th className="py-4 px-6 font-medium">Ekleyen</th>
                   <th className="py-4 px-6 font-medium">Kategori</th>
                   <th className="py-4 px-6 font-medium text-right">Tutar</th>
                   <th className="py-4 px-6 font-medium text-center">Belge</th>
@@ -201,6 +231,9 @@ export default function FinancePage() {
                     </td>
                     <td className="py-4 px-6 text-sm text-gray-400">
                       {new Date(record.date).toLocaleDateString('tr-TR')}
+                    </td>
+                    <td className="py-4 px-6 text-sm text-gray-400">
+                      {record.createdBy?.name || record.createdBy?.email || '-'}
                     </td>
                     <td className="py-4 px-6">
                       {record.category ? (
