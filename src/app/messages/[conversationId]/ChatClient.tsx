@@ -111,6 +111,8 @@ export default function ChatClient({ conversationId, currentUserId }: ChatClient
     // Pusher subscription
     useEffect(() => {
         const pusher = getPusherClient()
+        if (!pusher) return
+
         const channel = pusher.subscribe(`private-conversation-${conversationId}`)
 
         channel.bind('new-message', (data: Message) => {

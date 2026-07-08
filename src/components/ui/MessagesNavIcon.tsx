@@ -34,6 +34,8 @@ export default function MessagesNavIcon() {
 
         // Subscribe to Pusher for real-time updates
         const pusher = getPusherClient()
+        if (!pusher) return
+
         const channel = pusher.subscribe(`private-user-${session.user.id}`)
 
         channel.bind('inbox-update', () => {

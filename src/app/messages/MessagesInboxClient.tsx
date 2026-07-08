@@ -66,6 +66,8 @@ export default function MessagesInboxClient({ userId }: { userId: string }) {
 
         // Subscribe to Pusher for real-time updates
         const pusher = getPusherClient()
+        if (!pusher) return
+
         const channel = pusher.subscribe(`private-user-${userId}`)
 
         channel.bind('inbox-update', () => {
