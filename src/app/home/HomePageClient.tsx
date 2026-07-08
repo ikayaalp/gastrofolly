@@ -14,6 +14,7 @@ import {
   Wallet
 } from "lucide-react"
 import CourseRow from "@/components/home/CourseRow"
+import InstructorRow, { Instructor } from "@/components/home/InstructorRow"
 import HeroSection from "@/components/home/HeroSection"
 import UserDropdown from "@/components/ui/UserDropdown"
 import NotificationDropdown from "@/components/ui/NotificationDropdown"
@@ -68,6 +69,7 @@ interface HomePageClientProps {
   userEnrollments: UserEnrollment[]
   session: { user: { id: string; name?: string | null; email?: string | null; image?: string | null; role?: string } } | null
   monthlyPrice?: number
+  instructors: Instructor[]
 }
 
 export default function HomePageClient({
@@ -77,7 +79,8 @@ export default function HomePageClient({
   categories,
   userEnrollments,
   session,
-  monthlyPrice = 399
+  monthlyPrice = 399,
+  instructors
 }: HomePageClientProps) {
   // recentCourses yoksa featuredCourses'u kullan (aynı sorgu, optimize edildi)
   const recentCoursesData = recentCourses || featuredCourses
@@ -240,6 +243,12 @@ export default function HomePageClient({
             title="Popüler Kurslar"
             courses={popularCourses}
             showRanking={true}
+          />
+
+          {/* Şeflerimiz */}
+          <InstructorRow 
+            title="Şeflerimiz" 
+            instructors={instructors} 
           />
 
           {/* Yeni Kurslar */}

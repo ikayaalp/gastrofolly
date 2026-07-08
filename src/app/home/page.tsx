@@ -49,7 +49,8 @@ async function getHomeData(userId?: string) {
     popularCourses,
     categories,
     userCourses,
-    activePlan
+    activePlan,
+    rawInstructors
   ] = await Promise.all([
     // Öne çıkan kurslar (en yeni)
     prisma.course.findMany({
@@ -110,6 +111,21 @@ async function getHomeData(userId?: string) {
     }) : [],
     prisma.subscriptionPlan.findFirst({
       where: { isActive: true, interval: 'monthly' }
+    }),
+    prisma.user.findMany({
+      where: { role: "INSTRUCTOR" },
+      select: {
+        id: true,
+        name: true,
+        image: true,
+        createdCourses: {
+          select: {
+            id: true,
+            enrollments: { select: { id: true } },
+            reviews: { select: { rating: true } },
+          }
+        }
+      }
     })
   ])
 
@@ -118,12 +134,39 @@ async function getHomeData(userId?: string) {
     course: course
   }));
 
+  const instructors = rawInstructors.map((chef: any) => {
+    let totalStudents = 0;
+    let totalRating = 0;
+    let reviewCount = 0;
+
+    chef.createdCourses.forEach((course: any) => {
+      totalStudents += course.enrollments.length;
+      course.reviews.forEach((review: any) => {
+        totalRating += review.rating;
+        reviewCount++;
+      });
+    });
+
+    const averageRating = reviewCount > 0 ? (totalRating / reviewCount).toFixed(1) : "0.0";
+
+    return {
+      id: chef.id,
+      name: chef.name || "İsimsiz Şef",
+      specialty: chef.createdCourses.length > 0 ? "Kıdemli Şef Eğitmeni" : "Eğitmen",
+      rating: averageRating,
+      students: totalStudents > 1000 ? `${(totalStudents / 1000).toFixed(1)}k+` : totalStudents.toString(),
+      courseCount: chef.createdCourses.length,
+      image: chef.image,
+    };
+  });
+
   return {
     featuredCourses,
     popularCourses,
     categories,
     userEnrollments,
-    activePlan
+    activePlan,
+    instructors
   }
 }
 
@@ -139,7 +182,8 @@ export default async function HomePage() {
     popularCourses,
     categories,
     userEnrollments,
-    activePlan
+    activePlan,
+    instructors
   } = await getHomeData(session.user.id)
 
   return (
@@ -151,6 +195,7 @@ export default async function HomePage() {
         userEnrollments={userEnrollments as any}
         session={session}
         monthlyPrice={activePlan?.price || 399}
+        instructors={instructors}
       />
       <AIAssistantWidget />
     </>
