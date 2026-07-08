@@ -116,7 +116,7 @@ export default function InstructorRow({ title, instructors }: InstructorRowProps
                     <img
                       src={instructor.image}
                       alt={instructor.name}
-                      className="w-full h-full rounded-xl object-cover border-2 border-transparent group-hover:border-orange-500 transition-colors"
+                      className="w-full h-full rounded-xl object-contain border-2 border-transparent group-hover:border-orange-500 transition-colors bg-neutral-900"
                     />
                   ) : (
                     <div className="w-full h-full rounded-xl bg-gradient-to-br from-orange-600 to-orange-800 flex items-center justify-center border-2 border-transparent group-hover:border-orange-500 transition-colors">

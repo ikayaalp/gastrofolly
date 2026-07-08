@@ -484,8 +484,8 @@ export default function HomeScreen({ navigation }) {
                                 >
                                     <Image
                                         source={instructor.image ? { uri: instructor.image } : require('../../assets/icon.png')}
-                                        style={styles.instructorAvatar}
-                                        contentFit="cover"
+                                        style={[styles.instructorAvatar, { backgroundColor: '#111' }]}
+                                        contentFit="contain"
                                     />
                                     <Text style={styles.instructorName} numberOfLines={1}>{instructor.name}</Text>
                                     <Text style={styles.instructorMeta}>{instructor.courseCount} kurs</Text>
