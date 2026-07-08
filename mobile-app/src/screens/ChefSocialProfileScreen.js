@@ -36,7 +36,7 @@ import {
 } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import forumService from '../api/forumService';
-import authService from '../api/authService';
+import authService, { isPremiumUser } from '../api/authService';
 import TopicCard from '../components/TopicCard';
 import ImageViewerModal from '../components/ImageViewerModal';
 
@@ -71,9 +71,10 @@ export default function ChefSocialProfileScreen({ navigation, route }) {
     const [topics, setTopics] = useState([]);
     const [likedTopics, setLikedTopics] = useState([]);
     const [savedTopics, setSavedTopics] = useState([]);
+    const [currentUserId, setCurrentUserId] = useState(null);
+    const [currentUserData, setCurrentUserData] = useState(null);
     const [isFollowing, setIsFollowing] = useState(false);
     const [isOwnProfile, setIsOwnProfile] = useState(false);
-    const [currentUserId, setCurrentUserId] = useState(null);
     const [loading, setLoading] = useState(true);
     const [followLoading, setFollowLoading] = useState(false);
     const [page, setPage] = useState(1);
@@ -147,7 +148,10 @@ export default function ChefSocialProfileScreen({ navigation, route }) {
     const loadCurrentUser = useCallback(async () => {
         try {
             const user = await authService.getCurrentUser();
-            if (user?.id) setCurrentUserId(user.id);
+            if (user?.id) {
+                setCurrentUserId(user.id);
+                setCurrentUserData(user);
+            }
         } catch { }
     }, []);
 
@@ -352,7 +356,20 @@ export default function ChefSocialProfileScreen({ navigation, route }) {
                             </TouchableOpacity>
                             <TouchableOpacity 
                                 style={styles.messageButton}
-                                onPress={() => navigation.navigate('Chat', { otherUserId: userId, otherUser: profile })}
+                                onPress={() => {
+                                    if (!isPremiumUser(currentUserData)) {
+                                        Alert.alert(
+                                            'Premium Üyelik Gerekli',
+                                            'Mesajlaşma özelliğini kullanmak için premium üyeliğe sahip olmanız gerekiyor.',
+                                            [
+                                                { text: 'Vazgeç', style: 'cancel' },
+                                                { text: 'Abone Ol', onPress: () => navigation.navigate('Subscription') }
+                                            ]
+                                        );
+                                        return;
+                                    }
+                                    navigation.navigate('Chat', { otherUserId: userId, otherUser: profile });
+                                }}
                             >
                                 <MessageCircle size={20} color="#fff" />
                             </TouchableOpacity>

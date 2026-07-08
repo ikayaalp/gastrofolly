@@ -15,7 +15,7 @@ import {
 import { ArrowLeft, Send } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import dmService from '../api/dmService';
-import authService from '../api/authService';
+import authService, { isPremiumUser } from '../api/authService';
 import { getPusherClient } from '../api/pusherClient';
 
 export default function ChatScreen({ route, navigation }) {
@@ -123,7 +123,7 @@ export default function ChatScreen({ route, navigation }) {
                 pusherClient = await getPusherClient();
                 const channelName = `private-conversation-${conversationId}`;
                 
-                channel = pusherClient.subscribe({
+                channel = await pusherClient.subscribe({
                     channelName,
                     onEvent: (event) => {
                         if (event.eventName === 'new-message') {
@@ -154,6 +154,18 @@ export default function ChatScreen({ route, navigation }) {
     const handleSend = async () => {
         if (!inputText.trim() || !conversationId || !currentUser) return;
 
+        if (!isPremiumUser(currentUser)) {
+            Alert.alert(
+                'Premium Üyelik Gerekli',
+                'Mesajlaşma özelliğini kullanmak için premium üyeliğe sahip olmanız gerekiyor.',
+                [
+                    { text: 'Vazgeç', style: 'cancel' },
+                    { text: 'Abone Ol', onPress: () => navigation.navigate('Subscription') }
+                ]
+            );
+            return;
+        }
+
         const content = inputText.trim();
         setInputText('');
         setSending(true);
@@ -180,7 +192,20 @@ export default function ChatScreen({ route, navigation }) {
         } else {
             // Remove temp message and show error
             setMessages(prev => prev.filter(msg => msg.id !== tempId));
-            Alert.alert('Hata', result.error || 'Mesaj gönderilemedi');
+            
+            if (result.code === 'PREMIUM_REQUIRED') {
+                Alert.alert(
+                    'Premium Üyelik Gerekli',
+                    'Mesajlaşma özelliğini kullanmak için premium üyeliğe sahip olmanız gerekiyor.',
+                    [
+                        { text: 'Vazgeç', style: 'cancel' },
+                        { text: 'Abone Ol', onPress: () => navigation.navigate('Subscription') }
+                    ]
+                );
+            } else {
+                Alert.alert('Hata', result.error || 'Mesaj gönderilemedi');
+            }
+            
             setInputText(content); // Restore input
         }
         

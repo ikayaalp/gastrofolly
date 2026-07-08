@@ -391,3 +391,9 @@ const authService = {
 };
 
 export default authService;
+
+export const isPremiumUser = (user) => {
+    if (!user || !user.subscriptionPlan) return false;
+    if (!user.subscriptionEndDate) return true;
+    return new Date(user.subscriptionEndDate) > new Date();
+};

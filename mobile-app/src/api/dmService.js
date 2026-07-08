@@ -81,6 +81,7 @@ const dmService = {
             return {
                 success: false,
                 error: error.response?.data?.error || 'Mesaj gönderilemedi',
+                code: error.response?.data?.code || null,
             };
         }
     },

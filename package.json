@@ -40,6 +40,7 @@
     "openai": "^6.16.0",
     "prisma": "^6.16.2",
     "pusher": "^5.3.4",
+    "pusher-js": "^8.5.0",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
     "react-hot-toast": "^2.6.0",

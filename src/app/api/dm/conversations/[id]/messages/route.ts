@@ -65,6 +65,14 @@ export async function POST(
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const hasActiveSubscription = user.subscriptionPlan && (!user.subscriptionEndDate || new Date(user.subscriptionEndDate) > new Date())
+    if (!hasActiveSubscription) {
+        return NextResponse.json(
+            { error: 'Mesaj gönderebilmek için premium üyelik gerekiyor.', code: 'PREMIUM_REQUIRED' },
+            { status: 403 }
+        )
+    }
+
     try {
         const { id: conversationId } = await params
         const { content } = await request.json()

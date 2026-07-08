@@ -73,6 +73,7 @@ export default function ChefProfilClient({
     const router = useRouter()
     const [isFollowing, setIsFollowing] = useState(initialIsFollowing)
     const [followLoading, setFollowLoading] = useState(false)
+    const [messageLoading, setMessageLoading] = useState(false)
     const [followersCount, setFollowersCount] = useState(profile.followersCount)
     const [topics, setTopics] = useState(initialTopics)
     const [likedTopics, setLikedTopics] = useState<Set<string>>(new Set())
@@ -141,6 +142,30 @@ export default function ChefProfilClient({
             setFollowersCount(prev => wasFollowing ? prev + 1 : prev - 1)
         } finally {
             setFollowLoading(false)
+        }
+    }
+
+    const handleMessageClick = async () => {
+        if (messageLoading || !currentUserId) return
+        setMessageLoading(true)
+
+        try {
+            const response = await fetch('/api/dm/conversations', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ otherUserId: profile.id })
+            })
+            
+            if (response.ok) {
+                const result = await response.json()
+                if (result.success && result.data?.conversationId) {
+                    router.push(`/messages/${result.data.conversationId}`)
+                }
+            }
+        } catch (error) {
+            console.error('Error starting conversation:', error)
+        } finally {
+            setMessageLoading(false)
         }
     }
 
@@ -358,6 +383,23 @@ export default function ChefProfilClient({
                                     <UserPlus className="h-4 w-4" />
                                     Takip Et
                                 </Link>
+                            )}
+
+                            {!isOwnProfile && currentUserId && (
+                                <button
+                                    onClick={handleMessageClick}
+                                    disabled={messageLoading}
+                                    className="flex items-center gap-2 px-5 py-2 rounded-full border border-gray-700 text-white text-sm font-bold hover:bg-gray-800 transition-colors disabled:opacity-50"
+                                >
+                                    {messageLoading ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                        <>
+                                            <MessageCircle className="h-4 w-4" />
+                                            Mesaj Gönder
+                                        </>
+                                    )}
+                                </button>
                             )}
                         </div>
                     </div>

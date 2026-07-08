@@ -7,6 +7,7 @@ import { useSearchParams, useRouter } from "next/navigation"
 import { ChefHat, Search, Bell, Plus, MessageCircle, ThumbsUp, Clock, User, Home, BookOpen, Users, Image as ImageIcon, Play, Menu, X, Filter, Type, ArrowDown, Camera, Film, Bookmark } from "lucide-react"
 import UserDropdown from "@/components/ui/UserDropdown"
 import NotificationDropdown from "@/components/ui/NotificationDropdown"
+import MessagesNavIcon from "@/components/ui/MessagesNavIcon"
 import MediaUploader from "@/components/forum/MediaUploader"
 import LeftSidebar from "@/components/forum/LeftSidebar"
 import RightSidebar from "@/components/forum/RightSidebar"
@@ -610,6 +611,7 @@ export default function ChefSosyalClient({
                 <button className="text-gray-400 hover:text-white transition-colors hidden md:block">
                   <Bell className="h-6 w-6" />
                 </button>
+                <MessagesNavIcon />
                 <UserDropdown />
               </>
             ) : (

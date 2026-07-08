@@ -64,7 +64,7 @@ export default function MessagesScreen({ navigation }) {
             try {
                 pusherClient = await getPusherClient();
                 const channelName = `private-user-${currentUser.id}`;
-                channel = pusherClient.subscribe({
+                channel = await pusherClient.subscribe({
                     channelName,
                     onEvent: (event) => {
                         if (event.eventName === 'inbox-update') {
