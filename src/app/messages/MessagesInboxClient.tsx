@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Loader2, MessageCircle } from 'lucide-react'
+import { ArrowLeft, Loader2, MessageCircle, Home, BookOpen, Users } from 'lucide-react'
 import { getPusherClient } from '@/lib/pusherClient'
 
 interface Conversation {

@@ -198,6 +198,7 @@ export default function HomePageClient({
               <Search className="h-5 w-5" />
             </button>
             <NotificationDropdown />
+            <MessagesNavIcon />
             <UserDropdown />
           </div>
         </div>
