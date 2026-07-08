@@ -8,7 +8,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Logo from '../components/Logo';
 import courseService from '../api/courseService';
 import authService from '../api/authService';
-import chefService from '../api/chefService';
+import homeService from '../api/homeService';
 import storyService from '../api/storyService';
 import Stories from '../components/Stories';
 
@@ -22,6 +22,9 @@ export default function HomeScreen({ navigation }) {
     const [userCourses, setUserCourses] = useState([]);
     const [stories, setStories] = useState([]);
     const [instructors, setInstructors] = useState([]);
+    const [homeSections, setHomeSections] = useState([]);
+    const [homeCovers, setHomeCovers] = useState([]);
+    const [homeInstructors, setHomeInstructors] = useState([]);
     const [loading, setLoading] = useState(true);
     const [userName, setUserName] = useState('');
     const [refreshing, setRefreshing] = useState(false);
@@ -50,20 +53,18 @@ export default function HomeScreen({ navigation }) {
             setUserName(user.name || 'Kullanıcı');
         }
 
-        const featuredResult = await courseService.getFeaturedCourses();
-        if (featuredResult.success) {
-            const courses = featuredResult.data.courses || [];
-            const categoriesData = featuredResult.data.categories || [];
-
-            setFeaturedCourses(courses.slice(0, 6));
-            setPopularCourses([...courses].reverse().slice(0, 6));
-            setRecentCourses(courses.slice(0, 6));
-            setCategories(categoriesData);
-        }
-
-        const instructorsResult = await chefService.getAllInstructors();
-        if (instructorsResult.success) {
-            setInstructors(instructorsResult.data.instructors || []);
+        const homeResult = await homeService.getHomeData();
+        if (homeResult.success) {
+            const data = homeResult.data;
+            
+            setFeaturedCourses(data.featuredCourses || []);
+            setPopularCourses(data.popularCourses || []);
+            setRecentCourses(data.recentCourses || []);
+            setCategories(data.categories || []);
+            setInstructors(data.instructors || []);
+            setHomeSections(data.homeSections || []);
+            setHomeCovers(data.homeCovers || []);
+            setHomeInstructors(data.homeInstructors || []);
         }
 
         // Fetch Stories
@@ -381,7 +382,7 @@ export default function HomeScreen({ navigation }) {
                 }
             >
                 {/* Auto-Scrolling Carousel */}
-                {featuredCourses && featuredCourses.length > 0 && (
+                {(homeCovers && homeCovers.length > 0) ? (
                     <View style={styles.carouselSection}>
                         <ScrollView
                             ref={scrollViewRef}
@@ -392,15 +393,19 @@ export default function HomeScreen({ navigation }) {
                             snapToInterval={width}
                             style={styles.carousel}
                         >
-                            {featuredCourses.slice(0, 5).map((course, index) => (
+                            {homeCovers.map((cover, index) => (
                                 <TouchableOpacity
-                                    key={course.id || `featured-${index}`}
+                                    key={cover.id || `cover-${index}`}
                                     style={[styles.carouselCard, { width }]}
                                     activeOpacity={0.9}
-                                    onPress={() => navigation.navigate('CourseDetail', { courseId: course.id, initialCourse: course })}
+                                    onPress={() => {
+                                        if (cover.linkUrl) {
+                                            // Optional: handle linking. For now, it's just a cover
+                                        }
+                                    }}
                                 >
                                     <Image
-                                        source={course.imageUrl || 'https://images.unsplash.com/photo-1556910103-1c02745a30bf?q=80&w=800'}
+                                        source={cover.imageUrl ? { uri: cover.imageUrl } : require('../../assets/icon.png')}
                                         style={styles.carouselImage}
                                         contentFit="cover"
                                         transition={300}
@@ -412,19 +417,10 @@ export default function HomeScreen({ navigation }) {
                                     >
                                         <View style={styles.carouselContent}>
                                             <Text style={styles.carouselTitle} numberOfLines={2}>
-                                                {course.title}
+                                                {cover.title || ''}
                                             </Text>
                                             <View style={styles.metaContainer}>
-                                                <Text style={styles.metaText}>Eğitmen: {course.instructor?.name || 'Şef'}</Text>
-                                            </View>
-                                            <View style={styles.actionButtons}>
-                                                <TouchableOpacity
-                                                    style={styles.playButton}
-                                                    onPress={() => navigation.navigate('Learn', { courseId: course.id })}
-                                                >
-                                                    <Play size={20} color="white" fill="white" />
-                                                    <Text style={styles.playButtonText}>İzle</Text>
-                                                </TouchableOpacity>
+                                                <Text style={styles.metaText}>{cover.subtitle || ''}</Text>
                                             </View>
                                         </View>
                                     </LinearGradient>
@@ -432,92 +428,179 @@ export default function HomeScreen({ navigation }) {
                             ))}
                         </ScrollView>
                     </View>
+                ) : (
+                    featuredCourses && featuredCourses.length > 0 && (
+                        <View style={styles.carouselSection}>
+                            <ScrollView
+                                ref={scrollViewRef}
+                                horizontal
+                                showsHorizontalScrollIndicator={false}
+                                pagingEnabled
+                                decelerationRate="fast"
+                                snapToInterval={width}
+                                style={styles.carousel}
+                            >
+                                {featuredCourses.slice(0, 5).map((course, index) => (
+                                    <TouchableOpacity
+                                        key={course.id || `featured-${index}`}
+                                        style={[styles.carouselCard, { width }]}
+                                        activeOpacity={0.9}
+                                        onPress={() => navigation.navigate('CourseDetail', { courseId: course.id, initialCourse: course })}
+                                    >
+                                        <Image
+                                            source={course.imageUrl || 'https://images.unsplash.com/photo-1556910103-1c02745a30bf?q=80&w=800'}
+                                            style={styles.carouselImage}
+                                            contentFit="cover"
+                                            transition={300}
+                                            cachePolicy="memory-disk"
+                                        />
+                                        <LinearGradient
+                                            colors={['transparent', 'rgba(0,0,0,0.2)', 'rgba(0,0,0,0.8)', '#000']}
+                                            style={styles.carouselGradient}
+                                        >
+                                            <View style={styles.carouselContent}>
+                                                <Text style={styles.carouselTitle} numberOfLines={2}>
+                                                    {course.title}
+                                                </Text>
+                                                <View style={styles.metaContainer}>
+                                                    <Text style={styles.metaText}>Eğitmen: {course.instructor?.name || 'Şef'}</Text>
+                                                </View>
+                                                <View style={styles.actionButtons}>
+                                                    <TouchableOpacity
+                                                        style={styles.playButton}
+                                                        onPress={() => navigation.navigate('Learn', { courseId: course.id })}
+                                                    >
+                                                        <Play size={20} color="white" fill="white" />
+                                                        <Text style={styles.playButtonText}>İzle</Text>
+                                                    </TouchableOpacity>
+                                                </View>
+                                            </View>
+                                        </LinearGradient>
+                                    </TouchableOpacity>
+                                ))}
+                            </ScrollView>
+                        </View>
+                    )
                 )}
 
-                {/* My Courses Section (Continue Watching) */}
-                {userCourses && userCourses.length > 0 && (
-                    <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Kaldığın Yerden Devam Et</Text>
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
-                            {userCourses.map((course, index) => renderContinueWatchingCard(course, index))}
-                        </ScrollView>
-                    </View>
-                )}
+                {/* Dynamic Sections based on Admin Panel */}
+                {homeSections.map((section) => {
+                    if (!section.isVisible) return null;
 
-                {/* Featured Courses Section */}
-                {featuredCourses && featuredCourses.length > 0 && (
-                    <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Öne Çıkan Kurslar</Text>
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
-                            {featuredCourses.map((course, index) => renderCourseCard(course, index))}
-                        </ScrollView>
-                    </View>
-                )}
-
-                {/* Stories Section */}
-                <Stories stories={stories} navigation={navigation} />
-
-                {/* Popular Courses Section */}
-                {popularCourses && popularCourses.length > 0 && (
-                    <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Popüler Kurslar</Text>
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.rankedHorizontalScroll}>
-                            {popularCourses.slice(0, 3).map((course, index) => renderRankedCourseCard(course, index))}
-                        </ScrollView>
-                    </View>
-                )}
-
-                {/* Instructors Section */}
-                {instructors && instructors.length > 0 && (
-                    <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Eğitmenlerimiz</Text>
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
-                            {instructors.map((instructor, index) => (
-                                <TouchableOpacity
-                                    key={instructor.id || index}
-                                    style={styles.instructorCard}
-                                    onPress={() => navigation.navigate('InstructorProfile', {
-                                        instructorId: instructor.id,
-                                        instructorName: instructor.name,
-                                        instructorImage: instructor.image,
-                                    })}
-                                >
-                                    <Image
-                                        source={instructor.image ? { uri: instructor.image } : require('../../assets/icon.png')}
-                                        style={[styles.instructorAvatar, { backgroundColor: '#111' }]}
-                                        contentFit="contain"
-                                    />
-                                    <Text style={styles.instructorName} numberOfLines={1}>{instructor.name}</Text>
-                                    <Text style={styles.instructorMeta}>{instructor.courseCount} kurs</Text>
-                                </TouchableOpacity>
-                            ))}
-                        </ScrollView>
-                    </View>
-                )}
-
-                {/* Recent Courses Section */}
-                {recentCourses && recentCourses.length > 0 && (
-                    <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Yeni Eklenen Kurslar</Text>
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
-                            {recentCourses.map((course, index) => renderLargeCourseCard(course, index))}
-                        </ScrollView>
-                    </View>
-                )}
-
-                {/* Categories Sections */}
-                {categories && categories.length > 0 && categories.map((category) => {
-                    if (category.courses && category.courses.length > 0) {
+                    if (section.isCustom) {
+                        const courses = section.courses.map(c => c.course);
+                        if (!courses || courses.length === 0) return null;
+                        
                         return (
-                            <View key={category.id} style={styles.section}>
-                                <Text style={styles.sectionTitle}>{category.name}</Text>
+                            <View key={section.key} style={styles.section}>
+                                <Text style={styles.sectionTitle}>{section.title}</Text>
                                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
-                                    {category.courses.map((course, index) => renderCourseCard(course, index))}
+                                    {courses.map((course, index) => renderCourseCard(course, index))}
                                 </ScrollView>
                             </View>
                         );
                     }
-                    return null;
+
+                    switch (section.key) {
+                        case 'continue':
+                            if (!userCourses || userCourses.length === 0) return null;
+                            return (
+                                <View key={section.key} style={styles.section}>
+                                    <Text style={styles.sectionTitle}>{section.title || 'Kaldığın Yerden Devam Et'}</Text>
+                                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
+                                        {userCourses.map((course, index) => renderContinueWatchingCard(course, index))}
+                                    </ScrollView>
+                                </View>
+                            );
+                        case 'stories':
+                            return <Stories key={section.key} stories={stories} navigation={navigation} />;
+                        case 'featured':
+                            if (!featuredCourses || featuredCourses.length === 0) return null;
+                            return (
+                                <View key={section.key} style={styles.section}>
+                                    <Text style={styles.sectionTitle}>{section.title || 'Öne Çıkan Kurslar'}</Text>
+                                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
+                                        {featuredCourses.map((course, index) => renderCourseCard(course, index))}
+                                    </ScrollView>
+                                </View>
+                            );
+                        case 'popular':
+                            if (!popularCourses || popularCourses.length === 0) return null;
+                            return (
+                                <View key={section.key} style={styles.section}>
+                                    <Text style={styles.sectionTitle}>{section.title || 'Popüler Kurslar'}</Text>
+                                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.rankedHorizontalScroll}>
+                                        {popularCourses.slice(0, 3).map((course, index) => renderRankedCourseCard(course, index))}
+                                    </ScrollView>
+                                </View>
+                            );
+                        case 'instructors':
+                            const displayInstructors = (homeInstructors && homeInstructors.length > 0) 
+                                ? homeInstructors.map(hi => hi.instructor || hi) // adjust depending on API response
+                                : instructors;
+                            if (!displayInstructors || displayInstructors.length === 0) return null;
+                            return (
+                                <View key={section.key} style={styles.section}>
+                                    <Text style={styles.sectionTitle}>{section.title || 'Eğitmenlerimiz'}</Text>
+                                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
+                                        {displayInstructors.map((instructor, index) => {
+                                            // Handle case where instructor is nested or direct
+                                            const inst = instructor.instructor || instructor;
+                                            return (
+                                                <TouchableOpacity
+                                                    key={inst.id || index}
+                                                    style={styles.instructorCard}
+                                                    onPress={() => navigation.navigate('InstructorProfile', {
+                                                        instructorId: inst.id,
+                                                        instructorName: inst.name,
+                                                        instructorImage: inst.image,
+                                                    })}
+                                                >
+                                                    <Image
+                                                        source={inst.image ? { uri: inst.image } : require('../../assets/icon.png')}
+                                                        style={[styles.instructorAvatar, { backgroundColor: '#111' }]}
+                                                        contentFit="contain"
+                                                    />
+                                                    <Text style={styles.instructorName} numberOfLines={1}>{inst.name}</Text>
+                                                    <Text style={styles.instructorMeta}>{inst.courseCount || 0} kurs</Text>
+                                                </TouchableOpacity>
+                                            );
+                                        })}
+                                    </ScrollView>
+                                </View>
+                            );
+                        case 'recent':
+                            if (!recentCourses || recentCourses.length === 0) return null;
+                            return (
+                                <View key={section.key} style={styles.section}>
+                                    <Text style={styles.sectionTitle}>{section.title || 'Yeni Eklenen Kurslar'}</Text>
+                                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
+                                        {recentCourses.map((course, index) => renderLargeCourseCard(course, index))}
+                                    </ScrollView>
+                                </View>
+                            );
+                        case 'categories':
+                            if (!categories || categories.length === 0) return null;
+                            return (
+                                <View key={section.key}>
+                                    {categories.map((category) => {
+                                        if (category.courses && category.courses.length > 0) {
+                                            return (
+                                                <View key={`cat-${category.id}`} style={styles.section}>
+                                                    <Text style={styles.sectionTitle}>{category.name}</Text>
+                                                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
+                                                        {category.courses.map((course, index) => renderCourseCard(course, index))}
+                                                    </ScrollView>
+                                                </View>
+                                            );
+                                        }
+                                        return null;
+                                    })}
+                                </View>
+                            );
+                        default:
+                            return null;
+                    }
                 })}
             </ScrollView>
         </View>
