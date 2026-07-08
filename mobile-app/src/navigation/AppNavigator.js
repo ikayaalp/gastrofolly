@@ -63,6 +63,7 @@ function HomeStackNavigator() {
             <HomeStack.Screen name="Search" component={SearchScreen} />
             <HomeStack.Screen name="Notifications" component={NotificationsScreen} />
             <HomeStack.Screen name="ChefSor" component={ChefSorScreen} />
+            <HomeStack.Screen name="Chat" component={ChatScreen} />
         </HomeStack.Navigator>
     );
 }
@@ -76,6 +77,7 @@ function CoursesStackNavigator() {
             <CoursesStack.Screen name="Learn" component={LearnScreen} />
             <CoursesStack.Screen name="InstructorProfile" component={InstructorProfileScreen} />
             <CoursesStack.Screen name="ChefSor" component={ChefSorScreen} />
+            <CoursesStack.Screen name="Chat" component={ChatScreen} />
         </CoursesStack.Navigator>
     );
 }

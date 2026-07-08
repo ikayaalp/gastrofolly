@@ -139,8 +139,8 @@ export async function POST(
             console.error('Pusher event error:', pusherError)
         }
 
-        // Send Push Notification
-        if (otherParticipant && otherParticipant.user.pushToken) {
+        // Send Push Notification (Do NOT send to instructors to avoid spam)
+        if (otherParticipant && otherParticipant.user.pushToken && otherParticipant.user.role !== 'INSTRUCTOR') {
             try {
                 await sendPushNotification(
                     otherParticipant.user.pushToken,

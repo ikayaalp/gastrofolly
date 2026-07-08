@@ -11,12 +11,13 @@ import {
     Image,
     Share,
     Platform,
+    Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ArrowLeft, Star, Users, BookOpen, Award, Share2, Play, MessageCircle } from 'lucide-react-native';
 import axios from 'axios';
 import config from '../api/config';
-import courseService from '../api/courseService';
+import authService from '../api/authService';
 
 const { width } = Dimensions.get('window');
 
@@ -25,12 +26,25 @@ export default function InstructorProfileScreen({ navigation, route }) {
     const [loading, setLoading] = useState(true);
     const [instructor, setInstructor] = useState(null);
     const [courses, setCourses] = useState([]);
-    const [isStudent, setIsStudent] = useState(false);
+    const [currentUser, setCurrentUser] = useState(null);
 
     useEffect(() => {
         loadInstructorData();
-        checkEnrollmentStatus();
+        loadCurrentUser();
     }, [instructorId]);
+
+    const loadCurrentUser = async () => {
+        const user = await authService.getCurrentUser();
+        if (user) {
+            setCurrentUser(user);
+        }
+    };
+
+    const isPremiumUser = (user) => {
+        if (!user || !user.subscriptionPlan) return false;
+        if (!user.subscriptionEndDate) return true;
+        return new Date(user.subscriptionEndDate) > new Date();
+    };
 
     const loadInstructorData = async () => {
         try {
@@ -59,19 +73,7 @@ export default function InstructorProfileScreen({ navigation, route }) {
         }
     };
 
-    const checkEnrollmentStatus = async () => {
-        const result = await courseService.getUserCourses();
-        if (result.success && result.data?.courses) {
-            // Check if user is enrolled in any course by this instructor
-            // The enrollment object has a 'course' property which contains instructor info
-            const enrolledCourses = result.data.courses;
-            const hasEnrollment = enrolledCourses.some(enrollment =>
-                enrollment.course?.instructorId === instructorId ||
-                enrollment.course?.instructor?.id === instructorId
-            );
-            setIsStudent(hasEnrollment);
-        }
-    };
+
 
     const getTotalStudents = () => {
         return courses.reduce((sum, course) => sum + (course._count?.enrollments || 0), 0);
@@ -153,14 +155,30 @@ export default function InstructorProfileScreen({ navigation, route }) {
                         </View>
                     </View>
 
-                    {/* Ask Chef Button - Only for Enrolled Students */}
-                    {isStudent && (
+                    {/* Ask Chef Button - Replaced with DM Button */}
+                    {(!currentUser || currentUser.id !== instructorId) && (
                         <TouchableOpacity
-                            style={styles.askButton}
-                            onPress={() => navigation.navigate('ChefSor', { instructorId, instructorName: instructorName || instructor?.name })}
+                            style={[
+                                styles.askButton, 
+                                (!currentUser || !isPremiumUser(currentUser)) && { opacity: 0.5, backgroundColor: '#374151' }
+                            ]}
+                            onPress={() => {
+                                if (!currentUser || !isPremiumUser(currentUser)) {
+                                    Alert.alert('Premium Gerekli', 'Eğitmenlere mesaj gönderebilmek için premium üyelik gerekiyor.');
+                                    return;
+                                }
+                                navigation.navigate('Chat', { 
+                                    otherUserId: instructorId, 
+                                    otherUser: {
+                                        id: instructorId,
+                                        name: instructorName || instructor?.name,
+                                        image: instructorImage || instructor?.image
+                                    }
+                                });
+                            }}
                         >
                             <MessageCircle size={20} color="white" />
-                            <Text style={styles.askButtonText}>Chef'e Sor</Text>
+                            <Text style={styles.askButtonText}>Mesaj Gönder</Text>
                         </TouchableOpacity>
                     )}
                 </View>

@@ -53,14 +53,17 @@ export async function GET(request: NextRequest) {
             })
         )
 
+        // Filter out conversations that have no messages yet
+        const validConversations = conversations.filter(c => c.lastMessage !== null)
+
         // Sort by lastMessageAt (or createdAt if null) descending
-        conversations.sort((a, b) => {
+        validConversations.sort((a, b) => {
             const dateA = a.lastMessageAt || a.createdAt
             const dateB = b.lastMessageAt || b.createdAt
             return new Date(dateB).getTime() - new Date(dateA).getTime()
         })
 
-        return NextResponse.json({ success: true, data: conversations })
+        return NextResponse.json({ success: true, data: validConversations })
     } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 })
     }

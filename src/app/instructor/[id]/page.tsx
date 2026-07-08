@@ -15,6 +15,7 @@ import {
 } from "lucide-react"
 import UserDropdown from "@/components/ui/UserDropdown"
 import InstructorShareButton from "@/components/instructor/InstructorShareButton"
+import InstructorMessageButton from "@/components/instructor/InstructorMessageButton"
 
 interface InstructorPageProps {
   params: Promise<{
@@ -59,6 +60,12 @@ export default async function InstructorPage({ params }: InstructorPageProps) {
   if (!instructor) {
     notFound()
   }
+
+  const user: any = session?.user
+  const isPremium = !!(
+    user?.subscriptionPlan &&
+    (!user.subscriptionEndDate || new Date(user.subscriptionEndDate) > new Date())
+  )
 
   const totalStudents = instructor.createdCourses.reduce(
     (acc: number, course: typeof instructor.createdCourses[0]) => acc + course._count.enrollments,
@@ -263,6 +270,12 @@ export default async function InstructorPage({ params }: InstructorPageProps) {
                       instructorId={instructor.id}
                       instructorName={instructor.name || 'Unknown'}
                     />
+                    {session?.user?.id && session.user.id !== instructor.id && (
+                      <InstructorMessageButton
+                        instructorId={instructor.id}
+                        isPremium={isPremium}
+                      />
+                    )}
                   </div>
                 </div>
               </div>
