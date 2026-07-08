@@ -387,24 +387,62 @@ function InstructorsTab({ initial }: { initial: HInstructor[] }) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {items.map((item) => (
           <div key={item.id} className="bg-neutral-900/40 border border-gray-800 rounded-xl p-4 space-y-3">
-            <ImageUpload
-              currentImageUrl={item.imageUrl || undefined}
-              type="home-instructor"
-              onImageUploaded={(url) => update(item.id, "imageUrl", url)}
-            />
-            <div>
-              <label className={labelCls}>İsim *</label>
-              <input
-                className={inputCls}
-                value={item.name}
-                onChange={(e) => update(item.id, "name", e.target.value)}
-                placeholder="Örn: Şef Kemal Can"
-              />
+            {/* Üst: Portre önizleme + temel bilgiler yan yana */}
+            <div className="flex gap-4">
+              {/* Sol: Kompakt portre fotoğraf */}
+              <div className="shrink-0 flex flex-col items-center gap-2">
+                {item.imageUrl ? (
+                  <img
+                    src={item.imageUrl}
+                    alt={item.name || "Eğitmen"}
+                    className="w-20 h-28 object-cover rounded-xl border border-gray-700"
+                  />
+                ) : (
+                  <div className="w-20 h-28 rounded-xl bg-neutral-800 border border-dashed border-gray-700 flex items-center justify-center">
+                    <Users className="h-6 w-6 text-gray-600" />
+                  </div>
+                )}
+                <ImageUpload
+                  currentImageUrl={undefined}
+                  type="home-instructor"
+                  onImageUploaded={(url) => update(item.id, "imageUrl", url)}
+                />
+              </div>
+              {/* Sağ: İsim, alt yazı, bağlantı */}
+              <div className="flex-1 space-y-2">
+                <div>
+                  <label className={labelCls}>İsim *</label>
+                  <input
+                    className={inputCls}
+                    value={item.name}
+                    onChange={(e) => update(item.id, "name", e.target.value)}
+                    placeholder="Örn: Şef Kemal Can"
+                  />
+                </div>
+                <div>
+                  <label className={labelCls}>Alt Yazı</label>
+                  <input
+                    className={inputCls}
+                    value={item.subtitle || ""}
+                    onChange={(e) => update(item.id, "subtitle", e.target.value)}
+                    placeholder="Örn: Michelin Yıldızlı Şef (opsiyonel)"
+                  />
+                </div>
+                <div>
+                  <label className={labelCls}>Bağlantı</label>
+                  <input
+                    className={inputCls}
+                    value={item.linkUrl || ""}
+                    onChange={(e) => update(item.id, "linkUrl", e.target.value)}
+                    placeholder="/instructor/... (opsiyonel)"
+                  />
+                </div>
+              </div>
             </div>
 
             {/* Gerçek hesap: e-posta + şifre */}
             {item.id.startsWith("new-") ? (
-              <>
+              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className={labelCls}>E-posta * (giriş için)</label>
                   <input
@@ -425,9 +463,9 @@ function InstructorsTab({ initial }: { initial: HInstructor[] }) {
                     placeholder="Eğitmen sonra kendisi değiştirebilir"
                   />
                 </div>
-              </>
+              </div>
             ) : (
-              <>
+              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className={labelCls}>E-posta (giriş)</label>
                   <input
@@ -446,27 +484,9 @@ function InstructorsTab({ initial }: { initial: HInstructor[] }) {
                     placeholder="Boş bırak = değişmez"
                   />
                 </div>
-              </>
+              </div>
             )}
 
-            <div>
-              <label className={labelCls}>Alt Yazı</label>
-              <input
-                className={inputCls}
-                value={item.subtitle || ""}
-                onChange={(e) => update(item.id, "subtitle", e.target.value)}
-                placeholder="Örn: Michelin Yıldızlı Şef (opsiyonel)"
-              />
-            </div>
-            <div>
-              <label className={labelCls}>Bağlantı</label>
-              <input
-                className={inputCls}
-                value={item.linkUrl || ""}
-                onChange={(e) => update(item.id, "linkUrl", e.target.value)}
-                placeholder="/instructor/... (opsiyonel)"
-              />
-            </div>
             <div className="flex items-center gap-4">
               <div className="w-24">
                 <label className={labelCls}>Sıra</label>
