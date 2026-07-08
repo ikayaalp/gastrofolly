@@ -52,10 +52,12 @@ function ConversationRow({
     const [translateX, setTranslateX] = useState(0)
     const [isDragging, setIsDragging] = useState(false)
     const startXRef = useRef<number | null>(null)
+    const initialTranslateXRef = useRef<number>(0)
     const [showDeleteModal, setShowDeleteModal] = useState(false)
 
     const handleTouchStart = (e: React.TouchEvent) => {
         startXRef.current = e.touches[0].clientX
+        initialTranslateXRef.current = translateX
         setIsDragging(true)
     }
 
@@ -64,16 +66,14 @@ function ConversationRow({
         const currentX = e.touches[0].clientX
         const diff = currentX - startXRef.current
         
-        if (diff < 0) {
-            setTranslateX(Math.max(diff, -80))
-        } else {
-            setTranslateX(0)
-        }
+        const newX = initialTranslateXRef.current + diff
+        // Sınırlandırma: En fazla -80 (sola), en fazla 0 (sağa)
+        setTranslateX(Math.min(Math.max(newX, -80), 0))
     }
 
     const handleTouchEnd = () => {
         setIsDragging(false)
-        if (translateX < -50) {
+        if (translateX < -40) {
             setTranslateX(-80)
         } else {
             setTranslateX(0)
