@@ -58,6 +58,10 @@ export default function App() {
           else if (data.topicId) {
             navigationRef.navigate('Social', { screen: 'TopicDetail', params: { topicId: data.topicId } });
           }
+          // Conversation ID varsa sohbete git
+          else if (data.conversationId) {
+            navigationRef.navigate('Chat', { conversationId: data.conversationId });
+          }
         }
       }
     );

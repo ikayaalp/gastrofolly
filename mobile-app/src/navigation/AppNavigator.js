@@ -42,6 +42,8 @@ import FavoritesScreen from '../screens/FavoritesScreen';
 import CertificatesScreen from '../screens/CertificatesScreen';
 import ChangePasswordScreen from '../screens/ChangePasswordScreen';
 import ChefSocialProfileScreen from '../screens/ChefSocialProfileScreen';
+import MessagesScreen from '../screens/MessagesScreen';
+import ChatScreen from '../screens/ChatScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -250,6 +252,8 @@ export default function AppNavigator() {
                 <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
                 <Stack.Screen name="InstructorProfile" component={InstructorProfileScreen} />
                 <Stack.Screen name="ChefSocialProfile" component={ChefSocialProfileScreen} />
+                <Stack.Screen name="Messages" component={MessagesScreen} />
+                <Stack.Screen name="Chat" component={ChatScreen} />
             </Stack.Navigator>
         </NavigationContainer>
     );

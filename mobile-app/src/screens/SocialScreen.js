@@ -45,6 +45,7 @@ import { Video, ResizeMode } from 'expo-av';
 import * as ImagePicker from 'expo-image-picker';
 import forumService from '../api/forumService';
 import authService from '../api/authService';
+import dmService from '../api/dmService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomAlert from '../components/CustomAlert';
 import ImageViewerModal from '../components/ImageViewerModal';
@@ -63,6 +64,7 @@ const formatDuration = (millis) => {
 export default function SocialScreen({ navigation }) {
     const insets = useSafeAreaInsets();
     const [categories, setCategories] = useState([]);
+    const [unreadMessageCount, setUnreadMessageCount] = useState(0);
     const [trendingHashtags, setTrendingHashtags] = useState([]);
     const [topics, setTopics] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -255,9 +257,23 @@ export default function SocialScreen({ navigation }) {
         }
     };
 
+    const checkUnreadMessages = async () => {
+        const token = await AsyncStorage.getItem('authToken');
+        if (token) {
+            const result = await dmService.getConversations();
+            if (result.success && result.data) {
+                const totalUnread = result.data.reduce((sum, conv) => sum + (conv.unreadCount || 0), 0);
+                setUnreadMessageCount(totalUnread);
+            }
+        } else {
+            setUnreadMessageCount(0);
+        }
+    };
+
     useFocusEffect(
         useCallback(() => {
             checkLoginStatus();
+            checkUnreadMessages();
             setHasMore(true);
             setPage(1);
             loadData(false);
@@ -651,16 +667,36 @@ export default function SocialScreen({ navigation }) {
                     <Text style={styles.headerTitle}>Chef Sosyal</Text>
                     <Text style={styles.headerSubtitle}>Gastronomi tutkunlarının buluşma noktası</Text>
                 </View>
-                <View style={styles.headerRight}>
+                <View style={[styles.headerRight, { flexDirection: 'row', alignItems: 'center' }]}>
                     {searchTerm ? (
                         <TouchableOpacity
-                            style={styles.clearSearchButton}
+                            style={[styles.clearSearchButton, { marginRight: 12 }]}
                             onPress={() => setSearchTerm('')}
                         >
                             <Text style={styles.clearSearchText}>Aramayı Temizle</Text>
                             <X size={14} color="#ef4444" />
                         </TouchableOpacity>
                     ) : null}
+                    
+                    <TouchableOpacity
+                        style={styles.headerIconBtn}
+                        onPress={() => {
+                            if (isLoggedIn) {
+                                navigation.navigate('Messages');
+                            } else {
+                                setShowLoginModal(true);
+                            }
+                        }}
+                    >
+                        <MessageCircle size={24} color="#fff" />
+                        {unreadMessageCount > 0 && (
+                            <View style={styles.unreadBadge}>
+                                <Text style={styles.unreadBadgeText}>
+                                    {unreadMessageCount > 9 ? '9+' : unreadMessageCount}
+                                </Text>
+                            </View>
+                        )}
+                    </TouchableOpacity>
                 </View>
             </View>
 
@@ -1434,6 +1470,32 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     modalTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#fff',
+    },
+    headerIconBtn: {
+        padding: 8,
+        position: 'relative',
+    },
+    unreadBadge: {
+        position: 'absolute',
+        top: 2,
+        right: 2,
+        backgroundColor: '#ea580c',
+        borderRadius: 10,
+        minWidth: 18,
+        height: 18,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: 4,
+    },
+    unreadBadgeText: {
+        color: '#fff',
+        fontSize: 10,
+        fontWeight: 'bold',
+    },
+    headerRight: {
         fontSize: 20,
         fontWeight: 'bold',
         color: '#fff',

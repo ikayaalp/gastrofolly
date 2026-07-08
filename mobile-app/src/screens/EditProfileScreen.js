@@ -13,7 +13,7 @@ import {
     Platform,
     ScrollView
 } from 'react-native';
-import { ArrowLeft, Save, User, Mail, Camera, ImageIcon } from 'lucide-react-native';
+import { ArrowLeft, Save, User, Mail, Camera, ImageIcon, AlignLeft } from 'lucide-react-native';
 import authService from '../api/authService';
 import forumService from '../api/forumService';
 import * as ImagePicker from 'expo-image-picker';
@@ -23,6 +23,8 @@ export default function EditProfileScreen({ navigation }) {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [image, setImage] = useState('');
+    const [coverImage, setCoverImage] = useState('');
+    const [bio, setBio] = useState('');
     const [loading, setLoading] = useState(false);
     const [initialLoading, setInitialLoading] = useState(true);
     const [alertVisible, setAlertVisible] = useState(false);
@@ -49,6 +51,8 @@ export default function EditProfileScreen({ navigation }) {
                 setName(user.name || '');
                 setEmail(user.email || '');
                 setImage(user.image || '');
+                setCoverImage(user.coverImage || '');
+                setBio(user.bio || '');
             }
         } catch (error) {
             console.error('Error loading user data:', error);
@@ -77,6 +81,18 @@ export default function EditProfileScreen({ navigation }) {
         }
     };
 
+    const pickCoverImage = async () => {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+            showAlert('İzin Gerekli', 'Fotoğraf seçmek için galeri izni gerekiyor.', [{ text: 'Tamam' }], 'warning');
+            return;
+        }
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ['images'], allowsEditing: true, aspect: [2, 1], quality: 0.8,
+        });
+        if (!result.canceled && result.assets[0]) setCoverImage(result.assets[0].uri);
+    };
+
     const handleSave = async () => {
         if (!name.trim()) {
             showAlert('Uyarı', 'Lütfen adınızı giriniz.', [{ text: 'Tamam' }], 'warning');
@@ -86,22 +102,25 @@ export default function EditProfileScreen({ navigation }) {
         setLoading(true);
         try {
             let finalImageUrl = image;
+            let finalCoverUrl = coverImage;
 
-            // If image is a local URI (newly selected), upload it first
             if (image && image.startsWith('file://')) {
-                // Determine type based on extension or just default to image
                 const uploadResult = await forumService.uploadMedia(image, 'image');
+                if (uploadResult.success) finalImageUrl = uploadResult.data.mediaUrl;
+                else throw new Error(uploadResult.error || 'Profil resmi yüklenemedi');
+            }
 
-                if (uploadResult.success) {
-                    finalImageUrl = uploadResult.data.mediaUrl;
-                } else {
-                    throw new Error(uploadResult.error || 'Resim yüklenemedi');
-                }
+            if (coverImage && coverImage.startsWith('file://')) {
+                const uploadResult = await forumService.uploadMedia(coverImage, 'image');
+                if (uploadResult.success) finalCoverUrl = uploadResult.data.mediaUrl;
+                else throw new Error(uploadResult.error || 'Kapak resmi yüklenemedi');
             }
 
             const result = await authService.updateProfile({
                 name,
-                image: finalImageUrl || null
+                image: finalImageUrl || null,
+                coverImage: finalCoverUrl || null,
+                bio: bio.trim()
             });
 
             if (result.success) {
@@ -150,6 +169,24 @@ export default function EditProfileScreen({ navigation }) {
                 </View>
 
                 <ScrollView contentContainerStyle={styles.content}>
+
+                    {/* Cover Preview */}
+                    <View style={styles.coverSection}>
+                        <Text style={styles.coverLabel}>Kapak Fotoğrafı</Text>
+                        <TouchableOpacity onPress={pickCoverImage} style={styles.coverContainer} activeOpacity={0.8}>
+                            {coverImage ? (
+                                <Image source={{ uri: coverImage }} style={styles.coverImage} />
+                            ) : (
+                                <View style={styles.coverPlaceholder}>
+                                    <ImageIcon size={28} color="#6b7280" />
+                                    <Text style={styles.coverPlaceholderText}>Kapak fotoğrafı ekle</Text>
+                                </View>
+                            )}
+                            <View style={styles.coverEditBadge}>
+                                <Camera size={16} color="#fff" />
+                            </View>
+                        </TouchableOpacity>
+                    </View>
 
                     {/* Avatar Preview */}
                     <View style={styles.avatarSection}>
@@ -240,6 +277,23 @@ export default function EditProfileScreen({ navigation }) {
                             <Text style={styles.helperText}>E-posta adresi değiştirilemez.</Text>
                         </View>
 
+                        <View style={styles.inputGroup}>
+                            <Text style={styles.label}>Biyografi</Text>
+                            <View style={[styles.inputContainer, styles.bioInputContainer]}>
+                                <AlignLeft size={20} color="#9ca3af" style={styles.inputIcon} />
+                                <TextInput
+                                    style={styles.bioInput}
+                                    value={bio}
+                                    onChangeText={setBio}
+                                    placeholder="Kendinizden bahsedin..."
+                                    placeholderTextColor="#4b5563"
+                                    multiline
+                                    textAlignVertical="top"
+                                    maxLength={150}
+                                />
+                            </View>
+                            <Text style={styles.helperText}>{bio.length}/150 karakter</Text>
+                        </View>
 
                     </View>
 
@@ -309,6 +363,53 @@ const styles = StyleSheet.create({
     },
     content: {
         padding: 24,
+    },
+    coverSection: {
+        marginBottom: 24,
+    },
+    coverLabel: {
+        color: '#9ca3af',
+        fontSize: 14,
+        fontWeight: '500',
+        marginLeft: 4,
+        marginBottom: 8,
+    },
+    coverContainer: {
+        width: '100%',
+        height: 150,
+        borderRadius: 12,
+        overflow: 'hidden',
+        backgroundColor: '#111',
+        borderWidth: 1,
+        borderColor: '#333',
+        position: 'relative',
+    },
+    coverImage: {
+        width: '100%',
+        height: '100%',
+    },
+    coverPlaceholder: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: 8,
+    },
+    coverPlaceholderText: {
+        color: '#6b7280',
+        fontSize: 13,
+    },
+    coverEditBadge: {
+        position: 'absolute',
+        bottom: 10,
+        right: 10,
+        backgroundColor: '#ea580c',
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 2,
+        borderColor: '#000',
     },
     avatarSection: {
         alignItems: 'center',
@@ -405,6 +506,11 @@ const styles = StyleSheet.create({
         borderColor: '#222',
         opacity: 0.7,
     },
+    bioInputContainer: {
+        height: 100,
+        alignItems: 'flex-start',
+        paddingTop: 12,
+    },
     inputIcon: {
         marginRight: 10,
     },
@@ -412,6 +518,12 @@ const styles = StyleSheet.create({
         flex: 1,
         color: 'white',
         fontSize: 15,
+    },
+    bioInput: {
+        flex: 1,
+        color: 'white',
+        fontSize: 15,
+        minHeight: 80,
     },
     helperText: {
         color: '#4b5563',

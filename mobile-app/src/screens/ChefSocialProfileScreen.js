@@ -31,11 +31,14 @@ import {
     Pencil,
     Check,
     Settings,
+    Trash2,
+    ShieldAlert,
 } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import forumService from '../api/forumService';
 import authService from '../api/authService';
 import TopicCard from '../components/TopicCard';
+import ImageViewerModal from '../components/ImageViewerModal';
 
 const { width } = Dimensions.get('window');
 const COVER_HEIGHT = 160;
@@ -83,6 +86,7 @@ export default function ChefSocialProfileScreen({ navigation, route }) {
     const [bioEditing, setBioEditing] = useState(false);
     const [bioText, setBioText] = useState('');
     const [bioSaving, setBioSaving] = useState(false);
+    const [fullscreenImageUrl, setFullscreenImageUrl] = useState(null);
 
     // Load saved topics from AsyncStorage
     const loadSavedTopics = useCallback(async () => {
@@ -136,10 +140,7 @@ export default function ChefSocialProfileScreen({ navigation, route }) {
     const loadLikedTopics = useCallback(async () => {
         const result = await forumService.getLikedTopics();
         if (result.success) {
-            const ids = (result.data.likedTopics || result.data || []).map(t =>
-                typeof t === 'string' ? t : t.id
-            );
-            setLikedTopics(ids);
+            setLikedTopics(result.data.likedTopicIds || []);
         }
     }, []);
 
@@ -288,6 +289,7 @@ export default function ChefSocialProfileScreen({ navigation, route }) {
                             source={{ uri: profile.coverImage }}
                             style={styles.coverImage}
                             contentFit="cover"
+                            cachePolicy="memory-disk"
                         />
                     ) : (
                         <View style={styles.coverFallback}>
@@ -298,12 +300,17 @@ export default function ChefSocialProfileScreen({ navigation, route }) {
 
                 {/* Avatar + Action Button Row */}
                 <View style={styles.avatarActionRow}>
-                    <View style={styles.avatarContainer}>
+                    <TouchableOpacity
+                        style={styles.avatarContainer}
+                        activeOpacity={profile.image ? 0.8 : 1}
+                        onPress={() => { if (profile.image) setFullscreenImageUrl(profile.image); }}
+                    >
                         {profile.image ? (
                             <Image
                                 source={{ uri: profile.image }}
                                 style={styles.avatar}
                                 contentFit="cover"
+                                cachePolicy="memory-disk"
                             />
                         ) : (
                             <View style={styles.avatarFallback}>
@@ -312,7 +319,7 @@ export default function ChefSocialProfileScreen({ navigation, route }) {
                                 </Text>
                             </View>
                         )}
-                    </View>
+                    </TouchableOpacity>
 
                     {/* Follow / Edit button */}
                     {isOwnProfile ? (
@@ -323,25 +330,33 @@ export default function ChefSocialProfileScreen({ navigation, route }) {
                             <Text style={styles.editButtonText}>Profili Düzenle</Text>
                         </TouchableOpacity>
                     ) : currentUserId ? (
-                        <TouchableOpacity
-                            style={[styles.followButton, isFollowing && styles.followingButton]}
-                            onPress={handleFollow}
-                            disabled={followLoading}
-                        >
-                            {followLoading ? (
-                                <ActivityIndicator size="small" color={isFollowing ? '#ea580c' : '#fff'} />
-                            ) : isFollowing ? (
-                                <>
-                                    <UserCheck size={16} color="#ea580c" />
-                                    <Text style={styles.followingButtonText}>Takip Ediliyor</Text>
-                                </>
-                            ) : (
-                                <>
-                                    <UserPlus size={16} color="#fff" />
-                                    <Text style={styles.followButtonText}>Takip Et</Text>
-                                </>
-                            )}
-                        </TouchableOpacity>
+                        <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+                            <TouchableOpacity
+                                style={[styles.followButton, isFollowing && styles.followingButton]}
+                                onPress={handleFollow}
+                                disabled={followLoading}
+                            >
+                                {followLoading ? (
+                                    <ActivityIndicator size="small" color={isFollowing ? '#ea580c' : '#fff'} />
+                                ) : isFollowing ? (
+                                    <>
+                                        <UserCheck size={16} color="#ea580c" />
+                                        <Text style={styles.followingButtonText}>Takip Ediliyor</Text>
+                                    </>
+                                ) : (
+                                    <>
+                                        <UserPlus size={16} color="#fff" />
+                                        <Text style={styles.followButtonText}>Takip Et</Text>
+                                    </>
+                                )}
+                            </TouchableOpacity>
+                            <TouchableOpacity 
+                                style={styles.messageButton}
+                                onPress={() => navigation.navigate('Chat', { otherUserId: userId, otherUser: profile })}
+                            >
+                                <MessageCircle size={20} color="#fff" />
+                            </TouchableOpacity>
+                        </View>
                     ) : (
                         <TouchableOpacity
                             style={styles.followButton}
@@ -507,7 +522,7 @@ export default function ChefSocialProfileScreen({ navigation, route }) {
                         onDelete={handleDeleteTopic}
                     />
                 )}
-                ListHeaderComponent={renderHeader}
+                ListHeaderComponent={renderHeader()}
                 ListEmptyComponent={!loading ? renderEmpty : null}
                 ListFooterComponent={renderFooter}
                 onEndReached={handleLoadMore}
@@ -585,6 +600,12 @@ export default function ChefSocialProfileScreen({ navigation, route }) {
                     </View>
                 </View>
             </Modal>
+            
+            <ImageViewerModal
+                visible={!!fullscreenImageUrl}
+                imageUrl={fullscreenImageUrl}
+                onClose={() => setFullscreenImageUrl(null)}
+            />
         </View>
     );
 }
@@ -725,9 +746,17 @@ const styles = StyleSheet.create({
         marginBottom: 4,
     },
     editButtonText: {
-        color: '#e5e7eb',
+        color: '#fff',
         fontSize: 14,
         fontWeight: '600',
+    },
+    messageButton: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: '#ea580c',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
 
     // Profile info
@@ -784,7 +813,7 @@ const styles = StyleSheet.create({
     },
     bioEditContainer: {
         marginBottom: 12,
-        backgroundColor: '#1a1a1a',
+        backgroundColor: '#000',
         borderRadius: 12,
         padding: 12,
         borderWidth: 1,

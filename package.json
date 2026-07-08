@@ -39,6 +39,7 @@
     "nodemailer": "^6.10.1",
     "openai": "^6.16.0",
     "prisma": "^6.16.2",
+    "pusher": "^5.3.4",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
     "react-hot-toast": "^2.6.0",
