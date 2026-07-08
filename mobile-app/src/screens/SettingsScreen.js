@@ -347,15 +347,22 @@ export default function SettingsScreen({ navigation }) {
                         </View>
                         <ScrollView style={{ flex: 1 }}>
                             <Text style={styles.policyText}>
-                                <Text style={styles.policyHeader}>1. Veri Toplama{'\n'}</Text>
-                                Uygulamamızı kullanırken, adınız, e-posta adresiniz gibi kişisel bilgilerinizi toplayabiliriz. Bu bilgiler, size daha iyi bir hizmet sunmak için kullanılır.{'\n\n'}
-                                <Text style={styles.policyHeader}>2. Kullanım{'\n'}</Text>
-                                Topladığımız bilgiler, hesabınızı yönetmek, size bildirim göndermek ve deneyiminizi kişiselleştirmek için kullanılır.{'\n\n'}
-                                <Text style={styles.policyHeader}>3. Güvenlik{'\n'}</Text>
-                                Verileriniz bizim için önemlidir. Endüstri standardı güvenlik önlemleri ile korunmaktadır.{'\n\n'}
-                                <Text style={styles.policyHeader}>4. Üçüncü Taraflar{'\n'}</Text>
-                                Bilgileriniz, yasal zorunluluklar dışında üçüncü taraflarla paylaşılmaz.{'\n\n'}
-                                Daha fazla bilgi için web sitemizi ziyaret edebilirsiniz.
+                                <Text style={styles.policyHeader}>1. Veri Sorumlusu{'\n'}</Text>
+                                Culinora, 6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") kapsamında veri sorumlusudur. Sorularınız için info@culinora.net adresinden bize ulaşabilirsiniz.{'\n\n'}
+                                <Text style={styles.policyHeader}>2. Toplanan Veriler ve Toplama Yöntemi{'\n'}</Text>
+                                Hesap bilgileri (ad, soyad, e-posta, telefon, profil fotoğrafı) kayıt/giriş formları ve Google ile giriş yoluyla; ödeme bilgileri (işlem geçmişi, abonelik durumu — kart bilgileriniz bizde değil Iyzico/Stripe/RevenueCat'te saklanır); kullanım verileri (tamamlanan dersler, ilerleme durumu, forum gönderileri) ve teknik veriler (cihaz modeli, işletim sistemi, IP adresi) uygulamayı kullandığınızda otomatik olarak toplanır.{'\n\n'}
+                                <Text style={styles.policyHeader}>3. İşlenme Amaçları{'\n'}</Text>
+                                Hesabınızı oluşturmak ve yönetmek, satın aldığınız kursları sunmak, ödeme işlemlerini gerçekleştirmek, bildirim ve e-posta göndermek, uygulamayı geliştirmek, güvenliğini sağlamak ve yasal yükümlülükleri yerine getirmek amacıyla işlenir.{'\n\n'}
+                                <Text style={styles.policyHeader}>4. Hukuki Sebep{'\n'}</Text>
+                                Verileriniz KVKK madde 5 kapsamında; sözleşmenin kurulması veya ifası için gerekli olması, hukuki yükümlülüğümüzün yerine getirilmesi, meşru menfaatimiz ve gerekli hallerde açık rızanız hukuki sebeplerine dayanılarak işlenir.{'\n\n'}
+                                <Text style={styles.policyHeader}>5. Verilerin Aktarıldığı Taraflar{'\n'}</Text>
+                                Ödeme işlemleri için Iyzico ve Stripe, medya depolama için Cloudinary, mobil abonelik yönetimi için RevenueCat, e-posta bildirimleri için Resend ile sınırlı ve gerekli ölçüde veri paylaşılır. Verileriniz hiçbir şekilde ticari amaçla satılmaz veya kiralanmaz.{'\n\n'}
+                                <Text style={styles.policyHeader}>6. Veri Güvenliği{'\n'}</Text>
+                                Şifreniz asla düz metin olarak saklanmaz, geri döndürülemez şekilde şifrelenir (hash'lenir). Tüm veri iletimi SSL/TLS ile korunur ve sunucularımıza yetkisiz erişim engellenir.{'\n\n'}
+                                <Text style={styles.policyHeader}>7. Saklama Süresi ve Silme{'\n'}</Text>
+                                Verileriniz hesabınız aktif olduğu sürece ve yasal saklama süreleri boyunca tutulur. Ayarlar {'>'} Hesap Bilgileri bölümünden hesabınızı sildiğinizde kişisel verileriniz sistemlerimizden kalıcı olarak silinir.{'\n\n'}
+                                <Text style={styles.policyHeader}>8. Haklarınız{'\n'}</Text>
+                                KVKK madde 11 kapsamında; verilerinizin işlenip işlenmediğini öğrenme, işlenme amacını öğrenme, aktarıldığı üçüncü kişileri bilme, eksik/yanlış işlenmişse düzeltilmesini isteme, silinmesini isteme ve işlenmesine itiraz etme haklarına sahipsiniz. Bu hakları kullanmak için info@culinora.net adresine yazabilirsiniz.
                             </Text>
                         </ScrollView>
                     </View>
