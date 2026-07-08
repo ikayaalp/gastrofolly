@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Loader2, MessageCircle, Home, BookOpen, Users } from 'lucide-react'
+import { ArrowLeft, Loader2, MessageCircle, Home, BookOpen, Users, ChefHat } from 'lucide-react'
 import { getPusherClient } from '@/lib/pusherClient'
 
 interface Conversation {
@@ -191,13 +191,13 @@ export default function MessagesInboxClient({ userId }: { userId: string }) {
                         <BookOpen className="h-6 w-6" />
                         <span className="text-xs font-medium mt-1">Kurslarım</span>
                     </Link>
+                    <Link href="/culi" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
+                        <ChefHat className="h-6 w-6" />
+                        <span className="text-xs font-medium mt-1">Culi</span>
+                    </Link>
                     <Link href="/chef-sosyal" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
                         <Users className="h-6 w-6" />
                         <span className="text-xs font-medium mt-1">Sosyal</span>
-                    </Link>
-                    <Link href="/chef-sor" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
-                        <MessageCircle className="h-6 w-6" />
-                        <span className="text-xs font-medium mt-1">Chef&apos;e Sor</span>
                     </Link>
                 </div>
             </div>
