@@ -81,7 +81,7 @@ export async function PUT(
 
     const { courseId } = await params
     const body = await request.json()
-    const { title, description, price, categoryId, imageUrl, isPublished } = body
+    const { title, description, price, categoryId, imageUrl, detailImageUrl, isPublished } = body
 
     // Check if course exists and belongs to instructor
     const existingCourse = await prisma.course.findFirst({
@@ -103,6 +103,7 @@ export async function PUT(
         ...(price && { price: parseFloat(price) }),
         ...(categoryId && { categoryId }),
         ...(imageUrl !== undefined && { imageUrl }),
+        ...(detailImageUrl !== undefined && { detailImageUrl: detailImageUrl || null }),
         ...(isPublished !== undefined && { isPublished })
       },
       include: {

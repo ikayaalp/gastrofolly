@@ -8,10 +8,14 @@ export interface Instructor {
   id: string;
   name: string;
   image: string | null;
-  specialty: string;
-  rating: string;
-  students: string;
-  courseCount: number;
+  specialty?: string;
+  rating?: string;
+  students?: string;
+  courseCount?: number;
+  // Panelden yönetilen eğitmenler için: rating/kurs yerine serbest alt yazı
+  subtitle?: string | null;
+  // Tıklanınca gidilecek yer; yoksa kart link değildir
+  href?: string | null;
 }
 
 interface InstructorRowProps {
@@ -100,35 +104,58 @@ export default function InstructorRow({ title, instructors }: InstructorRowProps
           className="flex overflow-x-auto scrollbar-hide py-4 px-4 sm:px-6 lg:px-8 space-x-4"
           style={{ scrollPaddingLeft: '4%', scrollPaddingRight: '4%' }}
         >
-          {instructors.map((instructor) => (
-            <Link
-              key={instructor.id}
-              href={`/instructor/${instructor.id}`}
-              className="flex flex-col items-start min-w-[140px] md:min-w-[160px] p-2 hover:bg-[#111] rounded-xl transition-colors shrink-0 group"
-            >
-              <div className="relative mb-3 w-full aspect-[3/4]">
-                {instructor.image ? (
-                  <img
-                    src={instructor.image}
-                    alt={instructor.name}
-                    className="w-full h-full rounded-xl object-cover border-2 border-transparent group-hover:border-orange-500 transition-colors"
-                  />
+          {instructors.map((instructor) => {
+            // href açıkça verilmişse onu kullan; verilmemişse eski davranış (/instructor/[id])
+            const href =
+              instructor.href !== undefined ? instructor.href : `/instructor/${instructor.id}`
+
+            const inner = (
+              <>
+                <div className="relative mb-3 w-full aspect-[3/4]">
+                  {instructor.image ? (
+                    <img
+                      src={instructor.image}
+                      alt={instructor.name}
+                      className="w-full h-full rounded-xl object-cover border-2 border-transparent group-hover:border-orange-500 transition-colors"
+                    />
+                  ) : (
+                    <div className="w-full h-full rounded-xl bg-gradient-to-br from-orange-600 to-orange-800 flex items-center justify-center border-2 border-transparent group-hover:border-orange-500 transition-colors">
+                      <span className="text-white text-3xl md:text-4xl font-bold">
+                        {instructor.name
+                          ? instructor.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+                          : <User className="h-10 w-10 text-white" />}
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <h3 className="text-white font-semibold text-left text-sm md:text-base line-clamp-1 w-full px-1">{instructor.name}</h3>
+                {instructor.subtitle ? (
+                  <p className="text-gray-400 text-xs md:text-sm mt-1 text-left line-clamp-1 w-full px-1">
+                    {instructor.subtitle}
+                  </p>
                 ) : (
-                  <div className="w-full h-full rounded-xl bg-gradient-to-br from-orange-600 to-orange-800 flex items-center justify-center border-2 border-transparent group-hover:border-orange-500 transition-colors">
-                    <span className="text-white text-3xl md:text-4xl font-bold">
-                      {instructor.name
-                        ? instructor.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
-                        : <User className="h-10 w-10 text-white" />}
-                    </span>
-                  </div>
+                  (instructor.rating || instructor.courseCount !== undefined) && (
+                    <p className="text-gray-400 text-xs md:text-sm mt-1 text-left flex items-center justify-start gap-1 w-full px-1">
+                      <span className="text-orange-500">★</span> {instructor.rating} &bull; {instructor.courseCount} Kurs
+                    </p>
+                  )
                 )}
+              </>
+            )
+
+            const cls =
+              "flex flex-col items-start min-w-[140px] md:min-w-[160px] p-2 hover:bg-[#111] rounded-xl transition-colors shrink-0 group"
+
+            return href ? (
+              <Link key={instructor.id} href={href} className={cls}>
+                {inner}
+              </Link>
+            ) : (
+              <div key={instructor.id} className={cls}>
+                {inner}
               </div>
-              <h3 className="text-white font-semibold text-left text-sm md:text-base line-clamp-1 w-full px-1">{instructor.name}</h3>
-              <p className="text-gray-400 text-xs md:text-sm mt-1 text-left flex items-center justify-start gap-1 w-full px-1">
-                <span className="text-orange-500">★</span> {instructor.rating} &bull; {instructor.courseCount} Kurs
-              </p>
-            </Link>
-          ))}
+            )
+          })}
         </div>
       </div>
     </div>

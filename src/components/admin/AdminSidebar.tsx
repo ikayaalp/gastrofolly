@@ -17,7 +17,8 @@ import {
     Camera,
     MessageCircle,
     Star,
-    Mail
+    Mail,
+    Home
 } from "lucide-react"
 
 const sidebarItems = [
@@ -31,6 +32,11 @@ const sidebarItems = [
         title: "Kurs Yönetimi",
         href: "/admin/courses",
         icon: BookOpen
+    },
+    {
+        title: "Anasayfa",
+        href: "/admin/homepage",
+        icon: Home
     },
     {
         title: "Chef Sosyal",

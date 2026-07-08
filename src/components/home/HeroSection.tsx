@@ -28,51 +28,92 @@ interface Course {
   }
 }
 
-interface HeroSectionProps {
-  courses: Course[]
+export interface HeroCover {
+  id: string
+  imageUrl: string
+  title?: string | null
+  subtitle?: string | null
+  linkUrl?: string | null
 }
 
-export default function HeroSection({ courses }: HeroSectionProps) {
+interface HeroSlide {
+  id: string
+  imageUrl?: string | null
+  title: string
+  subtitle: string
+  linkUrl: string | null
+  buttonLabel: string
+}
+
+interface HeroSectionProps {
+  courses: Course[]
+  // Panelden yönetilen kapaklar. Doluysa kursların yerine bunlar gösterilir.
+  covers?: HeroCover[]
+}
+
+export default function HeroSection({ courses, covers }: HeroSectionProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isTransitioning, setIsTransitioning] = useState(false)
 
+  // Kapak varsa kapakları, yoksa kursları slayta çevir
+  const slides: HeroSlide[] =
+    covers && covers.length > 0
+      ? covers.map((c) => ({
+          id: c.id,
+          imageUrl: c.imageUrl,
+          title: c.title || "",
+          subtitle: c.subtitle || "",
+          linkUrl: c.linkUrl || null,
+          buttonLabel: "Keşfet",
+        }))
+      : courses.map((c) => ({
+          id: c.id,
+          imageUrl: c.imageUrl,
+          title: c.title,
+          subtitle: c.instructor?.name
+            ? `Şef ${c.instructor.name.replace(/^Şef\s*/i, "")}`
+            : "",
+          linkUrl: `/course/${c.id}`,
+          buttonLabel: "Kursa Başla",
+        }))
+
   // Otomatik geçiş
   useEffect(() => {
-    if (courses.length <= 1) return
+    if (slides.length <= 1) return
 
     const interval = setInterval(() => {
       setIsTransitioning(true)
       setTimeout(() => {
-        setCurrentIndex((prev) => (prev + 1) % courses.length)
+        setCurrentIndex((prev) => (prev + 1) % slides.length)
         setIsTransitioning(false)
       }, 300)
     }, 5000)
 
     return () => clearInterval(interval)
-  }, [courses.length])
+  }, [slides.length])
 
   // Manuel geçiş fonksiyonları
   const goToPrevious = () => {
-    if (courses.length <= 1) return
+    if (slides.length <= 1) return
     setIsTransitioning(true)
     setTimeout(() => {
-      setCurrentIndex((prev) => (prev - 1 + courses.length) % courses.length)
+      setCurrentIndex((prev) => (prev - 1 + slides.length) % slides.length)
       setIsTransitioning(false)
     }, 300)
   }
 
   const goToNext = () => {
-    if (courses.length <= 1) return
+    if (slides.length <= 1) return
     setIsTransitioning(true)
     setTimeout(() => {
-      setCurrentIndex((prev) => (prev + 1) % courses.length)
+      setCurrentIndex((prev) => (prev + 1) % slides.length)
       setIsTransitioning(false)
     }, 300)
   }
 
   // Nokta tıklama
   const goToSlide = (index: number) => {
-    if (courses.length <= 1) return
+    if (slides.length <= 1) return
     setIsTransitioning(true)
     setTimeout(() => {
       setCurrentIndex(index)
@@ -80,9 +121,9 @@ export default function HeroSection({ courses }: HeroSectionProps) {
     }, 300)
   }
 
-  if (courses.length === 0) return null
+  if (slides.length === 0) return null
 
-  const course = courses[currentIndex]
+  const course = slides[Math.min(currentIndex, slides.length - 1)]
 
   return (
     <div className="relative h-[55vh] md:h-[70vh] min-h-[400px] md:min-h-[500px] overflow-hidden group">
@@ -106,7 +147,7 @@ export default function HeroSection({ courses }: HeroSectionProps) {
       </div>
 
       {/* Navigation Arrows */}
-      {courses.length > 1 && (
+      {slides.length > 1 && (
         <>
           <button
             onClick={goToPrevious}
@@ -124,9 +165,9 @@ export default function HeroSection({ courses }: HeroSectionProps) {
       )}
 
       {/* Dots Indicator */}
-      {courses.length > 1 && (
+      {slides.length > 1 && (
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
-          {courses.map((_, index) => (
+          {slides.map((_, index) => (
             <button
               key={index}
               onClick={() => goToSlide(index)}
@@ -145,27 +186,31 @@ export default function HeroSection({ courses }: HeroSectionProps) {
           <div className={`max-w-4xl mx-auto -mt-16 transition-all duration-500 ease-in-out ${isTransitioning ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
 
             {/* Başlık */}
-            <h1 className="text-4xl md:text-6xl font-bold text-white mb-3 leading-tight drop-shadow-lg">
-              {course.title}
-            </h1>
+            {course.title && (
+              <h1 className="text-4xl md:text-6xl font-bold text-white mb-3 leading-tight drop-shadow-lg">
+                {course.title}
+              </h1>
+            )}
 
-            {/* Eğitmen Adı */}
-            <p className="text-lg md:text-xl text-gray-300 mb-6 drop-shadow-md">
-              Şef {course.instructor.name?.replace(/^Şef\s*/i, '')}
-            </p>
-
-
+            {/* Alt Başlık / Eğitmen Adı */}
+            {course.subtitle && (
+              <p className="text-lg md:text-xl text-gray-300 mb-6 drop-shadow-md">
+                {course.subtitle}
+              </p>
+            )}
 
             {/* Action Buttons */}
-            <div className="flex justify-center">
-              <Link
-                href={`/course/${course.id}`}
-                className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2.5 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-orange-600/20 flex items-center justify-center gap-2"
-              >
-                <Play className="h-5 w-5 fill-current" />
-                Kursa Başla
-              </Link>
-            </div>
+            {course.linkUrl && (
+              <div className="flex justify-center">
+                <Link
+                  href={course.linkUrl}
+                  className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2.5 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-orange-600/20 flex items-center justify-center gap-2"
+                >
+                  <Play className="h-5 w-5 fill-current" />
+                  {course.buttonLabel}
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </div>

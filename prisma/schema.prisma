@@ -136,7 +136,8 @@ model Course {
   discountRate      Float? // İndirim oranı (0-100 arası)
   discountedPrice   Float? // İndirimli fiyat (otomatik hesaplanır)
   accessibleByPlans String[]    @default([]) // "COMMIS", "CHEF_DE_PARTIE", "EXECUTIVE"
-  imageUrl          String?
+  imageUrl          String? // Kart/thumbnail görseli
+  detailImageUrl    String? // Kurs detay sayfası banner görseli (opsiyonel, panelden ayarlanır)
   level             CourseLevel @default(BEGINNER)
   duration          Int? // dakika cinsinden
   isPublished       Boolean     @default(false)
@@ -615,4 +616,44 @@ model FinanceRecord {
 enum FinanceType {
   INCOME
   EXPENSE
+}
+
+// ============================================================
+// Anasayfa (/home) yönetimi — admin panelinden düzenlenir
+// ============================================================
+
+// Hero (kapak) slaytları. Kayıt yoksa /home öne çıkan kurs görsellerine düşer.
+model HomeCover {
+  id        String   @id @default(cuid())
+  imageUrl  String
+  title     String? // Slayt üzerindeki başlık (opsiyonel)
+  subtitle  String? // Alt başlık (opsiyonel)
+  linkUrl   String? // "Kursa Başla" butonunun gideceği yer (opsiyonel)
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// "Eğitmenlerimiz" satırı. Kayıt yoksa /home gerçek INSTRUCTOR kullanıcılarına düşer.
+model HomeInstructor {
+  id        String   @id @default(cuid())
+  name      String
+  subtitle  String? // Örn: "Michelin Yıldızlı Şef" (yoksa yıldız/kurs bilgisi gösterilmez)
+  imageUrl  String?
+  linkUrl   String? // Tıklanınca gidilecek yer (opsiyonel)
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// /home bölümlerinin sırası ve görünürlüğü. key sabit bir bölüm anahtarıdır.
+model HomeSection {
+  id        String   @id @default(cuid())
+  key       String   @unique // "continue" | "stories" | "featured" | "popular" | "instructors" | "recent" | "categories"
+  label     String // Panelde gösterilen okunabilir ad
+  order     Int      @default(0)
+  isVisible Boolean  @default(true)
+  updatedAt DateTime @updatedAt
 }

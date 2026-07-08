@@ -5,6 +5,7 @@ import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import HomePageClient from "./HomePageClient"
 import AIAssistantWidget from "@/components/ai/AIAssistantWidget"
+import { resolveHomeSections } from "@/lib/homeSections"
 
 export const metadata: Metadata = {
   title: "Ana Sayfa",
@@ -50,7 +51,10 @@ async function getHomeData(userId?: string) {
     categories,
     userCourses,
     activePlan,
-    rawInstructors
+    rawInstructors,
+    homeCovers,
+    homeInstructors,
+    homeSectionsRaw
   ] = await Promise.all([
     // Öne çıkan kurslar (en yeni)
     prisma.course.findMany({
@@ -126,8 +130,22 @@ async function getHomeData(userId?: string) {
           }
         }
       }
-    })
+    }),
+    // Panelden yönetilen hero kapakları (aktif, sıralı)
+    prisma.homeCover.findMany({
+      where: { isActive: true },
+      orderBy: [{ order: 'asc' }, { createdAt: 'asc' }]
+    }),
+    // Panelden yönetilen vitrin eğitmenleri (aktif, sıralı)
+    prisma.homeInstructor.findMany({
+      where: { isActive: true },
+      orderBy: [{ order: 'asc' }, { createdAt: 'asc' }]
+    }),
+    // Bölüm sırası/görünürlüğü
+    prisma.homeSection.findMany()
   ])
+
+  const homeSections = resolveHomeSections(homeSectionsRaw)
 
   // Map courses to the expected "userEnrollments" structure for the client component
   const userEnrollments = userCourses.map(course => ({
@@ -166,7 +184,10 @@ async function getHomeData(userId?: string) {
     categories,
     userEnrollments,
     activePlan,
-    instructors
+    instructors,
+    homeCovers,
+    homeInstructors,
+    homeSections
   }
 }
 
@@ -183,7 +204,10 @@ export default async function HomePage() {
     categories,
     userEnrollments,
     activePlan,
-    instructors
+    instructors,
+    homeCovers,
+    homeInstructors,
+    homeSections
   } = await getHomeData(session.user.id)
 
   return (
@@ -196,6 +220,9 @@ export default async function HomePage() {
         session={session}
         monthlyPrice={activePlan?.price || 399}
         instructors={instructors}
+        homeCovers={homeCovers as any}
+        homeInstructors={homeInstructors as any}
+        homeSections={homeSections}
       />
       <AIAssistantWidget />
     </>

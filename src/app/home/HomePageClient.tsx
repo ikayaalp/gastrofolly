@@ -22,6 +22,8 @@ import MessagesNavIcon from "@/components/ui/MessagesNavIcon"
 import SearchModal from "@/components/ui/SearchModal"
 import HomeStories from "@/components/home/HomeStories"
 import SubscriptionPopup from "@/components/home/SubscriptionPopup"
+import { HeroCover } from "@/components/home/HeroSection"
+import { DEFAULT_HOME_SECTIONS } from "@/lib/homeSections"
 
 interface Course {
   id: string
@@ -61,6 +63,21 @@ interface UserEnrollment {
   course: Course
 }
 
+interface HomeInstructorItem {
+  id: string
+  name: string
+  subtitle?: string | null
+  imageUrl?: string | null
+  linkUrl?: string | null
+}
+
+interface HomeSectionItem {
+  key: string
+  label: string
+  order: number
+  isVisible: boolean
+}
+
 interface HomePageClientProps {
   featuredCourses: Course[]
   popularCourses: Course[]
@@ -70,6 +87,9 @@ interface HomePageClientProps {
   session: { user: { id: string; name?: string | null; email?: string | null; image?: string | null; role?: string } } | null
   monthlyPrice?: number
   instructors: Instructor[]
+  homeCovers?: HeroCover[]
+  homeInstructors?: HomeInstructorItem[]
+  homeSections?: HomeSectionItem[]
 }
 
 export default function HomePageClient({
@@ -80,10 +100,63 @@ export default function HomePageClient({
   userEnrollments,
   session,
   monthlyPrice = 399,
-  instructors
+  instructors,
+  homeCovers,
+  homeInstructors,
+  homeSections
 }: HomePageClientProps) {
   // recentCourses yoksa featuredCourses'u kullan (aynı sorgu, optimize edildi)
   const recentCoursesData = recentCourses || featuredCourses
+
+  // Panelde eğitmen tanımlıysa onları, yoksa gerçek eğitmen hesaplarını göster
+  const displayInstructors: Instructor[] =
+    homeInstructors && homeInstructors.length > 0
+      ? homeInstructors.map((i) => ({
+          id: i.id,
+          name: i.name,
+          image: i.imageUrl || null,
+          subtitle: i.subtitle || null,
+          href: i.linkUrl || null,
+        }))
+      : instructors
+
+  // Bölüm sırası (panelden gelmezse varsayılan sıra)
+  const orderedSections =
+    homeSections && homeSections.length > 0
+      ? [...homeSections].sort((a, b) => a.order - b.order)
+      : DEFAULT_HOME_SECTIONS.map((s, i) => ({ ...s, order: i, isVisible: true }))
+
+  // Her bölüm anahtarı için içeriği hazırla (içerik yoksa null)
+  const sectionContent: Record<string, React.ReactNode> = {
+    continue:
+      userEnrollments.length > 0 ? (
+        <CourseRow
+          title="Kaldığın Yerden Devam Et"
+          courses={userEnrollments.map((e) => e.course)}
+          showProgress={true}
+        />
+      ) : null,
+    stories: (
+      <div className="px-4 sm:px-6 lg:px-8 pt-4">
+        <HomeStories />
+      </div>
+    ),
+    featured: <CourseRow title="Öne Çıkan Kurslar" courses={featuredCourses} />,
+    popular: <CourseRow title="Popüler Kurslar" courses={popularCourses} showRanking={true} />,
+    instructors: <InstructorRow title="Eğitmenlerimiz" instructors={displayInstructors} />,
+    recent: <CourseRow title="Yeni Eklenen Kurslar" courses={recentCoursesData} />,
+    categories: (
+      <div className="space-y-8">
+        {categories.map(
+          (category) =>
+            category.courses &&
+            category.courses.length > 0 && (
+              <CourseRow key={category.id} title={category.name} courses={category.courses} />
+            )
+        )}
+      </div>
+    ),
+  }
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const { data: clientSession } = useSession()
 
@@ -211,62 +284,18 @@ export default function HomePageClient({
       <main className="pt-16 md:pt-20 pb-20 md:pb-0">
 
 
-        {/* Hero Section */}
-        {featuredCourses.length > 0 && (
-          <HeroSection courses={featuredCourses} />
+        {/* Hero Section — panelde kapak varsa onları, yoksa öne çıkan kursları gösterir */}
+        {((homeCovers && homeCovers.length > 0) || featuredCourses.length > 0) && (
+          <HeroSection courses={featuredCourses} covers={homeCovers} />
         )}
 
-        {/* Kurs Satırları */}
+        {/* Kurs Satırları — sıra ve görünürlük panelden yönetilir */}
         <div className="space-y-8 pb-12">
-          {/* Devam Et */}
-          {userEnrollments.length > 0 && (
-            <CourseRow
-              title="Kaldığın Yerden Devam Et"
-              courses={userEnrollments.map(e => e.course)}
-              showProgress={true}
-            />
+          {orderedSections.map((section) =>
+            section.isVisible && sectionContent[section.key] ? (
+              <div key={section.key}>{sectionContent[section.key]}</div>
+            ) : null
           )}
-
-          {/* Stories Section */}
-          <div className="px-4 sm:px-6 lg:px-8 pt-4">
-            <HomeStories />
-          </div>
-
-          {/* Öne Çıkan Kurslar */}
-          <CourseRow
-            title="Öne Çıkan Kurslar"
-            courses={featuredCourses}
-          />
-
-          {/* Popüler Kurslar */}
-          <CourseRow
-            title="Popüler Kurslar"
-            courses={popularCourses}
-            showRanking={true}
-          />
-
-          {/* Eğitmenlerimiz */}
-          <InstructorRow 
-            title="Eğitmenlerimiz" 
-            instructors={instructors} 
-          />
-
-          {/* Yeni Kurslar */}
-          <CourseRow
-            title="Yeni Eklenen Kurslar"
-            courses={recentCoursesData}
-          />
-
-          {/* Kategorilere Göre */}
-          {categories.map((category) => (
-            category.courses && category.courses.length > 0 && (
-              <CourseRow
-                key={category.id}
-                title={category.name}
-                courses={category.courses}
-              />
-            )
-          ))}
         </div>
       </main>
 

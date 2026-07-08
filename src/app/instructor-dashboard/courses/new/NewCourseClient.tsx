@@ -45,13 +45,15 @@ export default function NewCourseClient({ categories, session }: Props) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [previewImage, setPreviewImage] = useState<string | null>(null)
-  
+  const [previewDetailImage, setPreviewDetailImage] = useState<string | null>(null)
+
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     price: "",
     categoryId: "",
     imageUrl: "",
+    detailImageUrl: "",
     isPublished: false,
     isFree: false
   })
@@ -84,6 +86,29 @@ export default function NewCourseClient({ categories, session }: Props) {
       }
     } catch (error) {
       console.error('Error uploading image:', error)
+    }
+  }
+
+  const handleDetailImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    try {
+      const uploadData = new FormData()
+      uploadData.append('file', file)
+
+      const response = await fetch('/api/upload-image-cloud', {
+        method: 'POST',
+        body: uploadData,
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setFormData(prev => ({ ...prev, detailImageUrl: data.url }))
+        setPreviewDetailImage(data.url)
+      }
+    } catch (error) {
+      console.error('Error uploading detail image:', error)
     }
   }
 
@@ -180,6 +205,59 @@ export default function NewCourseClient({ categories, session }: Props) {
                   />
                   <label
                     htmlFor="image-upload"
+                    className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors cursor-pointer inline-block"
+                  >
+                    Görsel Seç
+                  </label>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Course Detail (Banner) Image */}
+          <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+            <h2 className="text-lg font-semibold text-white mb-2 flex items-center space-x-2">
+              <ImageIcon className="h-5 w-5" />
+              <span>Kurs Detay Görseli (Banner)</span>
+            </h2>
+            <p className="text-sm text-gray-500 mb-4">
+              Kurs detay sayfasının üst banner&apos;ında gösterilir. Boş bırakılırsa yukarıdaki kurs görseli kullanılır.
+            </p>
+
+            <div className="space-y-4">
+              {previewDetailImage ? (
+                <div className="relative">
+                  <Image
+                    src={previewDetailImage}
+                    alt="Course detail preview"
+                    width={400}
+                    height={200}
+                    className="rounded-lg object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPreviewDetailImage(null)
+                      setFormData(prev => ({ ...prev, detailImageUrl: "" }))
+                    }}
+                    className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1 hover:bg-red-700 transition-colors"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              ) : (
+                <div className="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center">
+                  <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-400 mb-4">Detay banner görseli yükleyin (opsiyonel)</p>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleDetailImageUpload}
+                    className="hidden"
+                    id="detail-image-upload"
+                  />
+                  <label
+                    htmlFor="detail-image-upload"
                     className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors cursor-pointer inline-block"
                   >
                     Görsel Seç

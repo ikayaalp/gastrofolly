@@ -110,6 +110,9 @@ export default async function CoursePage({ params }: CoursePageProps) {
     }
   }
 
+  // Detay sayfası banner görseli: panelden ayrı ayarlanabilir, yoksa kart görseline düşer
+  const bannerImage = course.detailImageUrl || course.imageUrl
+
   let hasActiveSubscription = false
   let userSubscriptionLevel = 0
 
@@ -256,9 +259,9 @@ export default async function CoursePage({ params }: CoursePageProps) {
         
         {/* Mobile Background Image */}
         <div className="md:hidden relative w-full aspect-video mt-14">
-          {course.imageUrl ? (
+          {bannerImage ? (
             <Image
-              src={course.imageUrl}
+              src={bannerImage}
               alt={course.title}
               fill
               priority

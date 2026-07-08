@@ -33,6 +33,7 @@ export async function PUT(
         discountRate,
         discountedPrice,
         imageUrl: data.imageUrl || null,
+        detailImageUrl: data.detailImageUrl || null,
         level: data.level,
         duration: data.duration ? parseInt(data.duration) : null,
         isPublished: data.isPublished,
