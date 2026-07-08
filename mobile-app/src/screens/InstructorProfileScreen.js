@@ -164,7 +164,14 @@ export default function InstructorProfileScreen({ navigation, route }) {
                             ]}
                             onPress={() => {
                                 if (!currentUser || !isPremiumUser(currentUser)) {
-                                    Alert.alert('Premium Gerekli', 'Eğitmenlere mesaj gönderebilmek için premium üyelik gerekiyor.');
+                                    Alert.alert(
+                                        'Premium Üyelik Gerekli',
+                                        'Mesajlaşma özelliğini kullanmak için premium üyeliğe sahip olmanız gerekiyor.',
+                                        [
+                                            { text: 'Vazgeç', style: 'cancel' },
+                                            { text: 'Abone Ol', onPress: () => navigation.navigate('Subscription') }
+                                        ]
+                                    );
                                     return;
                                 }
                                 navigation.navigate('Chat', { 
