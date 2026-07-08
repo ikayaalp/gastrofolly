@@ -75,6 +75,7 @@ interface Topic {
   thumbnailUrl?: string | null
   author: Author
   category: CategoryBasic
+  categoryId: string
   posts: Post[]
 }
 
@@ -663,7 +664,7 @@ export default function TopicDetailClient({ session, topic: initialTopic, catego
         topicId={topic.id}
         initialTitle={topic.title}
         initialContent={topic.content}
-        initialCategoryId={topic.categoryId}
+        initialCategoryId={topic.categoryId || topic.category?.id}
         onTopicUpdated={(updatedTopic) => {
           setTopic(prev => prev ? { ...prev, ...updatedTopic } : prev)
         }}
