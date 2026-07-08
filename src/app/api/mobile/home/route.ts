@@ -77,6 +77,7 @@ export async function GET(req: Request) {
       prisma.homeSection.findMany({
         include: {
           courses: {
+            where: { course: { isPublished: true } },
             orderBy: { order: "asc" },
             include: {
               course: {

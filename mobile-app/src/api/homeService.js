@@ -26,7 +26,7 @@ api.interceptors.request.use(
 const homeService = {
     getHomeData: async () => {
         try {
-            const response = await api.get('/mobile/home');
+            const response = await api.get('/api/mobile/home');
             return response.data;
         } catch (error) {
             console.error('getHomeData error:', error.response?.data || error.message);

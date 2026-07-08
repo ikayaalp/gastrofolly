@@ -488,7 +488,7 @@ export default function HomeScreen({ navigation }) {
                     if (!section.isVisible) return null;
 
                     if (section.isCustom) {
-                        const courses = section.courses.map(c => c.course);
+                        const courses = section.courses;
                         if (!courses || courses.length === 0) return null;
                         
                         return (
@@ -544,8 +544,8 @@ export default function HomeScreen({ navigation }) {
                                     <Text style={styles.sectionTitle}>{section.title || 'Eğitmenlerimiz'}</Text>
                                     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
                                         {displayInstructors.map((instructor, index) => {
-                                            // Handle case where instructor is nested or direct
                                             const inst = instructor.instructor || instructor;
+                                            const instImage = inst.image || inst.imageUrl;
                                             return (
                                                 <TouchableOpacity
                                                     key={inst.id || index}
@@ -553,16 +553,18 @@ export default function HomeScreen({ navigation }) {
                                                     onPress={() => navigation.navigate('InstructorProfile', {
                                                         instructorId: inst.id,
                                                         instructorName: inst.name,
-                                                        instructorImage: inst.image,
+                                                        instructorImage: instImage,
                                                     })}
                                                 >
                                                     <Image
-                                                        source={inst.image ? { uri: inst.image } : require('../../assets/icon.png')}
+                                                        source={instImage ? { uri: instImage } : require('../../assets/icon.png')}
                                                         style={[styles.instructorAvatar, { backgroundColor: '#111' }]}
                                                         contentFit="contain"
                                                     />
                                                     <Text style={styles.instructorName} numberOfLines={1}>{inst.name}</Text>
-                                                    <Text style={styles.instructorMeta}>{inst.courseCount || 0} kurs</Text>
+                                                    <Text style={styles.instructorMeta} numberOfLines={1}>
+                                                        {inst.subtitle ? inst.subtitle : `${inst.courseCount || 0} kurs`}
+                                                    </Text>
                                                 </TouchableOpacity>
                                             );
                                         })}

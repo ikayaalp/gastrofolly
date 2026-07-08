@@ -145,6 +145,7 @@ async function getHomeData(userId?: string) {
     prisma.homeSection.findMany({
       include: {
         courses: {
+          where: { course: { isPublished: true } },
           orderBy: { order: "asc" },
           include: {
             course: {
