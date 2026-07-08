@@ -39,6 +39,7 @@ export default function ChatClient({ conversationId, currentUserId }: ChatClient
     const [error, setError] = useState<string | null>(null)
     const [viewportStyle, setViewportStyle] = useState<{ height?: string, top?: string }>({})
     const messagesEndRef = useRef<HTMLDivElement>(null)
+    const isFetchingRef = useRef(false)
 
     // Handle mobile viewport height for keyboard
     useEffect(() => {
@@ -76,21 +77,29 @@ export default function ChatClient({ conversationId, currentUserId }: ChatClient
         fetch(`/api/dm/conversations/${conversationId}/read`, { method: 'PUT' }).catch(() => {})
     }, [conversationId])
 
-    // Fetch messages on mount
-    useEffect(() => {
-        const fetchMessages = async () => {
-            try {
-                const res = await fetch(`/api/dm/conversations/${conversationId}/messages?page=1&limit=50`)
-                if (!res.ok) {
+    const fetchMessages = useCallback(async (isRefresh = false) => {
+        if (isFetchingRef.current) return
+        isFetchingRef.current = true
+
+        try {
+            const res = await fetch(`/api/dm/conversations/${conversationId}/messages?page=1&limit=50`)
+            if (!res.ok) {
+                if (!isRefresh) {
                     const errData = await res.json().catch(() => ({}))
                     setError(errData.error || 'Sohbet yüklenemedi')
                     setLoading(false)
-                    return
                 }
-                const data = await res.json()
-                const fetchedMessages: Message[] = data.data || []
-                setMessages(fetchedMessages)
+                return
+            }
+            const data = await res.json()
+            const fetchedMessages: Message[] = data.data || []
+            
+            setMessages((prev) => {
+                const tempMessages = prev.filter(m => m.id.startsWith('temp-'))
+                return [...fetchedMessages, ...tempMessages]
+            })
 
+            if (!isRefresh) {
                 // Extract other user from messages
                 const otherMsg = fetchedMessages.find(
                     (m: Message) => m.sender && m.sender.id !== currentUserId
@@ -128,18 +137,33 @@ export default function ChatClient({ conversationId, currentUserId }: ChatClient
                         // Silently ignore
                     }
                 }
+            }
 
-                // Mark as read (fire and forget)
-                markAsRead()
-            } catch {
-                setError('Sohbet yüklenirken bir hata oluştu')
-            } finally {
-                setLoading(false)
+            // Mark as read (fire and forget)
+            markAsRead()
+        } catch {
+            if (!isRefresh) setError('Sohbet yüklenirken bir hata oluştu')
+        } finally {
+            if (!isRefresh) setLoading(false)
+            isFetchingRef.current = false
+        }
+    }, [conversationId, currentUserId, markAsRead])
+
+    // Fetch messages on mount
+    useEffect(() => {
+        fetchMessages(false)
+    }, [fetchMessages])
+
+    // Refresh on visibility change
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                fetchMessages(true)
             }
         }
-
-        fetchMessages()
-    }, [conversationId, currentUserId, markAsRead])
+        document.addEventListener('visibilitychange', handleVisibilityChange)
+        return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }, [fetchMessages])
 
     // Pusher subscription
     useEffect(() => {
