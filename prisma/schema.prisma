@@ -636,14 +636,17 @@ model HomeCover {
 }
 
 // "Eğitmenlerimiz" satırı. Kayıt yoksa /home gerçek INSTRUCTOR kullanıcılarına düşer.
+// Panelden oluşturulan her kayıt, arkada gerçek bir User (role=INSTRUCTOR) hesabıyla eşleşir.
 model HomeInstructor {
   id        String   @id @default(cuid())
   name      String
   subtitle  String? // Örn: "Michelin Yıldızlı Şef" (yoksa yıldız/kurs bilgisi gösterilmez)
   imageUrl  String?
-  linkUrl   String? // Tıklanınca gidilecek yer (opsiyonel)
+  linkUrl   String? // Tıklanınca gidilecek yer (boşsa /instructor/{userId})
   order     Int      @default(0)
   isActive  Boolean  @default(true)
+  userId    String?  @unique // Bağlı gerçek eğitmen hesabı (User.id)
+  email     String? // Bağlı hesabın e-postası (panelde göstermek için, denormalize)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

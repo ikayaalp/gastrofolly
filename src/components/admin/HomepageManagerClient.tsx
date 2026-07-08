@@ -35,6 +35,10 @@ interface HInstructor {
   linkUrl: string | null
   order: number
   isActive: boolean
+  email?: string | null
+  userId?: string | null
+  // Sadece formda kullanılan geçici alan (sunucudan gelmez)
+  password?: string
 }
 
 interface Section {
@@ -298,6 +302,8 @@ function InstructorsTab({ initial }: { initial: HInstructor[] }) {
         linkUrl: "",
         order: prev.length,
         isActive: true,
+        email: "",
+        password: "",
       },
     ])
   }
@@ -307,13 +313,23 @@ function InstructorsTab({ initial }: { initial: HInstructor[] }) {
   }
 
   const save = async (item: HInstructor) => {
+    const isNew = item.id.startsWith("new-")
     if (!item.name.trim()) {
       alert("Eğitmen adı zorunludur.")
       return
     }
+    if (isNew) {
+      if (!item.email || !item.email.trim()) {
+        alert("E-posta zorunludur.")
+        return
+      }
+      if (!item.password || item.password.length < 6) {
+        alert("Şifre en az 6 karakter olmalıdır.")
+        return
+      }
+    }
     setSavingId(item.id)
     try {
-      const isNew = item.id.startsWith("new-")
       const res = await fetch("/api/admin/home-instructors", {
         method: isNew ? "POST" : "PUT",
         headers: { "Content-Type": "application/json" },
@@ -351,7 +367,8 @@ function InstructorsTab({ initial }: { initial: HInstructor[] }) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-sm text-gray-500">
-          "Eğitmenlerimiz" satırı. Hiç aktif eğitmen yoksa gerçek eğitmen hesapları gösterilir.
+          Eklediğin her eğitmen, giriş yapabilen gerçek bir hesap olur (role=INSTRUCTOR).
+          Anasayfadaki "Eğitmenlerimiz" satırında girdiğin sırayla, yıldız/puan olmadan listelenir.
         </p>
         <button
           onClick={addNew}
@@ -384,6 +401,54 @@ function InstructorsTab({ initial }: { initial: HInstructor[] }) {
                 placeholder="Örn: Şef Kemal Can"
               />
             </div>
+
+            {/* Gerçek hesap: e-posta + şifre */}
+            {item.id.startsWith("new-") ? (
+              <>
+                <div>
+                  <label className={labelCls}>E-posta * (giriş için)</label>
+                  <input
+                    type="email"
+                    className={inputCls}
+                    value={item.email || ""}
+                    onChange={(e) => update(item.id, "email", e.target.value)}
+                    placeholder="egitmen@ornek.com"
+                  />
+                </div>
+                <div>
+                  <label className={labelCls}>Şifre * (en az 6 karakter)</label>
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={item.password || ""}
+                    onChange={(e) => update(item.id, "password", e.target.value)}
+                    placeholder="Eğitmen sonra kendisi değiştirebilir"
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                <div>
+                  <label className={labelCls}>E-posta (giriş)</label>
+                  <input
+                    className={`${inputCls} opacity-60 cursor-not-allowed`}
+                    value={item.email || "—"}
+                    readOnly
+                  />
+                </div>
+                <div>
+                  <label className={labelCls}>Yeni Şifre (opsiyonel — sıfırlamak için)</label>
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={item.password || ""}
+                    onChange={(e) => update(item.id, "password", e.target.value)}
+                    placeholder="Boş bırak = değişmez"
+                  />
+                </div>
+              </>
+            )}
+
             <div>
               <label className={labelCls}>Alt Yazı</label>
               <input
