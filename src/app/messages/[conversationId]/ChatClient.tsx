@@ -99,10 +99,12 @@ export default function ChatClient({ conversationId, currentUserId }: ChatClient
                     if (!m.id.startsWith('temp-')) return false
                     
                     // Eğer bu temp mesaj, sunucudan dönen gerçek mesajlar arasında zaten varsa 
-                    // (içerik ve gönderen eşleşiyorsa), temp versiyonu kopyalamayarak çiftlenmeyi önle.
-                    const isAlreadyFetched = fetchedMessages.some(
-                        (fm) => fm.senderId === m.senderId && fm.content === m.content
-                    )
+                    // (içerik, gönderen eşleşiyorsa ve zaman olarak çok yakınsa), çiftlenmeyi önle.
+                    // Zaman kontrolü (30 saniye), kullanıcının aynı mesajı ("Tamam" vb.) tekrarlaması durumunda eski mesajla eşleşip silinmesini engeller.
+                    const isAlreadyFetched = fetchedMessages.some((fm) => {
+                        const timeDiff = Math.abs(new Date(fm.createdAt).getTime() - new Date(m.createdAt).getTime())
+                        return fm.senderId === m.senderId && fm.content === m.content && timeDiff < 30000
+                    })
                     return !isAlreadyFetched
                 })
                 return [...fetchedMessages, ...tempMessages]
