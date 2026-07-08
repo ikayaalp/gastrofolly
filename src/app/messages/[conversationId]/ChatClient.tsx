@@ -335,7 +335,7 @@ export default function ChatClient({ conversationId, currentUserId }: ChatClient
                     onChange={(e) => setInputText(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder="Bir mesaj yazın..."
-                    className="flex-1 bg-[#111] text-white rounded-full px-5 py-3 text-sm border border-gray-800 focus:border-orange-500 focus:outline-none placeholder-gray-500"
+                    className="flex-1 bg-[#111] text-white rounded-full px-5 py-3 text-base border border-gray-800 focus:border-orange-500 focus:outline-none placeholder-gray-500"
                     disabled={sending}
                 />
                 <button
