@@ -104,27 +104,27 @@ export default function InstructorRow({ title, instructors }: InstructorRowProps
             <Link
               key={instructor.id}
               href={`/instructor/${instructor.id}`}
-              className="flex flex-col items-center justify-center min-w-[120px] p-4 hover:bg-[#111] rounded-xl transition-colors shrink-0"
+              className="flex flex-col items-start min-w-[140px] md:min-w-[160px] p-2 hover:bg-[#111] rounded-xl transition-colors shrink-0 group"
             >
-              <div className="relative mb-3">
+              <div className="relative mb-3 w-full aspect-[3/4]">
                 {instructor.image ? (
                   <img
                     src={instructor.image}
                     alt={instructor.name}
-                    className="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover border-2 border-transparent group-hover:border-orange-500 transition-colors"
+                    className="w-full h-full rounded-xl object-cover border-2 border-transparent group-hover:border-orange-500 transition-colors"
                   />
                 ) : (
-                  <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-orange-600 to-orange-800 flex items-center justify-center border-2 border-transparent group-hover:border-orange-500 transition-colors">
-                    <span className="text-white text-xl md:text-2xl font-bold">
+                  <div className="w-full h-full rounded-xl bg-gradient-to-br from-orange-600 to-orange-800 flex items-center justify-center border-2 border-transparent group-hover:border-orange-500 transition-colors">
+                    <span className="text-white text-3xl md:text-4xl font-bold">
                       {instructor.name
                         ? instructor.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
-                        : <User className="h-8 w-8 text-white" />}
+                        : <User className="h-10 w-10 text-white" />}
                     </span>
                   </div>
                 )}
               </div>
-              <h3 className="text-white font-semibold text-center text-sm md:text-base line-clamp-1">{instructor.name}</h3>
-              <p className="text-gray-400 text-xs md:text-sm mt-1 text-center flex items-center justify-center gap-1">
+              <h3 className="text-white font-semibold text-left text-sm md:text-base line-clamp-1 w-full px-1">{instructor.name}</h3>
+              <p className="text-gray-400 text-xs md:text-sm mt-1 text-left flex items-center justify-start gap-1 w-full px-1">
                 <span className="text-orange-500">★</span> {instructor.rating} &bull; {instructor.courseCount} Kurs
               </p>
             </Link>

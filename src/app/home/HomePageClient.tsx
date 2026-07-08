@@ -245,9 +245,9 @@ export default function HomePageClient({
             showRanking={true}
           />
 
-          {/* Şeflerimiz */}
+          {/* Eğitmenlerimiz */}
           <InstructorRow 
-            title="Şeflerimiz" 
+            title="Eğitmenlerimiz" 
             instructors={instructors} 
           />
 

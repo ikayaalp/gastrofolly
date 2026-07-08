@@ -8,6 +8,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Logo from '../components/Logo';
 import courseService from '../api/courseService';
 import authService from '../api/authService';
+import chefService from '../api/chefService';
 import storyService from '../api/storyService';
 import Stories from '../components/Stories';
 
@@ -20,6 +21,7 @@ export default function HomeScreen({ navigation }) {
     const [categories, setCategories] = useState([]);
     const [userCourses, setUserCourses] = useState([]);
     const [stories, setStories] = useState([]);
+    const [instructors, setInstructors] = useState([]);
     const [loading, setLoading] = useState(true);
     const [userName, setUserName] = useState('');
     const [refreshing, setRefreshing] = useState(false);
@@ -57,6 +59,11 @@ export default function HomeScreen({ navigation }) {
             setPopularCourses([...courses].reverse().slice(0, 6));
             setRecentCourses(courses.slice(0, 6));
             setCategories(categoriesData);
+        }
+
+        const instructorsResult = await chefService.getAllInstructors();
+        if (instructorsResult.success) {
+            setInstructors(instructorsResult.data.instructors || []);
         }
 
         // Fetch Stories
@@ -460,6 +467,34 @@ export default function HomeScreen({ navigation }) {
                     </View>
                 )}
 
+                {/* Instructors Section */}
+                {instructors && instructors.length > 0 && (
+                    <View style={styles.section}>
+                        <Text style={styles.sectionTitle}>Eğitmenlerimiz</Text>
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
+                            {instructors.map((instructor, index) => (
+                                <TouchableOpacity
+                                    key={instructor.id || index}
+                                    style={styles.instructorCard}
+                                    onPress={() => navigation.navigate('InstructorProfile', {
+                                        instructorId: instructor.id,
+                                        instructorName: instructor.name,
+                                        instructorImage: instructor.image,
+                                    })}
+                                >
+                                    <Image
+                                        source={instructor.image ? { uri: instructor.image } : require('../../assets/icon.png')}
+                                        style={styles.instructorAvatar}
+                                        contentFit="cover"
+                                    />
+                                    <Text style={styles.instructorName} numberOfLines={1}>{instructor.name}</Text>
+                                    <Text style={styles.instructorMeta}>{instructor.courseCount} kurs</Text>
+                                </TouchableOpacity>
+                            ))}
+                        </ScrollView>
+                    </View>
+                )}
+
                 {/* Recent Courses Section */}
                 {recentCourses && recentCourses.length > 0 && (
                     <View style={styles.section}>
@@ -546,14 +581,37 @@ const styles = StyleSheet.create({
         marginTop: 24,
     },
     sectionTitle: {
-        color: 'white',
         fontSize: 20,
         fontWeight: 'bold',
-        paddingHorizontal: 16,
-        marginBottom: 16,
+        color: '#fff',
+        marginLeft: 20,
+        marginBottom: 15,
+    },
+    instructorCard: {
+        alignItems: 'center',
+        marginRight: 16,
+        width: 110
+    },
+    instructorAvatar: {
+        width: 100,
+        height: 140,
+        borderRadius: 12,
+        backgroundColor: '#1a1a1a'
+    },
+    instructorName: {
+        color: 'white',
+        fontSize: 13,
+        fontWeight: '600',
+        marginTop: 6,
+        textAlign: 'center'
+    },
+    instructorMeta: {
+        color: '#888',
+        fontSize: 11,
+        marginTop: 2
     },
     horizontalScroll: {
-        paddingLeft: 16,
+        paddingLeft: 20,
     },
     courseCard: {
         width: 220,

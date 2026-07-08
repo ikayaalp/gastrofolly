@@ -38,6 +38,19 @@ const chefService = {
             };
         }
     },
+    // Get all instructors
+    getAllInstructors: async () => {
+        try {
+            const response = await api.get('/api/instructors');
+            return { success: true, data: response.data };
+        } catch (error) {
+            console.error('All Instructors error:', error);
+            return {
+                success: false,
+                error: error.response?.data?.message || 'Şefler yüklenemedi',
+            };
+        }
+    },
 };
 
 export default chefService;
