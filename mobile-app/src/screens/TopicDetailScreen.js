@@ -835,28 +835,6 @@ export default function TopicDetailScreen({ route, navigation }) {
         </View>
     );
 
-    const handleDeleteTopic = () => {
-        showAlert(
-            'Gönderiyi Sil',
-            'Bu gönderiyi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.',
-            [
-                { text: 'İptal', style: 'cancel' },
-                {
-                    text: 'Sil',
-                    onPress: async () => {
-                        const result = await forumService.deleteTopic(topicId);
-                        if (result.success) {
-                            navigation.goBack();
-                        } else {
-                            showAlert('Hata', result.error || 'Gönderi silinemedi', [{ text: 'Tamam' }], 'error');
-                        }
-                    },
-                    style: 'destructive'
-                }
-            ],
-            'warning'
-        );
-    };
 
     const handleEditCommentSubmit = async (commentId) => {
         if (!editCommentText.trim()) return;
