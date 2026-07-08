@@ -37,7 +37,7 @@ export default function ChatClient({ conversationId, currentUserId }: ChatClient
     const [sending, setSending] = useState(false)
     const [otherUser, setOtherUser] = useState<OtherUser | null>(null)
     const [error, setError] = useState<string | null>(null)
-    const [viewportHeight, setViewportHeight] = useState<number | null>(null)
+    const [viewportStyle, setViewportStyle] = useState<{ height?: string, top?: string }>({})
     const messagesEndRef = useRef<HTMLDivElement>(null)
 
     // Handle mobile viewport height for keyboard
@@ -45,12 +45,22 @@ export default function ChatClient({ conversationId, currentUserId }: ChatClient
         if (typeof window === 'undefined' || !window.visualViewport) return
 
         const updateViewport = () => {
-            setViewportHeight(window.visualViewport?.height || window.innerHeight)
+            const vv = window.visualViewport
+            if (vv) {
+                setViewportStyle({
+                    height: `${vv.height}px`,
+                    top: `${vv.offsetTop}px`
+                })
+            }
         }
 
         updateViewport()
         window.visualViewport.addEventListener('resize', updateViewport)
-        return () => window.visualViewport?.removeEventListener('resize', updateViewport)
+        window.visualViewport.addEventListener('scroll', updateViewport)
+        return () => {
+            window.visualViewport?.removeEventListener('resize', updateViewport)
+            window.visualViewport?.removeEventListener('scroll', updateViewport)
+        }
     }, [])
 
     // Prevent body scroll when chat is open
@@ -231,8 +241,8 @@ export default function ChatClient({ conversationId, currentUserId }: ChatClient
 
     return (
         <div 
-            className="fixed inset-0 z-[100] flex flex-col bg-black h-[100dvh]"
-            style={viewportHeight ? { height: `${viewportHeight}px` } : undefined}
+            className="fixed inset-x-0 top-0 z-[100] flex flex-col bg-black h-[100dvh]"
+            style={viewportStyle.height ? viewportStyle : undefined}
         >
             {/* Header */}
             <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-800 bg-[#0a0a0a]">
