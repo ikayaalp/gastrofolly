@@ -422,14 +422,14 @@ export default function TopicDetailClient({ session, topic: initialTopic, catego
 
               <div className="flex items-center space-x-3 text-[#71767b] text-xs font-bold pt-1 border-t border-gray-800/50 mt-2">
                 <div className="flex items-center">
-                  <button onClick={handleLike} className={`flex items-center space-x-1.5 pl-3 pr-1 py-2 rounded-l-full transition-all duration-200 ${isLiked ? 'bg-orange-500/10 text-orange-500' : 'hover:bg-white/5 text-[#71767b] hover:text-[#e7e9ea]'}`}>
+                  <button onClick={handleLike} className={`flex items-center space-x-1.5 px-3 py-2 rounded-full transition-all duration-200 ${isLiked ? 'text-orange-500' : 'text-[#71767b] hover:text-[#e7e9ea]'}`}>
                     <ThumbsUp className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
-                  </button>
-                  <button
-                    onClick={() => { if (likeCount > 0) setLikersModal({ isOpen: true, type: 'topic', targetId: topic.id, likeCount }); }}
-                    className={`pl-1 pr-3 py-2 rounded-r-full transition-all duration-200 ${isLiked ? 'bg-orange-500/10 text-orange-500' : 'hover:bg-white/5 text-[#71767b] hover:text-[#e7e9ea]'} ${likeCount > 0 ? 'hover:underline cursor-pointer' : ''}`}
-                  >
-                    <span className="text-sm">{likeCount}</span>
+                    <span
+                      onClick={(e) => { if (likeCount > 0) { e.stopPropagation(); setLikersModal({ isOpen: true, type: 'topic', targetId: topic.id, likeCount }); } }}
+                      className={`text-sm ${likeCount > 0 ? 'hover:underline cursor-pointer' : ''}`}
+                    >
+                      {likeCount}
+                    </span>
                   </button>
                 </div>
                 <div className="flex items-center space-x-1.5 px-3 py-2 hover:bg-white/5 rounded-full transition-colors cursor-pointer text-[#71767b] hover:text-[#e7e9ea]">
@@ -539,12 +539,12 @@ export default function TopicDetailClient({ session, topic: initialTopic, catego
                         )}
                       </div>
                       {comment.replies && comment.replies.length > 0 && (
-                        <div className="mt-4 space-y-4 border-l border-gray-800/50 ml-2 pl-4">
+                        <div className="mt-4 space-y-4">
                           {comment.replies.map(reply => (
                             <div key={reply.id} className="flex space-x-2 relative">
                               <div className="flex-shrink-0">
                                 <Link href={`/chef-sosyal/profil/${reply.author.id}`}>
-                                  {reply.author.image ? <img src={getOptimizedMediaUrl(reply.author.image, 'IMAGE')} className="w-6 h-6 rounded-full object-cover hover:opacity-80 transition-opacity" /> : <div className="w-6 h-6 bg-gray-700 rounded-full flex items-center justify-center hover:bg-gray-600 transition-colors"><User className="h-3 w-3 text-gray-400" /></div>}
+                                  {reply.author.image ? <img src={getOptimizedMediaUrl(reply.author.image, 'IMAGE')} className="w-8 h-8 rounded-full object-cover hover:opacity-80 transition-opacity" /> : <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center hover:bg-gray-600 transition-colors"><User className="h-4 w-4 text-gray-400" /></div>}
                                 </Link>
                               </div>
                               <div className="flex-1">
@@ -568,7 +568,9 @@ export default function TopicDetailClient({ session, topic: initialTopic, catego
                                     </div>
                                   </div>
                                 ) : (
-                                  <div className="text-sm text-[#e7e9ea] mb-2 whitespace-pre-wrap">{renderCommentContent(reply.content)}</div>
+                                  <div className="text-sm text-[#e7e9ea] mb-2 whitespace-pre-wrap">
+                                    <span className="text-orange-500 font-medium">@{comment.author.name?.replace(/\s+/g, '')}</span> {renderCommentContent(reply.content)}
+                                  </div>
                                 )}
 
                                 <div className="flex items-center space-x-4">

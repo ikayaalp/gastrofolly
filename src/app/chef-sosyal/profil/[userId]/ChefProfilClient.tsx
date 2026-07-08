@@ -8,7 +8,7 @@ import {
     ArrowLeft, User, Calendar, Heart, MessageCircle,
     Users, UserPlus, UserCheck, Edit3, ChefHat,
     Home, BookOpen, ThumbsUp, Bookmark, Loader2,
-    Grid3X3, List, MapPin
+    MapPin
 } from "lucide-react"
 import TopicCard from "@/components/forum/TopicCard"
 import FollowListModal from "@/components/forum/FollowListModal"
@@ -300,7 +300,7 @@ export default function ChefProfilClient({
             {/* Content */}
             <div className="max-w-[700px] mx-auto">
                 {/* Cover / Banner */}
-                <div className="relative h-44 sm:h-52 mt-14 overflow-hidden">
+                <div className="relative h-40 mt-14 overflow-hidden">
                     {profile.coverImage ? (
                         <Image
                             src={profile.coverImage}
@@ -310,21 +310,18 @@ export default function ChefProfilClient({
                             priority
                         />
                     ) : (
-                        <div className="absolute inset-0 bg-gradient-to-br from-orange-700 via-orange-900 to-black"></div>
+                        <div className="absolute inset-0 bg-[#1a1a1a] flex items-center justify-center">
+                            <ChefHat className="h-12 w-12 text-gray-700" />
+                        </div>
                     )}
-                    <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNCI+PHBhdGggZD0iTTM2IDM0djZoLTZWMzRoNnptLTYtNnY2SDI0VjI4aDZ6bTEyIDZ2Nmg2VjM0aC02em0tMTIgMHY2aDZWNDBoLTZ6bS02IDZ2Nmg2VjQwSDI0eiIvPjwvZz48L2c+PC9zdmc+')] opacity-50"></div>
-                    {/* Decorative cooking elements */}
-                    <div className="absolute bottom-4 right-6 opacity-10">
-                        <ChefHat className="h-20 w-20 text-white" />
-                    </div>
                 </div>
 
                 {/* Profile Info Section */}
                 <div className="relative px-4 pb-4">
                     {/* Avatar */}
-                    <div className="relative -mt-16 mb-3 flex justify-between items-end">
+                    <div className="relative pt-4 mb-3 flex flex-row items-center justify-between">
                         <div className="relative">
-                            <div className="w-[120px] h-[120px] rounded-full border-4 border-black overflow-hidden bg-gray-900">
+                            <div className="w-24 h-24 rounded-full border-4 border-black overflow-hidden bg-gray-900">
                                 {profile.image ? (
                                     <img
                                         src={profile.image}
@@ -333,7 +330,7 @@ export default function ChefProfilClient({
                                     />
                                 ) : (
                                     <div className="w-full h-full bg-gradient-to-br from-orange-600 to-orange-800 flex items-center justify-center">
-                                        <span className="text-4xl font-bold text-white">
+                                        <span className="text-3xl font-bold text-white">
                                             {profile.name?.charAt(0)?.toUpperCase() || 'U'}
                                         </span>
                                     </div>
@@ -356,17 +353,16 @@ export default function ChefProfilClient({
                                     onClick={handleFollow}
                                     disabled={followLoading}
                                     className={`flex items-center gap-2 px-6 py-2 rounded-full text-sm font-bold transition-all duration-300 transform active:scale-95 ${isFollowing
-                                        ? 'bg-transparent border border-gray-600 text-white hover:border-red-500/50 hover:text-red-400 group'
-                                        : 'bg-white text-black hover:bg-gray-200'
+                                        ? 'bg-transparent border border-orange-600 text-orange-500 hover:bg-orange-600/10'
+                                        : 'bg-orange-600 hover:bg-orange-700 text-white'
                                         }`}
                                 >
                                     {followLoading ? (
                                         <Loader2 className="h-4 w-4 animate-spin" />
                                     ) : isFollowing ? (
                                         <>
-                                            <UserCheck className="h-4 w-4 group-hover:hidden" />
-                                            <span className="group-hover:hidden">Takip Ediliyor</span>
-                                            <span className="hidden group-hover:inline">Takipten Çık</span>
+                                            <UserCheck className="h-4 w-4" />
+                                            <span>Takip Ediliyor</span>
                                         </>
                                     ) : (
                                         <>
@@ -389,15 +385,12 @@ export default function ChefProfilClient({
                                 <button
                                     onClick={handleMessageClick}
                                     disabled={messageLoading}
-                                    className="flex items-center gap-2 px-5 py-2 rounded-full border border-gray-700 text-white text-sm font-bold hover:bg-gray-800 transition-colors disabled:opacity-50"
+                                    className="flex items-center justify-center w-9 h-9 rounded-full border border-gray-600 text-white hover:bg-gray-800 transition-colors disabled:opacity-50"
                                 >
                                     {messageLoading ? (
                                         <Loader2 className="h-4 w-4 animate-spin" />
                                     ) : (
-                                        <>
-                                            <MessageCircle className="h-4 w-4" />
-                                            Mesaj Gönder
-                                        </>
+                                        <MessageCircle className="h-4 w-4" />
                                     )}
                                 </button>
                             )}
@@ -409,7 +402,6 @@ export default function ChefProfilClient({
                         <h2 className="text-xl font-extrabold text-white">
                             {profile.name || 'Anonim'}
                         </h2>
-                        <p className="text-gray-500 text-sm mt-0.5">@{profile.name?.toLowerCase().replace(/\s+/g, '') || 'user'}</p>
                     </div>
 
                     {/* Bio */}
@@ -493,21 +485,6 @@ export default function ChefProfilClient({
                     </div>
                 </div>
 
-                {/* Stat Cards */}
-                <div className="grid grid-cols-3 gap-px bg-gray-800/50 border-y border-gray-800">
-                    <div className="bg-black py-3 text-center">
-                        <p className="text-lg font-bold text-white">{profile.topicsCount}</p>
-                        <p className="text-xs text-gray-500">Gönderi</p>
-                    </div>
-                    <div className="bg-black py-3 text-center">
-                        <p className="text-lg font-bold text-white">{profile.totalLikes}</p>
-                        <p className="text-xs text-gray-500">Beğeni</p>
-                    </div>
-                    <div className="bg-black py-3 text-center">
-                        <p className="text-lg font-bold text-white">{followersCount}</p>
-                        <p className="text-xs text-gray-500">Takipçi</p>
-                    </div>
-                </div>
 
                 {/* Tab Header */}
                 <div className="border-b border-gray-800">

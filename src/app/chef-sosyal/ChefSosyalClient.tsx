@@ -683,10 +683,10 @@ export default function ChefSosyalClient({
           )}
 
           {/* Filter Tabs */}
-          <div className="flex items-center space-x-4 mb-4 px-2 sm:px-0 overflow-x-auto scrollbar-hide touch-pan-x">
+          <div className="flex items-center space-x-2 mb-4 px-2 sm:px-0 overflow-x-auto scrollbar-hide touch-pan-x">
             <button
               onClick={() => router.push('/chef-sosyal')}
-              className={`flex items-center px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${sortBy === 'newest' && !searchTerm && selectedCategory === 'all'
+              className={`flex items-center px-3 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap ${sortBy === 'newest' && !searchTerm && selectedCategory === 'all'
                 ? 'bg-orange-600 text-white shadow-lg shadow-orange-900/20'
                 : 'bg-[#1a1a1a] text-gray-400 hover:bg-[#252525] border border-gray-800'
                 }`}
@@ -708,23 +708,19 @@ export default function ChefSosyalClient({
               <span>Kaydedilenler</span>
             </button>
 
-            <div className="h-6 w-px bg-gray-800 mx-2 hidden sm:block md:hidden shrink-0"></div>
-
-            <div className="flex items-center space-x-2 md:hidden shrink-0">
-              {trendingHashtags.map((hashtag) => (
-                <button
-                  key={hashtag.id}
-                  onClick={() => handleHashtagClick(hashtag.name)}
-                  className={`flex items-center px-3 py-1.5 rounded-full border text-xs font-medium transition-colors whitespace-nowrap ${searchTerm === '#' + hashtag.name
-                    ? 'bg-orange-600 border-orange-600 text-white shadow-lg shadow-orange-900/20'
-                    : 'bg-[#1a1a1a] border-gray-800 text-gray-400 hover:text-orange-500 hover:border-orange-500/50'
-                    }`}
-                >
-                  <span className={`${searchTerm === '#' + hashtag.name ? 'text-white' : 'text-orange-500'} mr-1`}>#</span>
-                  {hashtag.name}
-                </button>
-              ))}
-            </div>
+            {trendingHashtags.map((hashtag) => (
+              <button
+                key={hashtag.id}
+                onClick={() => handleHashtagClick(hashtag.name)}
+                className={`flex items-center px-3 py-1.5 rounded-full border text-xs font-medium transition-colors whitespace-nowrap ${searchTerm === '#' + hashtag.name
+                  ? 'bg-orange-600 border-orange-600 text-white shadow-lg shadow-orange-900/20'
+                  : 'bg-[#1a1a1a] border-gray-800 text-gray-400 hover:text-orange-500 hover:border-orange-500/50'
+                  }`}
+              >
+                <span className={`${searchTerm === '#' + hashtag.name ? 'text-white' : 'text-orange-500'} mr-1`}>#</span>
+                {hashtag.name}
+              </button>
+            ))}
           </div>
 
           {/* Posts Feed */}

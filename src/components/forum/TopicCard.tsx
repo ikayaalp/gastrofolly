@@ -108,7 +108,7 @@ const TopicCard = ({ topic, isLiked, onLike, isSaved, onSave, currentUserId }: T
     return (
         <>
             <div className="block">
-                <div className="flex bg-black border border-gray-800 rounded-md hover:border-gray-700 transition-colors overflow-hidden mb-3 p-3">
+                <div className="flex bg-[#0a0a0a] border-b-[8px] border-black rounded-none transition-colors overflow-hidden mb-0 p-3">
 
                     {/* Left: Avatar Column */}
                     <div className="flex-shrink-0 mr-3">
