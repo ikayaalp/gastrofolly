@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useState, useEffect } from "react"
-import { ChefHat, ArrowLeft, MessageCircle, ThumbsUp, Clock, User, Search, Bell, Home, BookOpen, Users, Trash2, Share2, MoreHorizontal, Play, Image as ImageIcon } from "lucide-react"
+import { ChefHat, ArrowLeft, MessageCircle, ThumbsUp, Clock, User, Search, Bell, Home, BookOpen, Users, Trash2, Share2, MoreHorizontal, Play, Image as ImageIcon, Pencil } from "lucide-react"
 import UserDropdown from "@/components/ui/UserDropdown"
 import { useRouter } from "next/navigation"
 import LeftSidebar from "@/components/forum/LeftSidebar"
@@ -10,6 +10,7 @@ import RightSidebar from "@/components/forum/RightSidebar"
 import HashtagText from "@/components/forum/HashtagText"
 import LikersModal from "@/components/forum/LikersModal"
 import ConfirmationModal from "@/components/ui/ConfirmationModal"
+import EditTopicModal from "@/components/forum/EditTopicModal"
 import { getOptimizedMediaUrl } from "@/lib/utils"
 
 // Helper function to colorize @culi mentions
@@ -95,7 +96,8 @@ interface TopicDetailClientProps {
   initialLikedComments?: string[]
 }
 
-export default function TopicDetailClient({ session, topic, categories, initialIsLiked = false, initialLikedComments = [] }: TopicDetailClientProps) {
+export default function TopicDetailClient({ session, topic: initialTopic, categories, initialIsLiked = false, initialLikedComments = [] }: TopicDetailClientProps) {
+  const [topic, setTopic] = useState(initialTopic)
   const [newComment, setNewComment] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [comments, setComments] = useState(topic.posts)
@@ -106,6 +108,10 @@ export default function TopicDetailClient({ session, topic, categories, initialI
   const [likedComments, setLikedComments] = useState<Set<string>>(new Set(initialLikedComments))
   const [deleting, setDeleting] = useState(false)
   const [isLightboxOpen, setIsLightboxOpen] = useState(false)
+  const [editTopicModal, setEditTopicModal] = useState(false)
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null)
+  const [editCommentText, setEditCommentText] = useState('')
+  const [editSubmitting, setEditSubmitting] = useState(false)
   const router = useRouter()
 
   // Confirmation Modal State
@@ -257,6 +263,36 @@ export default function TopicDetailClient({ session, topic, categories, initialI
     }
   }
 
+  const handleEditCommentSubmit = async (commentId: string) => {
+    if (!editCommentText.trim()) return
+    setEditSubmitting(true)
+    try {
+      const response = await fetch(`/api/forum/posts/${commentId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: editCommentText })
+      })
+
+      if (response.ok) {
+        setComments(prev => prev.map(c => {
+          if (c.id === commentId) return { ...c, content: editCommentText }
+          if (c.replies) {
+            c.replies = c.replies.map(r => r.id === commentId ? { ...r, content: editCommentText } : r)
+          }
+          return c
+        }))
+        setEditingCommentId(null)
+      } else {
+        const data = await response.json()
+        setAlertModal({ isOpen: true, title: 'Hata', message: data.error || 'Yorum güncellenemedi', type: 'error' })
+      }
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setEditSubmitting(false)
+    }
+  }
+
   const handleReplyTo = (commentId: string, authorName: string) => {
     setReplyingTo(commentId)
     setReplyingToName(authorName)
@@ -400,10 +436,16 @@ export default function TopicDetailClient({ session, topic, categories, initialI
                   <span className="text-sm">{comments.length} Yorum</span>
                 </div>
                 {session?.user && topic.author.id === session.user.id && (
-                  <button onClick={handleDeleteTopicClick} className="flex items-center space-x-1 px-3 py-2 hover:bg-gray-800 rounded-full text-red-500 hover:text-red-400">
-                    <Trash2 className="h-4 w-4" />
-                    <span className="hidden sm:inline">Sil</span>
-                  </button>
+                  <div className="flex items-center space-x-2">
+                    <button onClick={() => setEditTopicModal(true)} className="flex items-center space-x-1 px-3 py-2 hover:bg-gray-800 rounded-full text-blue-500 hover:text-blue-400">
+                      <Pencil className="h-4 w-4" />
+                      <span className="hidden sm:inline">Düzenle</span>
+                    </button>
+                    <button onClick={handleDeleteTopicClick} className="flex items-center space-x-1 px-3 py-2 hover:bg-gray-800 rounded-full text-red-500 hover:text-red-400">
+                      <Trash2 className="h-4 w-4" />
+                      <span className="hidden sm:inline">Sil</span>
+                    </button>
+                  </div>
                 )}
               </div>
 
@@ -463,7 +505,24 @@ export default function TopicDetailClient({ session, topic, categories, initialI
                         <span className="text-[#71767b]">•</span>
                         <span className="text-[#71767b]">{formatTimeAgo(comment.createdAt.toString())}</span>
                       </div>
-                      <div className="text-sm text-[#e7e9ea] mb-2 whitespace-pre-wrap">{renderCommentContent(comment.content)}</div>
+                      
+                      {editingCommentId === comment.id ? (
+                        <div className="mt-2 mb-3">
+                          <textarea
+                            value={editCommentText}
+                            onChange={(e) => setEditCommentText(e.target.value)}
+                            className="w-full bg-[#1a1a1a] border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-orange-500 resize-none text-sm"
+                            rows={3}
+                          />
+                          <div className="flex justify-end gap-2 mt-2">
+                            <button onClick={() => setEditingCommentId(null)} className="px-3 py-1 text-xs text-gray-400 hover:text-white transition-colors">İptal</button>
+                            <button onClick={() => handleEditCommentSubmit(comment.id)} disabled={editSubmitting || !editCommentText.trim()} className="px-3 py-1 text-xs bg-orange-600 text-white rounded hover:bg-orange-700 transition-colors disabled:opacity-50">Kaydet</button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-sm text-[#e7e9ea] mb-2 whitespace-pre-wrap">{renderCommentContent(comment.content)}</div>
+                      )}
+
                       <div className="flex items-center space-x-4">
                         <button onClick={() => handleCommentLike(comment.id)} className={`flex items-center space-x-1 text-xs font-bold ${likedComments.has(comment.id) ? 'text-orange-500' : 'text-gray-500 hover:text-gray-300'}`}><ThumbsUp className={`h-3 w-3 ${likedComments.has(comment.id) ? 'fill-current' : ''}`} /></button>
                         <button
@@ -471,7 +530,12 @@ export default function TopicDetailClient({ session, topic, categories, initialI
                           className={`text-xs font-bold ${likedComments.has(comment.id) ? 'text-orange-500' : 'text-gray-500 hover:text-gray-300'} ${(comment.likeCount || 0) > 0 ? 'hover:underline cursor-pointer' : ''}`}
                         ><span>{comment.likeCount || 0}</span></button>
                         <button onClick={() => handleReplyTo(comment.id, comment.author.name || 'anonim')} className={`flex items-center space-x-1 text-xs font-bold ${replyingTo === comment.id ? 'text-orange-500' : 'text-gray-500 hover:text-gray-300'}`}><MessageCircle className="h-3 w-3" /><span>Yanıtla</span></button>
-                        {session?.user && comment.author.id === session.user.id && <button onClick={() => handleDeleteCommentClick(comment.id)} className="text-xs font-bold text-red-500 hover:text-red-400">Sil</button>}
+                        {session?.user && comment.author.id === session.user.id && (
+                          <>
+                            <button onClick={() => { setEditingCommentId(comment.id); setEditCommentText(comment.content); }} className="text-xs font-bold text-blue-500 hover:text-blue-400">Düzenle</button>
+                            <button onClick={() => handleDeleteCommentClick(comment.id)} className="text-xs font-bold text-red-500 hover:text-red-400">Sil</button>
+                          </>
+                        )}
                       </div>
                       {comment.replies && comment.replies.length > 0 && (
                         <div className="mt-4 space-y-4 border-l border-gray-800/50 ml-2 pl-4">
@@ -488,7 +552,24 @@ export default function TopicDetailClient({ session, topic, categories, initialI
                                   <span className="text-[#71767b]">•</span>
                                   <span className="text-[#71767b]">{formatTimeAgo(reply.createdAt.toString())}</span>
                                 </div>
-                                <div className="text-sm text-[#e7e9ea] mb-2 whitespace-pre-wrap">{renderCommentContent(reply.content)}</div>
+                                
+                                {editingCommentId === reply.id ? (
+                                  <div className="mt-2 mb-3">
+                                    <textarea
+                                      value={editCommentText}
+                                      onChange={(e) => setEditCommentText(e.target.value)}
+                                      className="w-full bg-[#1a1a1a] border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-orange-500 resize-none text-sm"
+                                      rows={3}
+                                    />
+                                    <div className="flex justify-end gap-2 mt-2">
+                                      <button onClick={() => setEditingCommentId(null)} className="px-3 py-1 text-xs text-gray-400 hover:text-white transition-colors">İptal</button>
+                                      <button onClick={() => handleEditCommentSubmit(reply.id)} disabled={editSubmitting || !editCommentText.trim()} className="px-3 py-1 text-xs bg-orange-600 text-white rounded hover:bg-orange-700 transition-colors disabled:opacity-50">Kaydet</button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="text-sm text-[#e7e9ea] mb-2 whitespace-pre-wrap">{renderCommentContent(reply.content)}</div>
+                                )}
+
                                 <div className="flex items-center space-x-4">
                                   <button onClick={() => handleCommentLike(reply.id)} className={`flex items-center space-x-1 text-xs font-bold ${likedComments.has(reply.id) ? 'text-orange-500' : 'text-gray-500 hover:text-gray-300'}`}><ThumbsUp className={`h-3 w-3 ${likedComments.has(reply.id) ? 'fill-current' : ''}`} /></button>
                                   <button
@@ -496,7 +577,12 @@ export default function TopicDetailClient({ session, topic, categories, initialI
                                     className={`text-xs font-bold ${likedComments.has(reply.id) ? 'text-orange-500' : 'text-gray-500 hover:text-gray-300'} ${(reply.likeCount || 0) > 0 ? 'hover:underline cursor-pointer' : ''}`}
                                   ><span>{reply.likeCount || 0}</span></button>
                                   <button onClick={() => handleReplyTo(comment.id, reply.author.name || 'anonim')} className="flex items-center space-x-1 text-xs font-bold text-gray-500 hover:text-gray-300"><MessageCircle className="h-3 w-3" /><span>Yanıtla</span></button>
-                                  {session?.user && reply.author.id === session.user.id && <button onClick={() => handleDeleteCommentClick(reply.id)} className="text-xs font-bold text-red-500 hover:text-red-400">Sil</button>}
+                                  {session?.user && reply.author.id === session.user.id && (
+                                    <>
+                                      <button onClick={() => { setEditingCommentId(reply.id); setEditCommentText(reply.content); }} className="text-xs font-bold text-blue-500 hover:text-blue-400">Düzenle</button>
+                                      <button onClick={() => handleDeleteCommentClick(reply.id)} className="text-xs font-bold text-red-500 hover:text-red-400">Sil</button>
+                                    </>
+                                  )}
                                 </div>
                               </div>
                             </div>
@@ -568,6 +654,19 @@ export default function TopicDetailClient({ session, topic, categories, initialI
         type={likersModal.type}
         targetId={likersModal.targetId}
         likeCount={likersModal.likeCount}
+      />
+
+      {/* Edit Topic Modal */}
+      <EditTopicModal
+        isOpen={editTopicModal}
+        onClose={() => setEditTopicModal(false)}
+        topicId={topic.id}
+        initialTitle={topic.title}
+        initialContent={topic.content}
+        initialCategoryId={topic.categoryId}
+        onTopicUpdated={(updatedTopic) => {
+          setTopic(prev => prev ? { ...prev, ...updatedTopic } : prev)
+        }}
       />
     </div>
   )

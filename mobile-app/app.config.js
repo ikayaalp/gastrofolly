@@ -68,7 +68,7 @@ export default {
         },
         "android": {
             "package": "com.chef2.app",
-            "versionCode": 6,
+            "versionCode": 7,
             "adaptiveIcon": {
                 "foregroundImage": "./assets/adaptive-icon.png",
                 "backgroundColor": "#000000"

@@ -37,7 +37,12 @@ import {
     ChevronsRight,
     ChevronsLeft,
     Flame,
-    Hash
+    Hash,
+    ChevronDown,
+    Heart,
+    FileText,
+    UserCheck,
+    Settings,
 } from 'lucide-react-native';
 import { Video, ResizeMode } from 'expo-av';
 import * as ImagePicker from 'expo-image-picker';
@@ -78,6 +83,7 @@ export default function SocialScreen({ navigation }) {
     const [submitting, setSubmitting] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [showLoginModal, setShowLoginModal] = useState(false);
+    const [showProfileDropdown, setShowProfileDropdown] = useState(false);
     const [alertVisible, setAlertVisible] = useState(false);
     const [alertConfig, setAlertConfig] = useState({
         title: '',
@@ -601,6 +607,7 @@ export default function SocialScreen({ navigation }) {
             onBlock={handleBlock}
             onVotePoll={handleVotePoll}
             onShowLikers={handleShowLikers}
+            onAuthorPress={(authorId) => navigation.navigate('ChefSocialProfile', { userId: authorId })}
         />
     ), [playingVideoId, videoProgress, videoDurations, likedTopics, savedTopics, handleLike, formatTimeAgo, navigation, handleShowLikers]);
 
@@ -615,25 +622,129 @@ export default function SocialScreen({ navigation }) {
     return (
         <View style={styles.container}>
             {/* Header */}
-            <View style={styles.header}>
+            <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
                 <View>
                     <Text style={styles.headerTitle}>Chef Sosyal</Text>
                     <Text style={styles.headerSubtitle}>Gastronomi tutkunlarının buluşma noktası</Text>
                 </View>
-                {searchTerm ? (
-                    <TouchableOpacity
-                        style={styles.clearSearchButton}
-                        onPress={() => setSearchTerm('')}
-                    >
-                        <Text style={styles.clearSearchText}>Aramayı Temizle ({searchTerm})</Text>
-                        <X size={14} color="#ef4444" />
-                    </TouchableOpacity>
-                ) : null}
+                <View style={styles.headerRight}>
+                    {searchTerm ? (
+                        <TouchableOpacity
+                            style={styles.clearSearchButton}
+                            onPress={() => setSearchTerm('')}
+                        >
+                            <Text style={styles.clearSearchText}>Aramayı Temizle</Text>
+                            <X size={14} color="#ef4444" />
+                        </TouchableOpacity>
+                    ) : null}
+                    {isLoggedIn && (
+                        <TouchableOpacity
+                            style={styles.profileAvatarBtn}
+                            onPress={() => setShowProfileDropdown(true)}
+                            activeOpacity={0.8}
+                        >
+                            {currentUser?.image ? (
+                                <Image
+                                    source={{ uri: currentUser.image }}
+                                    style={styles.profileAvatarImg}
+                                />
+                            ) : (
+                                <Text style={styles.profileAvatarText}>
+                                    {(currentUser?.name || 'U')[0].toUpperCase()}
+                                </Text>
+                            )}
+                            <ChevronDown size={12} color="#9ca3af" style={{ marginLeft: 2 }} />
+                        </TouchableOpacity>
+                    )}
+                </View>
             </View>
 
+            {/* Profile Dropdown Modal */}
+            <Modal
+                visible={showProfileDropdown}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setShowProfileDropdown(false)}
+            >
+                <TouchableWithoutFeedback onPress={() => setShowProfileDropdown(false)}>
+                    <View style={styles.dropdownOverlay}>
+                        <TouchableWithoutFeedback>
+                            <View style={[styles.dropdownContainer, { top: insets.top + 56 }]}>
+                                {/* User info header */}
+                                {currentUser && (
+                                    <View style={styles.dropdownHeader}>
+                                        <View style={styles.dropdownAvatar}>
+                                            {currentUser.image ? (
+                                                <Image
+                                                    source={{ uri: currentUser.image }}
+                                                    style={styles.dropdownAvatarImg}
+                                                />
+                                            ) : (
+                                                <Text style={styles.dropdownAvatarText}>
+                                                    {(currentUser.name || 'U')[0].toUpperCase()}
+                                                </Text>
+                                            )}
+                                        </View>
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={styles.dropdownUserName} numberOfLines={1}>{currentUser.name}</Text>
+                                            <Text style={styles.dropdownUserEmail} numberOfLines={1}>{currentUser.email}</Text>
+                                        </View>
+                                    </View>
+                                )}
 
+                                {/* Menu Items */}
+                                <TouchableOpacity
+                                    style={styles.dropdownItem}
+                                    onPress={() => {
+                                        setShowProfileDropdown(false);
+                                        if (currentUser?.id) navigation.navigate('ChefSocialProfile', { userId: currentUser.id });
+                                    }}
+                                >
+                                    <User size={18} color="#9ca3af" />
+                                    <Text style={styles.dropdownItemText}>Profilim</Text>
+                                </TouchableOpacity>
 
-            {/* Filter Tabs (like web) */}
+                                <TouchableOpacity
+                                    style={styles.dropdownItem}
+                                    onPress={() => {
+                                        setShowProfileDropdown(false);
+                                        // Show only saved topics by switching filter
+                                        setSortBy('saved');
+                                    }}
+                                >
+                                    <Bookmark size={18} color="#9ca3af" />
+                                    <Text style={styles.dropdownItemText}>Kaydettiklerim</Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity
+                                    style={styles.dropdownItem}
+                                    onPress={() => {
+                                        setShowProfileDropdown(false);
+                                        setSortBy('liked');
+                                    }}
+                                >
+                                    <Heart size={18} color="#9ca3af" />
+                                    <Text style={styles.dropdownItemText}>Beğendiklerim</Text>
+                                </TouchableOpacity>
+
+                                <View style={styles.dropdownDivider} />
+
+                                <TouchableOpacity
+                                    style={styles.dropdownItem}
+                                    onPress={() => {
+                                        setShowProfileDropdown(false);
+                                        navigation.navigate('EditProfile');
+                                    }}
+                                >
+                                    <Settings size={18} color="#9ca3af" />
+                                    <Text style={styles.dropdownItemText}>Ayarlar</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </TouchableWithoutFeedback>
+                    </View>
+                </TouchableWithoutFeedback>
+            </Modal>
+
             {/* Filter Tabs & Hashtags */}
             <View style={{ height: 50, marginBottom: 12 }}>
                 <ScrollView
@@ -986,22 +1097,130 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     header: {
-        paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 6 : 46,
-        paddingBottom: 8,
+        paddingBottom: 10,
         paddingHorizontal: 20,
         backgroundColor: '#000',
         borderBottomWidth: 1,
         borderBottomColor: '#1a1a1a',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    headerRight: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+    },
+    profileAvatarBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#1a1a1a',
+        borderRadius: 20,
+        padding: 4,
+        paddingRight: 8,
+        borderWidth: 1,
+        borderColor: '#2d2d2d',
+        gap: 4,
+    },
+    profileAvatarImg: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+    },
+    profileAvatarText: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        backgroundColor: '#ea580c',
+        textAlign: 'center',
+        lineHeight: 32,
+        color: '#fff',
+        fontWeight: '700',
+        fontSize: 14,
     },
     headerTitle: {
-        fontSize: 28,
+        fontSize: 24,
         fontWeight: 'bold',
         color: '#fff',
     },
     headerSubtitle: {
-        fontSize: 14,
+        fontSize: 12,
         color: '#9ca3af',
-        marginTop: 4,
+        marginTop: 2,
+    },
+
+    // Dropdown styles
+    dropdownOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+    },
+    dropdownContainer: {
+        position: 'absolute',
+        right: 16,
+        width: 260,
+        backgroundColor: '#111',
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: '#1f2937',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.5,
+        shadowRadius: 16,
+        elevation: 16,
+        overflow: 'hidden',
+    },
+    dropdownHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        padding: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#1f2937',
+    },
+    dropdownAvatar: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: '#ea580c',
+        justifyContent: 'center',
+        alignItems: 'center',
+        overflow: 'hidden',
+    },
+    dropdownAvatarImg: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+    },
+    dropdownAvatarText: {
+        color: '#fff',
+        fontWeight: '700',
+        fontSize: 18,
+    },
+    dropdownUserName: {
+        color: '#fff',
+        fontWeight: '700',
+        fontSize: 15,
+    },
+    dropdownUserEmail: {
+        color: '#6b7280',
+        fontSize: 12,
+        marginTop: 2,
+    },
+    dropdownItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        paddingHorizontal: 16,
+        paddingVertical: 13,
+    },
+    dropdownItemText: {
+        color: '#e5e7eb',
+        fontSize: 15,
+    },
+    dropdownDivider: {
+        height: 1,
+        backgroundColor: '#1f2937',
+        marginVertical: 4,
     },
     categoriesContainer: {
         paddingVertical: 12,

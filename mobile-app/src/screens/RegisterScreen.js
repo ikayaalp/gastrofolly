@@ -191,7 +191,7 @@ export default function RegisterScreen({ navigation }) {
                         )}
                     </TouchableOpacity>
 
-                    {Platform.OS === 'ios' && (
+                    {Platform.OS === 'ios' ? (
                         <TouchableOpacity
                             style={[styles.appleButton, appleLoading && styles.registerButtonDisabled]}
                             onPress={promptAppleAsync}
@@ -208,7 +208,7 @@ export default function RegisterScreen({ navigation }) {
                                 </>
                             )}
                         </TouchableOpacity>
-                    )}
+                    ) : null}
 
                     <TouchableOpacity
                         style={styles.loginLink}

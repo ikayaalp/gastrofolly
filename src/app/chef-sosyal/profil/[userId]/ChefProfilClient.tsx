@@ -249,20 +249,7 @@ export default function ChefProfilClient({
         })
     }
 
-    const getRoleBadge = (role: string) => {
-        switch (role) {
-            case 'ADMIN':
-                return { label: 'Admin', color: 'bg-red-500/20 text-red-400 border-red-500/30' }
-            case 'INSTRUCTOR':
-                return { label: 'Eğitmen', color: 'bg-purple-500/20 text-purple-400 border-purple-500/30' }
-            case 'INFLUENCER':
-                return { label: 'Fenomen', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' }
-            default:
-                return null
-        }
-    }
 
-    const roleBadge = getRoleBadge(profile.role)
 
     return (
         <div className="min-h-screen bg-black text-white">
@@ -375,19 +362,11 @@ export default function ChefProfilClient({
                         </div>
                     </div>
 
-                    {/* Name & Role */}
+                    {/* Name */}
                     <div className="mb-3">
-                        <div className="flex items-center gap-2 flex-wrap">
-                            <h2 className="text-xl font-extrabold text-white">
-                                {profile.name || 'Anonim'}
-                            </h2>
-                            {roleBadge && (
-                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold border ${roleBadge.color}`}>
-                                    <ChefHat className="h-3 w-3" />
-                                    {roleBadge.label}
-                                </span>
-                            )}
-                        </div>
+                        <h2 className="text-xl font-extrabold text-white">
+                            {profile.name || 'Anonim'}
+                        </h2>
                         <p className="text-gray-500 text-sm mt-0.5">@{profile.name?.toLowerCase().replace(/\s+/g, '') || 'user'}</p>
                     </div>
 

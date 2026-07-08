@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { User, Settings, BookOpen, LogOut, ChevronDown, Play, Heart, Award } from 'lucide-react'
+import { User, Settings, BookOpen, LogOut, ChevronDown, Play, Heart, Award, FileText, Users, Bookmark, ChefHat } from 'lucide-react'
 
 export default function UserDropdown() {
   const { data: session } = useSession()
@@ -108,8 +108,37 @@ export default function UserDropdown() {
             </div>
           </div>
 
+          {/* Chef Sosyal Bölümü */}
+          <div className="border-t border-gray-800 py-2">
+            <p className="px-4 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">Chef Sosyal</p>
+            <Link
+              href={`/chef-sosyal/profil/${session.user.id}`}
+              onClick={() => setIsOpen(false)}
+              className="flex items-center px-4 py-2 text-gray-300 hover:bg-[#1a1a1a] hover:text-white transition-colors"
+            >
+              <ChefHat className="h-4 w-4 mr-3 text-orange-500" />
+              Profilim
+            </Link>
+            <Link
+              href="/chef-sosyal?filter=saved"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center px-4 py-2 text-gray-300 hover:bg-[#1a1a1a] hover:text-white transition-colors"
+            >
+              <Bookmark className="h-4 w-4 mr-3" />
+              Kaydettiklerim
+            </Link>
+            <Link
+              href="/chef-sosyal?filter=liked"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center px-4 py-2 text-gray-300 hover:bg-[#1a1a1a] hover:text-white transition-colors"
+            >
+              <Heart className="h-4 w-4 mr-3" />
+              Beğendiklerim
+            </Link>
+          </div>
+
           {/* Menü Seçenekleri */}
-          <div className="py-2">
+          <div className="py-2 border-t border-gray-800">
             <Link
               href="/dashboard"
               onClick={() => setIsOpen(false)}

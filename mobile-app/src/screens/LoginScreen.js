@@ -150,7 +150,7 @@ export default function LoginScreen({ navigation }) {
                         )}
                     </TouchableOpacity>
 
-                    {Platform.OS === 'ios' && (
+                    {Platform.OS === 'ios' ? (
                         <TouchableOpacity
                             style={[styles.appleButton, appleLoading && styles.loginButtonDisabled]}
                             onPress={promptAppleAsync}
@@ -167,7 +167,7 @@ export default function LoginScreen({ navigation }) {
                                 </>
                             )}
                         </TouchableOpacity>
-                    )}
+                    ) : null}
 
                     <TouchableOpacity
                         style={styles.registerLink}

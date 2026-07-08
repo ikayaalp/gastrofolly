@@ -1,0 +1,201 @@
+import React, { useState, useEffect } from 'react';
+import {
+    View,
+    Text,
+    TextInput,
+    StyleSheet,
+    TouchableOpacity,
+    KeyboardAvoidingView,
+    Platform,
+    ActivityIndicator,
+    ScrollView,
+    Alert
+} from 'react-native';
+import { ArrowLeft, Check } from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import forumService from '../api/forumService';
+import { Picker } from '@react-native-picker/picker';
+
+export default function EditTopicScreen({ route, navigation }) {
+    const { topic } = route.params;
+    const insets = useSafeAreaInsets();
+    
+    const [title, setTitle] = useState(topic?.title || '');
+    const [content, setContent] = useState(topic?.content || '');
+    const [categoryId, setCategoryId] = useState(topic?.categoryId || (topic?.category?.id) || '');
+    const [categories, setCategories] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [saving, setSaving] = useState(false);
+
+    useEffect(() => {
+        loadCategories();
+    }, []);
+
+    const loadCategories = async () => {
+        setLoading(true);
+        const result = await forumService.getCategories();
+        if (result.success) {
+            setCategories(result.data);
+        }
+        setLoading(false);
+    };
+
+    const handleSave = async () => {
+        if (!title.trim() || !content.trim() || !categoryId) {
+            Alert.alert('Hata', 'Lütfen tüm alanları doldurun.');
+            return;
+        }
+
+        setSaving(true);
+        const result = await forumService.editTopic(topic.id, {
+            title,
+            content,
+            categoryId
+        });
+
+        setSaving(false);
+
+        if (result.success) {
+            Alert.alert('Başarılı', 'Gönderiniz güncellendi.', [
+                { text: 'Tamam', onPress: () => navigation.goBack() }
+            ]);
+        } else {
+            Alert.alert('Hata', result.error || 'Gönderi güncellenemedi.');
+        }
+    };
+
+    return (
+        <KeyboardAvoidingView 
+            style={{ flex: 1, backgroundColor: '#0a0a0a' }}
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
+            {/* Header */}
+            <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
+                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                    <ArrowLeft color="#fff" size={24} />
+                </TouchableOpacity>
+                <Text style={styles.headerTitle}>Gönderiyi Düzenle</Text>
+                <TouchableOpacity 
+                    onPress={handleSave} 
+                    disabled={saving}
+                    style={[styles.saveButton, saving && { opacity: 0.5 }]}
+                >
+                    {saving ? (
+                        <ActivityIndicator size="small" color="#fff" />
+                    ) : (
+                        <Check color="#fff" size={24} />
+                    )}
+                </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.contentContainer} keyboardShouldPersistTaps="handled">
+                {loading ? (
+                    <ActivityIndicator size="large" color="#ea580c" style={{ marginTop: 20 }} />
+                ) : (
+                    <>
+                        <Text style={styles.label}>Kategori</Text>
+                        <View style={styles.pickerContainer}>
+                            <Picker
+                                selectedValue={categoryId}
+                                onValueChange={(itemValue) => setCategoryId(itemValue)}
+                                dropdownIconColor="#fff"
+                                style={styles.picker}
+                            >
+                                <Picker.Item label="Kategori Seçin" value="" color="#9ca3af" />
+                                {categories.map(cat => (
+                                    <Picker.Item key={cat.id} label={cat.name} value={cat.id} color="#fff" />
+                                ))}
+                            </Picker>
+                        </View>
+
+                        <Text style={styles.label}>Başlık</Text>
+                        <TextInput
+                            style={styles.titleInput}
+                            value={title}
+                            onChangeText={setTitle}
+                            placeholder="Başlık girin"
+                            placeholderTextColor="#6b7280"
+                        />
+
+                        <Text style={styles.label}>İçerik</Text>
+                        <TextInput
+                            style={styles.contentInput}
+                            value={content}
+                            onChangeText={setContent}
+                            placeholder="Düşüncelerinizi yazın..."
+                            placeholderTextColor="#6b7280"
+                            multiline
+                            textAlignVertical="top"
+                        />
+                    </>
+                )}
+            </ScrollView>
+        </KeyboardAvoidingView>
+    );
+}
+
+const styles = StyleSheet.create({
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingBottom: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#1f2937',
+        backgroundColor: '#0a0a0a',
+    },
+    backButton: {
+        padding: 8,
+    },
+    saveButton: {
+        padding: 8,
+        backgroundColor: '#ea580c',
+        borderRadius: 8,
+    },
+    headerTitle: {
+        color: '#fff',
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    contentContainer: {
+        flex: 1,
+        padding: 16,
+    },
+    label: {
+        color: '#9ca3af',
+        fontSize: 14,
+        fontWeight: '600',
+        marginBottom: 8,
+        marginTop: 16,
+    },
+    pickerContainer: {
+        backgroundColor: '#1f2937',
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: '#374151',
+        overflow: 'hidden',
+    },
+    picker: {
+        color: '#fff',
+    },
+    titleInput: {
+        backgroundColor: '#1f2937',
+        color: '#fff',
+        borderRadius: 12,
+        padding: 16,
+        fontSize: 16,
+        borderWidth: 1,
+        borderColor: '#374151',
+    },
+    contentInput: {
+        backgroundColor: '#1f2937',
+        color: '#fff',
+        borderRadius: 12,
+        padding: 16,
+        fontSize: 16,
+        height: 200,
+        borderWidth: 1,
+        borderColor: '#374151',
+    }
+});

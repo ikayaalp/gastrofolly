@@ -325,16 +325,100 @@ const forumService = {
         }
     },
 
+    // Get user social profile with topics
+    getUserProfile: async (userId, page = 1, limit = 10) => {
+        try {
+            const response = await api.get(`/api/forum/profile/${userId}?page=${page}&limit=${limit}`);
+            return { success: true, data: response.data };
+        } catch (error) {
+            console.error('User profile error:', error);
+            return {
+                success: false,
+                error: error.response?.data?.message || 'Profil yüklenemedi',
+            };
+        }
+    },
+
+    // Toggle follow/unfollow a user
+    toggleFollow: async (userId) => {
+        try {
+            const response = await api.post('/api/forum/follow', { userId });
+            return { success: true, data: response.data };
+        } catch (error) {
+            console.error('Follow toggle error:', error);
+            return {
+                success: false,
+                error: error.response?.data?.message || 'Takip işlemi başarısız',
+            };
+        }
+    },
+
+    // Get followers or following list for a user
+    getFollowList: async (userId, type = 'followers') => {
+        try {
+            const response = await api.get(`/api/forum/followers/${userId}?type=${type}`);
+            return { success: true, data: response.data };
+        } catch (error) {
+            console.error('Follow list error:', error);
+            return {
+                success: false,
+                error: error.response?.data?.message || 'Liste yüklenemedi',
+            };
+        }
+    },
+
     // Delete a topic (discussion) - only own topics
     deleteTopic: async (topicId) => {
         try {
-            const response = await api.delete(`/api/forum/topics/${topicId}/delete`);
+            const response = await api.delete(`/api/forum/topics/${topicId}`);
             return { success: true, data: response.data };
         } catch (error) {
             console.error('Delete topic error:', error);
             return {
                 success: false,
                 error: error.response?.data?.message || 'Tartışma silinemedi',
+            };
+        }
+    },
+
+    // Edit a topic
+    editTopic: async (topicId, topicData) => {
+        try {
+            const response = await api.put(`/api/forum/topics/${topicId}`, topicData);
+            return { success: true, data: response.data };
+        } catch (error) {
+            console.error('Edit topic error:', error);
+            return {
+                success: false,
+                error: error.response?.data?.message || 'Tartışma güncellenemedi',
+            };
+        }
+    },
+
+    // Edit a post (comment)
+    editPost: async (postId, content) => {
+        try {
+            const response = await api.put(`/api/forum/posts/${postId}`, { content });
+            return { success: true, data: response.data };
+        } catch (error) {
+            console.error('Edit post error:', error);
+            return {
+                success: false,
+                error: error.response?.data?.message || 'Yorum güncellenemedi',
+            };
+        }
+    },
+
+    // Delete a post (comment)
+    deletePost: async (postId) => {
+        try {
+            const response = await api.delete(`/api/forum/posts/${postId}`);
+            return { success: true, data: response.data };
+        } catch (error) {
+            console.error('Delete post error:', error);
+            return {
+                success: false,
+                error: error.response?.data?.message || 'Yorum silinemedi',
             };
         }
     },

@@ -56,6 +56,11 @@ export default function TopicDetailScreen({ route, navigation }) {
     const [currentUserId, setCurrentUserId] = useState(null);
     const [fullscreenImageUrl, setFullscreenImageUrl] = useState(null); // For fullscreen image viewer
     const inputRef = useRef(null); // Ref for main input focus
+    
+    const [editingCommentId, setEditingCommentId] = useState(null);
+    const [editCommentText, setEditCommentText] = useState('');
+    const [editCommentSubmitting, setEditCommentSubmitting] = useState(false);
+
     const [alertVisible, setAlertVisible] = useState(false);
     const [alertConfig, setAlertConfig] = useState({
         title: '',
@@ -552,7 +557,16 @@ export default function TopicDetailScreen({ route, navigation }) {
                 </View>
             )}
 
-
+            {isLoggedIn && currentUserId === topic.author.id && (
+                <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 16 }}>
+                    <TouchableOpacity onPress={() => navigation.navigate('EditTopic', { topic })} style={{ marginRight: 20 }}>
+                        <Text style={{ color: '#3b82f6', fontSize: 14, fontWeight: 'bold' }}>Düzenle</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={handleDeleteTopic}>
+                        <Text style={{ color: '#ef4444', fontSize: 14, fontWeight: 'bold' }}>Sil</Text>
+                    </TouchableOpacity>
+                </View>
+            )}
 
             {/* Action Bar - Reddit Style */}
             <View style={styles.actionBar}>
@@ -625,7 +639,27 @@ export default function TopicDetailScreen({ route, navigation }) {
                     <Text style={styles.commentTime}>{formatTimeAgo(reply.createdAt)}</Text>
                 </View>
 
-                <Text style={styles.nestedReplyContent}>{reply.content}</Text>
+                {editingCommentId === reply.id ? (
+                    <View style={{ marginTop: 8 }}>
+                        <TextInput
+                            style={[styles.replyInput, { backgroundColor: '#1a1a1a', color: '#fff', borderRadius: 8, padding: 8, minHeight: 60 }]}
+                            value={editCommentText}
+                            onChangeText={setEditCommentText}
+                            multiline
+                            autoFocus
+                        />
+                        <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 8, gap: 10 }}>
+                            <TouchableOpacity onPress={() => setEditingCommentId(null)}>
+                                <Text style={{ color: '#9ca3af', fontSize: 14 }}>İptal</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={() => handleEditCommentSubmit(reply.id)} disabled={editCommentSubmitting || !editCommentText.trim()}>
+                                <Text style={{ color: editCommentSubmitting || !editCommentText.trim() ? '#fb923c' : '#ea580c', fontSize: 14, fontWeight: 'bold' }}>Kaydet</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                ) : (
+                    <Text style={styles.nestedReplyContent}>{reply.content}</Text>
+                )}
 
                 {/* Reply Actions */}
                 <View style={styles.commentActions}>
@@ -657,12 +691,23 @@ export default function TopicDetailScreen({ route, navigation }) {
                                 <Text style={styles.replyToText}>Yanıtla</Text>
                             </TouchableOpacity>
                             {currentUserId && reply.author?.id === currentUserId && (
-                                <TouchableOpacity
-                                    style={styles.deleteButton}
-                                    onPress={() => handleDeleteComment(reply.id)}
-                                >
-                                    <Trash2 size={12} color="#ef4444" />
-                                </TouchableOpacity>
+                                <>
+                                    <TouchableOpacity
+                                        style={{ marginLeft: 12, flexDirection: 'row', alignItems: 'center' }}
+                                        onPress={() => {
+                                            setEditingCommentId(reply.id);
+                                            setEditCommentText(reply.content);
+                                        }}
+                                    >
+                                        <Text style={{ color: '#3b82f6', fontSize: 12, fontWeight: 'bold' }}>Düzenle</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={[styles.deleteButton, { marginLeft: 12 }]}
+                                        onPress={() => handleDeleteComment(reply.id)}
+                                    >
+                                        <Trash2 size={12} color="#ef4444" />
+                                    </TouchableOpacity>
+                                </>
                             )}
                         </>
                     )}
@@ -704,7 +749,27 @@ export default function TopicDetailScreen({ route, navigation }) {
                     </TouchableOpacity>
                 </View>
 
-                <Text style={styles.commentContent}>{item.content}</Text>
+                {editingCommentId === item.id ? (
+                    <View style={{ marginTop: 8 }}>
+                        <TextInput
+                            style={[styles.replyInput, { backgroundColor: '#1a1a1a', color: '#fff', borderRadius: 8, padding: 8, minHeight: 60 }]}
+                            value={editCommentText}
+                            onChangeText={setEditCommentText}
+                            multiline
+                            autoFocus
+                        />
+                        <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 8, gap: 10 }}>
+                            <TouchableOpacity onPress={() => setEditingCommentId(null)}>
+                                <Text style={{ color: '#9ca3af', fontSize: 14 }}>İptal</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={() => handleEditCommentSubmit(item.id)} disabled={editCommentSubmitting || !editCommentText.trim()}>
+                                <Text style={{ color: editCommentSubmitting || !editCommentText.trim() ? '#fb923c' : '#ea580c', fontSize: 14, fontWeight: 'bold' }}>Kaydet</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                ) : (
+                    <Text style={styles.commentContent}>{item.content}</Text>
+                )}
 
                 {/* Comment Actions */}
                 <View style={styles.commentActions}>
@@ -737,17 +802,29 @@ export default function TopicDetailScreen({ route, navigation }) {
                             </TouchableOpacity>
                             {/* Delete button - only for own comments */}
                             {currentUserId && item.author?.id === currentUserId && (
-                                <TouchableOpacity
-                                    style={styles.deleteButton}
-                                    onPress={() => handleDeleteComment(item.id)}
-                                >
-                                    <Trash2 size={14} color="#ef4444" />
-                                </TouchableOpacity>
+                                <>
+                                    <TouchableOpacity
+                                        style={{ marginLeft: 16, flexDirection: 'row', alignItems: 'center' }}
+                                        onPress={() => {
+                                            setEditingCommentId(item.id);
+                                            setEditCommentText(item.content);
+                                        }}
+                                    >
+                                        <Text style={{ color: '#3b82f6', fontSize: 14, fontWeight: 'bold' }}>Düzenle</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={[styles.deleteButton, { marginLeft: 16 }]}
+                                        onPress={() => handleDeleteComment(item.id)}
+                                    >
+                                        <Trash2 size={14} color="#ef4444" />
+                                    </TouchableOpacity>
+                                </>
                             )}
                         </>
                     )}
                 </View>
 
+                {/* Nested Replies */}
                 {/* Nested Replies */}
                 {item.replies && item.replies.length > 0 && (
                     <View style={styles.repliesContainer}>
@@ -757,6 +834,51 @@ export default function TopicDetailScreen({ route, navigation }) {
             </View>
         </View>
     );
+
+    const handleDeleteTopic = () => {
+        showAlert(
+            'Gönderiyi Sil',
+            'Bu gönderiyi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.',
+            [
+                { text: 'İptal', style: 'cancel' },
+                {
+                    text: 'Sil',
+                    onPress: async () => {
+                        const result = await forumService.deleteTopic(topicId);
+                        if (result.success) {
+                            navigation.goBack();
+                        } else {
+                            showAlert('Hata', result.error || 'Gönderi silinemedi', [{ text: 'Tamam' }], 'error');
+                        }
+                    },
+                    style: 'destructive'
+                }
+            ],
+            'warning'
+        );
+    };
+
+    const handleEditCommentSubmit = async (commentId) => {
+        if (!editCommentText.trim()) return;
+        
+        setEditCommentSubmitting(true);
+        const result = await forumService.editPost(commentId, editCommentText);
+        setEditCommentSubmitting(false);
+
+        if (result.success) {
+            setComments(comments.map(c => {
+                if (c.id === commentId) return { ...c, content: editCommentText };
+                if (c.replies) {
+                    c.replies = c.replies.map(r => r.id === commentId ? { ...r, content: editCommentText } : r);
+                }
+                return c;
+            }));
+            setEditingCommentId(null);
+            setEditCommentText('');
+        } else {
+            showAlert('Hata', result.error || 'Yorum güncellenemedi', [{ text: 'Tamam' }], 'error');
+        }
+    };
 
     if (loading) {
         return (

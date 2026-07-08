@@ -17,6 +17,7 @@ import ProfileScreen from '../screens/ProfileScreen';
 import SocialScreen from '../screens/SocialScreen';
 import ChefSorScreen from '../screens/ChefSorScreen';
 import TopicDetailScreen from '../screens/TopicDetailScreen';
+import EditTopicScreen from '../screens/EditTopicScreen';
 import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
 import EmailVerificationScreen from '../screens/EmailVerificationScreen';
@@ -40,6 +41,7 @@ import SubscriptionScreen from '../screens/SubscriptionScreen';
 import FavoritesScreen from '../screens/FavoritesScreen';
 import CertificatesScreen from '../screens/CertificatesScreen';
 import ChangePasswordScreen from '../screens/ChangePasswordScreen';
+import ChefSocialProfileScreen from '../screens/ChefSocialProfileScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -75,12 +77,14 @@ function CoursesStackNavigator() {
     );
 }
 
-// Social Stack Navigator (includes TopicDetail)
+// Social Stack Navigator (includes TopicDetail and ChefSocialProfile)
 function SocialStackNavigator() {
     return (
         <SocialStack.Navigator screenOptions={{ headerShown: false }}>
             <SocialStack.Screen name="SocialMain" component={SocialScreen} />
             <SocialStack.Screen name="TopicDetail" component={TopicDetailScreen} />
+            <SocialStack.Screen name="EditTopic" component={EditTopicScreen} />
+            <SocialStack.Screen name="ChefSocialProfile" component={ChefSocialProfileScreen} />
         </SocialStack.Navigator>
     );
 }
@@ -232,6 +236,7 @@ export default function AppNavigator() {
                 <Stack.Screen name="Certificates" component={CertificatesScreen} />
                 <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
                 <Stack.Screen name="InstructorProfile" component={InstructorProfileScreen} />
+                <Stack.Screen name="ChefSocialProfile" component={ChefSocialProfileScreen} />
             </Stack.Navigator>
         </NavigationContainer>
     );

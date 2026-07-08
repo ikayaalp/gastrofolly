@@ -33,7 +33,8 @@ export default function TopicCard({
     onReport,
     onBlock,
     onVotePoll,
-    onShowLikers
+    onShowLikers,
+    onAuthorPress,
 }) {
     const [activeSlide, setActiveSlide] = useState(0);
     const [showOptionsModal, setShowOptionsModal] = useState(false);
@@ -53,7 +54,11 @@ export default function TopicCard({
         <TouchableOpacity style={styles.topicCard} onPress={onPress ? onPress : undefined} activeOpacity={0.8}>
             {/* Header */}
             <View style={styles.topicHeader}>
-                <View style={styles.topicAuthorInfo}>
+                <TouchableOpacity
+                    style={styles.topicAuthorInfo}
+                    onPress={() => onAuthorPress && item.author?.id && onAuthorPress(item.author.id)}
+                    activeOpacity={onAuthorPress ? 0.7 : 1}
+                >
                     <View style={styles.topicAuthorAvatar}>
                         {item.author?.image ? (
                             <Image
@@ -72,7 +77,7 @@ export default function TopicCard({
                             {formatTimeAgo ? formatTimeAgo(item.createdAt) : ''}
                         </Text>
                     </View>
-                </View>
+                </TouchableOpacity>
                 <TouchableOpacity onPress={() => setShowOptionsModal(true)} style={styles.optionsButton}>
                     <MoreVertical size={20} color="#6b7280" />
                 </TouchableOpacity>
