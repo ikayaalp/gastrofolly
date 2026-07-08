@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Image as ImageIcon,
   Users,
@@ -532,12 +532,29 @@ function InstructorsTab({ initial }: { initial: HInstructor[] }) {
 }
 
 // ========================= BÖLÜM SIRASI =========================
+
+interface SimpleCourse {
+  id: string
+  title: string
+  imageUrl: string | null
+  instructor: { name: string | null } | null
+}
+
 function SectionsTab({ initial }: { initial: Section[] }) {
   const [sections, setSections] = useState<Section[]>(
     [...initial].sort((a, b) => a.order - b.order)
   )
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [availableCourses, setAvailableCourses] = useState<SimpleCourse[]>([])
+
+  useEffect(() => {
+    fetch("/api/admin/courses/simple")
+      .then(r => r.json())
+      .then(data => {
+        if(Array.isArray(data)) setAvailableCourses(data)
+      })
+  }, [])
 
   const move = (index: number, dir: -1 | 1) => {
     const target = index + dir
@@ -553,6 +570,40 @@ function SectionsTab({ initial }: { initial: Section[] }) {
     setSaved(false)
   }
 
+  const addCustomSection = () => {
+    setSections([...sections, {
+      key: `custom-${Date.now()}`,
+      label: "Yeni Özel Bölüm",
+      order: sections.length,
+      isVisible: true,
+      isCustom: true,
+      courseIds: []
+    } as any])
+    setSaved(false)
+  }
+
+  const removeCustomSection = (key: string) => {
+    if(confirm("Bu özel bölümü silmek istediğinize emin misiniz?")) {
+      setSections(prev => prev.filter(s => s.key !== key))
+      setSaved(false)
+    }
+  }
+
+  const updateLabel = (key: string, newLabel: string) => {
+    setSections(prev => prev.map(s => s.key === key ? { ...s, label: newLabel } : s))
+    setSaved(false)
+  }
+
+  const toggleCourse = (sectionKey: string, courseId: string) => {
+    setSections(prev => prev.map(s => {
+      if(s.key !== sectionKey) return s
+      const ids = (s as any).courseIds || []
+      const newIds = ids.includes(courseId) ? ids.filter((id: string) => id !== courseId) : [...ids, courseId]
+      return { ...s, courseIds: newIds }
+    }))
+    setSaved(false)
+  }
+
   const saveAll = async () => {
     setSaving(true)
     setSaved(false)
@@ -562,6 +613,8 @@ function SectionsTab({ initial }: { initial: Section[] }) {
         label: s.label,
         order: i,
         isVisible: s.isVisible,
+        isCustom: (s as any).isCustom,
+        courseIds: (s as any).courseIds || []
       }))
       const res = await fetch("/api/admin/home-sections", {
         method: "PUT",
@@ -580,58 +633,131 @@ function SectionsTab({ initial }: { initial: Section[] }) {
   }
 
   return (
-    <div className="space-y-4 max-w-2xl">
-      <p className="text-sm text-gray-500">
-        Anasayfa bölümlerinin sırasını değiştirin veya gizleyin. (Üst banner sabittir.)
-      </p>
-
-      <div className="space-y-2">
-        {sections.map((s, index) => (
-          <div
-            key={s.key}
-            className={`flex items-center justify-between gap-3 bg-neutral-900/40 border border-gray-800 rounded-xl px-4 py-3 ${
-              !s.isVisible ? "opacity-50" : ""
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <span className="text-gray-600 text-sm font-mono w-6">{index + 1}</span>
-              <span className="text-white font-medium">{s.label}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => toggle(s.key)}
-                title={s.isVisible ? "Gizle" : "Göster"}
-                className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-white/5"
-              >
-                {s.isVisible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-              </button>
-              <button
-                onClick={() => move(index, -1)}
-                disabled={index === 0}
-                className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-white/5 disabled:opacity-30"
-              >
-                <ArrowUp className="h-4 w-4" />
-              </button>
-              <button
-                onClick={() => move(index, 1)}
-                disabled={index === sections.length - 1}
-                className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-white/5 disabled:opacity-30"
-              >
-                <ArrowDown className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
-        ))}
+    <div className="space-y-4 max-w-4xl">
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-gray-500">
+          Anasayfa bölümlerinin sırasını değiştirin, gizleyin veya yepyeni özel bir bölüm ekleyip içine istediğiniz kursları seçin.
+        </p>
+        <button
+          onClick={addCustomSection}
+          className="flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium rounded-lg"
+        >
+          <Plus className="h-4 w-4" /> Yeni Özel Bölüm
+        </button>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="space-y-3">
+        {sections.map((s, index) => {
+          const isCustom = (s as any).isCustom
+          const courseIds = (s as any).courseIds || []
+
+          return (
+            <div
+              key={s.key}
+              className={`flex flex-col gap-3 bg-neutral-900/40 border ${isCustom ? "border-orange-500/30" : "border-gray-800"} rounded-xl px-4 py-4 transition-all ${
+                !s.isVisible ? "opacity-50" : ""
+              }`}
+            >
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 flex-1">
+                  <span className="text-gray-600 text-sm font-mono w-6">{index + 1}</span>
+                  {isCustom ? (
+                    <input 
+                      value={s.label}
+                      onChange={e => updateLabel(s.key, e.target.value)}
+                      className="bg-neutral-800 text-white px-3 py-1.5 rounded-lg border border-gray-700 text-sm w-full max-w-sm focus:outline-none focus:border-orange-500"
+                      placeholder="Bölüm Adı"
+                    />
+                  ) : (
+                    <span className="text-white font-medium">{s.label}</span>
+                  )}
+                  {isCustom && <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-orange-500/20 text-orange-400">ÖZEL BÖLÜM</span>}
+                </div>
+                <div className="flex items-center gap-1">
+                  {isCustom && (
+                    <button
+                      onClick={() => removeCustomSection(s.key)}
+                      className="p-2 text-red-400 hover:text-white rounded-lg hover:bg-red-500/20"
+                      title="Bu bölümü sil"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => toggle(s.key)}
+                    title={s.isVisible ? "Gizle" : "Göster"}
+                    className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-white/5"
+                  >
+                    {s.isVisible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                  </button>
+                  <button
+                    onClick={() => move(index, -1)}
+                    disabled={index === 0}
+                    className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-white/5 disabled:opacity-30"
+                  >
+                    <ArrowUp className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => move(index, 1)}
+                    disabled={index === sections.length - 1}
+                    className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-white/5 disabled:opacity-30"
+                  >
+                    <ArrowDown className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+              
+              {/* Kurs seçici (Sadece özel bölümler için) */}
+              {isCustom && (
+                <div className="pl-9 mt-2">
+                  <p className="text-xs text-gray-400 mb-2">
+                    Bu bölümde sergilenmek üzere kursları seçin ({courseIds.length} kurs seçili)
+                  </p>
+                  <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+                    {availableCourses.length === 0 ? (
+                      <span className="text-xs text-gray-600">Kurslar yükleniyor...</span>
+                    ) : (
+                      availableCourses.map(course => {
+                        const isSelected = courseIds.includes(course.id)
+                        return (
+                          <button
+                            key={course.id}
+                            onClick={() => toggleCourse(s.key, course.id)}
+                            className={`flex-shrink-0 w-40 p-2 rounded-lg border text-left flex flex-col gap-2 transition-all ${
+                              isSelected 
+                                ? "border-orange-500 bg-orange-500/10" 
+                                : "border-gray-800 bg-black/40 opacity-50 hover:opacity-100"
+                            }`}
+                          >
+                            {course.imageUrl ? (
+                              <img src={course.imageUrl} className="w-full h-20 object-cover rounded-md border border-gray-800/50" alt="" />
+                            ) : (
+                              <div className="w-full h-20 bg-neutral-800 rounded-md border border-gray-800/50"></div>
+                            )}
+                            <div>
+                              <p className="text-[11px] font-medium text-white line-clamp-2 leading-tight mb-1">{course.title}</p>
+                              <p className="text-[10px] text-gray-500 truncate">{course.instructor?.name || "Bilinmiyor"}</p>
+                            </div>
+                          </button>
+                        )
+                      })
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+
+      <div className="flex items-center gap-3 pt-4 border-t border-gray-800">
         <button
           onClick={saveAll}
           disabled={saving}
-          className="flex items-center gap-2 px-5 py-2.5 bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg"
+          className="flex items-center gap-2 px-5 py-2.5 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg"
         >
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-          Sırayı Kaydet
+          Değişiklikleri Kaydet
         </button>
         {saved && <span className="text-green-400 text-sm">Kaydedildi ✓</span>}
       </div>

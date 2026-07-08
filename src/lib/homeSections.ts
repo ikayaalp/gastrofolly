@@ -25,22 +25,45 @@ export interface ResolvedHomeSection {
   label: string
   order: number
   isVisible: boolean
+  isCustom?: boolean
+  courseIds?: string[] // Admin paneli için kurs id listesi
+  courses?: any[]      // Client tarafı için dolu kurs objeleri listesi (opsiyonel)
 }
 
-// DB kayıtlarını varsayılanlarla birleştirir: DB'de olmayan bölümler
-// varsayılan sıralarıyla eklenir, geçersiz key'ler atılır.
+// DB kayıtlarını varsayılanlarla birleştirir: DB'de olmayan varsayılan bölümler eklenir,
+// özel (isCustom=true) olanlar da listeye dahil edilir.
 export function resolveHomeSections(
-  dbSections: { key: string; label: string; order: number; isVisible: boolean }[]
+  dbSections: any[]
 ): ResolvedHomeSection[] {
   const byKey = new Map(dbSections.map((s) => [s.key, s]))
 
-  return DEFAULT_HOME_SECTIONS.map((def, index) => {
+  // 1. Varsayılan bölümleri ekle
+  const result: ResolvedHomeSection[] = DEFAULT_HOME_SECTIONS.map((def, index) => {
     const existing = byKey.get(def.key)
     return {
       key: def.key,
       label: existing?.label || def.label,
       order: existing?.order ?? index,
       isVisible: existing?.isVisible ?? true,
+      isCustom: false
     }
-  }).sort((a, b) => a.order - b.order)
+  })
+
+  // 2. Özel (custom) bölümleri ekle
+  dbSections.forEach((s) => {
+    if (s.isCustom || s.key.startsWith("custom-")) {
+      result.push({
+        key: s.key,
+        label: s.label,
+        order: s.order,
+        isVisible: s.isVisible,
+        isCustom: true,
+        courseIds: s.courses ? s.courses.map((sc: any) => sc.courseId) : [],
+        courses: s.courses ? s.courses.map((sc: any) => sc.course) : []
+      })
+    }
+  })
+
+  // 3. Sıraya göre diz
+  return result.sort((a, b) => a.order - b.order)
 }

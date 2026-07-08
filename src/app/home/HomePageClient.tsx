@@ -76,6 +76,8 @@ interface HomeSectionItem {
   label: string
   order: number
   isVisible: boolean
+  isCustom?: boolean
+  courses?: Course[]
 }
 
 interface HomePageClientProps {
@@ -157,6 +159,21 @@ export default function HomePageClient({
       </div>
     ),
   }
+
+  // Dinamik (özel) bölümleri sectionContent içine yerleştir
+  if (homeSections && homeSections.length > 0) {
+    homeSections.forEach((section) => {
+      if (section.isCustom) {
+        sectionContent[section.key] = (
+          <CourseRow
+            title={section.label}
+            courses={section.courses || []}
+          />
+        )
+      }
+    })
+  }
+
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const { data: clientSession } = useSession()
 

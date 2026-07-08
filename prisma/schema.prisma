@@ -157,6 +157,8 @@ model Course {
   messages     Message[]
   certificates Certificate[]
   stories      Story[]
+
+  homeSectionCourses HomeSectionCourse[]
 }
 
 enum CourseLevel {
@@ -659,4 +661,18 @@ model HomeSection {
   order     Int      @default(0)
   isVisible Boolean  @default(true)
   updatedAt DateTime @updatedAt
+
+  isCustom  Boolean  @default(false)
+  courses   HomeSectionCourse[]
+}
+
+model HomeSectionCourse {
+  id            String      @id @default(cuid())
+  homeSectionId String
+  homeSection   HomeSection @relation(fields: [homeSectionId], references: [id], onDelete: Cascade)
+  courseId      String
+  course        Course      @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  order         Int         @default(0)
+
+  @@unique([homeSectionId, courseId])
 }

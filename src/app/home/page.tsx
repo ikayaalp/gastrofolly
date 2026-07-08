@@ -141,8 +141,24 @@ async function getHomeData(userId?: string) {
       where: { isActive: true },
       orderBy: [{ order: 'asc' }, { createdAt: 'asc' }]
     }),
-    // Bölüm sırası/görünürlüğü
-    prisma.homeSection.findMany()
+    // Bölüm sırası/görünürlüğü ve özel bölüm kursları
+    prisma.homeSection.findMany({
+      include: {
+        courses: {
+          orderBy: { order: "asc" },
+          include: {
+            course: {
+              include: {
+                instructor: { select: { id: true, name: true, image: true } },
+                category: { select: { id: true, name: true, slug: true } },
+                reviews: { select: { rating: true } },
+                _count: { select: { enrollments: true, lessons: true } }
+              }
+            }
+          }
+        }
+      }
+    })
   ])
 
   const homeSections = resolveHomeSections(homeSectionsRaw)
