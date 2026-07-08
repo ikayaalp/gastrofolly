@@ -95,7 +95,16 @@ export default function ChatClient({ conversationId, currentUserId }: ChatClient
             const fetchedMessages: Message[] = data.data || []
             
             setMessages((prev) => {
-                const tempMessages = prev.filter(m => m.id.startsWith('temp-'))
+                const tempMessages = prev.filter(m => {
+                    if (!m.id.startsWith('temp-')) return false
+                    
+                    // Eğer bu temp mesaj, sunucudan dönen gerçek mesajlar arasında zaten varsa 
+                    // (içerik ve gönderen eşleşiyorsa), temp versiyonu kopyalamayarak çiftlenmeyi önle.
+                    const isAlreadyFetched = fetchedMessages.some(
+                        (fm) => fm.senderId === m.senderId && fm.content === m.content
+                    )
+                    return !isAlreadyFetched
+                })
                 return [...fetchedMessages, ...tempMessages]
             })
 
