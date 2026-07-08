@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
     View,
     Text,
@@ -7,15 +7,123 @@ import {
     TouchableOpacity,
     ActivityIndicator,
     Image,
-    RefreshControl
+    RefreshControl,
+    Animated,
+    PanResponder,
+    Alert
 } from 'react-native';
-import { ArrowLeft, MessageCircle } from 'lucide-react-native';
+import { ArrowLeft, MessageCircle, Trash2 } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import dmService from '../api/dmService';
 import authService from '../api/authService';
 import { getPusherClient } from '../api/pusherClient';
+import CustomAlert from '../components/CustomAlert';
+
+const ConversationRow = ({ item, navigation, formatTime, onRequestDelete }) => {
+    const pan = useRef(new Animated.Value(0)).current;
+    const otherUser = item.otherUser;
+
+    const panResponder = useRef(
+        PanResponder.create({
+            onMoveShouldSetPanResponder: (evt, gestureState) => {
+                return Math.abs(gestureState.dx) > 10;
+            },
+            onPanResponderMove: (evt, gestureState) => {
+                if (gestureState.dx < 0) {
+                    pan.setValue(Math.max(gestureState.dx, -80));
+                }
+            },
+            onPanResponderRelease: (evt, gestureState) => {
+                if (gestureState.dx < -50) {
+                    Animated.spring(pan, {
+                        toValue: -80,
+                        useNativeDriver: true,
+                    }).start();
+                } else {
+                    Animated.spring(pan, {
+                        toValue: 0,
+                        useNativeDriver: true,
+                    }).start();
+                }
+            },
+        })
+    ).current;
+
+    const handleDelete = () => {
+        onRequestDelete(item.id, pan);
+    };
+
+    if (!otherUser) return null;
+
+    return (
+        <View style={styles.rowWrapper}>
+            <View style={styles.deleteButtonContainer}>
+                <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
+                    <Trash2 size={24} color="#fff" />
+                </TouchableOpacity>
+            </View>
+            <Animated.View
+                style={[styles.conversationItem, { transform: [{ translateX: pan }] }]}
+                {...panResponder.panHandlers}
+            >
+                <TouchableOpacity
+                    style={styles.innerTouchable}
+                    activeOpacity={1}
+                    onPress={() => {
+                        // Check pan._value safely
+                        const currentVal = pan.__getValue ? pan.__getValue() : 0;
+                        if (currentVal < -10) {
+                            Animated.spring(pan, { toValue: 0, useNativeDriver: true }).start();
+                        } else {
+                            navigation.navigate('Chat', { conversationId: item.id, otherUser })
+                        }
+                    }}
+                >
+                    {/* Avatar */}
+                    <View style={styles.avatarContainer}>
+                        {otherUser.image ? (
+                            <Image source={{ uri: otherUser.image }} style={styles.avatar} />
+                        ) : (
+                            <View style={styles.avatarFallback}>
+                                <Text style={styles.avatarFallbackText}>
+                                    {otherUser.name ? otherUser.name[0].toUpperCase() : 'U'}
+                                </Text>
+                            </View>
+                        )}
+                    </View>
+
+                    {/* Content */}
+                    <View style={styles.contentContainer}>
+                        <View style={styles.headerRow}>
+                            <Text style={styles.nameText} numberOfLines={1}>
+                                {otherUser.name || 'İsimsiz Kullanıcı'}
+                            </Text>
+                            <Text style={styles.timeText}>
+                                {formatTime(item.lastMessageAt || item.createdAt)}
+                            </Text>
+                        </View>
+                        
+                        <View style={styles.messageRow}>
+                            <Text 
+                                style={[styles.messagePreview, item.unreadCount > 0 && styles.messagePreviewUnread]}
+                                numberOfLines={1}
+                            >
+                                {item.lastMessage?.content || 'Sohbet başladı'}
+                            </Text>
+                            {item.unreadCount > 0 && (
+                                <View style={styles.unreadBadge}>
+                                    <Text style={styles.unreadText}>{item.unreadCount}</Text>
+                                </View>
+                            )}
+                        </View>
+                    </View>
+                </TouchableOpacity>
+            </Animated.View>
+        </View>
+    );
+};
 
 export default function MessagesScreen({ navigation }) {
     const insets = useSafeAreaInsets();
@@ -24,6 +132,20 @@ export default function MessagesScreen({ navigation }) {
     const [refreshing, setRefreshing] = useState(false);
     const [currentUser, setCurrentUser] = useState(null);
     const [isGuest, setIsGuest] = useState(false);
+
+    // Alerts
+    const [alertVisible, setAlertVisible] = useState(false);
+    const [alertConfig, setAlertConfig] = useState({
+        title: '',
+        message: '',
+        buttons: [],
+        type: 'info'
+    });
+
+    const showAlert = (title, message, buttons = [{ text: 'Tamam' }], type = 'info') => {
+        setAlertConfig({ title, message, buttons, type });
+        setAlertVisible(true);
+    };
 
     const loadConversations = async (showRefresh = false) => {
         try {
@@ -125,56 +247,43 @@ export default function MessagesScreen({ navigation }) {
         return date.toLocaleDateString('tr-TR');
     };
 
-    const renderItem = ({ item }) => {
-        const otherUser = item.otherUser;
-        if (!otherUser) return null;
+    const handleDeleteConversation = async (conversationId) => {
+        const result = await dmService.deleteConversation(conversationId);
+        if (result.success) {
+            setConversations(prev => prev.filter(c => c.id !== conversationId));
+        } else {
+            Alert.alert('Hata', result.error);
+        }
+    };
 
-        return (
-            <TouchableOpacity
-                style={styles.conversationItem}
-                onPress={() => navigation.navigate('Chat', { conversationId: item.id, otherUser })}
-            >
-                {/* Avatar */}
-                <View style={styles.avatarContainer}>
-                    {otherUser.image ? (
-                        <Image source={{ uri: otherUser.image }} style={styles.avatar} />
-                    ) : (
-                        <View style={styles.avatarFallback}>
-                            <Text style={styles.avatarFallbackText}>
-                                {otherUser.name ? otherUser.name[0].toUpperCase() : 'U'}
-                            </Text>
-                        </View>
-                    )}
-                </View>
-
-                {/* Content */}
-                <View style={styles.contentContainer}>
-                    <View style={styles.headerRow}>
-                        <Text style={styles.nameText} numberOfLines={1}>
-                            {otherUser.name || 'İsimsiz Kullanıcı'}
-                        </Text>
-                        <Text style={styles.timeText}>
-                            {formatTime(item.lastMessageAt || item.createdAt)}
-                        </Text>
-                    </View>
-                    
-                    <View style={styles.messageRow}>
-                        <Text 
-                            style={[styles.messagePreview, item.unreadCount > 0 && styles.messagePreviewUnread]}
-                            numberOfLines={1}
-                        >
-                            {item.lastMessage?.content || 'Sohbet başladı'}
-                        </Text>
-                        {item.unreadCount > 0 && (
-                            <View style={styles.unreadBadge}>
-                                <Text style={styles.unreadText}>{item.unreadCount}</Text>
-                            </View>
-                        )}
-                    </View>
-                </View>
-            </TouchableOpacity>
+    const requestDeleteConversation = (conversationId, pan) => {
+        showAlert(
+            "Konuşmayı Sil",
+            "Bu konuşmayı silmek istediğinize emin misiniz? Karşı taraf bu konuşmayı görmeye devam edecek.",
+            [
+                { 
+                    text: "Vazgeç", 
+                    onPress: () => {
+                        Animated.spring(pan, { toValue: 0, useNativeDriver: true }).start();
+                    }
+                },
+                { 
+                    text: "Sil", 
+                    onPress: () => handleDeleteConversation(conversationId) 
+                }
+            ],
+            'warning'
         );
     };
+
+    const renderItem = ({ item }) => (
+        <ConversationRow 
+            item={item} 
+            navigation={navigation} 
+            formatTime={formatTime} 
+            onRequestDelete={requestDeleteConversation} 
+        />
+    );
 
     const renderEmpty = () => {
         if (isGuest) {
@@ -224,6 +333,15 @@ export default function MessagesScreen({ navigation }) {
                     }
                 />
             )}
+
+            <CustomAlert
+                visible={alertVisible}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                buttons={alertConfig.buttons}
+                type={alertConfig.type}
+                onClose={() => setAlertVisible(false)}
+            />
         </View>
     );
 }
@@ -262,12 +380,35 @@ const styles = StyleSheet.create({
         flexGrow: 1,
         justifyContent: 'center',
     },
-    conversationItem: {
-        flexDirection: 'row',
+    rowWrapper: {
+        position: 'relative',
+        backgroundColor: '#000',
+    },
+    deleteButtonContainer: {
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        right: 0,
+        width: 80,
+        backgroundColor: '#ef4444',
+        justifyContent: 'center',
         alignItems: 'center',
-        paddingVertical: 12,
+    },
+    deleteButton: {
+        flex: 1,
+        width: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    conversationItem: {
+        backgroundColor: '#000',
+    },
+    innerTouchable: {
+        flexDirection: 'row',
+        padding: 16,
         borderBottomWidth: 1,
-        borderBottomColor: '#111',
+        borderBottomColor: '#1a1a1a',
+        backgroundColor: '#000',
     },
     avatarContainer: {
         marginRight: 12,

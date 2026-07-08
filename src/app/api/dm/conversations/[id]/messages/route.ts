@@ -112,6 +112,11 @@ export async function POST(
                 where: { id: conversationId },
                 data: { lastMessageAt: new Date() }
             }),
+            // Restore conversation for all participants (un-delete)
+            prisma.conversationParticipant.updateMany({
+                where: { conversationId },
+                data: { deletedAt: null }
+            }),
             // Auto read for sender
             prisma.conversationParticipant.update({
                 where: { conversationId_userId: { conversationId, userId: user.id } },

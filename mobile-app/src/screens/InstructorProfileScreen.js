@@ -18,6 +18,7 @@ import { ArrowLeft, Star, Users, BookOpen, Award, Share2, Play, MessageCircle } 
 import axios from 'axios';
 import config from '../api/config';
 import authService from '../api/authService';
+import CustomAlert from '../components/CustomAlert';
 
 const { width } = Dimensions.get('window');
 
@@ -27,6 +28,20 @@ export default function InstructorProfileScreen({ navigation, route }) {
     const [instructor, setInstructor] = useState(null);
     const [courses, setCourses] = useState([]);
     const [currentUser, setCurrentUser] = useState(null);
+
+    // Alerts
+    const [alertVisible, setAlertVisible] = useState(false);
+    const [alertConfig, setAlertConfig] = useState({
+        title: '',
+        message: '',
+        buttons: [],
+        type: 'info'
+    });
+
+    const showAlert = (title, message, buttons = [{ text: 'Tamam' }], type = 'info') => {
+        setAlertConfig({ title, message, buttons, type });
+        setAlertVisible(true);
+    };
 
     useEffect(() => {
         loadInstructorData();
@@ -164,13 +179,14 @@ export default function InstructorProfileScreen({ navigation, route }) {
                             ]}
                             onPress={() => {
                                 if (!currentUser || !isPremiumUser(currentUser)) {
-                                    Alert.alert(
+                                    showAlert(
                                         'Premium Üyelik Gerekli',
                                         'Mesajlaşma özelliğini kullanmak için premium üyeliğe sahip olmanız gerekiyor.',
                                         [
                                             { text: 'Vazgeç', style: 'cancel' },
                                             { text: 'Abone Ol', onPress: () => navigation.navigate('Subscription') }
-                                        ]
+                                        ],
+                                        'warning'
                                     );
                                     return;
                                 }
@@ -268,6 +284,15 @@ export default function InstructorProfileScreen({ navigation, route }) {
 
                 <View style={{ height: 40 }} />
             </ScrollView >
+
+            <CustomAlert
+                visible={alertVisible}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                buttons={alertConfig.buttons}
+                type={alertConfig.type}
+                onClose={() => setAlertVisible(false)}
+            />
         </View >
     );
 }

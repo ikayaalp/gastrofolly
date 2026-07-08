@@ -39,6 +39,7 @@ import forumService from '../api/forumService';
 import authService, { isPremiumUser } from '../api/authService';
 import TopicCard from '../components/TopicCard';
 import ImageViewerModal from '../components/ImageViewerModal';
+import CustomAlert from '../components/CustomAlert';
 
 const { width } = Dimensions.get('window');
 const COVER_HEIGHT = 160;
@@ -88,6 +89,20 @@ export default function ChefSocialProfileScreen({ navigation, route }) {
     const [bioText, setBioText] = useState('');
     const [bioSaving, setBioSaving] = useState(false);
     const [fullscreenImageUrl, setFullscreenImageUrl] = useState(null);
+
+    // Alerts
+    const [alertVisible, setAlertVisible] = useState(false);
+    const [alertConfig, setAlertConfig] = useState({
+        title: '',
+        message: '',
+        buttons: [],
+        type: 'info'
+    });
+
+    const showAlert = (title, message, buttons = [{ text: 'Tamam' }], type = 'info') => {
+        setAlertConfig({ title, message, buttons, type });
+        setAlertVisible(true);
+    };
 
     // Load saved topics from AsyncStorage
     const loadSavedTopics = useCallback(async () => {
@@ -358,13 +373,14 @@ export default function ChefSocialProfileScreen({ navigation, route }) {
                                 style={styles.messageButton}
                                 onPress={() => {
                                     if (!isPremiumUser(currentUserData)) {
-                                        Alert.alert(
+                                        showAlert(
                                             'Premium Üyelik Gerekli',
                                             'Mesajlaşma özelliğini kullanmak için premium üyeliğe sahip olmanız gerekiyor.',
                                             [
                                                 { text: 'Vazgeç', style: 'cancel' },
                                                 { text: 'Abone Ol', onPress: () => navigation.navigate('Subscription') }
-                                            ]
+                                            ],
+                                            'warning'
                                         );
                                         return;
                                     }
@@ -622,6 +638,15 @@ export default function ChefSocialProfileScreen({ navigation, route }) {
                 visible={!!fullscreenImageUrl}
                 imageUrl={fullscreenImageUrl}
                 onClose={() => setFullscreenImageUrl(null)}
+            />
+
+            <CustomAlert
+                visible={alertVisible}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                buttons={alertConfig.buttons}
+                type={alertConfig.type}
+                onClose={() => setAlertVisible(false)}
             />
         </View>
     );

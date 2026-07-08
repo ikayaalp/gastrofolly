@@ -565,6 +565,7 @@ model ConversationParticipant {
   userId         String
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   lastReadAt     DateTime?
+  deletedAt      DateTime?
   createdAt      DateTime     @default(now())
 
   @@unique([conversationId, userId])

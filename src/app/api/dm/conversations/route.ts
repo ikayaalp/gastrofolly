@@ -48,13 +48,14 @@ export async function GET(request: NextRequest) {
                     createdAt: conversation.createdAt,
                     otherUser: otherParticipant?.user || null,
                     lastMessage: conversation.messages[0] || null,
-                    unreadCount
+                    unreadCount,
+                    deletedAt: p.deletedAt
                 }
             })
         )
 
-        // Filter out conversations that have no messages yet
-        const validConversations = conversations.filter(c => c.lastMessage !== null)
+        // Filter out conversations that have no messages yet, or are marked as deleted
+        const validConversations = conversations.filter(c => c.lastMessage !== null && !c.deletedAt)
 
         // Sort by lastMessageAt (or createdAt if null) descending
         validConversations.sort((a, b) => {

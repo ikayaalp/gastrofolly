@@ -1,10 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Loader2, MessageCircle, Home, BookOpen, Users, ChefHat } from 'lucide-react'
+import { ArrowLeft, Loader2, MessageCircle, Home, BookOpen, Users, ChefHat, Trash2 } from 'lucide-react'
 import { getPusherClient } from '@/lib/pusherClient'
+import toast from 'react-hot-toast'
+import ConfirmationModal from '@/components/ui/ConfirmationModal'
 
 interface Conversation {
     id: string
@@ -38,6 +40,166 @@ function getInitials(name: string | null): string {
         .slice(0, 2)
 }
 
+function ConversationRow({
+    item,
+    router,
+    onDelete
+}: {
+    item: Conversation
+    router: any
+    onDelete: (id: string) => void
+}) {
+    const [translateX, setTranslateX] = useState(0)
+    const [isDragging, setIsDragging] = useState(false)
+    const startXRef = useRef<number | null>(null)
+    const [showDeleteModal, setShowDeleteModal] = useState(false)
+
+    const handleTouchStart = (e: React.TouchEvent) => {
+        startXRef.current = e.touches[0].clientX
+        setIsDragging(true)
+    }
+
+    const handleTouchMove = (e: React.TouchEvent) => {
+        if (startXRef.current === null) return
+        const currentX = e.touches[0].clientX
+        const diff = currentX - startXRef.current
+        
+        if (diff < 0) {
+            setTranslateX(Math.max(diff, -80))
+        } else {
+            setTranslateX(0)
+        }
+    }
+
+    const handleTouchEnd = () => {
+        setIsDragging(false)
+        if (translateX < -50) {
+            setTranslateX(-80)
+        } else {
+            setTranslateX(0)
+        }
+        startXRef.current = null
+    }
+
+    const handleDeleteClick = (e: React.MouseEvent) => {
+        e.stopPropagation()
+        setShowDeleteModal(true)
+    }
+
+    const handleConfirmDelete = () => {
+        setShowDeleteModal(false)
+        onDelete(item.id)
+    }
+
+    const handleCancelDelete = () => {
+        setShowDeleteModal(false)
+        setTranslateX(0)
+    }
+
+    const handleClick = () => {
+        if (translateX < -10) {
+            setTranslateX(0)
+        } else {
+            router.push(`/messages/${item.id}`)
+        }
+    }
+
+    return (
+        <div className="relative overflow-hidden rounded-xl group mb-1 bg-black">
+            {/* Background delete button */}
+            <div className="absolute inset-y-0 right-0 w-20 bg-red-500 flex items-center justify-center rounded-xl">
+                <button
+                    onClick={handleDeleteClick}
+                    className="w-full h-full flex items-center justify-center text-white outline-none"
+                >
+                    <Trash2 className="h-6 w-6" />
+                </button>
+            </div>
+            
+            {/* Main row content */}
+            <div
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+                onClick={handleClick}
+                style={{
+                    transform: `translateX(${translateX}px)`,
+                    transition: isDragging ? 'none' : 'transform 0.2s ease-out'
+                }}
+                className="relative z-10 bg-[#000] cursor-pointer hover:bg-[#111] transition-colors p-4 flex items-center gap-3 rounded-xl border border-transparent group-hover:border-gray-800"
+            >
+                {/* Avatar */}
+                <div className="flex-shrink-0">
+                    {item.otherUser?.image ? (
+                        <img
+                            src={item.otherUser.image}
+                            alt={item.otherUser.name || 'User'}
+                            className="w-12 h-12 rounded-full object-cover"
+                        />
+                    ) : (
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-600 to-orange-800 flex items-center justify-center">
+                            <span className="text-white font-bold text-sm">
+                                {getInitials(item.otherUser?.name || null)}
+                            </span>
+                        </div>
+                    )}
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 min-w-0 pr-8">
+                    <div className="flex items-center justify-between">
+                        <p
+                            className={`text-sm truncate ${
+                                item.unreadCount > 0
+                                    ? 'text-white font-bold'
+                                    : 'text-white font-semibold'
+                            }`}
+                        >
+                            {item.otherUser?.name || 'Bilinmeyen Kullanıcı'}
+                        </p>
+                        <span className="text-gray-500 text-xs flex-shrink-0 ml-2">
+                            {formatTimeAgo(item.lastMessage?.createdAt || item.lastMessageAt)}
+                        </span>
+                    </div>
+                    {item.lastMessage && (
+                        <p className="text-gray-400 text-sm line-clamp-1 mt-0.5">
+                            {item.lastMessage.content}
+                        </p>
+                    )}
+                </div>
+
+                {/* Unread indicator */}
+                {item.unreadCount > 0 && (
+                    <div className="flex-shrink-0 absolute right-4 md:group-hover:hidden">
+                        <span className="w-2.5 h-2.5 rounded-full bg-orange-500 block" />
+                    </div>
+                )}
+                
+                {/* Desktop hover delete icon */}
+                <div className="hidden md:flex opacity-0 group-hover:opacity-100 transition-opacity absolute right-4 items-center pl-2">
+                    <button
+                        onClick={handleDeleteClick}
+                        className="p-2 text-gray-400 hover:text-red-500 transition-colors rounded-full hover:bg-red-500/10"
+                    >
+                        <Trash2 className="h-5 w-5" />
+                    </button>
+                </div>
+            </div>
+
+            <ConfirmationModal
+                isOpen={showDeleteModal}
+                onClose={handleCancelDelete}
+                onConfirm={handleConfirmDelete}
+                title="Konuşmayı Sil"
+                message="Bu konuşmayı silmek istediğinize emin misiniz? Karşı taraf bu konuşmayı görmeye devam edecek."
+                confirmText="Sil"
+                cancelText="Vazgeç"
+                isDanger={true}
+            />
+        </div>
+    )
+}
+
 export default function MessagesInboxClient({ userId }: { userId: string }) {
     const router = useRouter()
     const [conversations, setConversations] = useState<Conversation[]>([])
@@ -58,6 +220,22 @@ export default function MessagesInboxClient({ userId }: { userId: string }) {
             setError('Bir bağlantı hatası oluştu')
         } finally {
             setLoading(false)
+        }
+    }
+
+    const handleDeleteConversation = async (conversationId: string) => {
+        try {
+            const response = await fetch(`/api/dm/conversations/${conversationId}`, {
+                method: 'DELETE'
+            })
+            const data = await response.json()
+            if (data.success) {
+                setConversations(prev => prev.filter(c => c.id !== conversationId))
+            } else {
+                toast.error(data.error || 'Silinirken bir hata oluştu')
+            }
+        } catch (err) {
+            toast.error('Bağlantı hatası')
         }
     }
 
@@ -123,58 +301,12 @@ export default function MessagesInboxClient({ userId }: { userId: string }) {
                 ) : (
                     <div className="space-y-1">
                         {conversations.map((item) => (
-                            <div
-                                key={item.id}
-                                onClick={() => router.push(`/messages/${item.id}`)}
-                                className="cursor-pointer hover:bg-[#111] transition-colors rounded-xl p-4 flex items-center gap-3"
-                            >
-                                {/* Avatar */}
-                                <div className="flex-shrink-0">
-                                    {item.otherUser?.image ? (
-                                        <img
-                                            src={item.otherUser.image}
-                                            alt={item.otherUser.name || 'User'}
-                                            className="w-12 h-12 rounded-full object-cover"
-                                        />
-                                    ) : (
-                                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-600 to-orange-800 flex items-center justify-center">
-                                            <span className="text-white font-bold text-sm">
-                                                {getInitials(item.otherUser?.name || null)}
-                                            </span>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Content */}
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center justify-between">
-                                        <p
-                                            className={`text-sm truncate ${
-                                                item.unreadCount > 0
-                                                    ? 'text-white font-bold'
-                                                    : 'text-white font-semibold'
-                                            }`}
-                                        >
-                                            {item.otherUser?.name || 'Bilinmeyen Kullanıcı'}
-                                        </p>
-                                        <span className="text-gray-500 text-xs flex-shrink-0 ml-2">
-                                            {formatTimeAgo(item.lastMessage?.createdAt || item.lastMessageAt)}
-                                        </span>
-                                    </div>
-                                    {item.lastMessage && (
-                                        <p className="text-gray-400 text-sm line-clamp-1 mt-0.5">
-                                            {item.lastMessage.content}
-                                        </p>
-                                    )}
-                                </div>
-
-                                {/* Unread indicator */}
-                                {item.unreadCount > 0 && (
-                                    <div className="flex-shrink-0">
-                                        <span className="w-2.5 h-2.5 rounded-full bg-orange-500 block" />
-                                    </div>
-                                )}
-                            </div>
+                            <ConversationRow 
+                                key={item.id} 
+                                item={item} 
+                                router={router} 
+                                onDelete={handleDeleteConversation} 
+                            />
                         ))}
                     </div>
                 )}

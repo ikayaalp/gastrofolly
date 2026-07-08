@@ -98,7 +98,21 @@ const dmService = {
                 error: error.response?.data?.error || 'Okundu olarak işaretlenemedi',
             };
         }
-    }
+    },
+
+    // Soft delete a conversation (hides it from inbox)
+    deleteConversation: async (conversationId) => {
+        try {
+            const response = await api.delete(`/api/dm/conversations/${conversationId}`);
+            return response.data;
+        } catch (error) {
+            console.error('deleteConversation Error:', error.response?.data || error.message);
+            return {
+                success: false,
+                error: error.response?.data?.error || 'Konuşma silinemedi',
+            };
+        }
+    },
 };
 
 export default dmService;
