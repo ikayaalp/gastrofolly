@@ -30,6 +30,7 @@ import {
     User,
     Pencil,
     Check,
+    Settings,
 } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import forumService from '../api/forumService';
@@ -225,7 +226,7 @@ export default function ChefSocialProfileScreen({ navigation, route }) {
             wasLiked ? prev.filter(id => id !== topicId) : [...prev, topicId]
         );
         setTopics(prev => prev.map(t =>
-            t.id === topicId ? { ...t, likesCount: wasLiked ? t.likesCount - 1 : t.likesCount + 1 } : t
+            t.id === topicId ? { ...t, likeCount: wasLiked ? Math.max(0, (t.likeCount || 0) - 1) : (t.likeCount || 0) + 1 } : t
         ));
         await forumService.likeTopic(topicId);
     };
@@ -239,6 +240,32 @@ export default function ChefSocialProfileScreen({ navigation, route }) {
             setFollowListData(result.data.users || []);
         }
         setFollowListLoading(false);
+    };
+
+    const handleDeleteTopic = (topicItem) => {
+        Alert.alert(
+            'Gönderiyi Sil',
+            'Bu gönderiyi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.',
+            [
+                { text: 'İptal', style: 'cancel' },
+                {
+                    text: 'Sil',
+                    style: 'destructive',
+                    onPress: async () => {
+                        const result = await forumService.deleteTopic(topicItem.id);
+                        if (result.success) {
+                            setTopics(prev => prev.filter(t => t.id !== topicItem.id));
+                            if (profile) {
+                                setProfile(prev => ({ ...prev, topicsCount: Math.max(0, (prev.topicsCount || 0) - 1) }));
+                            }
+                            Alert.alert('Başarılı', 'Gönderi silindi.');
+                        } else {
+                            Alert.alert('Hata', result.error || 'Gönderi silinemedi.');
+                        }
+                    }
+                }
+            ]
+        );
     };
 
     const navigateToProfile = (uid) => {
@@ -449,6 +476,13 @@ export default function ChefSocialProfileScreen({ navigation, route }) {
                     <Text style={styles.navTitle} numberOfLines={1}>{profile.name}</Text>
                     <Text style={styles.navSubtitle}>{profile.topicsCount ?? 0} gönderi</Text>
                 </View>
+                {isOwnProfile ? (
+                    <TouchableOpacity onPress={() => navigation.navigate('Settings')} style={styles.navSettings}>
+                        <Settings size={22} color="#fff" />
+                    </TouchableOpacity>
+                ) : (
+                    <View style={{ width: 44 }} />
+                )}
             </View>
 
             <FlatList
@@ -468,6 +502,9 @@ export default function ChefSocialProfileScreen({ navigation, route }) {
                                 navigation.push('ChefSocialProfile', { userId: authorId });
                             }
                         }}
+                        currentUserId={currentUserId}
+                        onEdit={(topicItem) => navigation.navigate('EditTopic', { topic: topicItem })}
+                        onDelete={handleDeleteTopic}
                     />
                 )}
                 ListHeaderComponent={renderHeader}
@@ -594,6 +631,10 @@ const styles = StyleSheet.create({
         color: '#6b7280',
         fontSize: 12,
         marginTop: 1,
+    },
+    navSettings: {
+        padding: 6,
+        marginLeft: 10,
     },
 
     // Cover

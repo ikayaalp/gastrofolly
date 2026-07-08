@@ -35,6 +35,9 @@ export default function TopicCard({
     onVotePoll,
     onShowLikers,
     onAuthorPress,
+    currentUserId,
+    onEdit,
+    onDelete,
 }) {
     const [activeSlide, setActiveSlide] = useState(0);
     const [showOptionsModal, setShowOptionsModal] = useState(false);
@@ -93,6 +96,28 @@ export default function TopicCard({
                 <TouchableWithoutFeedback onPress={() => setShowOptionsModal(false)}>
                     <View style={styles.modalOverlay}>
                         <View style={styles.optionsModalContent}>
+                            {currentUserId && item.author?.id === currentUserId && (
+                                <>
+                                    <TouchableOpacity
+                                        style={styles.optionItem}
+                                        onPress={() => {
+                                            setShowOptionsModal(false);
+                                            if (onEdit) onEdit(item);
+                                        }}
+                                    >
+                                        <Text style={styles.optionText}>Gönderiyi Düzenle</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={styles.optionItem}
+                                        onPress={() => {
+                                            setShowOptionsModal(false);
+                                            if (onDelete) onDelete(item);
+                                        }}
+                                    >
+                                        <Text style={styles.optionTextRed}>Gönderiyi Sil</Text>
+                                    </TouchableOpacity>
+                                </>
+                            )}
                             <TouchableOpacity
                                 style={styles.optionItem}
                                 onPress={() => {

@@ -48,6 +48,7 @@ const Stack = createNativeStackNavigator();
 const HomeStack = createNativeStackNavigator();
 const SocialStack = createNativeStackNavigator();
 const CoursesStack = createNativeStackNavigator();
+const AccountStack = createNativeStackNavigator();
 
 // Home Stack Navigator (includes CourseDetail)
 function HomeStackNavigator() {
@@ -86,6 +87,18 @@ function SocialStackNavigator() {
             <SocialStack.Screen name="EditTopic" component={EditTopicScreen} />
             <SocialStack.Screen name="ChefSocialProfile" component={ChefSocialProfileScreen} />
         </SocialStack.Navigator>
+    );
+}
+
+// Account Stack Navigator
+function AccountStackNavigator() {
+    return (
+        <AccountStack.Navigator screenOptions={{ headerShown: false }}>
+            <AccountStack.Screen name="AccountMain" component={AccountScreen} />
+            <AccountStack.Screen name="ChefSocialProfile" component={ChefSocialProfileScreen} />
+            <AccountStack.Screen name="TopicDetail" component={TopicDetailScreen} />
+            <AccountStack.Screen name="EditTopic" component={EditTopicScreen} />
+        </AccountStack.Navigator>
     );
 }
 
@@ -165,7 +178,7 @@ function TabNavigator() {
             />
             <Tab.Screen
                 name="Account"
-                component={AccountScreen}
+                component={AccountStackNavigator}
                 options={{
                     tabBarLabel: 'Hesabım',
                     tabBarIcon: ({ color, size }) => (

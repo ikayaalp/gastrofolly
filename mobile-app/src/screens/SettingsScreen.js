@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     StyleSheet,
     Text,
@@ -23,14 +23,32 @@ import {
     Globe,
     Shield,
     Trash2,
-    Star
+    Star,
+    Crown,
+    AlertCircle,
+    MessageSquare,
+    Play
 } from 'lucide-react-native';
 import authService from '../api/authService';
 import CustomAlert from '../components/CustomAlert';
 
 export default function SettingsScreen({ navigation }) {
+    const [userData, setUserData] = useState(null);
     const [notificationsEnabled, setNotificationsEnabled] = useState(true);
     const [currentLanguage, setCurrentLanguage] = useState('tr');
+
+    useEffect(() => {
+        const unsubscribe = navigation.addListener('focus', () => {
+            loadUserData();
+        });
+        loadUserData();
+        return unsubscribe;
+    }, [navigation]);
+
+    const loadUserData = async () => {
+        const user = await authService.getCurrentUser();
+        setUserData(user);
+    };
 
     // Modals
     const [showLanguageModal, setShowLanguageModal] = useState(false);
@@ -172,12 +190,21 @@ export default function SettingsScreen({ navigation }) {
                         <SettingItem
                             icon={Lock}
                             title="Şifre Değiştir"
-                            onPress={() => showAlert('Bilgi', 'Şifre değiştirme web sitesi üzerinden yapılmaktadır.', [{ text: 'Tamam' }], 'info')}
+                            onPress={() => navigation.navigate('ChangePassword')}
                         />
                         <SettingItem
                             icon={Shield}
                             title="Gizlilik ve Güvenlik"
                             onPress={() => setShowPrivacyModal(true)}
+                        />
+                    </SettingSection>
+
+                    <SettingSection title="Abonelik">
+                        <SettingItem
+                            icon={Crown}
+                            title="Abonelik Ayarları"
+                            subtitle={userData?.subscriptionPlan && userData.subscriptionPlan !== 'FREE' ? 'Premium Üyelik Aktif' : 'Ücretsiz Üyelik'}
+                            onPress={() => navigation.navigate('Subscription')}
                         />
                     </SettingSection>
 
@@ -213,6 +240,11 @@ export default function SettingsScreen({ navigation }) {
                             }}
                         />
                         <SettingItem
+                            icon={AlertCircle}
+                            title="Sorun Bildir"
+                            onPress={() => Linking.openURL('mailto:info@culinora.net?subject=Sorun%20Bildirimi%20-%20Culinora%20Mobile')}
+                        />
+                        <SettingItem
                             icon={HelpCircle}
                             title="Yardım Merkezi"
                             onPress={handleHelp}
@@ -224,6 +256,32 @@ export default function SettingsScreen({ navigation }) {
                             onPress={() => showAlert('Hakkında', 'Culinora Mobile v1.0.2\n\nGeliştirici: Culinora Team\n© 2024 Tüm hakları saklıdır.', [{ text: 'Tamam' }])}
                         />
                     </SettingSection>
+
+                    {(userData?.role === 'INSTRUCTOR' || userData?.role === 'ADMIN') && (
+                        <SettingSection title="Yönetim">
+                            {userData?.role === 'INSTRUCTOR' && (
+                                <SettingItem
+                                    icon={MessageSquare}
+                                    title="Öğrencilerden Sorular"
+                                    onPress={() => navigation.navigate('ChefSor')}
+                                />
+                            )}
+                            {userData?.role === 'ADMIN' && (
+                                <>
+                                    <SettingItem
+                                        icon={User}
+                                        title="Admin Paneli"
+                                        onPress={() => showAlert('Bilgi', 'Admin paneli sadece web sürümünde mevcuttur.', [{ text: 'Tamam' }], 'info')}
+                                    />
+                                    <SettingItem
+                                        icon={Play}
+                                        title="Kurs Yönetimi"
+                                        onPress={() => showAlert('Bilgi', 'Kurs yönetimi sadece web sürümünde mevcuttur.', [{ text: 'Tamam' }], 'info')}
+                                    />
+                                </>
+                            )}
+                        </SettingSection>
+                    )}
 
                     <View style={[styles.section, styles.dangerSection]}>
                         <SettingItem

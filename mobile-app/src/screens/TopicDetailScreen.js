@@ -557,17 +557,6 @@ export default function TopicDetailScreen({ route, navigation }) {
                 </View>
             )}
 
-            {isLoggedIn && currentUserId === topic.author.id && (
-                <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 16 }}>
-                    <TouchableOpacity onPress={() => navigation.navigate('EditTopic', { topic })} style={{ marginRight: 20 }}>
-                        <Text style={{ color: '#3b82f6', fontSize: 14, fontWeight: 'bold' }}>Düzenle</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={handleDeleteTopic}>
-                        <Text style={{ color: '#ef4444', fontSize: 14, fontWeight: 'bold' }}>Sil</Text>
-                    </TouchableOpacity>
-                </View>
-            )}
-
             {/* Action Bar - Reddit Style */}
             <View style={styles.actionBar}>
                 <View style={styles.likeGroup}>
@@ -891,12 +880,6 @@ export default function TopicDetailScreen({ route, navigation }) {
                     <ArrowLeft size={24} color="#fff" />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle} numberOfLines={1}>Tartışma</Text>
-                {/* Delete button for topic owner */}
-                {currentUserId && topic?.author?.id === currentUserId && (
-                    <TouchableOpacity onPress={handleDeleteTopic} style={styles.headerDeleteButton}>
-                        <Trash2 size={20} color="#ef4444" />
-                    </TouchableOpacity>
-                )}
             </View>
 
             {/* Content */}
@@ -1004,6 +987,28 @@ export default function TopicDetailScreen({ route, navigation }) {
                 <TouchableWithoutFeedback onPress={() => setShowOptionsModal(false)}>
                     <View style={styles.modalOverlay}>
                         <View style={styles.optionsModalContent}>
+                            {currentUserId && selectedItemToReport.authorId === currentUserId && selectedItemToReport.type === 'topic' && (
+                                <>
+                                    <TouchableOpacity
+                                        style={styles.optionItem}
+                                        onPress={() => {
+                                            setShowOptionsModal(false);
+                                            navigation.navigate('EditTopic', { topic });
+                                        }}
+                                    >
+                                        <Text style={styles.optionText}>Gönderiyi Düzenle</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={styles.optionItem}
+                                        onPress={() => {
+                                            setShowOptionsModal(false);
+                                            handleDeleteTopic();
+                                        }}
+                                    >
+                                        <Text style={styles.optionTextRed}>Gönderiyi Sil</Text>
+                                    </TouchableOpacity>
+                                </>
+                            )}
                             <TouchableOpacity
                                 style={styles.optionItem}
                                 onPress={() => {

@@ -14,41 +14,28 @@ import {
 import { ArrowLeft, Check } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import forumService from '../api/forumService';
-import { Picker } from '@react-native-picker/picker';
 
 export default function EditTopicScreen({ route, navigation }) {
     const { topic } = route.params;
     const insets = useSafeAreaInsets();
     
-    const [title, setTitle] = useState(topic?.title || '');
     const [content, setContent] = useState(topic?.content || '');
-    const [categoryId, setCategoryId] = useState(topic?.categoryId || (topic?.category?.id) || '');
-    const [categories, setCategories] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const categoryId = topic?.categoryId || (topic?.category?.id) || '';
     const [saving, setSaving] = useState(false);
 
-    useEffect(() => {
-        loadCategories();
-    }, []);
-
-    const loadCategories = async () => {
-        setLoading(true);
-        const result = await forumService.getCategories();
-        if (result.success) {
-            setCategories(result.data);
-        }
-        setLoading(false);
-    };
-
     const handleSave = async () => {
-        if (!title.trim() || !content.trim() || !categoryId) {
-            Alert.alert('Hata', 'Lütfen tüm alanları doldurun.');
+        if (!content.trim()) {
+            Alert.alert('Hata', 'Lütfen içerik girin.');
             return;
         }
 
+        let generatedTitle = content.trim().split('\n')[0].substring(0, 50);
+        if (!generatedTitle) generatedTitle = "Medya Paylaşımı";
+        if (content.trim().length > 50) generatedTitle += "...";
+
         setSaving(true);
         const result = await forumService.editTopic(topic.id, {
-            title,
+            title: generatedTitle,
             content,
             categoryId
         });
@@ -89,35 +76,6 @@ export default function EditTopicScreen({ route, navigation }) {
             </View>
 
             <ScrollView style={styles.contentContainer} keyboardShouldPersistTaps="handled">
-                {loading ? (
-                    <ActivityIndicator size="large" color="#ea580c" style={{ marginTop: 20 }} />
-                ) : (
-                    <>
-                        <Text style={styles.label}>Kategori</Text>
-                        <View style={styles.pickerContainer}>
-                            <Picker
-                                selectedValue={categoryId}
-                                onValueChange={(itemValue) => setCategoryId(itemValue)}
-                                dropdownIconColor="#fff"
-                                style={styles.picker}
-                            >
-                                <Picker.Item label="Kategori Seçin" value="" color="#9ca3af" />
-                                {categories.map(cat => (
-                                    <Picker.Item key={cat.id} label={cat.name} value={cat.id} color="#fff" />
-                                ))}
-                            </Picker>
-                        </View>
-
-                        <Text style={styles.label}>Başlık</Text>
-                        <TextInput
-                            style={styles.titleInput}
-                            value={title}
-                            onChangeText={setTitle}
-                            placeholder="Başlık girin"
-                            placeholderTextColor="#6b7280"
-                        />
-
-                        <Text style={styles.label}>İçerik</Text>
                         <TextInput
                             style={styles.contentInput}
                             value={content}
@@ -126,9 +84,8 @@ export default function EditTopicScreen({ route, navigation }) {
                             placeholderTextColor="#6b7280"
                             multiline
                             textAlignVertical="top"
+                            autoFocus
                         />
-                    </>
-                )}
             </ScrollView>
         </KeyboardAvoidingView>
     );
@@ -162,40 +119,10 @@ const styles = StyleSheet.create({
         flex: 1,
         padding: 16,
     },
-    label: {
-        color: '#9ca3af',
-        fontSize: 14,
-        fontWeight: '600',
-        marginBottom: 8,
-        marginTop: 16,
-    },
-    pickerContainer: {
-        backgroundColor: '#1f2937',
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: '#374151',
-        overflow: 'hidden',
-    },
-    picker: {
-        color: '#fff',
-    },
-    titleInput: {
-        backgroundColor: '#1f2937',
-        color: '#fff',
-        borderRadius: 12,
-        padding: 16,
-        fontSize: 16,
-        borderWidth: 1,
-        borderColor: '#374151',
-    },
     contentInput: {
-        backgroundColor: '#1f2937',
-        color: '#fff',
-        borderRadius: 12,
-        padding: 16,
+        color: '#e5e7eb',
         fontSize: 16,
-        height: 200,
-        borderWidth: 1,
-        borderColor: '#374151',
+        minHeight: 200,
+        padding: 0,
     }
 });
