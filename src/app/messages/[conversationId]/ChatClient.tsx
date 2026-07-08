@@ -37,7 +37,30 @@ export default function ChatClient({ conversationId, currentUserId }: ChatClient
     const [sending, setSending] = useState(false)
     const [otherUser, setOtherUser] = useState<OtherUser | null>(null)
     const [error, setError] = useState<string | null>(null)
+    const [viewportHeight, setViewportHeight] = useState<number | null>(null)
     const messagesEndRef = useRef<HTMLDivElement>(null)
+
+    // Handle mobile viewport height for keyboard
+    useEffect(() => {
+        if (typeof window === 'undefined' || !window.visualViewport) return
+
+        const updateViewport = () => {
+            setViewportHeight(window.visualViewport?.height || window.innerHeight)
+        }
+
+        updateViewport()
+        window.visualViewport.addEventListener('resize', updateViewport)
+        return () => window.visualViewport?.removeEventListener('resize', updateViewport)
+    }, [])
+
+    // Prevent body scroll when chat is open
+    useEffect(() => {
+        const originalOverflow = document.body.style.overflow
+        document.body.style.overflow = 'hidden'
+        return () => {
+            document.body.style.overflow = originalOverflow
+        }
+    }, [])
 
     const markAsRead = useCallback(() => {
         fetch(`/api/dm/conversations/${conversationId}/read`, { method: 'PUT' }).catch(() => {})
@@ -207,7 +230,10 @@ export default function ChatClient({ conversationId, currentUserId }: ChatClient
     }
 
     return (
-        <div className="fixed inset-0 z-[100] flex flex-col h-[100dvh] bg-black">
+        <div 
+            className="fixed inset-0 z-[100] flex flex-col bg-black h-[100dvh]"
+            style={viewportHeight ? { height: `${viewportHeight}px` } : undefined}
+        >
             {/* Header */}
             <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-800 bg-[#0a0a0a]">
                 <Link
