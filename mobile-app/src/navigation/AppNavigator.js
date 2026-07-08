@@ -88,6 +88,8 @@ function SocialStackNavigator() {
             <SocialStack.Screen name="TopicDetail" component={TopicDetailScreen} />
             <SocialStack.Screen name="EditTopic" component={EditTopicScreen} />
             <SocialStack.Screen name="ChefSocialProfile" component={ChefSocialProfileScreen} />
+            <SocialStack.Screen name="Messages" component={MessagesScreen} />
+            <SocialStack.Screen name="Chat" component={ChatScreen} />
         </SocialStack.Navigator>
     );
 }
@@ -100,6 +102,8 @@ function AccountStackNavigator() {
             <AccountStack.Screen name="ChefSocialProfile" component={ChefSocialProfileScreen} />
             <AccountStack.Screen name="TopicDetail" component={TopicDetailScreen} />
             <AccountStack.Screen name="EditTopic" component={EditTopicScreen} />
+            <AccountStack.Screen name="Messages" component={MessagesScreen} />
+            <AccountStack.Screen name="Chat" component={ChatScreen} />
         </AccountStack.Navigator>
     );
 }
@@ -252,8 +256,6 @@ export default function AppNavigator() {
                 <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
                 <Stack.Screen name="InstructorProfile" component={InstructorProfileScreen} />
                 <Stack.Screen name="ChefSocialProfile" component={ChefSocialProfileScreen} />
-                <Stack.Screen name="Messages" component={MessagesScreen} />
-                <Stack.Screen name="Chat" component={ChatScreen} />
             </Stack.Navigator>
         </NavigationContainer>
     );

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import {
     StyleSheet,
     Text,
@@ -39,6 +40,7 @@ import LikersModal from '../components/LikersModal';
 
 export default function TopicDetailScreen({ route, navigation }) {
     const insets = useSafeAreaInsets();
+    const tabBarHeight = useBottomTabBarHeight();
     const { topicId } = route.params;
     const [topic, setTopic] = useState(null);
     const [comments, setComments] = useState([]);
@@ -131,15 +133,22 @@ export default function TopicDetailScreen({ route, navigation }) {
 
     // Keyboard listener for dynamic padding
     const [keyboardVisible, setKeyboardVisible] = useState(false);
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
 
     useEffect(() => {
         const keyboardWillShowListener = Keyboard.addListener(
             Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
-            () => setKeyboardVisible(true)
+            (e) => {
+                setKeyboardVisible(true);
+                setKeyboardHeight(e.endCoordinates?.height || 0);
+            }
         );
         const keyboardWillHideListener = Keyboard.addListener(
             Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
-            () => setKeyboardVisible(false)
+            () => {
+                setKeyboardVisible(false);
+                setKeyboardHeight(0);
+            }
         );
 
         return () => {
@@ -868,11 +877,18 @@ export default function TopicDetailScreen({ route, navigation }) {
         );
     }
 
+    const androidPaddingBottom = keyboardVisible ? keyboardHeight + insets.bottom : tabBarHeight;
+
     return (
         <KeyboardAvoidingView
-            style={styles.container}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+            style={[
+                styles.container,
+                Platform.OS === 'android'
+                    ? { paddingBottom: androidPaddingBottom }
+                    : { paddingBottom: keyboardVisible ? 0 : tabBarHeight },
+            ]}
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            keyboardVerticalOffset={0}
         >
             {/* Header */}
             <View style={styles.header}>
@@ -900,12 +916,11 @@ export default function TopicDetailScreen({ route, navigation }) {
                 }
             />
 
-            {/* Main Reply Input (for new main comment) moved above tab bar */}
+            {/* Main Reply Input (for new main comment) */}
             <View style={[
                 styles.replyInputContainer,
                 {
-                    bottom: keyboardVisible ? 0 : (Platform.OS === 'android' ? (65 + Math.max(insets.bottom, 36)) : 85),
-                    paddingBottom: keyboardVisible ? (Platform.OS === 'ios' ? 24 : 12) : 16
+                    paddingBottom: Platform.OS === 'android' ? 12 : (keyboardVisible ? 24 : 16)
                 }
             ]}>
                 {isLoggedIn ? (

@@ -12,6 +12,7 @@ import {
 import { ArrowLeft, MessageCircle } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import dmService from '../api/dmService';
 import authService from '../api/authService';
 import { getPusherClient } from '../api/pusherClient';
@@ -195,8 +196,10 @@ export default function MessagesScreen({ navigation }) {
         );
     };
 
+    const tabBarHeight = useBottomTabBarHeight();
+
     return (
-        <View style={[styles.container, { paddingTop: insets.top }]}>
+        <View style={[styles.container, { paddingTop: insets.top, paddingBottom: tabBarHeight }]}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                     <ArrowLeft size={24} color="#fff" />

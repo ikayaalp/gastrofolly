@@ -8,6 +8,7 @@ import { FavoritesProvider } from "@/contexts/FavoritesContext";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import MobileNavbar from "@/components/layout/MobileNavbar";
+import { Toaster } from "react-hot-toast";
 
 
 const inter = Inter({
@@ -111,6 +112,7 @@ export default async function RootLayout({
             </FavoritesProvider>
           </CartProvider>
           <MobileNavbar initialSession={session} />
+          <Toaster position="bottom-center" />
         </AuthSessionProvider>
       </body>
     </html>

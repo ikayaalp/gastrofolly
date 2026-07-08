@@ -207,7 +207,7 @@ export default function ChatClient({ conversationId, currentUserId }: ChatClient
     }
 
     return (
-        <div className="flex flex-col h-screen bg-black">
+        <div className="fixed inset-0 z-[100] flex flex-col h-[100dvh] bg-black">
             {/* Header */}
             <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-800 bg-[#0a0a0a]">
                 <Link

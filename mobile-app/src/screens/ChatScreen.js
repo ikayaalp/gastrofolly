@@ -10,16 +10,21 @@ import {
     Image,
     KeyboardAvoidingView,
     Platform,
+    Keyboard,
     Alert
 } from 'react-native';
 import { ArrowLeft, Send } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import dmService from '../api/dmService';
 import authService, { isPremiumUser } from '../api/authService';
 import { getPusherClient } from '../api/pusherClient';
 
 export default function ChatScreen({ route, navigation }) {
     const insets = useSafeAreaInsets();
+    const tabBarHeight = useBottomTabBarHeight();
+    const [keyboardVisible, setKeyboardVisible] = useState(false);
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
     const { conversationId: initialConversationId, otherUserId, otherUser: initialOtherUser } = route.params || {};
 
     const [conversationId, setConversationId] = useState(initialConversationId);
@@ -72,6 +77,25 @@ export default function ChatScreen({ route, navigation }) {
     useEffect(() => {
         initChat();
     }, [initChat]);
+
+    useEffect(() => {
+        const showEvent = Platform.OS === 'android' ? 'keyboardDidShow' : 'keyboardWillShow';
+        const hideEvent = Platform.OS === 'android' ? 'keyboardDidHide' : 'keyboardWillHide';
+
+        const showSub = Keyboard.addListener(showEvent, (e) => {
+            setKeyboardVisible(true);
+            setKeyboardHeight(e.endCoordinates?.height || 0);
+        });
+        const hideSub = Keyboard.addListener(hideEvent, () => {
+            setKeyboardVisible(false);
+            setKeyboardHeight(0);
+        });
+
+        return () => {
+            showSub.remove();
+            hideSub.remove();
+        };
+    }, []);
 
     const loadMessages = async (convId, pageNum) => {
         if (pageNum === 1) setLoading(true);
@@ -260,10 +284,17 @@ export default function ChatScreen({ route, navigation }) {
         );
     };
 
+    const androidPaddingBottom = keyboardVisible ? keyboardHeight + insets.bottom : tabBarHeight;
+
     return (
-        <KeyboardAvoidingView 
-            style={styles.container} 
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        <KeyboardAvoidingView
+            style={[
+                styles.container,
+                Platform.OS === 'android'
+                    ? { paddingBottom: androidPaddingBottom }
+                    : { paddingBottom: keyboardVisible ? 0 : tabBarHeight },
+            ]}
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
             keyboardVerticalOffset={0}
         >
             {renderHeader()}
@@ -287,7 +318,19 @@ export default function ChatScreen({ route, navigation }) {
                         }
                     />
 
-                    <View style={[styles.inputContainer, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+                    <View
+                        style={[
+                            styles.inputContainer,
+                            {
+                                paddingBottom:
+                                    Platform.OS === 'android'
+                                        ? 12
+                                        : keyboardVisible
+                                            ? Math.max(insets.bottom, 12)
+                                            : 12,
+                            },
+                        ]}
+                    >
                         <TextInput
                             style={styles.input}
                             value={inputText}
