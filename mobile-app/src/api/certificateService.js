@@ -1,4 +1,4 @@
-import axios from 'axios';
+import api from './apiClient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from './config';
 
@@ -11,7 +11,7 @@ const certificateService = {
                 return { success: false, error: 'Oturum açılmamış' };
             }
 
-            const response = await axios.get(
+            const response = await api.get(
                 `${config.API_BASE_URL}/api/user/certificates`,
                 {
                     headers: {

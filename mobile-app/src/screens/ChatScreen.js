@@ -163,7 +163,6 @@ export default function ChatScreen({ route, navigation }) {
                     }
                 });
             } catch (err) {
-                console.log('Pusher setup error in ChatScreen:', err);
             }
         };
 

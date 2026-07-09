@@ -83,7 +83,6 @@ export default function InstructorProfileScreen({ navigation, route }) {
                 setInstructor(instructorCourses[0].instructor);
             }
         } catch (error) {
-            console.log('Load instructor error:', error);
         } finally {
             setLoading(false);
         }
@@ -102,7 +101,6 @@ export default function InstructorProfileScreen({ navigation, route }) {
                 // url: `https://culinora.net/instructor/${instructorId}` // Web URL if available
             });
         } catch (error) {
-            console.log(error.message);
         }
     };
 

@@ -200,7 +200,6 @@ export default function LearnScreen({ route, navigation }) {
                     });
                     setProgress(progressMap);
                 } catch (e) {
-                    console.log('Progress fetch error:', e);
                 }
             }
 
@@ -407,7 +406,6 @@ export default function LearnScreen({ route, navigation }) {
         try {
             await Linking.openURL(mailtoUrl);
         } catch (error) {
-            console.log('Error opening mail:', error);
             handleCopyEmail(email); // Fallback copy
         }
     };
@@ -433,7 +431,6 @@ export default function LearnScreen({ route, navigation }) {
         }
 
         // Debug log
-        console.log('Final Video URL (HLS):', fullUrl);
         return fullUrl;
     };
 
@@ -490,7 +487,6 @@ export default function LearnScreen({ route, navigation }) {
                             isMuted={isMuted}
                             onPlaybackStatusUpdate={handleVideoStatusUpdate}
                             onLoad={() => {
-                                console.log('Video loaded successfully');
                                 setIsBuffering(false);
                             }}
                             onLoadStart={() => setIsBuffering(true)}

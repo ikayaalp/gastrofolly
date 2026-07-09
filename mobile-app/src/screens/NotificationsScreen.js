@@ -16,7 +16,6 @@ export default function NotificationsScreen({ navigation }) {
         if (result.success) {
             setNotifications(result.data.notifications || []);
         } else {
-            console.log('Failed to load notifications:', result.error);
         }
         setLoading(false);
         setRefreshing(false);
@@ -34,7 +33,6 @@ export default function NotificationsScreen({ navigation }) {
     };
 
     const handleNotificationPress = async (notification) => {
-        console.log('Notification pressed:', JSON.stringify(notification, null, 2));
 
         if (!notification.read) {
             await notificationService.markAsRead(notification.id);
@@ -50,13 +48,10 @@ export default function NotificationsScreen({ navigation }) {
 
         // Navigate based on type
         if (courseId) {
-            console.log('Navigating to CourseDetail with courseId:', courseId);
             navigation.navigate('CourseDetail', { courseId });
         } else if (topicId) {
-            console.log('Navigating to TopicDetail with topicId:', topicId);
             navigation.navigate('Social', { screen: 'TopicDetail', params: { topicId } });
         } else {
-            console.log('No navigation target found in notification object');
         }
     };
 
@@ -105,7 +100,6 @@ export default function NotificationsScreen({ navigation }) {
         if (result.success) {
             setNotifications(prev => prev.map(n => ({ ...n, read: true })));
         } else {
-            console.log("Failed to mark all read");
         }
         setLoading(false);
     };

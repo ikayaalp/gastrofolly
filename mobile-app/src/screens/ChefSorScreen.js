@@ -82,7 +82,6 @@ export default function ChefSorScreen({ navigation }) {
                 await Linking.openURL(mailtoUrl);
             }
         } catch (error) {
-            console.log('Error opening mail:', error);
             // Last resort fallback
             Linking.openURL(mailtoUrl);
         }

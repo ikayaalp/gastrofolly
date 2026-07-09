@@ -34,7 +34,7 @@ export const initRevenueCat = () => {
         }
 
         Purchases.configure({ apiKey });
-        console.log('[RevenueCat] SDK başlatıldı');
+        if (__DEV__) { console.log('[RevenueCat] SDK başlatıldı'); }
     } catch (error) {
         console.error('[RevenueCat] Başlatma hatası:', error);
     }
@@ -48,7 +48,7 @@ export const loginRevenueCat = async (userId) => {
     try {
         if (!userId) return;
         const { customerInfo } = await Purchases.logIn(String(userId));
-        console.log('[RevenueCat] Kullanıcı giriş yaptı:', userId);
+        if (__DEV__) { console.log('[RevenueCat] Kullanıcı giriş yaptı:', userId); }
         return customerInfo;
     } catch (error) {
         console.error('[RevenueCat] Login hatası:', error);
@@ -62,7 +62,7 @@ export const loginRevenueCat = async (userId) => {
 export const logoutRevenueCat = async () => {
     try {
         await Purchases.logOut();
-        console.log('[RevenueCat] Kullanıcı çıkış yaptı');
+        if (__DEV__) { console.log('[RevenueCat] Kullanıcı çıkış yaptı'); }
     } catch (error) {
         // Zaten çıkış yapılmışsa hata fırlatabilir, görmezden gel
         console.warn('[RevenueCat] Logout uyarısı:', error?.message);

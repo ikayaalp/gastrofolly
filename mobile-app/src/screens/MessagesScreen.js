@@ -215,7 +215,6 @@ export default function MessagesScreen({ navigation }) {
                     }
                 });
             } catch (err) {
-                console.log('Pusher setup error in MessagesScreen:', err);
             }
         };
 

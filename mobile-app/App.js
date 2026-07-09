@@ -8,6 +8,7 @@ import notificationService from './src/api/notificationService';
 import { initRevenueCat } from './src/api/revenueCatService';
 
 import { navigationRef } from './src/navigation/AppNavigator';
+import OfflineBanner from './src/components/OfflineBanner';
 
 export default function App() {
   const [appIsReady, setAppIsReady] = useState(false);
@@ -38,12 +39,16 @@ export default function App() {
     notificationService.setupNotificationListeners(
       (notification) => {
         // Uygulama açıkken bildirim geldi
-        console.log('New notification:', notification.request.content);
+        if (__DEV__) {
+          console.log('New notification:', notification.request.content);
+        }
       },
       (response) => {
         // Kullanıcı bildirime tıkladı
         const data = response.notification.request.content.data;
-        console.log('Notification data:', data);
+        if (__DEV__) {
+          console.log('Notification data:', data);
+        }
 
         if (navigationRef.isReady()) {
           // Screen ve params varsa direkt oraya git
@@ -84,6 +89,7 @@ export default function App() {
     <SafeAreaProvider>
       <StatusBar style="light" />
       <AppNavigator />
+      <OfflineBanner />
     </SafeAreaProvider>
   );
 }

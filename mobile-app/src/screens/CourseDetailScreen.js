@@ -70,7 +70,6 @@ export default function CourseDetailScreen({ route, navigation }) {
                 if (!token) return; // Don't try to refresh if not logged in
 
                 try {
-                    console.log('Refreshing user data for subscription check...');
                     const updatedUser = await authService.refreshUserData();
                     if (updatedUser) {
                         setUserData(updatedUser);
@@ -79,7 +78,6 @@ export default function CourseDetailScreen({ route, navigation }) {
                         loadUserData();
                     }
                 } catch (err) {
-                    console.log('Refresh error:', err);
                     loadUserData();
                 }
             };
@@ -123,7 +121,6 @@ export default function CourseDetailScreen({ route, navigation }) {
             const user = await authService.getCurrentUser();
             if (user) setUserData(user);
         } catch (err) {
-            console.log('User data load error:', err);
         }
     };
 

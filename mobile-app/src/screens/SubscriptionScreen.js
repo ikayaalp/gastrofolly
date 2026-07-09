@@ -93,7 +93,6 @@ export default function SubscriptionScreen({ navigation, route }) {
             
             // If RevenueCat says premium but backend doesn't, sync RC→Backend and re-check
             if (status.isPremium && !hasBackendPremium) {
-                console.log('[Subscription] RevenueCat premium but backend not — syncing...');
                 await authService.syncSubscription(true, status.expirationDate);
                 // Re-fetch user after sync to get updated backend status
                 user = await authService.refreshUserData();

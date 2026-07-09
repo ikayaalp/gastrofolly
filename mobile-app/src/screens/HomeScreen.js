@@ -71,7 +71,6 @@ export default function HomeScreen({ navigation }) {
         // Fetch Stories
         try {
             const storyResult = await storyService.getActiveStories();
-            console.log("Story Result:", JSON.stringify(storyResult, null, 2));
             if (storyResult && storyResult.success) {
                 // Group stories by creator logic (similar to web)
                 if (storyResult.stories) {

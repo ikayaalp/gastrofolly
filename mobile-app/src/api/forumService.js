@@ -1,28 +1,8 @@
-import axios from 'axios';
+import api from './apiClient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from './config';
 
-const api = axios.create({
-    baseURL: config.API_BASE_URL,
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    timeout: 10000,
-});
 
-// Request interceptor to add auth token
-api.interceptors.request.use(
-    async (config) => {
-        const token = await AsyncStorage.getItem('authToken');
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-    },
-    (error) => {
-        return Promise.reject(error);
-    }
-);
 
 const forumService = {
     // Get forum categories

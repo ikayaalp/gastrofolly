@@ -3,7 +3,7 @@ import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
+import api from './apiClient';
 import config from './config';
 
 // Bildirim davranışını ayarla - uygulama açıkken bile bildirim göster
@@ -28,7 +28,6 @@ class NotificationService {
 
         // Fiziksel cihaz kontrolü
         if (!Device.isDevice) {
-            console.log('Push notifications require a physical device');
             return null;
         }
 
@@ -54,20 +53,17 @@ class NotificationService {
         }
 
         if (finalStatus !== 'granted') {
-            console.log('Push notification permission denied');
             return null;
         }
 
         // Expo push token al
         try {
             const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? Constants.easConfig?.projectId;
-            console.log('Using Project ID for Push:', projectId);
 
             token = (await Notifications.getExpoPushTokenAsync({
                 projectId: projectId,
             })).data;
 
-            console.log('Expo Push Token:', token);
             this.expoPushToken = token;
 
             // Token'ı local storage'a kaydet
@@ -88,11 +84,10 @@ class NotificationService {
         try {
             const authToken = await AsyncStorage.getItem('authToken');
             if (!authToken) {
-                console.log('No auth token, skipping push token registration');
                 return;
             }
 
-            await axios.put(
+            await api.put(
                 `${config.API_BASE_URL}/api/user/push-token`,
                 { pushToken: token },
                 {
@@ -102,7 +97,6 @@ class NotificationService {
                     }
                 }
             );
-            console.log('Push token sent to backend successfully');
         } catch (error) {
             console.error('Error sending push token to backend:', error);
         }
@@ -112,7 +106,6 @@ class NotificationService {
     setupNotificationListeners(onNotificationReceived, onNotificationTapped) {
         // Bildirim geldiğinde (uygulama açıkken)
         this.notificationListener = Notifications.addNotificationReceivedListener(notification => {
-            console.log('Notification received:', notification);
             if (onNotificationReceived) {
                 onNotificationReceived(notification);
             }
@@ -120,7 +113,6 @@ class NotificationService {
 
         // Bildirime dokunulduğunda
         this.responseListener = Notifications.addNotificationResponseReceivedListener(response => {
-            console.log('Notification tapped:', response);
             if (onNotificationTapped) {
                 onNotificationTapped(response);
             }
@@ -150,7 +142,7 @@ class NotificationService {
                 return { success: false, error: 'Oturum açılmamış' };
             }
 
-            const response = await axios.get(
+            const response = await api.get(
                 `${config.API_BASE_URL}/api/notifications?_t=${new Date().getTime()}`,
                 {
                     headers: {
@@ -175,7 +167,7 @@ class NotificationService {
             const authToken = await AsyncStorage.getItem('authToken');
             if (!authToken) return { success: false };
 
-            await axios.put(
+            await api.put(
                 `${config.API_BASE_URL}/api/notifications/${notificationId}/read`,
                 {},
                 {
@@ -198,7 +190,7 @@ class NotificationService {
             const authToken = await AsyncStorage.getItem('authToken');
             if (!authToken) return { success: false };
 
-            await axios.patch(
+            await api.patch(
                 `${config.API_BASE_URL}/api/notifications`,
                 { action: 'markAllRead' },
                 {
