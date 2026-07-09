@@ -9,6 +9,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import MobileNavbar from "@/components/layout/MobileNavbar";
 import { Toaster } from "react-hot-toast";
+import CookieConsent from "@/components/ui/CookieConsent";
 
 
 const inter = Inter({
@@ -86,24 +87,8 @@ export default async function RootLayout({
         />
       </head>
       <body className={`${inter.variable} font-sans antialiased`}>
-        {/* Google Analytics */}
-        {process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID && (
-          <>
-            <Script
-              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID}`}
-              strategy="afterInteractive"
-            />
-            <Script id="google-analytics" strategy="afterInteractive">
-              {`
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                gtag('config', '${process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID}');
-              `}
-            </Script>
-          </>
-        )}
-
+        {/* Google Analytics artık kullanıcı onayı olmadan yüklenmiyor —
+            bkz. CookieConsent component'i (KVKK/GDPR uyumu). */}
 
         <AuthSessionProvider>
           <CartProvider>
@@ -113,6 +98,7 @@ export default async function RootLayout({
           </CartProvider>
           <MobileNavbar initialSession={session} />
           <Toaster position="bottom-center" />
+          <CookieConsent />
         </AuthSessionProvider>
       </body>
     </html>
