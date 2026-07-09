@@ -211,134 +211,14 @@ export async function GET(request: NextRequest) {
         }
       }
 
-      // ConversationId parametresi varsa pending payment'ları başarılı kabul et
+      // GÜVENLİK: Burada eskiden, token yokken sadece client'ın gönderdiği
+      // conversationId'ye bakılıp Iyzico'ya hiç sorulmadan ödeme COMPLETED
+      // yapılıyordu — bu, kullanıcının kendi conversationId'sini bilerek
+      // ödeme yapmadan kurs/abonelik almasına izin veren bir açıktı.
+      // Token yoksa (ve referer'da da bulunamadıysa) ödeme durumu Iyzico'dan
+      // doğrulanamıyor demektir; bu durumda ASLA ödeme tamamlanmış sayılmaz.
       if (conversationIdParam) {
-        console.log('No token but conversationId found, marking pending payments as completed')
-
-        // Bu conversationId ile ilişkili pending payment'ları bul
-        const payments = await prisma.payment.findMany({
-          where: {
-            stripePaymentId: { contains: conversationIdParam },
-            status: 'PENDING'
-          }
-        })
-
-        if (payments.length === 0) {
-          console.error('No pending payments found for conversationId:', conversationIdParam)
-          const html = `
-            <!DOCTYPE html>
-            <html>
-              <head>
-                <meta charset="utf-8">
-                <title>Redirecting...</title>
-              </head>
-              <body>
-                <script>
-                  window.location.href = '/checkout?error=payment_not_found';
-                </script>
-                <noscript>
-                  <meta http-equiv="refresh" content="0; url=/checkout?error=payment_not_found">
-                </noscript>
-              </body>
-            </html>
-          `
-          return new NextResponse(html, {
-            status: 200,
-            headers: { 'Content-Type': 'text/html' }
-          })
-        }
-
-        const userId = payments[0].userId
-
-        // Tüm payment'ları COMPLETED yap ve enrollment oluştur
-        for (const payment of payments) {
-          await prisma.payment.update({
-            where: { id: payment.id },
-            data: {
-              status: 'COMPLETED',
-              stripePaymentId: payment.stripePaymentId,
-            }
-          })
-
-          // Abonelik güncelleme
-          if (payment.subscriptionPlan) {
-            const now = new Date()
-            let endDate = new Date(now)
-
-            if (payment.billingPeriod === 'yearly') {
-              endDate.setFullYear(endDate.getFullYear() + 1)
-            } else if (payment.billingPeriod === '6monthly') {
-              endDate.setMonth(endDate.getMonth() + 6)
-            } else {
-              endDate.setMonth(endDate.getMonth() + 1)
-            }
-
-            const user = await prisma.user.update({
-              where: { id: userId },
-              data: {
-                subscriptionPlan: payment.subscriptionPlan,
-                subscriptionStartDate: new Date(),
-                subscriptionEndDate: endDate,
-                subscriptionReferenceCode: null,
-                subscriptionCancelled: false,
-              }
-            })
-            console.log(`✅ Subscription updated for user ${userId}: ${payment.subscriptionPlan}`)
-
-            // Hoşgeldin emaili gönder
-            if (user.email) {
-              await sendSubscriptionStartedEmail(
-                user.email,
-                user.name || 'Chef',
-                payment.subscriptionPlan,
-                endDate
-              )
-            }
-          }
-
-          // Enrollment oluşturma (sadece kurs ödemeleri için)
-          if (payment.courseId) {
-            const existingEnrollment = await prisma.enrollment.findFirst({
-              where: {
-                userId: userId,
-                courseId: payment.courseId
-              }
-            })
-
-            if (!existingEnrollment) {
-              await prisma.enrollment.create({
-                data: {
-                  userId: userId,
-                  courseId: payment.courseId,
-                }
-              })
-            }
-          }
-        }
-
-        console.log(`✅ SUCCESSFUL PAYMENT (via conversationId): User ${userId} enrolled`)
-
-        const html = `
-          <!DOCTYPE html>
-          <html>
-            <head>
-              <meta charset="utf-8">
-              <title>Redirecting...</title>
-            </head>
-            <body>
-              <script>
-                window.location.href = '/my-courses';
-              </script>
-              <noscript>
-                <meta http-equiv="refresh" content="0; url=/my-courses">
-              </noscript>
-            </body>
-          </html>
-        `
-        return new NextResponse(html, {
-          status: 200,
-          headers: { 'Content-Type': 'text/html' }
-        })
+        console.error('SECURITY: conversationId present but no verifiable token — refusing to auto-complete payment:', conversationIdParam)
       }
 
       console.error('No token found in callback URL or referer - cannot verify payment status')

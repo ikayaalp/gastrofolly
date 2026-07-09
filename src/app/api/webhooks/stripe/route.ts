@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { stripe } from "@/lib/stripe"
 import { prisma } from "@/lib/prisma"
+import { claimWebhookEvent } from "@/lib/webhookIdempotency"
 import Stripe from "stripe"
 
 export async function POST(request: NextRequest) {
@@ -31,6 +32,14 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    // Stripe ayni event'i birden fazla kez teslim edebilir (retry). event.id
+    // her olay icin sabit ve benzersizdir -> ikinci teslimatta islem atlanir.
+    const isNewEvent = await claimWebhookEvent("stripe", event.id)
+    if (!isNewEvent) {
+      console.log(`[Stripe Webhook] Duplicate event ignored: ${event.id}`)
+      return NextResponse.json({ received: true, duplicate: true })
+    }
+
     switch (event.type) {
       case 'checkout.session.completed':
         const session = event.data.object as Stripe.Checkout.Session

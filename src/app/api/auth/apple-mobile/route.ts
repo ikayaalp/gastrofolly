@@ -40,12 +40,6 @@ export async function POST(request: NextRequest) {
         }
 
         console.log('✅ Token decoded successfully');
-        console.log('Token Info:', { 
-            iss: decoded.iss, 
-            aud: decoded.aud, 
-            email: decoded.email,
-            sub: decoded.sub 
-        });
 
         // Verify token claims
         if (decoded.iss !== 'https://appleid.apple.com') {

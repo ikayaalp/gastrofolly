@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { claimWebhookEvent, hashPayload } from '@/lib/webhookIdempotency';
 
 /**
  * RevenueCat Webhook Endpoint
@@ -63,6 +64,16 @@ export async function POST(request: NextRequest) {
 
         console.log(`[RC Webhook] Event: ${eventType} | User: ${appUserId} | Product: ${productId}`);
 
+        // RevenueCat ayni event'i birden fazla kez teslim edebilir (retry).
+        // event.id RC tarafindan her olay icin benzersiz uretilir; yoksa
+        // (beklenmedik format degisikligi) tum payload'un hash'ine dus.
+        const eventDedupeKey = event.id || hashPayload(event);
+        const isNewEvent = await claimWebhookEvent('revenuecat', eventDedupeKey);
+        if (!isNewEvent) {
+            console.log(`[RC Webhook] Duplicate event ignored: ${eventDedupeKey}`);
+            return NextResponse.json({ success: true, duplicate: true });
+        }
+
         // 3. Kullanıcıyı bul
         if (!appUserId || appUserId.startsWith('$RCAnonymousID')) {
             // Anonim kullanıcı — veritabanında yok, yoksay
@@ -125,29 +136,21 @@ export async function POST(request: NextRequest) {
                 const netAmount = isYearly ? NET_YEARLY_PRICE : NET_MONTHLY_PRICE;
                 const appStorePrice = isYearly ? APP_STORE_YEARLY_PRICE : APP_STORE_MONTHLY_PRICE;
 
-                // Aynı event için mükerrer kayıt oluşturmayı engelle
-                const existingPayment = await prisma.payment.findFirst({
-                    where: {
+                // Mükerrer kayıt koruması artık yukarıdaki claimWebhookEvent ile
+                // sağlanıyor (bu event ilk kez işleniyorsa buraya kadar gelinir).
+                await prisma.payment.create({
+                    data: {
                         userId: appUserId,
-                        stripePaymentId: `rc_${eventType}_${productId}_${Date.now()}`.substring(0, 50),
+                        amount: netAmount,
+                        currency: 'TRY',
+                        status: 'COMPLETED',
+                        subscriptionPlan: 'Premium',
+                        billingPeriod: billingPeriod,
+                        stripePaymentId: `rc_${appUserId}_${Date.now()}`, // Benzersiz ID
                     }
                 });
 
-                if (!existingPayment) {
-                    await prisma.payment.create({
-                        data: {
-                            userId: appUserId,
-                            amount: netAmount,
-                            currency: 'TRY',
-                            status: 'COMPLETED',
-                            subscriptionPlan: 'Premium',
-                            billingPeriod: billingPeriod,
-                            stripePaymentId: `rc_${appUserId}_${Date.now()}`, // Benzersiz ID
-                        }
-                    });
-
-                    console.log(`[RC Webhook] 💰 Payment kaydı oluşturuldu: ${billingPeriod} | App Store: ₺${appStorePrice} → Apple sonrası: ₺${netAmount}`);
-                }
+                console.log(`[RC Webhook] 💰 Payment kaydı oluşturuldu: ${billingPeriod} | App Store: ₺${appStorePrice} → Apple sonrası: ₺${netAmount}`);
             }
 
             console.log(`[RC Webhook] ✅ User ${appUserId} → Premium (expires: ${expirationDate?.toISOString() || 'lifetime'})`);

@@ -24,7 +24,6 @@ function generateAuthHeader(endpoint: string, requestBody: string): { authHeader
 
   console.log('IYZWSv2 İmza Oluşturma:', {
     format: 'randomKey + endpoint + requestBody',
-    randomKey,
     endpoint,
     requestBodyLength: requestBody.length,
     dataToSignLength: dataToSign.length
@@ -46,9 +45,6 @@ function generateAuthHeader(endpoint: string, requestBody: string): { authHeader
   const authHeader = `IYZWSv2 ${base64EncodedAuthorization}`
 
   console.log('IYZWSv2 Auth Header Oluşturuldu:', {
-    randomKey,
-    encryptedData: encryptedData.substring(0, 20) + '...',
-    authorizationString: authorizationString.substring(0, 60) + '...',
     base64Length: base64EncodedAuthorization.length,
     headerFormat: 'IYZWSv2 [base64]'
   })
@@ -71,8 +67,7 @@ function getIyzicoHeaders(endpoint: string, requestBody: string) {
 
   console.log('Final Headers:', {
     'Content-Type': headers['Content-Type'],
-    'Authorization': headers['Authorization'].substring(0, 80) + '...',
-    'x-iyzi-rnd': headers['x-iyzi-rnd']
+    hasAuthorization: Boolean(headers['Authorization']),
   })
 
   return headers
@@ -96,7 +91,6 @@ async function makeIyzicoRequest<T>(endpoint: string, requestBody: unknown, meth
     url,
     endpoint,
     method,
-    apiKey: IYZICO_CONFIG.apiKey.substring(0, 15) + '...',
     baseUrl: IYZICO_CONFIG.baseUrl,
     requestBodyLength: bodyString.length
   })

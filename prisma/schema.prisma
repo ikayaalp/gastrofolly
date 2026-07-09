@@ -676,3 +676,13 @@ model HomeSectionCourse {
 
   @@unique([homeSectionId, courseId])
 }
+
+// Webhook idempotency kaydı. Stripe/Iyzico/RevenueCat webhook'ları aynı olayı
+// birden fazla kez gönderebilir (retry) — bu tablo her olayı bir kez işlemeyi
+// garanti eder (dedupeKey unique, ilk create kazanır, ikinci P2002 alır).
+model WebhookEvent {
+  id        String   @id @default(cuid())
+  source    String // "stripe" | "iyzico" | "revenuecat"
+  dedupeKey String   @unique
+  createdAt DateTime @default(now())
+}

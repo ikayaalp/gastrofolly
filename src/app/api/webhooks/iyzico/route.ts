@@ -1,8 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { claimWebhookEvent, hashPayload } from '@/lib/webhookIdempotency';
 
+/**
+ * Iyzico bu endpoint'e imza göndermiyor (Stripe/RevenueCat'in aksine). Bu yüzden
+ * IYZICO_WEBHOOK_SECRET tanımlıysa, Iyzico panelindeki webhook URL'sinin sonuna
+ * eklenen ?secret=<deger> ile eşleşme aranır. Env değişkeni henüz set edilmediyse
+ * (bootstrap aşaması) istek reddedilmez — mevcut davranış korunur, ama set
+ * edildiği andan itibaren eşleşmeyen istekler reddedilir.
+ * ÖNEMLİ: Bu korumanın devreye girmesi için hem .env'de IYZICO_WEBHOOK_SECRET
+ * tanımlanmalı hem de Iyzico merchant panelindeki webhook URL'si
+ * https://.../api/webhooks/iyzico?secret=<AYNI_DEGER> şeklinde güncellenmeli.
+ */
 export async function POST(request: NextRequest) {
     try {
+        const webhookSecret = process.env.IYZICO_WEBHOOK_SECRET;
+        if (webhookSecret) {
+            const providedSecret = request.nextUrl.searchParams.get('secret');
+            if (providedSecret !== webhookSecret) {
+                console.warn('[Iyzico Webhook] Unauthorized request (secret mismatch)');
+                return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
+            }
+        } else {
+            console.warn('[Iyzico Webhook] IYZICO_WEBHOOK_SECRET tanımlı değil — istek doğrulanmadan kabul ediliyor.');
+        }
+
         const body = await request.json();
         console.log('[Iyzico Webhook] Received payload:', body);
 
@@ -12,6 +34,17 @@ export async function POST(request: NextRequest) {
         if (!subscriptionReferenceCode) {
             console.log('[Iyzico Webhook] Missing subscriptionReferenceCode');
             return NextResponse.json({ success: false, message: 'Missing subscriptionReferenceCode' }, { status: 400 });
+        }
+
+        // Iyzico ayni event'i birden fazla kez teslim edebilir (retry). Bu
+        // payload'da bize ait, garanti benzersiz bir event id alanı olmadığı
+        // için tüm body'nin hash'i deterministik dedupe anahtarı olarak
+        // kullanılıyor — aynı olay tekrar gelirse body de aynı olacağından
+        // hash de aynı olur.
+        const isNewEvent = await claimWebhookEvent('iyzico', hashPayload(body));
+        if (!isNewEvent) {
+            console.log('[Iyzico Webhook] Duplicate event ignored');
+            return NextResponse.json({ success: true, duplicate: true });
         }
 
         const user = await prisma.user.findFirst({
