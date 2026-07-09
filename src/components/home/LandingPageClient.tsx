@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import Footer from "@/components/layout/Footer";
 import AutoScrollCourses from "@/components/home/AutoScrollCourses";
 import FAQSection from "@/components/home/FAQSection";
-import { Sparkles, Award, BookOpen, Smartphone } from "lucide-react";
+import { Sparkles, Award, BookOpen, Smartphone, RefreshCw } from "lucide-react";
 import InstructorsSection from "@/components/home/InstructorsSection";
 import MobileAppSection from "@/components/home/MobileAppSection";
 
@@ -43,7 +43,7 @@ interface Instructor {
 interface LandingPageProps {
     initialFeatured: FeaturedCourse[];
     initialCategories: Category[];
-    initialUserCourses: any[];
+
     initialInstructors: Instructor[];
     monthlyPrice?: number;
 }
@@ -51,7 +51,7 @@ interface LandingPageProps {
 export default function LandingPageClient({
     initialFeatured,
     initialCategories,
-    initialUserCourses,
+
     initialInstructors,
     monthlyPrice = 399
 }: LandingPageProps) {
@@ -234,66 +234,102 @@ export default function LandingPageClient({
                 </div>
             </div>
 
-            {/* Hero Section */}
-            <section className="pt-32 pb-12 relative z-20 overflow-hidden min-h-[70vh] flex items-center">
-                {/* Background Grid - Absolutely Positioned */}
+            {/* Cinematic Hero */}
+            <section className="relative min-h-[85vh] md:min-h-screen flex items-center pt-16">
                 <div className="absolute inset-0 z-0">
-                    {/* Course Images Grid */}
-                    <div className="grid grid-cols-3 md:grid-cols-6 gap-1 md:gap-2 h-full">
-                        {initialFeatured.length > 0 && initialFeatured.slice(0, 12).map((course, index) => (
-                            <div key={index} className="aspect-square overflow-hidden">
-                                <img
-                                    src={course.imageUrl || 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&q=80'}
-                                    alt=""
-                                    className="w-full h-full object-cover"
-                                />
-                            </div>
-                        ))}
-                        {initialFeatured.length < 12 && Array.from({ length: 12 - initialFeatured.length }).map((_, index) => (
-                            <div key={`placeholder-${index}`} className="aspect-square overflow-hidden bg-gray-900">
-                                <img
-                                    src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&q=80"
-                                    alt=""
-                                    className="w-full h-full object-cover"
-                                />
-                            </div>
-                        ))}
-                    </div>
-                    {/* Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/60 to-black z-10"></div>
+                    <img
+                        src="https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=1920&q=80"
+                        alt="Hero background"
+                        className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-black/30"></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/60"></div>
                 </div>
 
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20">
-                    <div className="text-center">
-                        <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-                            Gastronomi Dünyasına
-                            <span className="text-orange-500"> Yolculuk</span>
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20 w-full">
+                    <div className="max-w-2xl">
+                        <span className="text-orange-500 text-xs md:text-sm tracking-[0.2em] font-semibold uppercase mb-4 block">
+                            TÜRKİYE'NİN GASTRONOMİ PLATFORMU
+                        </span>
+                        <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-[1.05]">
+                            Ustalardan öğren.<br/>
+                            Mutfakta <span className="text-orange-500">ustalaş</span>.
                         </h1>
-                        <p className="text-lg md:text-xl text-white md:text-gray-300 mb-8 max-w-3xl mx-auto font-medium md:font-normal">
-                            Profesyonel şeflerden öğren, mutfakta ustalaş.
-                            Video dersler, uygulamalı projeler ve sertifikalar ile gastronomi kariyerine başla.
+                        <p className="text-lg md:text-xl text-gray-300 mb-8 max-w-xl">
+                            Profesyonel şeflerden öğren... sertifikalar ile gastronomi kariyerine başla.
                         </p>
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                             <button
                                 onClick={handleSignUpClick}
-                                className="bg-orange-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-orange-700 transition-colors relative z-40 cursor-pointer"
+                                className="bg-orange-600 text-white px-10 py-4 text-lg rounded-lg font-semibold hover:bg-orange-700 transition-colors cursor-pointer"
                             >
                                 Hemen Başla
                             </button>
-                            <button className="flex items-center justify-center space-x-2 border-2 border-gray-600 text-gray-300 px-8 py-3 rounded-lg font-semibold hover:border-orange-500 hover:text-orange-500 transition-colors cursor-pointer">
-                                <Play className="h-5 w-5" />
-                                <span>Tanıtım Videosu</span>
-                            </button>
+                            <span className="text-sm text-gray-400">
+                                Aylık {monthlyPrice} ₺ — istediğin zaman iptal et
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Categories Pill Strip */}
+                <div className="absolute bottom-8 left-0 right-0 z-20">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="flex overflow-x-auto scrollbar-hide gap-3 pb-2">
+                            {initialCategories.map((cat) => (
+                                <Link 
+                                    key={cat.id} 
+                                    href={`/category/${cat.id}`}
+                                    className="whitespace-nowrap border border-gray-700 hover:border-orange-500 rounded-full px-4 py-1.5 text-sm text-gray-300 hover:text-white transition-colors"
+                                >
+                                    {cat.name}
+                                </Link>
+                            ))}
                         </div>
                     </div>
                 </div>
             </section>
 
+            {/* Value Proposition Strip */}
+            <section className="border-y border-gray-900 py-8 bg-black relative z-20">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        <div className="flex items-center gap-3">
+                            <Play className="w-6 h-6 text-orange-500 flex-shrink-0" />
+                            <span className="text-sm text-gray-300">100+ ders videosu</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <Award className="w-6 h-6 text-orange-500 flex-shrink-0" />
+                            <span className="text-sm text-gray-300">Bitirme sertifikası</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <Smartphone className="w-6 h-6 text-orange-500 flex-shrink-0" />
+                            <span className="text-sm text-gray-300">Mobil uygulama</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <RefreshCw className="w-6 h-6 text-orange-500 flex-shrink-0" />
+                            <span className="text-sm text-gray-300">Her ay yeni içerik</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Auto Scrolling Courses */}
+            {initialFeatured.length > 0 && (
+                <AutoScrollCourses courses={initialFeatured} />
+            )}
+
+            {/* Meet the Chefs Section */}
+            <InstructorsSection instructors={initialInstructors} />
+
             {/* Subscription Banner */}
-            <section className="py-8 bg-gradient-to-br from-orange-900/20 via-black to-purple-900/20 border-y border-orange-500/20 mb-8">
+            <section className="py-8 bg-black mb-8">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     {/* Header */}
                     <div className="text-center mb-5">
+                        <span className="text-orange-500 text-xs tracking-[0.2em] font-semibold uppercase mb-2 block">
+                            ÜYELİK
+                        </span>
                         <h2 className="text-2xl md:text-4xl font-bold text-white mb-2">
                             Tüm Kurslara
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-500 ml-2">
@@ -308,7 +344,7 @@ export default function LandingPageClient({
                     {/* Single Premium Plan - Compact Style */}
                     <div className="flex justify-center">
                         <div className="w-full max-w-5xl px-4 md:px-0">
-                            <div className="relative bg-black/40 backdrop-blur-md border border-orange-500/30 rounded-xl overflow-hidden shadow-lg shadow-orange-900/20">
+                            <div className="relative bg-black border border-orange-500/20 rounded-2xl overflow-hidden">
                                 <div className="flex flex-col md:flex-row items-center justify-between p-5 md:px-10 md:py-6 relative z-10">
 
                                     {/* Left Side: Title & Subtitle */}
@@ -342,78 +378,11 @@ export default function LandingPageClient({
                                     </div>
 
                                 </div>
-
-                                {/* Visual Effects */}
-                                <div className="absolute -top-20 -right-20 w-48 h-48 bg-orange-600/10 blur-3xl rounded-full pointer-events-none"></div>
-                                <div className="absolute -bottom-20 -left-20 w-48 h-48 bg-orange-600/10 blur-3xl rounded-full pointer-events-none"></div>
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
-
-            {/* Continue Watching Section */}
-            {initialUserCourses.length > 0 && (
-                <section className="py-8 bg-black">
-                    <div className="max-w-[1400px] mx-auto px-6">
-                        <h2 className="text-2xl md:text-3xl font-bold text-white mb-6 flex items-center gap-2">
-                            <Play className="text-orange-500 w-6 h-6" fill="currentColor" />
-                            Kaldığın Yerden Devam Et
-                        </h2>
-                        <div className="flex overflow-x-auto scrollbar-hide space-x-6 pb-4">
-                            {initialUserCourses.map((course) => (
-                                <Link key={course.id} href={`/course/${course.id}`} className="block group flex-shrink-0">
-                                    <div className="w-[280px] md:w-[320px] relative rounded-xl overflow-hidden bg-gray-900 border border-gray-800 group-hover:border-orange-500/30 transition-all duration-300">
-                                        {/* Image */}
-                                        <div className="aspect-video relative overflow-hidden">
-                                            <img
-                                                src={course.imageUrl || 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&q=80'}
-                                                alt={course.title}
-                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                            />
-                                            <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors" />
-
-                                            {/* Play Button Overlay */}
-                                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <div className="bg-white/20 backdrop-blur-sm p-3 rounded-full">
-                                                    <Play className="w-6 h-6 text-white" fill="white" />
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Content */}
-                                        <div className="p-4">
-                                            <h3 className="text-white font-semibold text-lg line-clamp-1 mb-1">{course.title}</h3>
-                                            <p className="text-gray-400 text-xs mb-3">{course.instructor?.name || 'Eğitmen'}</p>
-
-                                            {/* Progress Bar */}
-                                            <div className="w-full bg-gray-800 h-1.5 rounded-full mb-3 overflow-hidden">
-                                                <div
-                                                    className="bg-orange-500 h-full rounded-full transition-all duration-500"
-                                                    style={{ width: `${course.progress || 0}%` }}
-                                                />
-                                            </div>
-
-                                            <div className="flex items-center justify-between text-xs">
-                                                <span className="text-gray-400">%{course.progress || 0} Tamamlandı</span>
-                                                <span className="text-orange-500 font-medium group-hover:underline">Devam Et</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </Link>
-                            ))}
-                        </div>
-                    </div>
-                </section>
-            )}
-
-            {/* Auto Scrolling Courses */}
-            {initialFeatured.length > 0 && (
-                <AutoScrollCourses courses={initialFeatured} />
-            )}
-
-            {/* Meet the Chefs Section */}
-            <InstructorsSection instructors={initialInstructors} />
 
             {/* Mobile App Showcase Section */}
             <MobileAppSection />

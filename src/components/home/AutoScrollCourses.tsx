@@ -49,7 +49,10 @@ export default function AutoScrollCourses({ courses, speed = 1, intervalMs = 16 
       {/* Başlık satırı */}
       <div className="max-w-[1400px] mx-auto px-6 mb-8">
         <div>
-          <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight mb-4">Öne Çıkan <span className="text-orange-500">Eğitimler</span></h2>
+          <span className="text-orange-500 text-xs tracking-[0.2em] font-semibold uppercase mb-2 block">
+            EĞİTİMLER
+          </span>
+          <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight mb-4">Öne Çıkan Eğitimler</h2>
           <p className="text-gray-400 text-base md:text-lg leading-relaxed max-w-2xl">
             Temel mutfak becerilerinden ileri düzey gastronomi tekniklerine kadar, profesyonel şefler tarafından hazırlanan kapsamlı eğitimlerle mutfaktaki yeteneklerinizi keşfedin.
           </p>
@@ -69,10 +72,6 @@ export default function AutoScrollCourses({ courses, speed = 1, intervalMs = 16 
 
               {/* Golden Ratio Aspect Container */}
               <div className="aspect-[1.618/1] relative overflow-hidden">
-                {/* Yakında Ribbon */}
-                <div className="absolute top-4 left-4 z-20 bg-orange-600 text-white text-[10px] md:text-xs font-bold px-3 py-1 rounded shadow-lg uppercase tracking-wider">
-                  Yakında
-                </div>
                 {course.imageUrl ? (
                   <img
                     src={course.imageUrl}
@@ -92,7 +91,7 @@ export default function AutoScrollCourses({ courses, speed = 1, intervalMs = 16 
                 <div className="absolute inset-0 p-5 md:p-8 flex flex-col justify-end">
                   <div className="transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
                     {course.instructor?.name && (
-                      <div className="flex items-center gap-2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">
+                      <div className="flex items-center gap-2 mb-2">
                         <span className="w-6 h-[1px] bg-orange-500"></span>
                         <p className="text-orange-400 text-xs font-semibold uppercase tracking-widest">{course.instructor.name}</p>
                       </div>
