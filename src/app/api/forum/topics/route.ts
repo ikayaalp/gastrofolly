@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/mobileAuth'
 import { prisma } from '@/lib/prisma'
 import { containsProfanity } from '@/lib/profanity'
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rateLimit'
 
 export async function GET(request: NextRequest) {
   try {
@@ -163,6 +164,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
+      )
+    }
+
+    const rateLimitResult = checkRateLimit(`forum-topic:${user.id}`, RATE_LIMITS.FORUM_POST)
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: 'Çok fazla paylaşım yapıyorsunuz. Lütfen biraz bekleyin.' },
+        { status: 429 }
       )
     }
 

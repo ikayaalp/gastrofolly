@@ -16,6 +16,16 @@ export async function PUT(request: NextRequest) {
             return NextResponse.json({ error: 'Push token gerekli' }, { status: 400 })
         }
 
+        // Ayni fiziksel cihazda daha once baska bir kullanici giris yapmis
+        // olabilir (eski kullanici cikis yaparken DELETE cagirmamis olabilir).
+        // Bu token'i baska bir kullanicida birakirsak, o eski kullaniciya da
+        // bildirim gitmeye devam eder. Once bu token'i tasiyan BASKA
+        // kullanicilardan temizle, sonra mevcut kullaniciya ata.
+        await prisma.user.updateMany({
+            where: { pushToken, id: { not: user.id } },
+            data: { pushToken: null }
+        })
+
         // Token'ı kullanıcıya kaydet
         await prisma.user.update({
             where: { id: user.id },

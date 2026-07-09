@@ -62,9 +62,25 @@ export async function POST(request: NextRequest) {
 
     const videoUrl = `/videos/${fileName}`
 
-    // Eğer lessonId varsa, dersi güncelle
+    // Eğer lessonId varsa, dersi güncelle — ama önce bu dersin gerçekten
+    // isteği yapan eğitmenin kendi kursuna ait olduğunu doğrula (ADMIN
+    // hariç), yoksa bir eğitmen başka bir eğitmenin dersinin videosunu
+    // üzerine yazabilirdi.
     const lessonId = formData.get("lessonId") as string
     if (lessonId) {
+      const lesson = await prisma.lesson.findUnique({
+        where: { id: lessonId },
+        select: { course: { select: { instructorId: true } } }
+      })
+
+      if (!lesson) {
+        return NextResponse.json({ error: "Ders bulunamadı" }, { status: 404 })
+      }
+
+      if (user.role !== 'ADMIN' && lesson.course.instructorId !== user.id) {
+        return NextResponse.json({ error: "Bu dersi güncelleme yetkiniz yok" }, { status: 403 })
+      }
+
       await prisma.lesson.update({
         where: { id: lessonId },
         data: { videoUrl }

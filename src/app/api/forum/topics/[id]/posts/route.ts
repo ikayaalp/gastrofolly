@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { containsProfanity } from '@/lib/profanity'
 import { processCuliMention } from '@/lib/culiBot'
 import { sendPushNotification } from '@/lib/pushNotifications'
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rateLimit'
 
 export async function GET(
   request: NextRequest,
@@ -89,6 +90,14 @@ export async function POST(
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
+      )
+    }
+
+    const rateLimitResult = checkRateLimit(`forum-post:${user.id}`, RATE_LIMITS.FORUM_POST)
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: 'Çok fazla yorum yapıyorsunuz. Lütfen biraz bekleyin.' },
+        { status: 429 }
       )
     }
 

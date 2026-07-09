@@ -70,6 +70,7 @@ export async function sendPushNotifications(
     data?: Record<string, unknown>
 ): Promise<ExpoPushTicket[]> {
     const allTickets: ExpoPushTicket[] = []
+    const staleTokens: string[] = []
 
     // Her token için ayrı istek gönder (farklı project ID'leri desteklemek için)
     for (const token of pushTokens) {
@@ -95,19 +96,40 @@ export async function sendPushNotifications(
             const result = await response.json()
 
             // Expo API tek mesaj için { data: ticket } döndürür
+            let ticket: ExpoPushTicket
             if (result.data) {
-                allTickets.push(result.data as ExpoPushTicket)
+                ticket = result.data as ExpoPushTicket
             } else if (result.status) {
                 // Doğrudan ticket döndüyse
-                allTickets.push(result as ExpoPushTicket)
+                ticket = result as ExpoPushTicket
             } else if (result.errors) {
                 console.error('Push error for token:', token, result.errors)
-                allTickets.push({ status: 'error', message: result.errors[0]?.message || 'Unknown error' })
+                ticket = { status: 'error', message: result.errors[0]?.message || 'Unknown error' }
+            } else {
+                ticket = { status: 'error', message: 'Unknown response' }
+            }
+
+            allTickets.push(ticket)
+
+            // Expo, kalici olarak gecersiz/kaldirilmis cihazlar icin
+            // DeviceNotRegistered doner. Bu token'i sonsuza kadar yeniden
+            // denemek yerine, DB'den temizleyelim ki gelecekteki
+            // gonderimler bosa gitmesin.
+            if (ticket.status === 'error' && ticket.details?.error === 'DeviceNotRegistered') {
+                staleTokens.push(token)
             }
         } catch (error) {
             console.error('Error sending push notification to token:', token, error)
             allTickets.push({ status: 'error', message: 'Network error' })
         }
+    }
+
+    if (staleTokens.length > 0) {
+        console.log(`Clearing ${staleTokens.length} stale (DeviceNotRegistered) push token(s)`)
+        await prisma.user.updateMany({
+            where: { pushToken: { in: staleTokens } },
+            data: { pushToken: null }
+        })
     }
 
     return allTickets

@@ -31,8 +31,8 @@ export async function DELETE(
             )
         }
 
-        // Check if user is the author
-        if (post.authorId !== user.id) {
+        // Check if user is the author or an Admin
+        if (post.authorId !== user.id && user.role !== 'ADMIN') {
             return NextResponse.json(
                 { error: 'Bu yorumu silme yetkiniz yok' },
                 { status: 403 }
