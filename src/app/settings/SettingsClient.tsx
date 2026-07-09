@@ -99,7 +99,7 @@ export default function SettingsClient({ user }: SettingsClientProps) {
 
         // 1. Direct Upload Strategy
         try {
-          console.log('Fetching Cloudinary params...');
+
           let cloudConfig;
           try {
             const configRes = await fetch('/api/auth/cloudinary-params');
@@ -107,7 +107,7 @@ export default function SettingsClient({ user }: SettingsClientProps) {
           } catch (err) { console.warn('Config fetch failed', err); }
 
           if (cloudConfig?.cloudName && cloudConfig?.uploadPreset) {
-            console.log('Attempting Direct Upload...');
+
             const formData = new FormData();
             formData.append('file', selectedFile);
             formData.append('upload_preset', cloudConfig.uploadPreset);
@@ -122,7 +122,7 @@ export default function SettingsClient({ user }: SettingsClientProps) {
             if (uploadRes.ok) {
               uploadedUrl = uploadData.secure_url;
               uploadSuccess = true;
-              console.log('Direct upload success');
+
             } else {
               console.error('Direct upload failed:', uploadData);
             }
@@ -134,7 +134,7 @@ export default function SettingsClient({ user }: SettingsClientProps) {
         // 2. Fallback to Server Proxy (if direct failed and file is small enough)
         if (!uploadSuccess) {
           if (selectedFile.size < 4.5 * 1024 * 1024) {
-            console.log('Attempting Server Proxy Fallback...');
+
             const formData = new FormData();
             formData.append('file', selectedFile);
 
@@ -147,7 +147,7 @@ export default function SettingsClient({ user }: SettingsClientProps) {
             if (proxyRes.ok) {
               uploadedUrl = proxyData.mediaUrl;
               uploadSuccess = true;
-              console.log('Server proxy success');
+
             } else {
               throw new Error(proxyData.error || 'Yükleme başarısız');
             }

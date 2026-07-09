@@ -52,7 +52,7 @@ export default function ProfilePage() {
         setUploading(true);
 
         try {
-            console.log('Fetching Cloudinary params...');
+
             // 1. Cloudinary konfigürasyonunu al
             const configRes = await fetch('/api/auth/cloudinary-params');
             if (!configRes.ok) throw new Error('Yükleme konfigürasyonu alınamadı');
@@ -63,7 +63,7 @@ export default function ProfilePage() {
             }
 
             // 2. Doğrudan Cloudinary'e yükle (Vercel limitine takılmamak için)
-            console.log('Uploading directly to Cloudinary...');
+
             const formData = new FormData();
             formData.append('file', file);
             formData.append('upload_preset', uploadPreset);
@@ -82,7 +82,7 @@ export default function ProfilePage() {
                 throw new Error(uploadData.error?.message || `Yükleme başarısız: ${uploadRes.status}`);
             }
 
-            console.log('Direct upload successful:', uploadData.secure_url);
+
 
             // 3. Başarılı URL'i state'e kaydet
             setImage(uploadData.secure_url);

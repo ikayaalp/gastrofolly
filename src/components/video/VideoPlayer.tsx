@@ -37,9 +37,7 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const [isPlaying, setIsPlaying] = useState(false)
 
-  // Debug için
-  console.log("VideoPlayer - lesson:", lesson)
-  console.log("VideoPlayer - videoUrl:", lesson.videoUrl)
+
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
   const [volume, setVolume] = useState(1)
@@ -95,7 +93,6 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
     const handleCanPlay = () => setIsLoading(false)
     const handleLoadStart = () => setIsLoading(true)
     const handleError = () => {
-      console.log('Video error occurred')
       setIsPlaying(false)
       setIsLoading(false)
     }
@@ -139,7 +136,7 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
       hlsRef.current = hls;
 
       hls.on(Hls.Events.MANIFEST_PARSED, function() {
-        console.log('HLS manifest parsed');
+        // manifest parsed
       });
 
       hls.on(Hls.Events.ERROR, function (event, data) {
@@ -240,7 +237,7 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
         setIsPlaying(true)
       }
     } catch (error) {
-      console.log('Video play/pause error:', error)
+      if (process.env.NODE_ENV === 'development') { console.log('Video play/pause error:', error) }
       // Hata durumunda state'i güncelle
       setIsPlaying(video.paused === false)
     }
@@ -460,7 +457,7 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
                 setTimeout(() => setShowControls(false), 3000)
               }}
               onError={(e) => {
-                console.log('Video error:', e)
+                if (process.env.NODE_ENV === 'development') { console.log('Video error:', e) }
                 setIsPlaying(false)
               }}
             >

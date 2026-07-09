@@ -37,7 +37,7 @@ interface LearnPageProps {
 }
 
 async function getCourseWithProgress(courseId: string, userId: string, requestedLessonId?: string) {
-  console.log('Learn Page - getCourseWithProgress:', { courseId, userId, requestedLessonId })
+
 
   const courseForFirstLessonCheck = await prisma.course.findUnique({
     where: { id: courseId },
@@ -77,7 +77,7 @@ async function getCourseWithProgress(courseId: string, userId: string, requested
     const isAdmin = user?.role === 'ADMIN'
 
     if (!isInstructor && !isAdmin) {
-      console.log('Learn Page - Access denied: Course is not published')
+
       return null
     }
   }
@@ -106,13 +106,11 @@ async function getCourseWithProgress(courseId: string, userId: string, requested
     }
   })
 
-  console.log('Learn Page - enrollment found:', enrollment)
-  console.log('Learn Page - isSubscriptionValid:', isSubscriptionValid)
-  console.log('Learn Page - isRequestingFirstLesson:', isRequestingFirstLesson)
+
 
   // İlk ders her zaman erişilebilir (enrollment olmasa bile)
   if (isRequestingFirstLesson) {
-    console.log('Learn Page - First lesson requested, allowing access')
+
     // İlk derse erişim izni var, devam et
   } else {
     // Diğer dersler için normal erişim kontrolü
@@ -129,14 +127,14 @@ async function getCourseWithProgress(courseId: string, userId: string, requested
       else {
         // Abonelik süresi bitmişse erişimi kes
         if (!isSubscriptionValid) {
-          console.log('Learn Page - Subscription expired for subscription-based enrollment')
+
           return null
         }
       }
     } else {
       // Kayıt yoksa ama abonelik varsa, otomatik kayıt oluştur
       if (isSubscriptionValid) {
-        console.log('Learn Page - Valid subscription found, auto-enrolling user:', userId)
+
         await prisma.enrollment.create({
           data: {
             userId,
@@ -150,7 +148,7 @@ async function getCourseWithProgress(courseId: string, userId: string, requested
         })
       } else {
         // Kayıt yok ve abonelik yok -> erişim yok (ilk ders değilse)
-        console.log('Learn Page - No enrollment found for user:', userId)
+
         return null
       }
     }
@@ -240,7 +238,7 @@ export default async function LearnPage({ params, searchParams }: LearnPageProps
   // Success parametresi varsa enrollment kontrolünü bypass et (ödeme başarılı ama enrollment henüz oluşturulmamış olabilir)
   if (!data || !data.course) {
     if (resolvedSearchParams?.success) {
-      console.log('Learn Page - Success parameter found, bypassing enrollment check temporarily')
+
       // Success parametresi varsa enrollment'ı manuel oluştur
       try {
         await prisma.enrollment.create({
@@ -249,15 +247,15 @@ export default async function LearnPage({ params, searchParams }: LearnPageProps
             courseId: courseId,
           }
         })
-        console.log('Learn Page - Enrollment created successfully')
+
         // Sayfayı yenile
         redirect(`/learn/${courseId}?success=true${resolvedSearchParams?.fraud_bypassed ? '&fraud_bypassed=true' : ''}`)
       } catch (error) {
-        console.log('Learn Page - Enrollment already exists or error:', error)
+        console.error('Learn Page - Enrollment already exists or error:', error)
         // Enrollment zaten varsa devam et
       }
     } else {
-      console.log('Learn Page - No enrollment found, redirecting to course detail page')
+
       // Eğer enrollment yoksa course detail sayfasına yönlendir
       redirect(`/course/${courseId}`)
     }
@@ -306,9 +304,7 @@ export default async function LearnPage({ params, searchParams }: LearnPageProps
   const typedProgress: ProgressItem[] = progress
 
   // Debug için
-  console.log("Learn Page - course lessons:", course.lessons)
-  console.log("Learn Page - currentLesson:", currentLesson)
-  console.log("Learn Page - currentLesson videoUrl:", currentLesson?.videoUrl)
+
 
   if (!currentLesson) {
     notFound()

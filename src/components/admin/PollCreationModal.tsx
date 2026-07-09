@@ -1,8 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { X, Plus, Trash2, Calendar } from 'lucide-react'
+import { Plus, Trash2 } from 'lucide-react'
 import ConfirmationModal from '@/components/ui/ConfirmationModal'
+import Modal from '@/components/ui/Modal'
+import Input from '@/components/ui/Input'
+import Button from '@/components/ui/Button'
 
 interface PollCreationModalProps {
     isOpen: boolean
@@ -18,8 +21,6 @@ export default function PollCreationModal({ isOpen, onClose, onSuccess }: PollCr
     const [days, setDays] = useState(1)
     const [loading, setLoading] = useState(false)
     const [alertState, setAlertState] = useState<{ isOpen: boolean, message: string }>({ isOpen: false, message: '' })
-
-    if (!isOpen) return null
 
     const handleOptionChange = (idx: number, value: string) => {
         const newOptions = [...options]
@@ -80,93 +81,79 @@ export default function PollCreationModal({ isOpen, onClose, onSuccess }: PollCr
     }
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-            <div className="bg-neutral-900 border border-neutral-800 rounded-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
-                <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-black/40">
-                    <h2 className="text-lg font-bold text-white">Yeni Anket Oluştur</h2>
-                    <button onClick={onClose} className="text-gray-400 hover:text-white">
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
+        <>
+            <Modal isOpen={isOpen} onClose={onClose} title="Yeni Anket Oluştur" size="md">
+                <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-zinc-700">
+                    <Input
+                        label="Anket Sorusu"
+                        type="text"
+                        value={question}
+                        onChange={(e) => setQuestion(e.target.value)}
+                        placeholder="Sormak istediğiniz soru..."
+                        required
+                    />
 
-                <div className="p-6 overflow-y-auto">
-                    <form onSubmit={handleSubmit} className="space-y-4">
-
-                        <div>
-                            <label className="block text-xs font-medium text-gray-400 mb-1">Anket Sorusu</label>
-                            <input
-                                type="text"
-                                value={question}
-                                onChange={(e) => setQuestion(e.target.value)}
-                                placeholder="Sormak istediğiniz soru..."
-                                className="w-full bg-black/50 border border-neutral-800 rounded-lg p-3 text-white focus:border-orange-500 outline-none"
-                                required
-                            />
-                        </div>
-
-                        <div className="space-y-2">
-                            <label className="block text-xs font-medium text-gray-400">Seçenekler</label>
-                            {options.map((opt, idx) => (
-                                <div key={idx} className="flex gap-2">
-                                    <input
-                                        type="text"
-                                        value={opt}
-                                        onChange={(e) => handleOptionChange(idx, e.target.value)}
-                                        placeholder={`${idx + 1}. Seçenek`}
-                                        className="flex-1 bg-black/50 border border-neutral-800 rounded-lg p-2 text-sm text-white focus:border-orange-500 outline-none"
-                                        required
-                                    />
-                                    {options.length > 2 && (
-                                        <button
-                                            type="button"
-                                            onClick={() => removeOption(idx)}
-                                            className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
-                                    )}
-                                </div>
-                            ))}
-                            <button
-                                type="button"
-                                onClick={addOption}
-                                className="text-sm text-orange-500 hover:text-orange-400 flex items-center gap-1 font-medium mt-1"
-                            >
-                                <Plus className="w-4 h-4" /> Seçenek Ekle
-                            </button>
-                        </div>
-
-                        <div>
-                            <label className="block text-xs font-medium text-gray-400 mb-1">Süre</label>
-                            <div className="grid grid-cols-4 gap-2">
-                                {[1, 3, 7, 30].map(d => (
+                    <div className="space-y-2">
+                        <label className="block text-sm font-medium text-zinc-300 mb-1.5">Seçenekler</label>
+                        {options.map((opt, idx) => (
+                            <div key={idx} className="flex gap-2">
+                                <Input
+                                    type="text"
+                                    value={opt}
+                                    onChange={(e) => handleOptionChange(idx, e.target.value)}
+                                    placeholder={`${idx + 1}. Seçenek`}
+                                    required
+                                />
+                                {options.length > 2 && (
                                     <button
-                                        key={d}
                                         type="button"
-                                        onClick={() => setDays(d)}
-                                        className={`p-2 rounded-lg text-sm border transition-all ${days === d
-                                            ? 'bg-orange-600 border-orange-600 text-white'
-                                            : 'bg-black/50 border-neutral-800 text-gray-400 hover:border-gray-600'
-                                            }`}
+                                        onClick={() => removeOption(idx)}
+                                        className="p-2 text-red-500 hover:bg-red-500/10 rounded-xl transition-colors shrink-0"
                                     >
-                                        {d} Gün
+                                        <Trash2 className="w-5 h-5" />
                                     </button>
-                                ))}
+                                )}
                             </div>
-                        </div>
+                        ))}
+                        <button
+                            type="button"
+                            onClick={addOption}
+                            className="text-sm text-orange-500 hover:text-orange-400 flex items-center gap-1 font-medium mt-2"
+                        >
+                            <Plus className="w-4 h-4" /> Seçenek Ekle
+                        </button>
+                    </div>
 
-                        <div className="pt-2">
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                            >
-                                {loading ? 'Oluşturuluyor...' : 'Anketi Başlat'}
-                            </button>
+                    <div>
+                        <label className="block text-sm font-medium text-zinc-300 mb-1.5">Süre</label>
+                        <div className="grid grid-cols-4 gap-2">
+                            {[1, 3, 7, 30].map(d => (
+                                <button
+                                    key={d}
+                                    type="button"
+                                    onClick={() => setDays(d)}
+                                    className={`p-2 rounded-xl text-sm border transition-all ${days === d
+                                        ? 'bg-orange-600 border-orange-600 text-white'
+                                        : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-600'
+                                        }`}
+                                >
+                                    {d} Gün
+                                </button>
+                            ))}
                         </div>
-                    </form>
-                </div>
-            </div>
+                    </div>
+
+                    <div className="pt-4">
+                        <Button
+                            type="submit"
+                            isLoading={loading}
+                            className="w-full"
+                        >
+                            {loading ? 'Oluşturuluyor...' : 'Anketi Başlat'}
+                        </Button>
+                    </div>
+                </form>
+            </Modal>
 
             <ConfirmationModal
                 isOpen={alertState.isOpen}
@@ -178,6 +165,6 @@ export default function PollCreationModal({ isOpen, onClose, onSuccess }: PollCr
                 showCancelButton={false}
                 isDanger={true}
             />
-        </div>
+        </>
     )
 }

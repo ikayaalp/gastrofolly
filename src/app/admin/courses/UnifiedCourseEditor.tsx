@@ -328,7 +328,7 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
                     if (e.lengthComputable) {
                         // Optional: update progress state if we want to show percentage
                         // const percentComplete = (e.loaded / e.total) * 100
-                        // console.log(percentComplete)
+
                     }
                 }
 
