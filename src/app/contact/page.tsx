@@ -5,6 +5,9 @@ import Image from "next/image"
 export const metadata: Metadata = {
   title: "İletişim",
   description: "Culinora ile iletişime geçin. Sorularınız, önerileriniz veya işbirliği teklifleriniz için bize ulaşın.",
+  alternates: {
+    canonical: "/contact",
+  },
 }
 import { ChefHat, Mail, Phone, Clock, MapPin, Send, Headphones, Building2, Globe, Home, BookOpen, Users, MessageCircle } from "lucide-react"
 import { getServerSession } from "next-auth/next"

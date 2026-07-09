@@ -30,6 +30,40 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.7,
     }))
 
+    // Get all categories
+    const categories = await prisma.category.findMany({
+        select: {
+            id: true,
+            updatedAt: true,
+        },
+    })
+
+    const categoryUrls = categories.map((category) => ({
+        url: `${baseUrl}/category/${category.id}`,
+        lastModified: category.updatedAt,
+        changeFrequency: 'weekly' as const,
+        priority: 0.6,
+    }))
+
+    // Get all instructors with at least one published course
+    const instructors = await prisma.user.findMany({
+        where: {
+            role: 'INSTRUCTOR',
+            createdCourses: { some: { isPublished: true } },
+        },
+        select: {
+            id: true,
+            updatedAt: true,
+        },
+    })
+
+    const instructorUrls = instructors.map((instructor) => ({
+        url: `${baseUrl}/instructor/${instructor.id}`,
+        lastModified: instructor.updatedAt,
+        changeFrequency: 'weekly' as const,
+        priority: 0.6,
+    }))
+
     return [
         {
             url: baseUrl,
@@ -85,8 +119,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             changeFrequency: 'monthly',
             priority: 0.5,
         },
+        {
+            url: `${baseUrl}/instructors`,
+            lastModified: new Date(),
+            changeFrequency: 'weekly',
+            priority: 0.7,
+        },
+        {
+            url: `${baseUrl}/chef-sor`,
+            lastModified: new Date(),
+            changeFrequency: 'daily',
+            priority: 0.7,
+        },
+        {
+            url: `${baseUrl}/about`,
+            lastModified: new Date(),
+            changeFrequency: 'monthly',
+            priority: 0.6,
+        },
         ...courseUrls,
         ...blogUrls,
+        ...categoryUrls,
+        ...instructorUrls,
     ]
 }
 

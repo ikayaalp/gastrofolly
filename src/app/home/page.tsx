@@ -10,6 +10,9 @@ import { resolveHomeSections } from "@/lib/homeSections"
 export const metadata: Metadata = {
   title: "Ana Sayfa",
   description: "Culinora'da gastronomi kurslarınızı keşfedin. Profesyonel şeflerden video dersler, kişiselleştirilmiş öneriler.",
+  alternates: {
+    canonical: "/home",
+  },
 }
 
 async function getHomeData(userId?: string) {

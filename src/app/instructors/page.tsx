@@ -5,6 +5,9 @@ import Image from "next/image";
 export const metadata: Metadata = {
     title: "Eğitmenler",
     description: "Culinora'nın profesyonel şef eğitmenleriyle tanışın. Ödüllü mutfaklardan gelen deneyimli eğitmenler.",
+    alternates: {
+        canonical: "/instructors",
+    },
 };
 import { ChefHat, Award, Users, BookOpen, ArrowRight } from "lucide-react";
 import { getServerSession } from "next-auth/next";

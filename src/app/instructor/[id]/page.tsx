@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation"
+import { Metadata } from "next"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
@@ -48,6 +49,25 @@ async function getInstructor(id: string) {
       }
     }
   })
+}
+
+export async function generateMetadata({ params }: InstructorPageProps): Promise<Metadata> {
+  const { id } = await params
+  const instructor = await getInstructor(id)
+
+  if (!instructor) {
+    return {
+      title: "Eğitmen Bulunamadı",
+    }
+  }
+
+  return {
+    title: `${instructor.name} - Eğitmen Profili`,
+    description: instructor.bio?.substring(0, 160) || `${instructor.name} eğitmeninin Culinora'daki kurslarını keşfedin.`,
+    alternates: {
+      canonical: `/instructor/${id}`,
+    },
+  }
 }
 
 export default async function InstructorPage({ params }: InstructorPageProps) {

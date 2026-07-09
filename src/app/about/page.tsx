@@ -5,6 +5,9 @@ import Image from "next/image"
 export const metadata: Metadata = {
   title: "Hakkımızda",
   description: "Culinora'nın misyonu, vizyonu ve ekibi. Gastronomi eğitimini demokratikleştiren platformumuzu tanıyın.",
+  alternates: {
+    canonical: "/about",
+  },
 }
 import { ChefHat, Award, Target, Heart, Mail, Linkedin, Twitter } from "lucide-react"
 import { getServerSession } from "next-auth/next"

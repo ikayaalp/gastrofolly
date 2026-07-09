@@ -4,6 +4,9 @@ import CoursesPageClient from './CoursesPageClient'
 export const metadata: Metadata = {
   title: "Kurslar",
   description: "Profesyonel şeflerden gastronomi ve aşçılık kurslarını keşfedin. Video dersler, uygulamalı projeler ve sertifika programları.",
+  alternates: {
+    canonical: "/courses",
+  },
 }
 
 export default function CoursesPage() {

@@ -47,6 +47,7 @@
     "react-dom": "^19.2.1",
     "react-hot-toast": "^2.6.0",
     "react-markdown": "^10.1.0",
+    "recharts": "^3.9.2",
     "resend": "^6.1.2",
     "stripe": "^18.5.0"
   },

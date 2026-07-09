@@ -18,7 +18,8 @@ import {
     MessageCircle,
     Star,
     Mail,
-    Home
+    Home,
+    BarChart3
 } from "lucide-react"
 
 const sidebarItems = [
@@ -53,6 +54,11 @@ const sidebarItems = [
         title: "Kullanıcılar",
         href: "/admin/users",
         icon: Users
+    },
+    {
+        title: "Analitik",
+        href: "/admin/analytics",
+        icon: BarChart3
     },
     {
         title: "Affiliate",

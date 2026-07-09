@@ -12,6 +12,9 @@ export const metadata: Metadata = {
     title: "Chef Sosyal Blog",
     description: "Gastronomi dünyasının en güncel trendleri, profesyonel şef ipuçları, tarifler ve mutfak becerileri hakkında blog yazıları.",
     keywords: ["gastronomi blog", "mutfak ipuçları", "şef tarifleri", "yemek blogu", "aşçılık eğitimi"],
+    alternates: {
+        canonical: "/blog",
+    },
 }
 
 const categoryColors: Record<string, string> = {

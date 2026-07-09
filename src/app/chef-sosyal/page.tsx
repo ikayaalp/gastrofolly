@@ -13,6 +13,9 @@ interface PageProps {
 export const metadata: Metadata = {
   title: "Chef Sosyal",
   description: "Chef Sosyal ile yemek tutkunları ve profesyonel şeflerle etkileşime geçin. Deneyimlerinizi paylaşın, sorular sorun ve gastronomi dünyasındaki en son trendleri keşfedin.",
+  alternates: {
+    canonical: "/chef-sosyal",
+  },
 }
 
 export default async function ChefSosyalPage({ searchParams }: PageProps) {
