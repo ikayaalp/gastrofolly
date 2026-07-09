@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { View, StyleSheet, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import ScreenContainer from '../components/ScreenContainer';
 
 export default function IntroScreen({ navigation }) {
     useEffect(() => {
@@ -36,9 +37,9 @@ export default function IntroScreen({ navigation }) {
     }, [navigation]);
 
     return (
-        <View style={styles.container}>
+        <ScreenContainer style={styles.container}>
             <ActivityIndicator size="large" color="#ea580c" />
-        </View>
+        </ScreenContainer>
     );
 }
 

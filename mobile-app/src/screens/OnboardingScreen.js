@@ -7,12 +7,12 @@ import {
     TouchableOpacity,
     FlatList,
     Animated,
-    StatusBar,
     Platform,
     ImageBackground,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import ScreenContainer from '../components/ScreenContainer';
 
 const { width, height } = Dimensions.get('window');
 
@@ -196,20 +196,22 @@ export default function OnboardingScreen({ navigation }) {
     // Onboarding kontrolü yapılırken bekle
     if (!isReady) {
         return (
-            <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-                <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
-            </View>
+            <ScreenContainer
+                style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}
+                edges={['bottom']}
+                statusBarTranslucent
+                statusBarBackgroundColor="transparent"
+            />
         );
     }
 
     return (
-        <View style={styles.container}>
-            <StatusBar
-                barStyle="light-content"
-                backgroundColor="transparent"
-                translucent
-            />
-
+        <ScreenContainer
+            style={styles.container}
+            edges={['bottom']}
+            statusBarTranslucent
+            statusBarBackgroundColor="transparent"
+        >
             {/* Slides */}
             <FlatList
                 ref={flatListRef}
@@ -250,7 +252,7 @@ export default function OnboardingScreen({ navigation }) {
                     </TouchableOpacity>
                 </View>
             </View>
-        </View>
+        </ScreenContainer>
     );
 }
 

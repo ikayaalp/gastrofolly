@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { StyleSheet, Text, View, FlatList, TouchableOpacity, ActivityIndicator, Image, Platform, StatusBar, RefreshControl } from 'react-native';
+import { StyleSheet, Text, View, FlatList, TouchableOpacity, ActivityIndicator, Image, Platform, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Bell, ChefHat, MessageCircle, Star, Info } from 'lucide-react-native';
 import notificationService from '../api/notificationService';
 import { useFocusEffect } from '@react-navigation/native';
+import ScreenContainer from '../components/ScreenContainer';
 
 export default function NotificationsScreen({ navigation }) {
     const [loading, setLoading] = useState(true);
@@ -111,14 +112,14 @@ export default function NotificationsScreen({ navigation }) {
 
     if (loading) {
         return (
-            <View style={styles.loadingContainer}>
+            <ScreenContainer style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color="#ea580c" />
-            </View>
+            </ScreenContainer>
         );
     }
 
     return (
-        <View style={styles.container}>
+        <ScreenContainer style={styles.container}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color="white" />
@@ -146,7 +147,7 @@ export default function NotificationsScreen({ navigation }) {
                     <Text style={styles.emptyText}>Henüz bildiriminiz yok</Text>
                 </View>
             )}
-        </View>
+        </ScreenContainer>
     );
 }
 
@@ -165,7 +166,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 16 : 60,
+        paddingTop: 16,
         paddingBottom: 16,
         paddingHorizontal: 16,
         backgroundColor: '#000',

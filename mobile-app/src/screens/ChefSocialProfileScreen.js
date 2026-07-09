@@ -40,6 +40,7 @@ import authService, { isPremiumUser } from '../api/authService';
 import TopicCard from '../components/TopicCard';
 import ImageViewerModal from '../components/ImageViewerModal';
 import CustomAlert from '../components/CustomAlert';
+import ScreenContainer from '../components/ScreenContainer';
 
 const { width } = Dimensions.get('window');
 const COVER_HEIGHT = 160;
@@ -514,7 +515,7 @@ export default function ChefSocialProfileScreen({ navigation, route }) {
     }
 
     return (
-        <View style={[styles.container, { paddingTop: 0 }]}>
+        <ScreenContainer style={[styles.container, { paddingTop: 0 }]} edges={['left', 'right', 'bottom']}>
             {/* Fixed Navbar */}
             <View style={[styles.navbar, { paddingTop: insets.top + 8 }]}>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.navBack}>
@@ -648,7 +649,7 @@ export default function ChefSocialProfileScreen({ navigation, route }) {
                 type={alertConfig.type}
                 onClose={() => setAlertVisible(false)}
             />
-        </View>
+        </ScreenContainer>
     );
 }
 

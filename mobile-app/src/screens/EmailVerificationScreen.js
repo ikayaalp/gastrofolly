@@ -5,6 +5,7 @@ import { ChefHat, Mail } from 'lucide-react-native';
 import authService from '../api/authService';
 import CustomAlert from '../components/CustomAlert';
 import Logo from '../components/Logo';
+import ScreenContainer from '../components/ScreenContainer';
 
 export default function EmailVerificationScreen({ route, navigation }) {
     const { email } = route.params;
@@ -51,10 +52,11 @@ export default function EmailVerificationScreen({ route, navigation }) {
     };
 
     return (
-        <KeyboardAvoidingView
-            style={styles.container}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        >
+        <ScreenContainer style={styles.container}>
+            <KeyboardAvoidingView
+                style={styles.container}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            >
             <LinearGradient
                 colors={['#1a1a1a', '#000']}
                 style={styles.gradient}
@@ -117,6 +119,7 @@ export default function EmailVerificationScreen({ route, navigation }) {
                 onClose={() => setAlertVisible(false)}
             />
         </KeyboardAvoidingView>
+        </ScreenContainer>
     );
 }
 

@@ -12,14 +12,13 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { ChefHat, Play, Star, Users, Crown, BookOpen, Zap, ArrowRight } from 'lucide-react-native';
 import Logo from '../components/Logo';
+import ScreenContainer from '../components/ScreenContainer';
 
 const { width, height } = Dimensions.get('window');
 
 export default function WelcomeScreen({ navigation }) {
     return (
-        <View style={styles.container}>
-            <StatusBar barStyle="light-content" />
-
+        <ScreenContainer style={styles.container}>
             <ScrollView
                 style={styles.scrollView}
                 contentContainerStyle={styles.scrollContent}
@@ -128,7 +127,7 @@ export default function WelcomeScreen({ navigation }) {
                 </View>
 
             </ScrollView>
-        </View>
+        </ScreenContainer>
     );
 }
 
@@ -147,7 +146,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        paddingTop: 60,
+        paddingTop: 16,
         paddingBottom: 20,
         gap: 10,
     },

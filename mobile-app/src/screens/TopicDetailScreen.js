@@ -17,6 +17,7 @@ import {
     Modal,
     TouchableWithoutFeedback
 } from 'react-native';
+import ScreenContainer from '../components/ScreenContainer';
 import { Image } from 'expo-image';
 import {
     ArrowLeft,
@@ -880,17 +881,18 @@ export default function TopicDetailScreen({ route, navigation }) {
     const androidPaddingBottom = keyboardVisible ? keyboardHeight + insets.bottom : tabBarHeight;
 
     return (
-        <KeyboardAvoidingView
-            style={[
-                styles.container,
-                Platform.OS === 'android'
-                    ? { paddingBottom: androidPaddingBottom }
-                    : { paddingBottom: keyboardVisible ? 0 : tabBarHeight },
-            ]}
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-            keyboardVerticalOffset={0}
-        >
-            {/* Header */}
+        <ScreenContainer style={{ flex: 1, backgroundColor: '#000' }} edges={['top', 'left', 'right']}>
+            <KeyboardAvoidingView
+                style={[
+                    styles.container,
+                    Platform.OS === 'android'
+                        ? { paddingBottom: androidPaddingBottom }
+                        : { paddingBottom: keyboardVisible ? 0 : tabBarHeight },
+                ]}
+                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                keyboardVerticalOffset={0}
+            >
+                {/* Header */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.goBack()}>
                     <ArrowLeft size={24} color="#fff" />
@@ -1055,7 +1057,8 @@ export default function TopicDetailScreen({ route, navigation }) {
                     </View>
                 </TouchableWithoutFeedback>
             </Modal>
-        </KeyboardAvoidingView>
+            </KeyboardAvoidingView>
+        </ScreenContainer>
     );
 }
 
@@ -1073,7 +1076,7 @@ const styles = StyleSheet.create({
     header: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingTop: 60,
+        paddingTop: 16,
         paddingBottom: 16,
         paddingHorizontal: 16,
         backgroundColor: '#000',

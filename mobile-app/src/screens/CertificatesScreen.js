@@ -5,11 +5,10 @@ import {
     View,
     FlatList,
     TouchableOpacity,
-    SafeAreaView,
-    StatusBar,
     Platform,
     ActivityIndicator
 } from 'react-native';
+import ScreenContainer from '../components/ScreenContainer';
 import { ArrowLeft, Award, Calendar, BookOpen } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import certificateService from '../api/certificateService';
@@ -98,9 +97,7 @@ export default function CertificatesScreen({ navigation }) {
     }
 
     return (
-        <SafeAreaView style={styles.container}>
-            <StatusBar barStyle="light-content" backgroundColor="#000" />
-
+        <ScreenContainer style={styles.container}>
             <View style={styles.header}>
                 <TouchableOpacity
                     style={styles.backButton}
@@ -123,7 +120,7 @@ export default function CertificatesScreen({ navigation }) {
             ) : (
                 <EmptyState />
             )}
-        </SafeAreaView>
+        </ScreenContainer>
     );
 }
 
@@ -131,7 +128,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#000',
-        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     },
     loadingContainer: {
         flex: 1,
@@ -144,7 +140,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 20,
-        paddingTop: Platform.OS === 'android' ? 10 : 10,
+        paddingTop: 10,
         paddingBottom: 16,
         borderBottomWidth: 1,
         borderBottomColor: '#1a1a1a',

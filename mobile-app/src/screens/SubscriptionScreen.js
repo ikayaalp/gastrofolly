@@ -37,6 +37,7 @@ import {
 } from '../api/revenueCatService';
 import authService from '../api/authService';
 import CustomAlert from '../components/CustomAlert';
+import ScreenContainer from '../components/ScreenContainer';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -226,17 +227,16 @@ export default function SubscriptionScreen({ navigation, route }) {
 
     if (loading) {
         return (
-            <View style={styles.loadingContainer}>
+            <ScreenContainer style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color="#ea580c" />
                 <Text style={styles.loadingText}>Yükleniyor...</Text>
-            </View>
+            </ScreenContainer>
         );
     }
 
     if (isPremium) {
         return (
-            <View style={styles.container}>
-                <StatusBar barStyle="light-content" />
+            <ScreenContainer style={styles.container} edges={['bottom']}>
                 <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 60 }}>
                     <View style={styles.activeHero}>
                         <LinearGradient colors={['#ea580c', '#c2410c', '#7c2d12']} style={styles.activeHeroGradient}>
@@ -264,13 +264,12 @@ export default function SubscriptionScreen({ navigation, route }) {
                         <TouchableOpacity style={styles.manageBtn} onPress={openSubscriptionManagement}><ExternalLink size={18} color="#ea580c" /><Text style={styles.manageBtnText}>Aboneliği Yönet</Text></TouchableOpacity>
                     </View>
                 </ScrollView>
-            </View>
+            </ScreenContainer>
         );
     }
 
     return (
-        <View style={styles.container}>
-            <StatusBar barStyle="light-content" />
+        <ScreenContainer style={styles.container} edges={['bottom']}>
             <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
                 <View style={styles.heroWrap}>
                     <Image 
@@ -376,7 +375,7 @@ export default function SubscriptionScreen({ navigation, route }) {
             </ScrollView>
 
             <CustomAlert visible={alertVisible} title={alertConfig.title} message={alertConfig.message} buttons={alertConfig.buttons} type={alertConfig.type} onClose={() => setAlertVisible(false)} />
-        </View>
+        </ScreenContainer>
     );
 }
 

@@ -12,7 +12,7 @@ WebBrowser.maybeCompleteAuthSession();
 // Android Client ID → Android türünde, package: com.chef2.app
 const GOOGLE_WEB_CLIENT_ID = 'YOUR_WEB_CLIENT_ID_HERE';
 const GOOGLE_IOS_CLIENT_ID = '334630749775-terb1dfppb1atgem3t1pc0o41chaj3r1.apps.googleusercontent.com';
-const GOOGLE_ANDROID_CLIENT_ID = 'YOUR_ANDROID_CLIENT_ID_HERE';
+const GOOGLE_ANDROID_CLIENT_ID = '334630749775-egnkr4i90r374isi6ep5iihjl0skqh19.apps.googleusercontent.com';
 
 export default function useGoogleAuth({ onSuccess, onError }) {
     const [googleLoading, setGoogleLoading] = useState(false);

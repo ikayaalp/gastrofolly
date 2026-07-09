@@ -13,7 +13,7 @@ import {
     Alert
 } from 'react-native';
 import { ArrowLeft, MessageCircle, Trash2 } from 'lucide-react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import ScreenContainer from '../components/ScreenContainer';
 import { useFocusEffect } from '@react-navigation/native';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import dmService from '../api/dmService';
@@ -126,7 +126,6 @@ const ConversationRow = ({ item, navigation, formatTime, onRequestDelete }) => {
 };
 
 export default function MessagesScreen({ navigation }) {
-    const insets = useSafeAreaInsets();
     const [conversations, setConversations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -308,7 +307,7 @@ export default function MessagesScreen({ navigation }) {
     const tabBarHeight = useBottomTabBarHeight();
 
     return (
-        <View style={[styles.container, { paddingTop: insets.top, paddingBottom: tabBarHeight }]}>
+        <ScreenContainer style={[styles.container, { paddingBottom: tabBarHeight }]}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                     <ArrowLeft size={24} color="#fff" />
@@ -342,7 +341,7 @@ export default function MessagesScreen({ navigation }) {
                 type={alertConfig.type}
                 onClose={() => setAlertVisible(false)}
             />
-        </View>
+        </ScreenContainer>
     );
 }
 

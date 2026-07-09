@@ -14,9 +14,9 @@ import {
     KeyboardAvoidingView,
     Platform,
     StatusBar,
-    Dimensions,
     TouchableWithoutFeedback,
 } from 'react-native';
+import ScreenContainer from '../components/ScreenContainer';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -660,9 +660,9 @@ export default function SocialScreen({ navigation }) {
     }
 
     return (
-        <View style={styles.container}>
+        <ScreenContainer style={styles.container} edges={['top', 'left', 'right']}>
             {/* Header */}
-            <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
+            <View style={[styles.header, { paddingTop: 8 }]}>
                 <View>
                     <Text style={styles.headerTitle}>Chef Sosyal</Text>
                     <Text style={styles.headerSubtitle}>Gastronomi tutkunlarının buluşma noktası</Text>
@@ -1036,7 +1036,7 @@ export default function SocialScreen({ navigation }) {
                     navigation.navigate('Home');
                 }}
             />
-        </View >
+    </ScreenContainer>
     );
 }
 

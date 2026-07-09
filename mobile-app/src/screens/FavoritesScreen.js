@@ -5,11 +5,10 @@ import {
     View,
     FlatList,
     TouchableOpacity,
-    SafeAreaView,
-    StatusBar,
     Platform,
     ActivityIndicator
 } from 'react-native';
+import ScreenContainer from '../components/ScreenContainer';
 import { Image } from 'expo-image';
 import { ArrowLeft, Heart, Trash2, BookOpen } from 'lucide-react-native';
 import favoriteService from '../services/favoritesService';
@@ -120,9 +119,7 @@ export default function FavoritesScreen({ navigation }) {
     }
 
     return (
-        <SafeAreaView style={styles.container}>
-            <StatusBar barStyle="light-content" backgroundColor="#000" />
-
+        <ScreenContainer edges={['top', 'left', 'right']}>
             <View style={styles.header}>
                 <TouchableOpacity
                     style={styles.backButton}
@@ -154,7 +151,7 @@ export default function FavoritesScreen({ navigation }) {
                 type={alertConfig.type}
                 onClose={() => setAlertVisible(false)}
             />
-        </SafeAreaView>
+        </ScreenContainer>
     );
 }
 
@@ -162,7 +159,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#000',
-        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     },
     loadingContainer: {
         flex: 1,
@@ -175,7 +171,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 20,
-        paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 6 : 46,
+        paddingTop: 16,
         paddingBottom: 8,
         borderBottomWidth: 1,
         borderBottomColor: '#1a1a1a',

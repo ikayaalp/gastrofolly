@@ -7,11 +7,10 @@ import {
     TouchableOpacity,
     FlatList,
     ActivityIndicator,
-    SafeAreaView,
-    StatusBar,
     Platform,
     Keyboard
 } from 'react-native';
+import ScreenContainer from '../components/ScreenContainer';
 import { Image } from 'expo-image';
 import { Search, X, ArrowLeft, Star, ChevronRight, User } from 'lucide-react-native';
 import courseService from '../api/courseService';
@@ -103,8 +102,7 @@ export default function SearchScreen({ navigation }) {
     );
 
     return (
-        <SafeAreaView style={styles.safeArea}>
-            <StatusBar barStyle="light-content" backgroundColor="#000" />
+        <ScreenContainer edges={['top', 'left', 'right']} style={styles.safeArea}>
             <View style={styles.container}>
                 {/* Header / Search Bar */}
                 <View style={styles.header}>
@@ -167,7 +165,7 @@ export default function SearchScreen({ navigation }) {
                     )}
                 </View>
             </View>
-        </SafeAreaView>
+        </ScreenContainer>
     );
 }
 
@@ -175,7 +173,6 @@ const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
         backgroundColor: '#000',
-        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     },
     container: {
         flex: 1,
@@ -185,7 +182,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 16,
-        paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 6 : 46,
+        paddingTop: 16,
         paddingBottom: 8,
         borderBottomWidth: 1,
         borderBottomColor: '#111',

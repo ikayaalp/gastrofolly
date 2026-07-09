@@ -22,6 +22,7 @@ import chefService from '../api/chefService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Clipboard from 'expo-clipboard';
 import { Copy } from 'lucide-react-native';
+import ScreenContainer from '../components/ScreenContainer';
 
 export default function ChefSorScreen({ navigation }) {
     const [instructors, setInstructors] = useState([]);
@@ -176,7 +177,7 @@ export default function ChefSorScreen({ navigation }) {
 
     if (!isLoggedIn) {
         return (
-            <View style={styles.container}>
+            <ScreenContainer style={styles.container}>
                 <View style={styles.header}>
                     <View style={styles.headerIcon}>
                         <GraduationCap size={28} color="#ea580c" />
@@ -197,12 +198,12 @@ export default function ChefSorScreen({ navigation }) {
                         <Text style={styles.loginButtonText}>Giriş Yap</Text>
                     </TouchableOpacity>
                 </View>
-            </View>
+            </ScreenContainer>
         );
     }
 
     return (
-        <View style={styles.container}>
+        <ScreenContainer style={styles.container}>
             {/* Header */}
             <View style={styles.header}>
                 <View style={styles.headerIcon}>
@@ -237,7 +238,7 @@ export default function ChefSorScreen({ navigation }) {
                     }
                 />
             )}
-        </View>
+        </ScreenContainer>
     );
 }
 
@@ -255,7 +256,7 @@ const styles = StyleSheet.create({
     header: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingTop: 60,
+        paddingTop: 20,
         paddingBottom: 20,
         paddingHorizontal: 20,
         backgroundColor: '#000',

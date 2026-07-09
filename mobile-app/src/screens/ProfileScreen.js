@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, Image, TouchableOpacity, ScrollView, Alert, StatusBar } from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { LogOut, User, Mail, CreditCard, Calendar, Award, ChevronRight } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import authService from '../api/authService';
+import ScreenContainer from '../components/ScreenContainer';
 
 export default function ProfileScreen({ navigation }) {
     const [userData, setUserData] = useState(null);
@@ -70,16 +71,14 @@ export default function ProfileScreen({ navigation }) {
 
     if (!userData) {
         return (
-            <View style={styles.container}>
+            <ScreenContainer style={styles.container}>
                 <Text style={styles.loadingText}>Yükleniyor...</Text>
-            </View>
+            </ScreenContainer>
         );
     }
 
     return (
-        <View style={styles.container}>
-            <StatusBar barStyle="light-content" />
-
+        <ScreenContainer style={styles.container} edges={['top']}>
             <View style={styles.header}>
                 <Text style={styles.headerTitle}>Profilim</Text>
             </View>
@@ -162,7 +161,7 @@ export default function ProfileScreen({ navigation }) {
                 </TouchableOpacity>
 
             </ScrollView>
-        </View>
+        </ScreenContainer>
     );
 }
 
@@ -172,7 +171,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#000',
     },
     header: {
-        paddingTop: 60,
+        paddingTop: 16,
         paddingBottom: 20,
         paddingHorizontal: 20,
         backgroundColor: '#000',

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, Text, View, Dimensions, TouchableOpacity, ScrollView, ActivityIndicator, StatusBar, Platform, RefreshControl } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, TouchableOpacity, ScrollView, ActivityIndicator, Platform, RefreshControl } from 'react-native';
 import { Image } from 'expo-image';
 
 import { Ionicons } from '@expo/vector-icons';
@@ -11,6 +11,7 @@ import authService from '../api/authService';
 import homeService from '../api/homeService';
 import storyService from '../api/storyService';
 import Stories from '../components/Stories';
+import ScreenContainer from '../components/ScreenContainer';
 
 const { width } = Dimensions.get('window');
 
@@ -334,15 +335,15 @@ export default function HomeScreen({ navigation }) {
 
     if (loading) {
         return (
-            <View style={styles.loadingContainer}>
+            <ScreenContainer style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color="#ea580c" />
                 <Text style={styles.loadingText}>Yükleniyor...</Text>
-            </View>
+            </ScreenContainer>
         );
     }
 
     return (
-        <View style={styles.container}>
+        <ScreenContainer style={styles.container} edges={['top']}>
             {/* Header */}
             <View style={styles.header}>
                 <View style={styles.headerContent}>
@@ -597,7 +598,7 @@ export default function HomeScreen({ navigation }) {
                     }
                 })}
             </ScrollView>
-        </View>
+        </ScreenContainer>
     );
 }
 
@@ -618,7 +619,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
     header: {
-        paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 6 : 46,
+        paddingTop: 6,
         paddingBottom: 8,
         backgroundColor: '#000',
         borderBottomWidth: 1,

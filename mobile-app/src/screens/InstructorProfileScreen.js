@@ -19,6 +19,7 @@ import axios from 'axios';
 import config from '../api/config';
 import authService from '../api/authService';
 import CustomAlert from '../components/CustomAlert';
+import ScreenContainer from '../components/ScreenContainer';
 
 const { width } = Dimensions.get('window');
 
@@ -107,17 +108,15 @@ export default function InstructorProfileScreen({ navigation, route }) {
 
     if (loading) {
         return (
-            <View style={styles.loadingContainer}>
+            <ScreenContainer style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color="#ea580c" />
                 <Text style={styles.loadingText}>Yükleniyor...</Text>
-            </View>
+            </ScreenContainer>
         );
     }
 
     return (
-        <View style={styles.container}>
-            <StatusBar barStyle="light-content" />
-
+        <ScreenContainer style={styles.container}>
             {/* Header */}
             <View style={styles.header}>
                 <TouchableOpacity
@@ -287,7 +286,7 @@ export default function InstructorProfileScreen({ navigation, route }) {
                 type={alertConfig.type}
                 onClose={() => setAlertVisible(false)}
             />
-        </View >
+        </ScreenContainer >
     );
 }
 
@@ -297,7 +296,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#000',
     },
     header: {
-        paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 6 : 46,
+        paddingTop: 6,
         paddingBottom: 8, flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',

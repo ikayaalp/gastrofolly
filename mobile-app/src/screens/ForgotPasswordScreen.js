@@ -5,6 +5,7 @@ import authService from '../api/authService';
 import CustomAlert from '../components/CustomAlert';
 import AuthBackground from '../components/AuthBackground';
 import Logo from '../components/Logo';
+import ScreenContainer from '../components/ScreenContainer';
 
 export default function ForgotPasswordScreen({ navigation }) {
     const [email, setEmail] = useState('');
@@ -48,10 +49,11 @@ export default function ForgotPasswordScreen({ navigation }) {
     };
 
     return (
-        <KeyboardAvoidingView
-            style={styles.container}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        >
+        <ScreenContainer style={styles.container}>
+            <KeyboardAvoidingView
+                style={styles.container}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            >
             <AuthBackground />
 
             <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -104,6 +106,7 @@ export default function ForgotPasswordScreen({ navigation }) {
                 onClose={() => setAlertVisible(false)}
             />
         </KeyboardAvoidingView>
+        </ScreenContainer>
     );
 }
 

@@ -4,13 +4,12 @@ import {
     Text,
     View,
     TouchableOpacity,
-    ScrollView,
-    Switch,
-    StatusBar,
-    SafeAreaView,
     Platform,
-    Linking
+    Linking,
+    Switch,
+    ScrollView
 } from 'react-native';
+import ScreenContainer from '../components/ScreenContainer';
 import {
     ArrowLeft,
     User,
@@ -163,8 +162,7 @@ export default function SettingsScreen({ navigation }) {
     );
 
     return (
-        <SafeAreaView style={styles.safeArea}>
-            <StatusBar barStyle="light-content" backgroundColor="#000" />
+        <ScreenContainer style={styles.safeArea}>
             <View style={styles.container}>
                 {/* Header */}
                 <View style={styles.header}>
@@ -378,7 +376,7 @@ export default function SettingsScreen({ navigation }) {
                 type={alertConfig.type}
                 onClose={() => setAlertVisible(false)}
             />
-        </SafeAreaView>
+        </ScreenContainer>
     );
 }
 
@@ -396,7 +394,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 20,
-        paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 10 : 10,
+        paddingTop: 10,
         paddingBottom: 16,
         borderBottomWidth: 1,
         borderBottomColor: '#1a1a1a',

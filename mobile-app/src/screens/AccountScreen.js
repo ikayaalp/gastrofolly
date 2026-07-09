@@ -5,11 +5,10 @@ import {
     View,
     TouchableOpacity,
     ScrollView,
-    SafeAreaView,
-    StatusBar,
     ActivityIndicator,
     Platform
 } from 'react-native';
+import ScreenContainer from '../components/ScreenContainer';
 import authService from '../api/authService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AuthBackground from '../components/AuthBackground';
@@ -52,8 +51,7 @@ export default function AccountScreen({ navigation }) {
 
     if (!isLoggedIn) {
         return (
-            <SafeAreaView style={styles.container}>
-                <StatusBar barStyle="light-content" backgroundColor="#000" />
+            <ScreenContainer style={styles.container} edges={['top']}>
                 <AuthBackground />
 
                 <ScrollView style={styles.scrollView} contentContainerStyle={styles.guestScrollContent}>
@@ -106,7 +104,7 @@ export default function AccountScreen({ navigation }) {
                         Devam ederek Kullanım Koşulları ve Gizlilik Politikası'nı kabul etmiş olursunuz.
                     </Text>
                 </ScrollView>
-            </SafeAreaView>
+            </ScreenContainer>
         );
     }
 
@@ -130,7 +128,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#000',
-        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     },
     loadingContainer: {
         justifyContent: 'center',

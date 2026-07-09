@@ -5,7 +5,6 @@ import {
     View,
     TextInput,
     TouchableOpacity,
-    SafeAreaView,
     StatusBar,
     Platform,
     ActivityIndicator,
@@ -17,6 +16,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import config from '../api/config';
 import CustomAlert from '../components/CustomAlert';
+import ScreenContainer from '../components/ScreenContainer';
 
 const PasswordInput = ({ label, value, onChangeText, show, onToggle, placeholder }) => (
     <View style={styles.inputGroup}>
@@ -129,9 +129,7 @@ export default function ChangePasswordScreen({ navigation }) {
             strengthLabel === 'Orta' ? '66%' : '33%';
 
     return (
-        <SafeAreaView style={styles.container}>
-            <StatusBar barStyle="light-content" backgroundColor="#000" />
-
+        <ScreenContainer style={styles.container}>
             <View style={styles.header}>
                 <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
                     <ArrowLeft size={24} color="#e5e5e5" />
@@ -222,7 +220,7 @@ export default function ChangePasswordScreen({ navigation }) {
                 type={alertConfig.type}
                 onClose={() => setAlertVisible(false)}
             />
-        </SafeAreaView>
+        </ScreenContainer>
     );
 }
 
@@ -230,7 +228,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#000',
-        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     },
     header: {
         flexDirection: 'row',

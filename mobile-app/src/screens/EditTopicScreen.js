@@ -12,12 +12,11 @@ import {
     Alert
 } from 'react-native';
 import { ArrowLeft, Check } from 'lucide-react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import forumService from '../api/forumService';
+import ScreenContainer from '../components/ScreenContainer';
 
 export default function EditTopicScreen({ route, navigation }) {
     const { topic } = route.params;
-    const insets = useSafeAreaInsets();
     
     const [content, setContent] = useState(topic?.content || '');
     const categoryId = topic?.categoryId || (topic?.category?.id) || '';
@@ -52,12 +51,13 @@ export default function EditTopicScreen({ route, navigation }) {
     };
 
     return (
-        <KeyboardAvoidingView 
-            style={{ flex: 1, backgroundColor: '#0a0a0a' }}
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        >
-            {/* Header */}
-            <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
+        <ScreenContainer style={{ flex: 1, backgroundColor: '#0a0a0a' }} edges={['top', 'left', 'right']}>
+            <KeyboardAvoidingView 
+                style={{ flex: 1 }}
+                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            >
+                {/* Header */}
+                <View style={[styles.header, { paddingTop: 10 }]}>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                     <ArrowLeft color="#fff" size={24} />
                 </TouchableOpacity>
@@ -88,6 +88,7 @@ export default function EditTopicScreen({ route, navigation }) {
                         />
             </ScrollView>
         </KeyboardAvoidingView>
+        </ScreenContainer>
     );
 }
 

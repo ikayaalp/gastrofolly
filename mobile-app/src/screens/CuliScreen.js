@@ -18,7 +18,7 @@ import {
     StatusBar,
     Image
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import ScreenContainer from '../components/ScreenContainer';
 import { Send, Bot, User, ChefHat, History, X, Clock, Trash2, AlertTriangle, Sparkles } from 'lucide-react-native';
 import { sendMessageToAI } from '../api/aiService';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -256,8 +256,8 @@ export default function CuliScreen() {
                 style={StyleSheet.absoluteFill}
             />
 
-            <View style={styles.safeArea}>
-                <View style={[styles.header, { paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 6 : 46 }]}>
+        <ScreenContainer style={styles.safeArea} edges={['top']}>
+                <View style={[styles.header, { paddingTop: 16 }]}>
                     <View style={styles.headerContent}>
                         <View style={styles.headerTitleContainer}>
                             <View>
@@ -370,7 +370,7 @@ export default function CuliScreen() {
                         </View>
                     </View>
                 </KeyboardAvoidingView>
-            </View>
+            </ScreenContainer>
 
             {/* History Modal */}
             <Modal
@@ -493,6 +493,7 @@ const styles = StyleSheet.create({
     },
     header: {
         paddingHorizontal: 20,
+        paddingTop: 16,
         paddingBottom: 16,
         borderBottomWidth: 1,
         borderBottomColor: '#27272a',

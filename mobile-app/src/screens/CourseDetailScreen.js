@@ -32,6 +32,7 @@ import CustomAlert from '../components/CustomAlert';
 import favoritesService from '../services/favoritesService';
 import LoginRequiredModal from '../components/LoginRequiredModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import ScreenContainer from '../components/ScreenContainer';
 
 const { width } = Dimensions.get('window');
 
@@ -201,16 +202,16 @@ export default function CourseDetailScreen({ route, navigation }) {
 
     if (loading) {
         return (
-            <View style={styles.loadingContainer}>
+            <ScreenContainer style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color="#ea580c" />
                 <Text style={styles.loadingText}>Yükleniyor...</Text>
-            </View>
+            </ScreenContainer>
         );
     }
 
     if (error || !course) {
         return (
-            <View style={styles.loadingContainer}>
+            <ScreenContainer style={styles.loadingContainer}>
                 <Text style={styles.errorText}>Kurs bulunamadı</Text>
                 <TouchableOpacity
                     style={styles.backToHomeButton}
@@ -218,7 +219,7 @@ export default function CourseDetailScreen({ route, navigation }) {
                 >
                     <Text style={styles.backToHomeText}>Geri Dön</Text>
                 </TouchableOpacity>
-            </View>
+            </ScreenContainer>
         );
     }
 
@@ -233,7 +234,7 @@ export default function CourseDetailScreen({ route, navigation }) {
     const displayTitle = course?.title || initialTitle || 'Yükleniyor...';
 
     return (
-        <View style={styles.container}>
+        <ScreenContainer style={styles.container} edges={['top']}>
             {/* Header - Same as HomeScreen */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
@@ -456,7 +457,7 @@ export default function CourseDetailScreen({ route, navigation }) {
             />
 
             {/* Premium modal kaldırıldı — artık doğrudan SubscriptionScreen'e yönlendiriliyor */}
-        </View>
+        </ScreenContainer>
     );
 }
 
@@ -496,7 +497,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 6 : 46,
+        paddingTop: 10,
         paddingBottom: 8, paddingHorizontal: 16,
         backgroundColor: '#000',
         borderBottomWidth: 1,

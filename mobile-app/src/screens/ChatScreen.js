@@ -16,9 +16,10 @@ import {
 import { ArrowLeft, Send } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import { getPusherClient } from '../api/pusherClient';
+import ScreenContainer from '../components/ScreenContainer';
 import dmService from '../api/dmService';
 import authService, { isPremiumUser } from '../api/authService';
-import { getPusherClient } from '../api/pusherClient';
 
 export default function ChatScreen({ route, navigation }) {
     const insets = useSafeAreaInsets();
@@ -255,7 +256,7 @@ export default function ChatScreen({ route, navigation }) {
 
     const renderHeader = () => {
         return (
-            <View style={[styles.header, { paddingTop: insets.top }]}>
+            <View style={[styles.header, { paddingTop: 12 }]}>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                     <ArrowLeft size={24} color="#fff" />
                 </TouchableOpacity>
@@ -287,17 +288,18 @@ export default function ChatScreen({ route, navigation }) {
     const androidPaddingBottom = keyboardVisible ? keyboardHeight + insets.bottom : tabBarHeight;
 
     return (
-        <KeyboardAvoidingView
-            style={[
-                styles.container,
-                Platform.OS === 'android'
-                    ? { paddingBottom: androidPaddingBottom }
-                    : { paddingBottom: keyboardVisible ? 0 : tabBarHeight },
-            ]}
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-            keyboardVerticalOffset={0}
-        >
-            {renderHeader()}
+        <ScreenContainer style={{ flex: 1, backgroundColor: '#000' }} edges={['top', 'left', 'right']}>
+            <KeyboardAvoidingView
+                style={[
+                    styles.container,
+                    Platform.OS === 'android'
+                        ? { paddingBottom: androidPaddingBottom }
+                        : { paddingBottom: keyboardVisible ? 0 : tabBarHeight },
+                ]}
+                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                keyboardVerticalOffset={0}
+            >
+                {renderHeader()}
             
             {loading ? (
                 <View style={styles.loadingContainer}>
@@ -355,6 +357,7 @@ export default function ChatScreen({ route, navigation }) {
                 </>
             )}
         </KeyboardAvoidingView>
+        </ScreenContainer>
     );
 }
 

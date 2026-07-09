@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { StyleSheet, Text, View, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl, StatusBar, Platform, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl, Platform, ScrollView } from 'react-native';
 import { Image } from 'expo-image';
 import { useFocusEffect, CommonActions } from '@react-navigation/native';
 import { ChefHat, Star, BookOpen, User, Clock } from 'lucide-react-native';
@@ -7,6 +7,7 @@ import courseService from '../api/courseService';
 import authService from '../api/authService';
 import favoritesService from '../services/favoritesService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import ScreenContainer from '../components/ScreenContainer';
 
 export default function CoursesScreen({ navigation }) {
     const [courses, setCourses] = useState([]);
@@ -132,16 +133,16 @@ export default function CoursesScreen({ navigation }) {
 
     if (loading) {
         return (
-            <View style={styles.loadingContainer}>
+            <ScreenContainer style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color="#ea580c" />
-            </View>
+            </ScreenContainer>
         );
     }
 
     // Show login required screen if not logged in
     if (!isLoggedIn) {
         return (
-            <View style={styles.container}>
+            <ScreenContainer style={styles.container} edges={['top']}>
                 <View style={styles.header}>
                     <Text style={styles.headerTitle}>Kurslarım</Text>
                 </View>
@@ -156,7 +157,7 @@ export default function CoursesScreen({ navigation }) {
                         <Text style={styles.browseButtonText}>Giriş Yap</Text>
                     </TouchableOpacity>
                 </View>
-            </View>
+            </ScreenContainer>
         );
     }
 
@@ -174,7 +175,7 @@ export default function CoursesScreen({ navigation }) {
     const displayData = getFilteredCourses();
 
     return (
-        <View style={styles.container}>
+        <ScreenContainer style={styles.container} edges={['top']}>
             <View style={styles.header}>
                 <Text style={styles.headerTitle}>Kurslarım</Text>
             </View>
@@ -238,7 +239,7 @@ export default function CoursesScreen({ navigation }) {
                     </TouchableOpacity>
                 </View>
             )}
-        </View>
+        </ScreenContainer>
     );
 }
 
@@ -254,7 +255,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     header: {
-        paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 16 : 60,
+        paddingTop: 16,
         paddingBottom: 20,
         paddingHorizontal: 16,
         backgroundColor: '#000',

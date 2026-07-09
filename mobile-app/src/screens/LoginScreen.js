@@ -10,6 +10,7 @@ import useGoogleAuth from '../hooks/useGoogleAuth';
 import GoogleIcon from '../components/GoogleIcon';
 import useAppleAuth from '../hooks/useAppleAuth';
 import Svg, { Path } from 'react-native-svg';
+import ScreenContainer from '../components/ScreenContainer';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -60,10 +61,11 @@ export default function LoginScreen({ navigation }) {
     };
 
     return (
-        <KeyboardAvoidingView
-            style={styles.container}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        >
+        <ScreenContainer style={styles.container}>
+            <KeyboardAvoidingView
+                style={styles.container}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            >
             {/* Background with food images */}
             <AuthBackground />
 
@@ -190,6 +192,7 @@ export default function LoginScreen({ navigation }) {
                 onClose={() => setAlertVisible(false)}
             />
         </KeyboardAvoidingView>
+        </ScreenContainer>
     );
 }
 

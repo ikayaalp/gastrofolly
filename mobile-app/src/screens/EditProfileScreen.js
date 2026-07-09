@@ -5,23 +5,19 @@ import {
     View,
     TextInput,
     TouchableOpacity,
-    SafeAreaView,
-    StatusBar,
-    ActivityIndicator,
-    Image,
     KeyboardAvoidingView,
     Platform,
     ScrollView
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 import { ArrowLeft, Save, User, Mail, Camera, ImageIcon, AlignLeft } from 'lucide-react-native';
 import authService from '../api/authService';
 import forumService from '../api/forumService';
 import * as ImagePicker from 'expo-image-picker';
 import CustomAlert from '../components/CustomAlert';
+import ScreenContainer from '../components/ScreenContainer';
 
 export default function EditProfileScreen({ navigation }) {
-    const insets = useSafeAreaInsets();
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [image, setImage] = useState('');
@@ -145,21 +141,20 @@ export default function EditProfileScreen({ navigation }) {
 
     if (initialLoading) {
         return (
-            <View style={styles.loadingContainer}>
+            <ScreenContainer style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color="#ea580c" />
-            </View>
+            </ScreenContainer>
         );
     }
 
     return (
-        <SafeAreaView style={styles.safeArea}>
-            <StatusBar barStyle="light-content" backgroundColor="#000" />
+        <ScreenContainer style={styles.safeArea}>
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 style={styles.container}
             >
                 {/* Header */}
-                <View style={[styles.header, { paddingTop: Platform.OS === 'android' ? insets.top + 16 : 16 }]}>
+                <View style={[styles.header, { paddingTop: 16 }]}>
                     <TouchableOpacity
                         style={styles.backButton}
                         onPress={() => navigation.goBack()}
@@ -327,7 +322,7 @@ export default function EditProfileScreen({ navigation }) {
                 type={alertConfig.type}
                 onClose={() => setAlertVisible(false)}
             />
-        </SafeAreaView>
+        </ScreenContainer>
     );
 }
 
