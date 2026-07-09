@@ -20,7 +20,6 @@ import {
     Mail,
     Home,
     BarChart3,
-    Video,
     Tags
 } from "lucide-react"
 
@@ -40,11 +39,6 @@ const sidebarItems = [
         title: "Kategoriler",
         href: "/admin/categories",
         icon: Tags
-    },
-    {
-        title: "Videolar",
-        href: "/admin/videos",
-        icon: Video
     },
     {
         title: "Anasayfa",
