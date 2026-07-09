@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import OpenAI from 'openai'
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rateLimit'
 
 const SYSTEM_PROMPT = `Sen Culinora platformunun AI asistanısın. Adın "Culi".
 Sadece ve sadece gastronomi, yemek tarifleri, pişirme teknikleri, mutfak ekipmanları, gıda bilimi ve aşçılık konularında yanıt verirsin.
@@ -32,6 +33,10 @@ export async function POST(request: NextRequest) {
         const session = await getServerSession(authOptions)
         if (!session?.user?.id) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        }
+
+        if (!checkRateLimit(`ai-chat:${session.user.id}`, RATE_LIMITS.AI_CHAT).success) {
+            return NextResponse.json({ error: 'Çok fazla istek gönderdiniz. Lütfen biraz bekleyin.' }, { status: 429 })
         }
 
         const { message, conversationId } = await request.json()

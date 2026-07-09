@@ -5,6 +5,7 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { randomUUID } from "crypto"
+import { checkRateLimit, RATE_LIMITS } from "@/lib/rateLimit"
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -28,6 +29,15 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
           return null
+        }
+
+        // Brute-force koruması: ayni e-posta icin dakikada 5 deneme sinirlanir.
+        // IP degil e-posta ile sinirliyoruz cunku NextAuth'un authorize
+        // callback'i request nesnesine guvenilir sekilde erismiyor; bir
+        // hesabin sifresini hizli denemekle bombalama en pratik senaryo.
+        const rateLimitKey = `login:${credentials.email.trim().toLowerCase()}`
+        if (!checkRateLimit(rateLimitKey, RATE_LIMITS.AUTH).success) {
+          throw new Error("Çok fazla başarısız deneme. Lütfen birkaç dakika sonra tekrar deneyin.")
         }
 
         const user = await prisma.user.findUnique({

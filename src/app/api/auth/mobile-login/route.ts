@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { randomUUID } from 'crypto';
+import { checkRateLimit, getClientIp, RATE_LIMITS } from '@/lib/rateLimit';
 
 export async function POST(request: NextRequest) {
     try {
@@ -12,6 +13,16 @@ export async function POST(request: NextRequest) {
             return NextResponse.json(
                 { message: 'Email ve şifre gereklidir' },
                 { status: 400 }
+            );
+        }
+
+        // Brute-force koruması: hem IP hem e-posta bazında sınırla.
+        const ip = getClientIp(request);
+        if (!checkRateLimit(`mobile-login-ip:${ip}`, RATE_LIMITS.AUTH).success ||
+            !checkRateLimit(`mobile-login-email:${email.trim().toLowerCase()}`, RATE_LIMITS.AUTH).success) {
+            return NextResponse.json(
+                { message: 'Çok fazla başarısız deneme. Lütfen birkaç dakika sonra tekrar deneyin.' },
+                { status: 429 }
             );
         }
 
