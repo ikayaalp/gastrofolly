@@ -22,25 +22,19 @@ export default function CategoryManagement({ categories: initialCategories }: { 
     
     const [editingCategory, setEditingCategory] = useState<Category | null>(null)
     const [formData, setFormData] = useState({
-        name: "",
-        description: "",
-        imageUrl: ""
+        name: ""
     })
 
     const handleOpenModal = (category?: Category) => {
         if (category) {
             setEditingCategory(category)
             setFormData({
-                name: category.name,
-                description: category.description || "",
-                imageUrl: category.imageUrl || ""
+                name: category.name
             })
         } else {
             setEditingCategory(null)
             setFormData({
-                name: "",
-                description: "",
-                imageUrl: ""
+                name: ""
             })
         }
         setIsModalOpen(true)
@@ -169,9 +163,6 @@ export default function CategoryManagement({ categories: initialCategories }: { 
                             <tr key={category.id} className="border-b border-gray-800 hover:bg-white/5">
                                 <td className="px-6 py-4">
                                     <div className="font-medium text-white">{category.name}</div>
-                                    {category.description && (
-                                        <div className="text-sm text-gray-500 line-clamp-1">{category.description}</div>
-                                    )}
                                 </td>
                                 <td className="px-6 py-4 text-gray-300 font-mono text-sm">{category.slug}</td>
                                 <td className="px-6 py-4 text-gray-300">
@@ -225,27 +216,6 @@ export default function CategoryManagement({ categories: initialCategories }: { 
                                     onChange={(e) => setFormData({...formData, name: e.target.value})}
                                     className="w-full bg-neutral-900 border border-gray-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-orange-500"
                                     placeholder="Örn: Tatlılar"
-                                />
-                            </div>
-                            
-                            <div>
-                                <label className="block text-sm font-medium text-gray-400 mb-1">Açıklama (Opsiyonel)</label>
-                                <textarea
-                                    value={formData.description}
-                                    onChange={(e) => setFormData({...formData, description: e.target.value})}
-                                    className="w-full bg-neutral-900 border border-gray-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-orange-500 min-h-[100px]"
-                                    placeholder="Kategori hakkında kısa bilgi..."
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-400 mb-1">Görsel URL (Opsiyonel)</label>
-                                <input
-                                    type="text"
-                                    value={formData.imageUrl}
-                                    onChange={(e) => setFormData({...formData, imageUrl: e.target.value})}
-                                    className="w-full bg-neutral-900 border border-gray-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-orange-500"
-                                    placeholder="https://..."
                                 />
                             </div>
 
