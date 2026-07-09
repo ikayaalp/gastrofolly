@@ -189,3 +189,53 @@ export async function sendPushToAllUsers(
 
     return { success, failed, errors }
 }
+
+export async function sendPushToUserIds(
+    userIds: string[],
+    title: string,
+    body: string,
+    data?: Record<string, unknown>
+): Promise<{ success: number; failed: number; errors?: string[] }> {
+    if (userIds.length === 0) return { success: 0, failed: 0 }
+
+    const usersWithTokens = await prisma.user.findMany({
+        where: {
+            id: { in: userIds },
+            pushToken: { not: null }
+        },
+        select: {
+            pushToken: true
+        }
+    })
+
+    const pushTokens = Array.from(new Set(
+        usersWithTokens
+            .map(u => u.pushToken)
+            .filter((token): token is string => token !== null)
+    ))
+
+    if (pushTokens.length === 0) {
+        console.log('No users with push tokens found in the target list')
+        return { success: 0, failed: 0 }
+    }
+
+    console.log(`Found ${pushTokens.length} tokens for targeted users. Sending push notifications...`)
+
+    const tickets = await sendPushNotifications(pushTokens, title, body, data)
+    console.log('Expo returned tickets:', JSON.stringify(tickets, null, 2))
+
+    const success = tickets.filter(t => t.status === 'ok').length
+    const failed = tickets.filter(t => t.status === 'error').length
+
+    const errors = tickets
+        .filter(t => t.status === 'error')
+        .map(t => t.message || t.details?.error || 'Unknown error')
+        .filter((value, index, self) => self.indexOf(value) === index)
+
+    console.log(`Targeted push results: ${success} success, ${failed} failed`)
+    if (errors.length > 0) {
+        console.log('Push errors:', errors)
+    }
+
+    return { success, failed, errors }
+}

@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Send, Loader2, AlertCircle, CheckCircle } from "lucide-react"
+import { toast } from "react-hot-toast"
 
 interface PushNotificationSenderProps {
     courses: { id: string; title: string }[]
@@ -11,11 +12,17 @@ export default function PushNotificationSender({ courses }: PushNotificationSend
     const [title, setTitle] = useState("")
     const [message, setMessage] = useState("")
     const [courseId, setCourseId] = useState("")
+    const [targetScope, setTargetScope] = useState<"ALL" | "COURSE_ENROLLED" | "PREMIUM">("ALL")
     const [isLoading, setIsLoading] = useState(false)
     const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null)
 
     const handleSend = async (e: React.FormEvent) => {
         e.preventDefault()
+        if (targetScope === 'COURSE_ENROLLED' && !courseId) {
+            toast.error("Bu seçenek için kurs seçmelisiniz")
+            return
+        }
+
         setIsLoading(true)
         setStatus(null)
 
@@ -28,7 +35,8 @@ export default function PushNotificationSender({ courses }: PushNotificationSend
                 body: JSON.stringify({
                     title,
                     message,
-                    courseId: courseId || undefined
+                    courseId: courseId || undefined,
+                    targetScope
                 }),
             })
 
@@ -74,7 +82,9 @@ export default function PushNotificationSender({ courses }: PushNotificationSend
                 </div>
                 <div>
                     <h2 className="text-xl font-bold text-white">Bildirim Gönder</h2>
-                    <p className="text-gray-400 text-sm">Tüm kullanıcılara push bildirimi gönderin</p>
+                    <p className="text-gray-400 text-sm">
+                        {targetScope === 'ALL' ? 'Tüm kullanıcılara push bildirimi gönderin' : targetScope === 'PREMIUM' ? 'Sadece aktif premium abonelere bildirim gönderin' : 'Sadece seçili kursa kayıtlı öğrencilere bildirim gönderin'}
+                    </p>
                 </div>
             </div>
 
@@ -109,7 +119,25 @@ export default function PushNotificationSender({ courses }: PushNotificationSend
 
                 <div>
                     <label className="block text-sm font-medium text-gray-300 mb-1">
+                        Hedef Kitle
+                    </label>
+                    <select
+                        value={targetScope}
+                        onChange={(e) => setTargetScope(e.target.value as any)}
+                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none mb-4"
+                    >
+                        <option value="ALL">Tüm Kullanıcılar</option>
+                        <option value="COURSE_ENROLLED">Bir Kursa Kayıtlı Öğrenciler</option>
+                        <option value="PREMIUM">Premium Aboneler</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">
                         Kurs Seç (Opsiyonel - Tıklanınca açılacak kurs)
+                        {targetScope === 'COURSE_ENROLLED' && (
+                            <span className="text-red-500 ml-1">*(bu hedef kitle için zorunlu)</span>
+                        )}
                     </label>
                     <select
                         value={courseId}

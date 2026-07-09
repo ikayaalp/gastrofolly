@@ -5,7 +5,7 @@ import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { REVENUE_TRACKING_START, HISTORICAL_REVENUE_OFFSET } from "@/lib/revenueConfig"
 import Link from "next/link"
-import { BookOpen, Users, Wallet, TrendingUp, CreditCard, ArrowUpRight, Activity } from "lucide-react"
+import { BookOpen, Users, Wallet, TrendingUp, CreditCard, ArrowUpRight, Activity, BarChart3 } from "lucide-react"
 
 async function getAdminData() {
   const [users, coursesCount, enrollments, payments, recentRegistrations] = await Promise.all([
@@ -116,6 +116,7 @@ export default async function AdminPage() {
           </div>
           <p className="text-gray-400 text-sm font-medium">Toplam Kayıt</p>
           <p className="text-3xl font-bold text-white mt-1">{enrollments}</p>
+          <p className="text-xs text-gray-500 mt-2">Tüm zamanlar — aylık kırılım için Analitik'e bakın</p>
         </div>
 
         <div className="bg-black border border-gray-800 rounded-xl p-6 group hover:border-yellow-500/30 transition-colors">
@@ -218,21 +219,12 @@ export default async function AdminPage() {
           </div>
 
           <div className="bg-neutral-900/30 border border-gray-800 rounded-xl p-6">
-            <h2 className="text-lg font-bold text-white mb-4">Sistem Durumu</h2>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-400">Sunucu Durumu</span>
-                <span className="text-green-500 font-medium">Aktif</span>
-              </div>
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-400">Veritabanı</span>
-                <span className="text-green-500 font-medium">Bağlı</span>
-              </div>
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-400">Son Güncelleme</span>
-                <span className="text-gray-400 font-medium">{new Date().toLocaleTimeString('tr-TR')}</span>
-              </div>
-            </div>
+            <h2 className="text-lg font-bold text-white mb-4">Detaylı Analiz</h2>
+            <p className="text-sm text-gray-400 mb-6">Gelir trendleri, kurs tamamlanma oranları ve daha fazlası için Analitik sayfasına göz atın.</p>
+            <Link href="/admin/analytics" className="flex items-center justify-between p-3 rounded-lg bg-gray-800/50 hover:bg-gray-800 border border-gray-700 hover:border-orange-500/50 transition-all group">
+              <span className="text-gray-300 group-hover:text-white">Analitik</span>
+              <BarChart3 className="h-4 w-4 text-gray-500 group-hover:text-orange-500" />
+            </Link>
           </div>
         </div>
       </div>

@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
 // Helper function to create a slug
-function generateSlug(text: string) {
+export function generateSlug(text: string) {
     return text
         .toString()
         .toLowerCase()
@@ -22,6 +22,30 @@ function generateSlug(text: string) {
         .replace(/-+$/, '');      // Trim - from end of text
 }
 
+export async function GET(req: Request) {
+    try {
+        const session = await getServerSession(authOptions)
+
+        if (!session?.user?.id || session.user.role !== 'ADMIN') {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+        }
+
+        const categories = await prisma.category.findMany({
+            include: {
+                _count: {
+                    select: { courses: true }
+                }
+            },
+            orderBy: { name: 'asc' }
+        })
+
+        return NextResponse.json({ data: categories }, { status: 200 })
+    } catch (error) {
+        console.error("Error fetching categories:", error)
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+    }
+}
+
 export async function POST(req: Request) {
     try {
         const session = await getServerSession(authOptions)
@@ -31,7 +55,7 @@ export async function POST(req: Request) {
         }
 
         const body = await req.json()
-        const { name } = body
+        const { name, description, imageUrl } = body
 
         if (!name || name.trim() === "") {
             return NextResponse.json({ error: "Kategori adı zorunludur" }, { status: 400 })
@@ -51,6 +75,8 @@ export async function POST(req: Request) {
             data: {
                 name: name.trim(),
                 slug,
+                description: description || null,
+                imageUrl: imageUrl || null,
             },
         })
 

@@ -30,7 +30,7 @@ export default function VideoManagement({ lessonsWithoutVideos, allLessons }: Vi
   const [filterStatus, setFilterStatus] = useState<"ALL" | "MISSING" | "HAS_VIDEO">("ALL")
 
   const handleVideoUploaded = (videoUrl: string) => {
-    console.log("Video uploaded:", videoUrl)
+
     setShowUpload(false)
     setSelectedLesson(null)
     setRefreshKey(prev => prev + 1)

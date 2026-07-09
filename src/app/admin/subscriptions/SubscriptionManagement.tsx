@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { toast } from "react-hot-toast"
-import { Plus, Edit2, Trash2, Check, X, Loader2 } from "lucide-react"
+import { Plus, Edit2, Trash2, Check, X, Loader2, CreditCard, CheckCircle2, Calendar } from "lucide-react"
 
 type SubscriptionPlan = {
     id: string
@@ -108,11 +108,11 @@ export default function SubscriptionManagement({ plans: initialPlans }: { plans:
     }
 
     return (
-        <div className="p-6">
-            <div className="flex justify-between items-center mb-6">
+        <div className="space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-800 pb-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-white mb-2">Abonelik Planları</h1>
-                    <p className="text-gray-400">Tüm abonelik planlarını ve fiyatlarını buradan yönetebilirsiniz.</p>
+                    <h1 className="text-3xl font-bold text-white mb-2">Abonelik Planları</h1>
+                    <p className="text-gray-400 mt-1">Tüm abonelik planlarını ve fiyatlarını buradan yönetebilirsiniz.</p>
                 </div>
                 <button
                     onClick={() => handleOpenModal()}
@@ -123,9 +123,44 @@ export default function SubscriptionManagement({ plans: initialPlans }: { plans:
                 </button>
             </div>
 
-            <div className="bg-[#121212] rounded-xl border border-gray-800 overflow-hidden">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-black border border-gray-800 rounded-xl p-6">
+                    <div className="flex justify-between items-start mb-4">
+                        <div className="bg-orange-500/20 p-3 rounded-xl">
+                            <CreditCard className="h-6 w-6 text-orange-400" />
+                        </div>
+                    </div>
+                    <p className="text-gray-400 text-sm font-medium">Toplam Plan</p>
+                    <p className="text-3xl font-bold text-white mt-1">{plans.length}</p>
+                </div>
+                
+                <div className="bg-black border border-gray-800 rounded-xl p-6">
+                    <div className="flex justify-between items-start mb-4">
+                        <div className="bg-green-500/20 p-3 rounded-xl">
+                            <CheckCircle2 className="h-6 w-6 text-green-400" />
+                        </div>
+                    </div>
+                    <p className="text-gray-400 text-sm font-medium">Aktif Plan</p>
+                    <p className="text-3xl font-bold text-white mt-1">{plans.filter(p => p.isActive).length}</p>
+                </div>
+                
+                <div className="bg-black border border-gray-800 rounded-xl p-6">
+                    <div className="flex justify-between items-start mb-4">
+                        <div className="bg-blue-500/20 p-3 rounded-xl">
+                            <Calendar className="h-6 w-6 text-blue-400" />
+                        </div>
+                    </div>
+                    <p className="text-gray-400 text-sm font-medium">Aylık / Yıllık Dağılım</p>
+                    <p className="text-2xl font-bold text-white mt-1">
+                        {plans.filter(p => p.interval === 'monthly').length} Aylık / {plans.filter(p => p.interval === 'yearly').length} Yıllık
+                    </p>
+                </div>
+            </div>
+
+            <div className="bg-black rounded-xl border border-gray-800 overflow-hidden">
                 <table className="w-full text-left">
-                    <thead className="bg-[#1a1a1a] border-b border-gray-800">
+                    <thead className="bg-neutral-900 border-b border-gray-800">
                         <tr>
                             <th className="px-6 py-4 text-sm font-medium text-gray-400">Plan Adı</th>
                             <th className="px-6 py-4 text-sm font-medium text-gray-400">Fiyat</th>
@@ -184,7 +219,7 @@ export default function SubscriptionManagement({ plans: initialPlans }: { plans:
 
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-[#121212] border border-gray-800 rounded-2xl w-full max-w-md p-6">
+                    <div className="bg-black border border-gray-800 rounded-2xl w-full max-w-md p-6">
                         <h2 className="text-xl font-bold text-white mb-6">
                             {editingPlan ? 'Planı Düzenle' : 'Yeni Plan Ekle'}
                         </h2>

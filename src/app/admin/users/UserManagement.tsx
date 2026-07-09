@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import {
   Users,
   Search,
@@ -15,7 +16,8 @@ import {
   CreditCard,
   TrendingUp,
   Sparkles,
-  Star
+  Star,
+  Eye
 } from "lucide-react"
 
 
@@ -320,7 +322,14 @@ export default function UserManagement({ users, totalRevenue }: UserManagementPr
                     </div>
                   </td>
 
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-right">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-right flex items-center justify-end gap-1">
+                    <Link
+                      href={`/admin/users/${user.id}`}
+                      className="p-2 text-gray-500 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                      title="Detay"
+                    >
+                      <Eye className="h-5 w-5" />
+                    </Link>
                     <div className="relative inline-block text-left">
                       <button
                         onClick={() => setSelectedUser(selectedUser?.id === user.id ? null : user)}

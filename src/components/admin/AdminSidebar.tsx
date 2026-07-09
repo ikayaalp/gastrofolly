@@ -19,7 +19,9 @@ import {
     Star,
     Mail,
     Home,
-    BarChart3
+    BarChart3,
+    Video,
+    Tags
 } from "lucide-react"
 
 const sidebarItems = [
@@ -33,6 +35,16 @@ const sidebarItems = [
         title: "Kurs Yönetimi",
         href: "/admin/courses",
         icon: BookOpen
+    },
+    {
+        title: "Kategoriler",
+        href: "/admin/categories",
+        icon: Tags
+    },
+    {
+        title: "Videolar",
+        href: "/admin/videos",
+        icon: Video
     },
     {
         title: "Anasayfa",

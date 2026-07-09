@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
-import { sendPushToAllUsers } from "@/lib/pushNotifications"
+import { sendPushToAllUsers, sendPushToUserIds } from "@/lib/pushNotifications"
 import { prisma } from "@/lib/prisma"
 
 export async function POST(request: NextRequest) {
@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 403 })
         }
 
-        const { title, message, courseId } = await request.json()
+        const { title, message, courseId, targetScope = 'ALL' } = await request.json()
 
         if (!title || !message) {
             return NextResponse.json(
@@ -21,17 +21,38 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        // In-app bildirim oluştur
-        const allUsers = await prisma.user.findMany({
-            select: { id: true }
-        })
+        let targetUserIds: string[] = []
 
+        if (targetScope === 'COURSE_ENROLLED') {
+            if (!courseId) {
+                return NextResponse.json({ error: "Bu seçenek için kurs seçmelisiniz" }, { status: 400 })
+            }
+            const enrollments = await prisma.enrollment.findMany({
+                where: { courseId },
+                select: { userId: true }
+            })
+            targetUserIds = enrollments.map(e => e.userId)
+        } else if (targetScope === 'PREMIUM') {
+            const premiumUsers = await prisma.user.findMany({
+                where: { subscriptionEndDate: { gt: new Date() } },
+                select: { id: true }
+            })
+            targetUserIds = premiumUsers.map(u => u.id)
+        } else {
+            // targetScope === 'ALL'
+            const allUsers = await prisma.user.findMany({
+                select: { id: true }
+            })
+            targetUserIds = allUsers.map(u => u.id)
+        }
+
+        // In-app bildirim oluştur
         const inAppResult = await prisma.notification.createMany({
-            data: allUsers.map(u => ({
+            data: targetUserIds.map(userId => ({
                 type: 'SYSTEM' as const, // Veya uygun bir tip
                 title,
                 message,
-                userId: u.id,
+                userId,
                 courseId: courseId || null
             }))
         })
@@ -47,7 +68,12 @@ export async function POST(request: NextRequest) {
             data.params = { courseId }
         }
 
-        const result = await sendPushToAllUsers(title, message, data)
+        let result
+        if (targetScope === 'ALL') {
+            result = await sendPushToAllUsers(title, message, data)
+        } else {
+            result = await sendPushToUserIds(targetUserIds, title, message, data)
+        }
 
         return NextResponse.json({
             success: true,
