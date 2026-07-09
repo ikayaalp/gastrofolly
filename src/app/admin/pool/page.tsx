@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { REVENUE_TRACKING_START, HISTORICAL_REVENUE_OFFSET } from "@/lib/revenueConfig"
 import { Users, Wallet, TrendingUp, Clock, Info, Smartphone } from "lucide-react"
 
 function calculatePoolShare(instructors: any[], poolTotal: number) {
@@ -35,17 +36,15 @@ export default async function PoolManagementPage() {
         redirect("/dashboard")
     }
 
-    const TODAY_START = new Date('2026-02-21T10:00:00.000Z')
-
     // Bugünden öncesi: sabit tarihsel kasa
-    const preRevenue = 85
+    const preRevenue = HISTORICAL_REVENUE_OFFSET
 
     // Web (Iyzico) abonelik ödemeleri
     const iyzicoPayments = await prisma.payment.aggregate({
         where: {
             status: 'COMPLETED',
             subscriptionPlan: { not: null },
-            createdAt: { gte: TODAY_START },
+            createdAt: { gte: REVENUE_TRACKING_START },
             stripePaymentId: { not: { startsWith: 'rc_' } } // RevenueCat ödemeleri hariç
         },
         _sum: { amount: true }
@@ -80,6 +79,9 @@ export default async function PoolManagementPage() {
     })
 
     // Apple kesintisi öncesi brüt tutarlar (gösterim amaçlı)
+    // NOT: Bunlar App Store Connect/RevenueCat tarafında ayrı yönetilen IAP fiyatları.
+    // Abonelikler sayfasındaki SubscriptionPlan tablosu SADECE web (Iyzico) fiyatlandırması
+    // içindir, Apple fiyatıyla eşit olmak zorunda değildir — bilerek buradan okunmuyor.
     const APPLE_MONTHLY_GROSS = 399
     const APPLE_YEARLY_GROSS = 3999
     const APPLE_MONTHLY_NET = Math.round(APPLE_MONTHLY_GROSS * 0.70 * 100) / 100  // 279.30 TL

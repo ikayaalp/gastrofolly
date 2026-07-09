@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
+import { REVENUE_TRACKING_START, HISTORICAL_REVENUE_OFFSET } from "@/lib/revenueConfig"
 import UserManagement from "./UserManagement"
 
 export default async function UsersPage() {
@@ -38,16 +39,16 @@ export default async function UsersPage() {
     }
   })
 
-  // Toplam Gelir: 85 TL sabit + 21 Şubat sonrası gerçek Iyzico ödemeleri
+  // Toplam Gelir: Sabit + sonrası gerçek Iyzico ödemeleri
   const iyzicoPayments = await prisma.payment.aggregate({
     where: {
       status: 'COMPLETED',
       subscriptionPlan: { not: null },
-      createdAt: { gte: new Date('2026-02-21T10:00:00.000Z') }
+      createdAt: { gte: REVENUE_TRACKING_START }
     },
     _sum: { amount: true }
   })
-  const totalRevenue = 85 + (iyzicoPayments._sum.amount || 0)
+  const totalRevenue = HISTORICAL_REVENUE_OFFSET + (iyzicoPayments._sum.amount || 0)
 
   return <UserManagement users={users} totalRevenue={totalRevenue} />
 }

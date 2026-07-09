@@ -196,6 +196,7 @@ export default async function AdminAnalyticsPage({
                     <p className="text-3xl font-bold text-white mt-1">
                         ₺{thisMonthRevenue.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}
                     </p>
+                    <p className="text-xs text-gray-500 mt-2">Bu ay, tüm tamamlanmış ödemeler</p>
                 </div>
 
                 <div className="bg-black border border-gray-800 rounded-xl p-6 group hover:border-orange-500/30 transition-colors">

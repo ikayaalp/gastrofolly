@@ -14,7 +14,8 @@ import {
   GraduationCap,
   CreditCard,
   TrendingUp,
-  Sparkles
+  Sparkles,
+  Star
 } from "lucide-react"
 
 
@@ -101,7 +102,8 @@ export default function UserManagement({ users, totalRevenue }: UserManagementPr
     const roleConfig = {
       ADMIN: { color: 'bg-red-900/50 text-red-200 border-red-700/50', text: 'Admin', icon: Shield },
       INSTRUCTOR: { color: 'bg-blue-900/50 text-blue-200 border-blue-700/50', text: 'Eğitmen', icon: UserCheck },
-      STUDENT: { color: 'bg-green-900/50 text-green-200 border-green-700/50', text: 'Öğrenci', icon: GraduationCap }
+      STUDENT: { color: 'bg-green-900/50 text-green-200 border-green-700/50', text: 'Öğrenci', icon: GraduationCap },
+      INFLUENCER: { color: 'bg-purple-900/50 text-purple-200 border-purple-700/50', text: 'Fenomen', icon: Star }
     }
 
     const config = roleConfig[role as keyof typeof roleConfig] || roleConfig.STUDENT
@@ -119,7 +121,8 @@ export default function UserManagement({ users, totalRevenue }: UserManagementPr
     const allRoles = [
       { value: 'STUDENT', label: 'Öğrenci', icon: GraduationCap },
       { value: 'INSTRUCTOR', label: 'Eğitmen', icon: UserCheck },
-      { value: 'ADMIN', label: 'Admin', icon: Shield }
+      { value: 'ADMIN', label: 'Admin', icon: Shield },
+      { value: 'INFLUENCER', label: 'Fenomen', icon: Star }
     ]
 
     return allRoles.filter(role => role.value !== currentRole)
@@ -217,6 +220,7 @@ export default function UserManagement({ users, totalRevenue }: UserManagementPr
               <option value="ADMIN">Admin</option>
               <option value="INSTRUCTOR">Eğitmen</option>
               <option value="STUDENT">Öğrenci</option>
+              <option value="INFLUENCER">Fenomen</option>
             </select>
           </div>
         </div>

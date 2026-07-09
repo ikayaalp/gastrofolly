@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
+import { REVENUE_TRACKING_START, HISTORICAL_REVENUE_OFFSET } from "@/lib/revenueConfig"
 import Link from "next/link"
 import { BookOpen, Users, Wallet, TrendingUp, CreditCard, ArrowUpRight, Activity } from "lucide-react"
 
@@ -23,7 +24,7 @@ async function getAdminData() {
       where: {
         status: 'COMPLETED',
         subscriptionPlan: { not: null },
-        createdAt: { gte: new Date('2026-02-21T10:00:00.000Z') }
+        createdAt: { gte: REVENUE_TRACKING_START }
       },
       _sum: { amount: true },
       _count: true
@@ -124,7 +125,8 @@ export default async function AdminPage() {
             </div>
           </div>
           <p className="text-gray-400 text-sm font-medium">Toplam Gelir</p>
-          <p className="text-3xl font-bold text-white mt-1">₺{(85 + (payments._sum.amount || 0)).toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</p>
+          <p className="text-3xl font-bold text-white mt-1">₺{(HISTORICAL_REVENUE_OFFSET + (payments._sum.amount || 0)).toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</p>
+          <p className="text-xs text-gray-500 mt-2">Tüm zamanlar, abonelik ödemeleri</p>
         </div>
       </div>
 

@@ -37,6 +37,7 @@ interface Course {
   _count: {
     enrollments: number
     lessons: number
+    payments?: number
   }
 }
 
@@ -324,7 +325,16 @@ export default function CourseManagement({ initialCourses, categories, instructo
         onClose={() => setShowDeleteModal(false)}
         onConfirm={handleConfirmDelete}
         title="Kursu Sil"
-        message="Bu kursu silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."
+        message={
+          (() => {
+            const course = courses.find(c => c.id === courseToDelete)
+            const paymentsCount = course?._count?.payments || 0
+            if (paymentsCount > 0) {
+              return `Bu kursu silmek istediğinizden emin misiniz? Bu işlem geri alınamaz. Bu kursa bağlı ${paymentsCount} ödeme kaydı da kalıcı olarak silinecek.`
+            }
+            return "Bu kursu silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."
+          })()
+        }
         confirmText="Evet, Sil"
         isDanger={true}
         isLoading={loading === courseToDelete}

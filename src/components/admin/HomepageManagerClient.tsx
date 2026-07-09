@@ -456,7 +456,7 @@ function InstructorsTab({ initial }: { initial: HInstructor[] }) {
                 <div>
                   <label className={labelCls}>Şifre * (en az 6 karakter)</label>
                   <input
-                    type="text"
+                    type="password"
                     className={inputCls}
                     value={item.password || ""}
                     onChange={(e) => update(item.id, "password", e.target.value)}
@@ -477,7 +477,7 @@ function InstructorsTab({ initial }: { initial: HInstructor[] }) {
                 <div>
                   <label className={labelCls}>Yeni Şifre (opsiyonel — sıfırlamak için)</label>
                   <input
-                    type="text"
+                    type="password"
                     className={inputCls}
                     value={item.password || ""}
                     onChange={(e) => update(item.id, "password", e.target.value)}
