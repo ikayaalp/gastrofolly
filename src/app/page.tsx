@@ -65,14 +65,58 @@ async function getLandingData() {
     take: 12
   });
 
+  // 3. User Courses (Only if logged in)
+  let userCoursesPromise = Promise.resolve([]);
 
+  if (userId) {
+    userCoursesPromise = prisma.course.findMany({
+      where: {
+        isPublished: true,
+        OR: [
+          {
+            enrollments: {
+              some: { userId: userId }
+            }
+          },
+          {
+            payments: {
+              some: {
+                userId: userId,
+                status: 'COMPLETED',
+                amount: { gt: 0 }
+              }
+            }
+          }
+        ]
+      },
+      include: {
+        instructor: true,
+        _count: {
+          select: { lessons: true }
+        },
+        progress: {
+          where: {
+            userId: userId,
+            isCompleted: true
+          }
+        }
+      },
+      take: 5
+    }).then(courses => courses.map((course: any) => {
+      const totalLessons = course._count.lessons || 0;
+      const completedLessons = course.progress.length;
+      const percentage = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+
+      return {
+        ...course,
+        progress: percentage
+      };
+    }) as any);
+  }
 
   // 4. Fetch Instructors (Database)
   const instructorsPromise = prisma.user.findMany({
-    where: { 
-      role: 'INSTRUCTOR', 
-      createdCourses: { some: { isPublished: true } } 
-    },
+    where: { role: 'INSTRUCTOR' },
     select: {
       id: true,
       name: true,
@@ -82,9 +126,10 @@ async function getLandingData() {
   });
 
   // Execute all queries in parallel
-  const [categoriesData, featured, dbInstructors, activePlan] = await Promise.all([
+  const [categoriesData, featured, userCourses, dbInstructors, activePlan] = await Promise.all([
     categoriesPromise,
     featuredPromise,
+    userCoursesPromise,
     instructorsPromise,
     prisma.subscriptionPlan.findFirst({
       where: { isActive: true, interval: 'monthly' }
@@ -93,17 +138,37 @@ async function getLandingData() {
 
   const monthlyPrice = activePlan?.price || 399;
 
-  const instructors = dbInstructors.map(inst => {
-    let image = inst.image;
-    if (image && image.includes('images.unsplash.com')) {
-      image = image.replace('w=200', 'w=800&q=80');
+  // 5. Sample Instructors (Mock - High Quality AI Images)
+  const sampleInstructors = [
+    {
+      id: "mock-1",
+      name: "Şef Kemal Can",
+      image: "/instructors/kemal.png"
+    },
+    {
+      id: "mock-2",
+      name: "Şef Ömer Faruk",
+      image: "/instructors/omer.png"
+    },
+    {
+      id: "mock-3",
+      name: "Şef Murat Yıldız",
+      image: "/instructors/murat.png"
+    },
+    {
+      id: "mock-4",
+      name: "Şef Selin Kaya",
+      image: "/instructors/selin.png"
+    },
+    {
+      id: "mock-5",
+      name: "Şef Ayşe Demir",
+      image: "/instructors/ayse.png"
     }
-    return {
-      ...inst,
-      name: inst.name || 'Eğitmen',
-      image
-    };
-  });
+  ];
+
+  // Combine database instructors with samples (Only show 5 AI chefs as requested)
+  const instructors = [...sampleInstructors].slice(0, 5);
 
   // Format featured courses to match interface (handle nulls)
   const formattedFeatured = featured.map(course => ({
@@ -125,7 +190,7 @@ async function getLandingData() {
       courseCount: c._count.courses
     }));
 
-  return { categories, featured: formattedFeatured, instructors, monthlyPrice };
+  return { categories, featured: formattedFeatured, userCourses, instructors, monthlyPrice };
 }
 
 import { redirect } from "next/navigation";
@@ -146,6 +211,7 @@ export default async function LandingPage() {
       <LandingPageClient
         initialCategories={data.categories}
         initialFeatured={data.featured}
+        initialUserCourses={data.userCourses}
         initialInstructors={data.instructors}
         monthlyPrice={data.monthlyPrice}
       />
