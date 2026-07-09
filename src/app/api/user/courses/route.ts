@@ -33,19 +33,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // 1. Enrollment kayıtlarından kursları al (kullanıcının "Kursa Başla" dediği kurslar)
-    const enrollments = await prisma.enrollment.findMany({
-      where: { userId },
-      select: { courseId: true, createdAt: true },
-    })
-
-    const enrolledCourseIds = enrollments.map(e => e.courseId)
-
-    if (enrolledCourseIds.length === 0) {
-      return NextResponse.json({ courses: [], enrollments: [] })
-    }
-
-    // 2. Kullanıcı bilgilerini al (abonelik durumu ve satın alma kayıtları)
+    // 1. Kullanıcı bilgilerini al (abonelik durumu ve satın alma kayıtları)
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -60,30 +48,45 @@ export async function GET(request: NextRequest) {
       new Date(user.subscriptionEndDate) > new Date()
     )
 
-    // 3. Satın alınan kursları çek (abonelik bitse bile erişimi devam eden kurslar)
-    const paymentRecords = await prisma.payment.findMany({
-      where: {
-        userId,
-        status: 'COMPLETED',
-        courseId: { not: null }
-      },
-      select: { courseId: true }
-    })
+    // 2. Bu kullanıcının "ilişkisi olduğu" tüm kursları topla: Enrollment,
+    // Progress (en az 1 ders izlemiş) ve Payment (satın almış). Enrollment
+    // satırı sadece 1. dersten sonrasını izleyince otomatik oluşuyor
+    // (learn/[courseId]/page.tsx), bu yüzden sadece Enrollment'a bakmak
+    // "sadece tanıtımı izledim" durumundaki kursları listeden düşürüyordu.
+    // Bu birleşim, /home'daki "Kaldığın Yerden Devam Et" ile aynı mantık.
+    const [enrollments, progressRecords, paymentRecords] = await Promise.all([
+      prisma.enrollment.findMany({
+        where: { userId },
+        select: { courseId: true, createdAt: true },
+      }),
+      prisma.progress.findMany({
+        where: { userId },
+        select: { courseId: true, isCompleted: true, lessonId: true, watchedAt: true },
+      }),
+      prisma.payment.findMany({
+        where: { userId, status: 'COMPLETED', courseId: { not: null } },
+        select: { courseId: true },
+      }),
+    ])
 
     const purchasedCourseIds = new Set(
       paymentRecords.map(p => p.courseId).filter(id => id !== null) as string[]
     )
 
-    // 4. Progress kayıtlarını al (ilerleme hesaplaması için)
-    const progressRecords = await prisma.progress.findMany({
-      where: { userId, courseId: { in: enrolledCourseIds } },
-      select: { courseId: true, isCompleted: true, lessonId: true },
-    })
+    const allCourseIds = Array.from(new Set([
+      ...enrollments.map(e => e.courseId),
+      ...progressRecords.map(p => p.courseId),
+      ...purchasedCourseIds,
+    ]))
 
-    // 5. Kurs detaylarını çek
+    if (allCourseIds.length === 0) {
+      return NextResponse.json({ courses: [], enrollments: [] })
+    }
+
+    // 3. Kurs detaylarını çek
     const courses = await prisma.course.findMany({
       where: {
-        id: { in: enrolledCourseIds },
+        id: { in: allCourseIds },
         isPublished: true
       },
       include: {
@@ -93,7 +96,8 @@ export async function GET(request: NextRequest) {
         reviews: true,
         _count: { select: { lessons: true } }
       },
-      orderBy: { updatedAt: 'desc' }
+      orderBy: { updatedAt: 'desc' },
+      take: 100
     })
 
     // 6. Abonelik durumuna göre filtrele ve ilerleme hesapla
@@ -120,12 +124,17 @@ export async function GET(request: NextRequest) {
 
         const isPurchased = purchasedCourseIds.has(course.id)
         const enrollmentRecord = enrollments.find(e => e.courseId === course.id)
+        // Enrollment satırı yoksa (sadece izleme/satın alma kaydı varsa), en
+        // erken ilerleme tarihini "başladığı tarih" olarak kullan.
+        const earliestProgress = courseProgress
+          .map(p => p.watchedAt)
+          .sort((a, b) => a.getTime() - b.getTime())[0]
 
         return {
           ...course,
           progress: progressPercentage,
           isPurchased,
-          enrolledAt: enrollmentRecord?.createdAt?.toISOString() || new Date().toISOString()
+          enrolledAt: (enrollmentRecord?.createdAt || earliestProgress || new Date()).toISOString()
         }
       })
 

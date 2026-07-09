@@ -113,8 +113,12 @@ export default async function CoursePage({ params }: CoursePageProps) {
   // Detay sayfası banner görseli: panelden ayrı ayarlanabilir, yoksa kart görseline düşer
   const bannerImage = course.detailImageUrl || course.imageUrl
 
+  // Aktif abonelik (Premium), tüm kurslara erişim sağlar. Eskiden burada
+  // Commis/Chef D Party/Executive gibi kademeli bir plan-seviye karşılaştırması
+  // vardı; güncel sistemde tek plan (Premium) var ve erişim kontrolü diğer
+  // her yerde (learn/[courseId]/page.tsx, api/enroll) zaten bu şekilde
+  // yapılıyor — buradaki mantık ona eşitlendi.
   let hasActiveSubscription = false
-  let userSubscriptionLevel = 0
 
   if (session?.user?.id) {
     const user = await prisma.user.findUnique({
@@ -122,20 +126,15 @@ export default async function CoursePage({ params }: CoursePageProps) {
       select: { subscriptionPlan: true, subscriptionEndDate: true }
     })
 
-    if (user?.subscriptionPlan && (!user.subscriptionEndDate || new Date(user.subscriptionEndDate) > new Date())) {
-      hasActiveSubscription = true
-      if (user.subscriptionPlan === 'Premium') userSubscriptionLevel = 99
-      else if (user.subscriptionPlan === 'Commis') userSubscriptionLevel = 1
-      else if (user.subscriptionPlan === 'Chef D party') userSubscriptionLevel = 2
-      else if (user.subscriptionPlan === 'Executive') userSubscriptionLevel = 3
-    }
+    hasActiveSubscription = !!(
+      user?.subscriptionPlan === 'Premium' &&
+      (!user.subscriptionEndDate || new Date(user.subscriptionEndDate) > new Date())
+    )
   }
-
-  const courseLevelValue = course.level === 'BEGINNER' ? 1 : course.level === 'INTERMEDIATE' ? 2 : 3
 
   const isEnrolled = session?.user?.id
     ? course.enrollments.some((enrollment: { userId: string }) => enrollment.userId === session.user.id) ||
-    (hasActiveSubscription && userSubscriptionLevel >= courseLevelValue)
+    hasActiveSubscription
     : false
 
   const totalDuration = course.lessons.reduce((acc: number, lesson: { duration: number | null }) => acc + (lesson.duration || 0), 0)
