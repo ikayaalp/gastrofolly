@@ -39,9 +39,7 @@ import {
     RotateCw,
     Settings,
     List,
-    Star,
     Send,
-    MessageSquarePlus,
     Trash2,
     Copy,
     GraduationCap,
@@ -80,16 +78,9 @@ export default function LearnScreen({ route, navigation }) {
     const [videoDuration, setVideoDuration] = useState(0);
     const [videoPosition, setVideoPosition] = useState(0);
     const [isBuffering, setIsBuffering] = useState(false);
-    const [rating, setRating] = useState(0);
-    const [reviewText, setReviewText] = useState('');
-    const [submittingReview, setSubmittingReview] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(false);
-    const [activeTab, setActiveTab] = useState('lessons'); // 'lessons', 'reviews', 'more'
+    const [activeTab, setActiveTab] = useState('lessons'); // 'lessons', 'chef'
     const [keyboardVisible, setKeyboardVisible] = useState(false);
-    const [reviews, setReviews] = useState([]);
-    const [averageRating, setAverageRating] = useState(0);
-    const [loadingReviews, setLoadingReviews] = useState(false);
-    const [showReviewModal, setShowReviewModal] = useState(false);
     const [currentUserId, setCurrentUserId] = useState(null);
     const [alertVisible, setAlertVisible] = useState(false);
     const [authToken, setAuthToken] = useState(null);
@@ -227,59 +218,6 @@ export default function LearnScreen({ route, navigation }) {
         } finally {
             setLoading(false);
         }
-    };
-
-    // Load reviews for the course
-    const loadReviews = async () => {
-        try {
-            setLoadingReviews(true);
-            const response = await axios.get(
-                `${config.API_BASE_URL}/api/reviews?courseId=${courseId}`
-            );
-            setReviews(response.data.reviews || []);
-            setAverageRating(response.data.averageRating || 0);
-        } catch (error) {
-            console.log('Load reviews error:', error);
-        } finally {
-            setLoadingReviews(false);
-        }
-    };
-
-    // Load reviews when tab changes to reviews
-    useEffect(() => {
-        if (activeTab === 'reviews' && reviews.length === 0) {
-            loadReviews();
-        }
-    }, [activeTab]);
-
-    // Delete a review
-    const deleteReview = async (reviewId) => {
-        showAlert(
-            'Yorumu Sil',
-            'Bu yorumu silmek istediğinize emin misiniz?',
-            [
-                { text: 'İptal', style: 'cancel' },
-                {
-                    text: 'Sil',
-                    style: 'destructive',
-                    onPress: async () => {
-                        try {
-                            const token = await AsyncStorage.getItem('authToken');
-                            await axios.delete(
-                                `${config.API_BASE_URL}/api/reviews?reviewId=${reviewId}`,
-                                { headers: { Authorization: `Bearer ${token}` } }
-                            );
-                            // Remove from local state
-                            setReviews(prev => prev.filter(r => r.id !== reviewId));
-                        } catch (error) {
-                            console.log('Delete review error:', error);
-                            showAlert('Hata', 'Yorum silinemedi', [{ text: 'Tamam' }], 'error');
-                        }
-                    }
-                }
-            ],
-            'confirm'
-        );
     };
 
     // Hide controls after delay
@@ -452,48 +390,6 @@ export default function LearnScreen({ route, navigation }) {
 
     const getCompletedCount = () => {
         return Object.values(progress).filter(p => p.isCompleted).length;
-    };
-
-    const submitReview = async () => {
-        if (rating === 0) {
-            showAlert('Hata', 'Lütfen bir puan seçin', [{ text: 'Tamam' }], 'error');
-            return;
-        }
-
-        try {
-            setSubmittingReview(true);
-            const token = await AsyncStorage.getItem('authToken');
-            if (!token) {
-                showAlert('Hata', 'Yorum yapmak için giriş yapmalısınız', [{ text: 'Tamam' }], 'error');
-                return;
-            }
-
-            const response = await axios.post(
-                `${config.API_BASE_URL}/api/reviews`,
-                {
-                    courseId: courseId,
-                    rating: rating,
-                    comment: reviewText.trim() || null,
-                },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-
-            // Add new review to the list
-            setReviews([response.data, ...reviews]);
-
-            showAlert('Başarılı', 'Değerlendirmeniz gönderildi!', [{ text: 'Tamam' }], 'success');
-            setRating(0);
-            setReviewText('');
-        } catch (error) {
-            console.error('Submit review error:', error);
-            if (error.response?.status === 403) {
-                showAlert('Hata', 'Yorum yapmak için kursa kayıtlı olmalısınız', [{ text: 'Tamam' }], 'error');
-            } else {
-                showAlert('Hata', 'Değerlendirme gönderilemedi', [{ text: 'Tamam' }], 'error');
-            }
-        } finally {
-            setSubmittingReview(false);
-        }
     };
 
     const handleCopyEmail = async (email) => {
@@ -922,100 +818,6 @@ export default function LearnScreen({ route, navigation }) {
                     </ScrollView>
                 </>
             )}
-
-            {/* FAB Button - Fixed position outside ScrollView */}
-            {activeTab === 'reviews' && (
-                <TouchableOpacity
-                    style={styles.reviewFab}
-                    onPress={() => setShowReviewModal(true)}
-                >
-                    <MessageSquarePlus size={24} color="white" />
-                </TouchableOpacity>
-            )}
-
-            {/* Review Modal */}
-            <Modal
-                visible={showReviewModal}
-                transparent={true}
-                animationType="slide"
-                onRequestClose={() => setShowReviewModal(false)}
-            >
-                <KeyboardAvoidingView
-                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                    style={styles.reviewModalOverlay}
-                >
-                    <TouchableOpacity
-                        style={styles.modalBackdrop}
-                        activeOpacity={1}
-                        onPress={() => {
-                            Keyboard.dismiss();
-                            setShowReviewModal(false);
-                            setRating(0);
-                            setReviewText('');
-                        }}
-                    />
-                    <View style={styles.reviewModalContent}>
-                        <Text style={styles.reviewModalTitle}>Değerlendirme Yap</Text>
-
-                        {/* Star Rating */}
-                        <View style={styles.starsContainerMinimal}>
-                            {[1, 2, 3, 4, 5].map((star) => (
-                                <TouchableOpacity
-                                    key={star}
-                                    onPress={() => setRating(star)}
-                                    style={styles.starButtonMinimal}
-                                >
-                                    <Star
-                                        size={36}
-                                        color={star <= rating ? '#ea580c' : '#374151'}
-                                        fill={star <= rating ? '#ea580c' : 'transparent'}
-                                    />
-                                </TouchableOpacity>
-                            ))}
-                        </View>
-
-                        <Text style={styles.ratingHintMinimal}>
-                            {rating === 0 ? 'Puanınızı seçin' :
-                                rating === 1 ? 'Çok Kötü' :
-                                    rating === 2 ? 'Kötü' :
-                                        rating === 3 ? 'Orta' :
-                                            rating === 4 ? 'İyi' : 'Mükemmel!'}
-                        </Text>
-
-                        {/* Review Input */}
-                        <TextInput
-                            style={styles.reviewInputMinimal}
-                            placeholder="Yorumunuz (isteğe bağlı)"
-                            placeholderTextColor="#6b7280"
-                            value={reviewText}
-                            onChangeText={setReviewText}
-                            multiline
-                            numberOfLines={4}
-                        />
-
-                        {/* Buttons */}
-                        <View style={styles.reviewModalButtons}>
-                            <TouchableOpacity
-                                style={[
-                                    styles.submitButtonMinimal,
-                                    (rating === 0 || submittingReview) && styles.submitButtonDisabledMinimal
-                                ]}
-                                onPress={async () => {
-                                    await submitReview();
-                                    setShowReviewModal(false);
-                                }}
-                                disabled={rating === 0 || submittingReview}
-                            >
-                                {submittingReview ? (
-                                    <ActivityIndicator size="small" color="white" />
-                                ) : (
-                                    <Text style={styles.submitButtonTextMinimal}>Gönder</Text>
-                                )}
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </KeyboardAvoidingView>
-            </Modal>
 
             {/* Custom Alert */}
             <CustomAlert

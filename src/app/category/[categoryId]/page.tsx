@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { ChefHat, Search, ChevronDown, Play, Users, Star, BookOpen, ArrowLeft, Filter, SlidersHorizontal, Clock } from "lucide-react";
+import { ChefHat, Search, ChevronDown, Play, Users, BookOpen, ArrowLeft, Filter, SlidersHorizontal, Clock } from "lucide-react";
 
 interface Category {
     id: string;
@@ -28,8 +28,6 @@ interface Course {
     };
     lessonCount: number;
     enrollmentCount: number;
-    averageRating: number;
-    reviewCount: number;
 }
 
 export default function CategoryPage() {
@@ -41,7 +39,7 @@ export default function CategoryPage() {
     const [courses, setCourses] = useState<Course[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
-    const [sortBy, setSortBy] = useState<"newest" | "popular" | "rating">("newest");
+    const [sortBy, setSortBy] = useState<"newest" | "popular">("newest");
 
     // Fetch all categories for sidebar
     useEffect(() => {
@@ -89,7 +87,6 @@ export default function CategoryPage() {
         )
         .sort((a, b) => {
             if (sortBy === "popular") return b.enrollmentCount - a.enrollmentCount;
-            if (sortBy === "rating") return b.averageRating - a.averageRating;
             return 0; // newest is default/fallback
         });
 
@@ -213,16 +210,6 @@ export default function CategoryPage() {
                                                 <h3 className="text-white text-lg font-semibold leading-tight mb-2 group-hover:text-orange-500 transition-colors">
                                                     {course.title}
                                                 </h3>
-
-                                                {/* Rating */}
-                                                <div className="flex items-center gap-3 text-xs text-gray-500">
-                                                    {course.averageRating > 0 && (
-                                                        <div className="flex items-center gap-1 text-orange-400">
-                                                            <Star className="w-3 h-3 fill-current" />
-                                                            <span>{course.averageRating.toFixed(1)}</span>
-                                                        </div>
-                                                    )}
-                                                </div>
                                             </div>
                                         </Link>
                                     ))}

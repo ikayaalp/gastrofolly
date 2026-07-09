@@ -28,7 +28,6 @@ interface FeaturedCourse {
     price: number;
     imageUrl?: string | null;
     level: string;
-    reviews?: Array<{ rating: number }>;
     instructor: {
         name: string;
         image?: string;

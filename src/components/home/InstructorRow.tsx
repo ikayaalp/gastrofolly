@@ -9,7 +9,6 @@ export interface Instructor {
   name: string;
   image: string | null;
   specialty?: string;
-  rating?: string;
   students?: string;
   courseCount?: number;
   // Panelden yönetilen eğitmenler için: rating/kurs yerine serbest alt yazı
@@ -134,9 +133,9 @@ export default function InstructorRow({ title, instructors }: InstructorRowProps
                     {instructor.subtitle}
                   </p>
                 ) : (
-                  (instructor.rating || instructor.courseCount !== undefined) && (
-                    <p className="text-gray-400 text-xs md:text-sm mt-1 text-left flex items-center justify-start gap-1 w-full px-1">
-                      <span className="text-orange-500">★</span> {instructor.rating} &bull; {instructor.courseCount} Kurs
+                  instructor.courseCount !== undefined && (
+                    <p className="text-gray-400 text-xs md:text-sm mt-1 text-left w-full px-1">
+                      {instructor.courseCount} Kurs
                     </p>
                   )
                 )}

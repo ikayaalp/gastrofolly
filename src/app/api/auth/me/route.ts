@@ -1,28 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import jwt from 'jsonwebtoken';
+import { getAuthUser } from '@/lib/mobileAuth';
 
 export async function GET(request: NextRequest) {
     try {
-        // Get token from header
-        const authHeader = request.headers.get('authorization');
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        const authUser = await getAuthUser(request);
+        if (!authUser) {
             return NextResponse.json({ message: 'Yetkisiz erişim' }, { status: 401 });
-        }
-
-        const token = authHeader.split(' ')[1];
-
-        // Verify token
-        let decoded: any;
-        try {
-            decoded = jwt.verify(token, process.env.NEXTAUTH_SECRET!);
-        } catch (err) {
-            return NextResponse.json({ message: 'Geçersiz token' }, { status: 401 });
         }
 
         // Fetch user from DB
         const user = await prisma.user.findUnique({
-            where: { id: decoded.userId },
+            where: { id: authUser.id },
             select: {
                 id: true,
                 name: true,

@@ -21,11 +21,6 @@ export async function GET(
                         image: true
                     }
                 },
-                reviews: {
-                    select: {
-                        rating: true
-                    }
-                },
                 _count: {
                     select: {
                         lessons: true,
@@ -50,10 +45,6 @@ export async function GET(
             instructor: course.instructor,
             lessonCount: course._count.lessons,
             enrollmentCount: course._count.enrollments,
-            averageRating: course.reviews.length > 0
-                ? course.reviews.reduce((acc, r) => acc + r.rating, 0) / course.reviews.length
-                : 0,
-            reviewCount: course.reviews.length
         }));
 
         return NextResponse.json({ courses: formattedCourses });

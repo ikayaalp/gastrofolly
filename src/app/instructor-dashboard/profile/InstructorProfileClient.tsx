@@ -16,7 +16,6 @@ import {
   Save,
   ArrowLeft,
   Edit,
-  Star,
   TrendingUp,
   Award,
   Clock,
@@ -34,7 +33,6 @@ interface Course {
   _count: {
     enrollments: number
     lessons: number
-    reviews: number
   }
 }
 
@@ -81,10 +79,6 @@ export default function InstructorProfileClient({ instructorData, session }: Pro
 
   const totalStudents = instructorData.courses.reduce((acc, course) => acc + course._count.enrollments, 0)
   const totalRevenue = instructorData.courses.reduce((acc, course) => acc + (course.price * course._count.enrollments), 0)
-  const averageRating = instructorData.courses.reduce((acc, course) => {
-    // Burada gerçek rating hesaplaması yapılabilir
-    return acc + 4.5 // Varsayılan değer
-  }, 0) / instructorData.courses.length
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -286,7 +280,7 @@ export default function InstructorProfileClient({ instructorData, session }: Pro
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -314,16 +308,6 @@ export default function InstructorProfileClient({ instructorData, session }: Pro
                 <p className="text-2xl font-bold text-white">₺{totalRevenue.toLocaleString()}</p>
               </div>
               <DollarSign className="h-8 w-8 text-green-500" />
-            </div>
-          </div>
-
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-400 text-sm">Ortalama Puan</p>
-                <p className="text-2xl font-bold text-white">{averageRating.toFixed(1)}</p>
-              </div>
-              <Star className="h-8 w-8 text-yellow-500" />
             </div>
           </div>
         </div>
@@ -482,10 +466,6 @@ export default function InstructorProfileClient({ instructorData, session }: Pro
                           <BookOpen className="h-4 w-4" />
                           <span>{course._count.lessons} ders</span>
                         </span>
-                        <span className="flex items-center space-x-1">
-                          <Star className="h-4 w-4" />
-                          <span>{course._count.reviews} değerlendirme</span>
-                        </span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-orange-500 font-semibold">₺{course.price}</span>
@@ -540,10 +520,6 @@ export default function InstructorProfileClient({ instructorData, session }: Pro
                       <div className="flex justify-between">
                         <span className="text-gray-400">Toplam Öğrenci:</span>
                         <span className="text-white font-medium">{totalStudents}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-400">Ortalama Puan:</span>
-                        <span className="text-yellow-400 font-medium">{averageRating.toFixed(1)}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-400">Toplam Gelir:</span>

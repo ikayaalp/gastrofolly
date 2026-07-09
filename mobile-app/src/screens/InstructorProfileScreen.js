@@ -94,12 +94,6 @@ export default function InstructorProfileScreen({ navigation, route }) {
         return courses.reduce((sum, course) => sum + (course._count?.enrollments || 0), 0);
     };
 
-    const getAverageRating = () => {
-        const ratings = courses.filter(c => c.averageRating > 0);
-        if (ratings.length === 0) return 0;
-        return (ratings.reduce((sum, c) => sum + c.averageRating, 0) / ratings.length).toFixed(1);
-    };
-
     const handleShare = async () => {
         try {
             await Share.share({

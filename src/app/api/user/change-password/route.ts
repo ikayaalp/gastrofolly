@@ -1,35 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { getAuthUser } from '@/lib/mobileAuth'
 import bcrypt from 'bcryptjs'
-import jwt from 'jsonwebtoken'
 
 export async function PUT(request: NextRequest) {
   try {
-    let userId: string | null = null
-
-    // Try NextAuth session first (web)
-    const session = await getServerSession(authOptions)
-    if (session?.user?.id) {
-      userId = session.user.id
-    } else {
-      // Try JWT token (mobile)
-      const authHeader = request.headers.get('authorization')
-      if (authHeader?.startsWith('Bearer ')) {
-        const token = authHeader.substring(7)
-        try {
-          const decoded = jwt.verify(token, process.env.NEXTAUTH_SECRET!) as { userId: string }
-          userId = decoded.userId
-        } catch (err) {
-          console.error('JWT verification failed:', err)
-        }
-      }
-    }
-
-    if (!userId) {
+    const authUser = await getAuthUser(request)
+    if (!authUser) {
       return NextResponse.json({ error: "Giriş yapmanız gerekiyor" }, { status: 401 })
     }
+    const userId = authUser.id
 
     const { currentPassword, newPassword } = await request.json()
 

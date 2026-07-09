@@ -19,7 +19,6 @@ export async function GET(request: NextRequest) {
       where: { instructorId: session.user.id },
       include: {
         category: true,
-        reviews: true,
         lessons: {
           orderBy: { order: 'asc' }
         },

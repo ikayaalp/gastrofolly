@@ -1,30 +1,11 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
-import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import jwt from 'jsonwebtoken'
+import { getAuthUser } from "@/lib/mobileAuth"
 
 // Helper to get userId from session or JWT token
 async function getUserId(request: NextRequest): Promise<string | null> {
-  // Try NextAuth session first
-  const session = await getServerSession(authOptions)
-  if (session?.user?.id) {
-    return session.user.id
-  }
-
-  // Try JWT token for mobile
-  const authHeader = request.headers.get('authorization')
-  if (authHeader?.startsWith('Bearer ')) {
-    const token = authHeader.substring(7)
-    try {
-      const decoded = jwt.verify(token, process.env.NEXTAUTH_SECRET || 'your-secret-key') as { userId: string }
-      return decoded.userId
-    } catch (e) {
-      // Invalid token
-    }
-  }
-
-  return null
+  const authUser = await getAuthUser(request)
+  return authUser?.id ?? null
 }
 
 export async function POST(request: NextRequest) {

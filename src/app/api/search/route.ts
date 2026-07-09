@@ -46,7 +46,6 @@ export async function GET(request: NextRequest) {
       include: {
         instructor: { select: { name: true, image: true } },
         category: { select: { name: true, id: true } },
-        reviews: { select: { rating: true } },
         _count: { select: { enrollments: true, lessons: true } }
       },
       take: 20,

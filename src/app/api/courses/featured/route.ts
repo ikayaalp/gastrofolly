@@ -18,9 +18,6 @@ export async function GET() {
         },
         category: {
           select: { id: true, name: true }
-        },
-        reviews: {
-          select: { rating: true }
         }
       },
       orderBy: { createdAt: 'desc' },

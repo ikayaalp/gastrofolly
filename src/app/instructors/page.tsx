@@ -6,7 +6,7 @@ export const metadata: Metadata = {
     title: "Eğitmenler",
     description: "Culinora'nın profesyonel şef eğitmenleriyle tanışın. Ödüllü mutfaklardan gelen deneyimli eğitmenler.",
 };
-import { ChefHat, Star, Award, Users, BookOpen, ArrowRight } from "lucide-react";
+import { ChefHat, Award, Users, BookOpen, ArrowRight } from "lucide-react";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import UserDropdown from "@/components/ui/UserDropdown";
@@ -27,7 +27,6 @@ export default async function InstructorsPage() {
                 select: {
                     id: true,
                     enrollments: { select: { id: true } },
-                    reviews: { select: { rating: true } },
                 },
             },
         },
@@ -35,18 +34,10 @@ export default async function InstructorsPage() {
 
     const instructors = realInstructors.map((chef: any) => {
         let totalStudents = 0;
-        let totalRating = 0;
-        let reviewCount = 0;
 
         chef.createdCourses.forEach((course: any) => {
             totalStudents += course.enrollments.length;
-            course.reviews.forEach((review: any) => {
-                totalRating += review.rating;
-                reviewCount++;
-            });
         });
-
-        const averageRating = reviewCount > 0 ? (totalRating / reviewCount).toFixed(1) : "0.0";
 
         return {
             id: chef.id,
@@ -54,7 +45,6 @@ export default async function InstructorsPage() {
             specialty: chef.createdCourses.length > 0 ? "Kıdemli Şef Eğitmeni" : "Eğitmen",
             description: `${chef.name || "Şefimiz"}, gastronomi alanındaki tecrübelerini Culinora öğrencileri ile paylaşıyor.`,
             image: chef.image || (chef.id.length % 2 === 0 ? "👨‍🍳" : "👩‍🍳"),
-            rating: averageRating,
             students: totalStudents > 1000 ? `${(totalStudents / 1000).toFixed(1)}k+` : totalStudents.toString(),
         };
     });
@@ -127,14 +117,7 @@ export default async function InstructorsPage() {
                                     {chef.description}
                                 </p>
 
-                                <div className="grid grid-cols-2 gap-4 border-t border-gray-800 pt-6">
-                                    <div className="text-center">
-                                        <div className="flex items-center justify-center gap-1 text-orange-500 mb-1">
-                                            <Star className="w-4 h-4 fill-current" />
-                                            <span className="font-bold">{chef.rating}</span>
-                                        </div>
-                                        <p className="text-[10px] text-gray-500 uppercase tracking-widest">Puanlama</p>
-                                    </div>
+                                <div className="grid grid-cols-1 gap-4 border-t border-gray-800 pt-6">
                                     <div className="text-center">
                                         <div className="flex items-center justify-center gap-1 text-white mb-1">
                                             <Users className="w-4 h-4" />

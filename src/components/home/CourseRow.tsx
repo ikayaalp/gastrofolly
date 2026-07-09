@@ -19,9 +19,6 @@ interface Course {
   category: {
     name: string
   }
-  reviews?: Array<{
-    rating: number
-  }>
   _count: {
     enrollments: number
     lessons: number

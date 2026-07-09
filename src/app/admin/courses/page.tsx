@@ -34,16 +34,10 @@ async function getAllCourses() {
           order: 'asc'
         }
       },
-      reviews: {
-        select: {
-          rating: true
-        }
-      },
       _count: {
         select: {
           enrollments: true,
-          lessons: true,
-          reviews: true
+          lessons: true
         }
       }
     },
@@ -91,8 +85,7 @@ export default async function CoursesPage() {
         instructor: { select: { id: true, name: true, email: true, image: true } },
         category: { select: { id: true, name: true } },
         lessons: { select: { id: true, title: true, videoUrl: true, description: true, duration: true, order: true } },
-        _count: { select: { enrollments: true, lessons: true, reviews: true } },
-        reviews: { select: { rating: true } }
+        _count: { select: { enrollments: true, lessons: true } }
       },
       orderBy: { createdAt: 'desc' }
     }),

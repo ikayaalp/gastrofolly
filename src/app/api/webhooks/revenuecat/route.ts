@@ -115,43 +115,47 @@ export async function POST(request: NextRequest) {
                 ? new Date() 
                 : user.subscriptionStartDate;
 
-            await prisma.user.update({
-                where: { id: appUserId },
-                data: {
-                    subscriptionPlan: 'Premium',
-                    subscriptionEndDate: expirationDate,
-                    subscriptionStartDate: startDate,
-                },
-            });
-
-            // 💰 Mobil abonelik gelirini Payment tablosuna kaydet (Havuz hesaplaması için)
-            // Sadece INITIAL_PURCHASE ve RENEWAL eventlerinde ödeme kaydı oluştur
-            if (eventType === 'INITIAL_PURCHASE' || eventType === 'RENEWAL') {
-                // Product ID'den aylık/yıllık belirleme
-                const isYearly = productId?.toLowerCase()?.includes('year') || 
-                                 productId?.toLowerCase()?.includes('annual') ||
-                                 productId?.toLowerCase()?.includes('yearly');
-                
-                const billingPeriod = isYearly ? 'yearly' : 'monthly';
-                const netAmount = isYearly ? NET_YEARLY_PRICE : NET_MONTHLY_PRICE;
-                const appStorePrice = isYearly ? APP_STORE_YEARLY_PRICE : APP_STORE_MONTHLY_PRICE;
-
-                // Mükerrer kayıt koruması artık yukarıdaki claimWebhookEvent ile
-                // sağlanıyor (bu event ilk kez işleniyorsa buraya kadar gelinir).
-                await prisma.payment.create({
+            // Abonelik guncellemesi + odeme kaydi tek transaction'da: biri
+            // basarisiz olursa hicbiri uygulanmaz.
+            await prisma.$transaction(async (tx) => {
+                await tx.user.update({
+                    where: { id: appUserId },
                     data: {
-                        userId: appUserId,
-                        amount: netAmount,
-                        currency: 'TRY',
-                        status: 'COMPLETED',
                         subscriptionPlan: 'Premium',
-                        billingPeriod: billingPeriod,
-                        stripePaymentId: `rc_${appUserId}_${Date.now()}`, // Benzersiz ID
-                    }
+                        subscriptionEndDate: expirationDate,
+                        subscriptionStartDate: startDate,
+                    },
                 });
 
-                console.log(`[RC Webhook] 💰 Payment kaydı oluşturuldu: ${billingPeriod} | App Store: ₺${appStorePrice} → Apple sonrası: ₺${netAmount}`);
-            }
+                // 💰 Mobil abonelik gelirini Payment tablosuna kaydet (Havuz hesaplaması için)
+                // Sadece INITIAL_PURCHASE ve RENEWAL eventlerinde ödeme kaydı oluştur
+                if (eventType === 'INITIAL_PURCHASE' || eventType === 'RENEWAL') {
+                    // Product ID'den aylık/yıllık belirleme
+                    const isYearly = productId?.toLowerCase()?.includes('year') ||
+                                     productId?.toLowerCase()?.includes('annual') ||
+                                     productId?.toLowerCase()?.includes('yearly');
+
+                    const billingPeriod = isYearly ? 'yearly' : 'monthly';
+                    const netAmount = isYearly ? NET_YEARLY_PRICE : NET_MONTHLY_PRICE;
+                    const appStorePrice = isYearly ? APP_STORE_YEARLY_PRICE : APP_STORE_MONTHLY_PRICE;
+
+                    // Mükerrer kayıt koruması artık yukarıdaki claimWebhookEvent ile
+                    // sağlanıyor (bu event ilk kez işleniyorsa buraya kadar gelinir).
+                    await tx.payment.create({
+                        data: {
+                            userId: appUserId,
+                            amount: netAmount,
+                            currency: 'TRY',
+                            status: 'COMPLETED',
+                            subscriptionPlan: 'Premium',
+                            billingPeriod: billingPeriod,
+                            stripePaymentId: `rc_${appUserId}_${Date.now()}`, // Benzersiz ID
+                        }
+                    });
+
+                    console.log(`[RC Webhook] 💰 Payment kaydı oluşturuldu: ${billingPeriod} | App Store: ₺${appStorePrice} → Apple sonrası: ₺${netAmount}`);
+                }
+            });
 
             console.log(`[RC Webhook] ✅ User ${appUserId} → Premium (expires: ${expirationDate?.toISOString() || 'lifetime'})`);
 

@@ -47,23 +47,10 @@ export async function GET(
                         videoUrl: true,
                     },
                 },
-                reviews: {
-                    include: {
-                        user: {
-                            select: {
-                                name: true,
-                            },
-                        },
-                    },
-                    orderBy: {
-                        createdAt: 'desc',
-                    },
-                },
                 _count: {
                     select: {
                         lessons: true,
                         enrollments: true,
-                        reviews: true,
                     },
                 },
             },

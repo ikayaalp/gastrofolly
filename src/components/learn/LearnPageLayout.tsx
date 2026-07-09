@@ -14,7 +14,6 @@ import {
     ChevronLeft,
     ChevronRight,
     Clock,
-    Star,
     TrendingUp,
     Award,
     Bell
@@ -22,7 +21,6 @@ import {
 import UserDropdown from "@/components/ui/UserDropdown"
 import VideoPlayer from "@/components/video/VideoPlayer"
 import CourseSidebar from "@/components/learn/CourseSidebar"
-import CommentsSection from "@/components/course/CommentsSection"
 import RecommendedCourses from "@/components/course/RecommendedCourses"
 
 // Types
@@ -59,14 +57,6 @@ interface LearnPageLayoutProps {
             order: number;
             isFree: boolean;
         }>;
-        reviews: Array<{
-            id: string;
-            rating: number;
-            comment?: string | null;
-            userId: string;
-            user: { name: string | null; image: string | null };
-            createdAt: Date;
-        }>;
     }
     currentLesson: LearnPageLesson
     session: {
@@ -91,8 +81,7 @@ interface LearnPageLayoutProps {
         category: { name: string };
         level: string;
         lessons: Array<{ id: string; duration: number | null }>;
-        reviews: Array<{ rating: number }>;
-        _count: { enrollments: number; lessons: number; reviews: number };
+        _count: { enrollments: number; lessons: number };
     }>
     progress: ProgressItem[]
     successParam?: string
@@ -119,9 +108,6 @@ export default function LearnPageLayout({
     const progressPercentage = totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0
 
     const currentLessonIndex = course.lessons.findIndex(l => l.id === currentLesson.id)
-    const averageRating = course.reviews.length > 0
-        ? course.reviews.reduce((acc, r) => acc + r.rating, 0) / course.reviews.length
-        : 0
 
     return (
         <div className="min-h-screen bg-black">
@@ -317,14 +303,6 @@ export default function LearnPageLayout({
                                             </div>
                                             <span className="text-gray-300">{completedLessons} Tamamlandı</span>
                                         </div>
-                                        {averageRating > 0 && (
-                                            <div className="flex items-center space-x-2">
-                                                <div className="bg-yellow-500/10 p-1.5 rounded">
-                                                    <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-                                                </div>
-                                                <span className="text-gray-300">{averageRating.toFixed(1)}</span>
-                                            </div>
-                                        )}
                                     </div>
                                 </div>
 

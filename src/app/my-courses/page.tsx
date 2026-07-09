@@ -36,10 +36,6 @@ interface Enrollment {
       title: string
       duration?: number
     }>
-    reviews: Array<{
-      id: string
-      rating: number
-    }>
     _count: {
       lessons: number
       enrollments: number

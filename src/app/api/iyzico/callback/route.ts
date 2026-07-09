@@ -90,70 +90,77 @@ export async function GET(request: NextRequest) {
 
             const userId = payments[0].userId
 
-            for (const payment of payments) {
-              await prisma.payment.update({
-                where: { id: payment.id },
-                data: {
-                  status: 'COMPLETED',
-                  stripePaymentId: result.referenceCode || conversationId,
-                }
-              })
+            // Tum odeme kayitlarinin guncellenmesi + abonelik + enrollment
+            // tek transaction'da: biri basarisiz olursa hicbiri uygulanmaz.
+            // E-posta gonderimi (dis servis) transaction disinda, basari
+            // sonrasi yapilir.
+            const emailsToSend: { email: string; name: string; plan: string; endDate: Date }[] = []
 
-              // Abonelik güncelleme
-              if (payment.subscriptionPlan) {
-                const now = new Date()
-                let endDate = new Date(now)
-
-                // Ödeme dönemine göre süre ekle
-                if (payment.billingPeriod === 'yearly') {
-                  endDate.setFullYear(endDate.getFullYear() + 1)
-                } else if (payment.billingPeriod === '6monthly') {
-                  endDate.setMonth(endDate.getMonth() + 6)
-                } else {
-                  endDate.setMonth(endDate.getMonth() + 1)
-                }
-
-                const user = await prisma.user.update({
-                  where: { id: userId },
+            await prisma.$transaction(async (tx) => {
+              for (const payment of payments) {
+                await tx.payment.update({
+                  where: { id: payment.id },
                   data: {
-                    subscriptionPlan: payment.subscriptionPlan,
-                    subscriptionStartDate: new Date(),
-                    subscriptionEndDate: endDate,
-                    subscriptionReferenceCode: result.referenceCode || null,
-                    subscriptionCancelled: false,
-                  }
-                })
-                console.log(`✅ Subscription updated for user ${userId}: ${payment.subscriptionPlan}`)
-
-                // Hoşgeldin emaili gönder
-                if (user.email) {
-                  await sendSubscriptionStartedEmail(
-                    user.email,
-                    user.name || 'Chef',
-                    payment.subscriptionPlan,
-                    endDate
-                  )
-                }
-              }
-
-              // Enrollment oluşturma (sadece kurs ödemeleri için)
-              if (payment.courseId) {
-                const existingEnrollment = await prisma.enrollment.findFirst({
-                  where: {
-                    userId: userId,
-                    courseId: payment.courseId
+                    status: 'COMPLETED',
+                    stripePaymentId: result.referenceCode || conversationId,
                   }
                 })
 
-                if (!existingEnrollment) {
-                  await prisma.enrollment.create({
+                // Abonelik güncelleme
+                if (payment.subscriptionPlan) {
+                  const now = new Date()
+                  let endDate = new Date(now)
+
+                  // Ödeme dönemine göre süre ekle
+                  if (payment.billingPeriod === 'yearly') {
+                    endDate.setFullYear(endDate.getFullYear() + 1)
+                  } else if (payment.billingPeriod === '6monthly') {
+                    endDate.setMonth(endDate.getMonth() + 6)
+                  } else {
+                    endDate.setMonth(endDate.getMonth() + 1)
+                  }
+
+                  const user = await tx.user.update({
+                    where: { id: userId },
                     data: {
-                      userId: userId,
-                      courseId: payment.courseId,
+                      subscriptionPlan: payment.subscriptionPlan,
+                      subscriptionStartDate: new Date(),
+                      subscriptionEndDate: endDate,
+                      subscriptionReferenceCode: result.referenceCode || null,
+                      subscriptionCancelled: false,
                     }
                   })
+                  console.log(`✅ Subscription updated for user ${userId}: ${payment.subscriptionPlan}`)
+
+                  if (user.email) {
+                    emailsToSend.push({ email: user.email, name: user.name || 'Chef', plan: payment.subscriptionPlan, endDate })
+                  }
+                }
+
+                // Enrollment oluşturma (sadece kurs ödemeleri için)
+                if (payment.courseId) {
+                  const existingEnrollment = await tx.enrollment.findFirst({
+                    where: {
+                      userId: userId,
+                      courseId: payment.courseId
+                    }
+                  })
+
+                  if (!existingEnrollment) {
+                    await tx.enrollment.create({
+                      data: {
+                        userId: userId,
+                        courseId: payment.courseId,
+                      }
+                    })
+                  }
                 }
               }
+            })
+
+            // Hoşgeldin emaillerini transaction basarıyla bittikten sonra gönder
+            for (const e of emailsToSend) {
+              await sendSubscriptionStartedEmail(e.email, e.name, e.plan, e.endDate)
             }
 
             console.log(`✅ SUCCESSFUL PAYMENT (from referer): User ${userId} enrolled`)
@@ -314,75 +321,79 @@ export async function GET(request: NextRequest) {
       // UserId'yi payment kayıtlarından al
       const userId = payments[0].userId
 
-      // Tüm ödeme kayıtlarını güncelle ve enrollment oluştur
-      const courseIds = []
-      for (const payment of payments) {
-        // Payment kaydını güncelle
-        await prisma.payment.update({
-          where: { id: payment.id },
-          data: {
-            status: 'COMPLETED',
-            stripePaymentId: result.referenceCode || conversationId,
-          }
-        })
+      // Tüm ödeme kayıtlarını güncelle ve enrollment oluştur — tek
+      // transaction'da (biri basarisiz olursa hicbiri uygulanmaz).
+      // E-posta gonderimi transaction disinda, basari sonrasi yapilir.
+      const courseIds: string[] = []
+      const emailsToSend: { email: string; name: string; plan: string; endDate: Date }[] = []
 
-        // Abonelik güncelleme
-        if (payment.subscriptionPlan) {
-          const now = new Date()
-          let endDate = new Date(now)
-
-          // Ödeme dönemine göre süre ekle
-          if (payment.billingPeriod === 'yearly') {
-            endDate.setFullYear(endDate.getFullYear() + 1)
-          } else if (payment.billingPeriod === '6monthly') {
-            endDate.setMonth(endDate.getMonth() + 6)
-          } else {
-            endDate.setMonth(endDate.getMonth() + 1) // Default Aylık
-          }
-
-          const user = await prisma.user.update({
-            where: { id: userId },
+      await prisma.$transaction(async (tx) => {
+        for (const payment of payments) {
+          // Payment kaydını güncelle
+          await tx.payment.update({
+            where: { id: payment.id },
             data: {
-              subscriptionPlan: payment.subscriptionPlan,
-              subscriptionStartDate: new Date(),
-              subscriptionEndDate: endDate,
-              subscriptionReferenceCode: result.referenceCode || null,
-              subscriptionCancelled: false,
-            }
-          })
-          console.log(`✅ Subscription updated for user ${userId}: ${payment.subscriptionPlan} (Until: ${endDate.toISOString()})`)
-
-          // Hoşgeldin emaili gönder
-          if (user.email) {
-            await sendSubscriptionStartedEmail(
-              user.email,
-              user.name || 'Chef',
-              payment.subscriptionPlan,
-              endDate
-            )
-          }
-        }
-
-        // Enrollment kontrolü ve oluşturma (sadece kurs ödemeleri için)
-        if (payment.courseId) {
-          const existingEnrollment = await prisma.enrollment.findFirst({
-            where: {
-              userId: userId,
-              courseId: payment.courseId
+              status: 'COMPLETED',
+              stripePaymentId: result.referenceCode || conversationId,
             }
           })
 
-          if (!existingEnrollment) {
-            await prisma.enrollment.create({
+          // Abonelik güncelleme
+          if (payment.subscriptionPlan) {
+            const now = new Date()
+            let endDate = new Date(now)
+
+            // Ödeme dönemine göre süre ekle
+            if (payment.billingPeriod === 'yearly') {
+              endDate.setFullYear(endDate.getFullYear() + 1)
+            } else if (payment.billingPeriod === '6monthly') {
+              endDate.setMonth(endDate.getMonth() + 6)
+            } else {
+              endDate.setMonth(endDate.getMonth() + 1) // Default Aylık
+            }
+
+            const user = await tx.user.update({
+              where: { id: userId },
               data: {
-                userId: userId,
-                courseId: payment.courseId,
+                subscriptionPlan: payment.subscriptionPlan,
+                subscriptionStartDate: new Date(),
+                subscriptionEndDate: endDate,
+                subscriptionReferenceCode: result.referenceCode || null,
+                subscriptionCancelled: false,
               }
             })
+            console.log(`✅ Subscription updated for user ${userId}: ${payment.subscriptionPlan} (Until: ${endDate.toISOString()})`)
+
+            if (user.email) {
+              emailsToSend.push({ email: user.email, name: user.name || 'Chef', plan: payment.subscriptionPlan, endDate })
+            }
           }
 
-          courseIds.push(payment.courseId)
+          // Enrollment kontrolü ve oluşturma (sadece kurs ödemeleri için)
+          if (payment.courseId) {
+            const existingEnrollment = await tx.enrollment.findFirst({
+              where: {
+                userId: userId,
+                courseId: payment.courseId
+              }
+            })
+
+            if (!existingEnrollment) {
+              await tx.enrollment.create({
+                data: {
+                  userId: userId,
+                  courseId: payment.courseId,
+                }
+              })
+            }
+
+            courseIds.push(payment.courseId)
+          }
         }
+      })
+
+      for (const e of emailsToSend) {
+        await sendSubscriptionStartedEmail(e.email, e.name, e.plan, e.endDate)
       }
 
       console.log(`✅ SUCCESSFUL PAYMENT: User ${userId} enrolled in courses:`, courseIds)
@@ -631,62 +642,66 @@ export async function POST(request: NextRequest) {
 
       const userId = payments[0].userId
 
-      for (const payment of payments) {
-        await prisma.payment.update({
-          where: { id: payment.id },
-          data: {
-            status: 'COMPLETED',
-            stripePaymentId: result.referenceCode || token,
-          }
-        })
+      // Tek transaction'da: biri basarisiz olursa hicbiri uygulanmaz.
+      // E-posta gonderimi transaction disinda, basari sonrasi yapilir.
+      const emailsToSend: { email: string; name: string; plan: string; endDate: Date }[] = []
 
-        // Abonelik güncelleme
-        if (payment.subscriptionPlan) {
-          const now = new Date()
-          let endDate = new Date(now)
-
-          if (payment.billingPeriod === 'yearly') {
-            endDate.setFullYear(endDate.getFullYear() + 1)
-          } else if (payment.billingPeriod === '6monthly') {
-            endDate.setMonth(endDate.getMonth() + 6)
-          } else {
-            endDate.setMonth(endDate.getMonth() + 1)
-          }
-
-          const user = await prisma.user.update({
-            where: { id: userId },
+      await prisma.$transaction(async (tx) => {
+        for (const payment of payments) {
+          await tx.payment.update({
+            where: { id: payment.id },
             data: {
-              subscriptionPlan: payment.subscriptionPlan,
-              subscriptionStartDate: new Date(),
-              subscriptionEndDate: endDate,
-              subscriptionReferenceCode: result.referenceCode || null,
-              subscriptionCancelled: false,
+              status: 'COMPLETED',
+              stripePaymentId: result.referenceCode || token,
             }
           })
-          console.log(`✅ Subscription updated: ${userId} -> ${payment.subscriptionPlan} until ${endDate.toISOString()}`)
 
-          // Hoşgeldin emaili gönder
-          if (user.email) {
-            await sendSubscriptionStartedEmail(
-              user.email,
-              user.name || 'Chef',
-              payment.subscriptionPlan,
-              endDate
-            )
-          }
-        }
+          // Abonelik güncelleme
+          if (payment.subscriptionPlan) {
+            const now = new Date()
+            let endDate = new Date(now)
 
-        // Enrollment oluştur
-        if (payment.courseId) {
-          const existing = await prisma.enrollment.findFirst({
-            where: { userId, courseId: payment.courseId }
-          })
-          if (!existing) {
-            await prisma.enrollment.create({
-              data: { userId, courseId: payment.courseId }
+            if (payment.billingPeriod === 'yearly') {
+              endDate.setFullYear(endDate.getFullYear() + 1)
+            } else if (payment.billingPeriod === '6monthly') {
+              endDate.setMonth(endDate.getMonth() + 6)
+            } else {
+              endDate.setMonth(endDate.getMonth() + 1)
+            }
+
+            const user = await tx.user.update({
+              where: { id: userId },
+              data: {
+                subscriptionPlan: payment.subscriptionPlan,
+                subscriptionStartDate: new Date(),
+                subscriptionEndDate: endDate,
+                subscriptionReferenceCode: result.referenceCode || null,
+                subscriptionCancelled: false,
+              }
             })
+            console.log(`✅ Subscription updated: ${userId} -> ${payment.subscriptionPlan} until ${endDate.toISOString()}`)
+
+            if (user.email) {
+              emailsToSend.push({ email: user.email, name: user.name || 'Chef', plan: payment.subscriptionPlan, endDate })
+            }
+          }
+
+          // Enrollment oluştur
+          if (payment.courseId) {
+            const existing = await tx.enrollment.findFirst({
+              where: { userId, courseId: payment.courseId }
+            })
+            if (!existing) {
+              await tx.enrollment.create({
+                data: { userId, courseId: payment.courseId }
+              })
+            }
           }
         }
+      })
+
+      for (const e of emailsToSend) {
+        await sendSubscriptionStartedEmail(e.email, e.name, e.plan, e.endDate)
       }
 
       console.log(`✅ SUCCESSFUL PAYMENT (POST): User ${userId}`)

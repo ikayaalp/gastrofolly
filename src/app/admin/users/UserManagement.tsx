@@ -36,7 +36,6 @@ interface User {
   _count: {
     createdCourses: number
     enrollments: number
-    reviews: number
   }
 }
 
@@ -313,10 +312,6 @@ export default function UserManagement({ users, totalRevenue }: UserManagementPr
                       <div className="text-center">
                         <span className="block font-bold text-white">{user._count.enrollments}</span>
                         <span className="text-[10px]">Kayıt</span>
-                      </div>
-                      <div className="text-center">
-                        <span className="block font-bold text-white">{user._count.reviews}</span>
-                        <span className="text-[10px]">Yorum</span>
                       </div>
                     </div>
                   </td>

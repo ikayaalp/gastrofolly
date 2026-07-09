@@ -68,31 +68,34 @@ export async function POST(request: NextRequest) {
                 newEndDate = new Date(user.subscriptionEndDate);
             }
             
-            // Varsayılan olarak 1 ay uzatıyoruz (Eğer yıllık plan varsa burada iyileştirme yapılabilir)
-            if (user.subscriptionPlan === 'EXECUTIVE') {
-                newEndDate.setMonth(newEndDate.getMonth() + 6);
-            } else {
-                newEndDate.setMonth(newEndDate.getMonth() + 1);
-            }
+            // Güncel sistemde tek plan (Premium) var, tüm yenilemeler 1 ay
+            // uzatılır. (Eskiden burada artık kullanılmayan bir "EXECUTIVE"
+            // kademesi için 6 aylık uzatma vardı — güncel abonelik sistemiyle
+            // tutarsızdı, kaldırıldı.)
+            newEndDate.setMonth(newEndDate.getMonth() + 1);
 
-            await prisma.user.update({
-                where: { id: user.id },
-                data: {
-                    subscriptionEndDate: newEndDate,
-                    subscriptionCancelled: false, // Eğer iptal edip geri açtıysa düzelt
-                    subscriptionPlan: user.subscriptionPlan || 'Premium'
-                }
-            });
+            // Abonelik guncellemesi + odeme kaydi tek transaction'da: biri
+            // basarisiz olursa hicbiri uygulanmaz.
+            await prisma.$transaction(async (tx) => {
+                await tx.user.update({
+                    where: { id: user.id },
+                    data: {
+                        subscriptionEndDate: newEndDate,
+                        subscriptionCancelled: false, // Eğer iptal edip geri açtıysa düzelt
+                        subscriptionPlan: user.subscriptionPlan || 'Premium'
+                    }
+                });
 
-            // Ödeme kaydı da oluştur (isteğe bağlı, admin panelindeki istatistikler için)
-            await prisma.payment.create({
-                data: {
-                    userId: user.id,
-                    amount: 0, // Webhook'ta miktar gelmiyorsa 0, veya plan türüne göre sabit miktar yazılabilir
-                    currency: 'TRY',
-                    status: 'COMPLETED',
-                    subscriptionPlan: user.subscriptionPlan || 'Premium'
-                }
+                // Ödeme kaydı da oluştur (isteğe bağlı, admin panelindeki istatistikler için)
+                await tx.payment.create({
+                    data: {
+                        userId: user.id,
+                        amount: 0, // Webhook'ta miktar gelmiyorsa 0, veya plan türüne göre sabit miktar yazılabilir
+                        currency: 'TRY',
+                        status: 'COMPLETED',
+                        subscriptionPlan: user.subscriptionPlan || 'Premium'
+                    }
+                });
             });
 
             console.log(`[Iyzico Webhook] ✅ User ${user.id} subscription extended to ${newEndDate}`);

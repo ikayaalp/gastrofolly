@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react"
 import { createPortal } from "react-dom"
 import Link from "next/link"
-import { Play, Heart, Star } from "lucide-react"
+import { Play, Heart } from "lucide-react"
 import { useFavorites } from "@/contexts/FavoritesContext"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
@@ -23,9 +23,6 @@ interface Course {
     category: {
         name: string
     }
-    reviews?: Array<{
-        rating: number
-    }>
     _count: {
         enrollments: number
         lessons: number
@@ -76,11 +73,6 @@ export default function ExpandableCourseCard({ course, showProgress, rank, large
             })
         }
     }
-
-    // Calculate rating
-    const averageRating = (course.reviews?.length ?? 0) > 0
-        ? course.reviews!.reduce((acc, r) => acc + r.rating, 0) / course.reviews!.length
-        : 0
 
     // Determine subscription package based on course level
     // Colors from subscription page: Commis=gray, Chef D party=orange, Executive=purple

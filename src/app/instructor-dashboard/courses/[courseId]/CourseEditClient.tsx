@@ -22,7 +22,6 @@ import {
   ArrowDown,
   Settings,
   Users,
-  Star,
   MessageSquare
 } from "lucide-react"
 
@@ -46,21 +45,6 @@ interface Lesson {
   courseId: string
   createdAt: Date
   updatedAt: Date
-}
-
-interface Review {
-  id: string
-  rating: number
-  comment: string | null
-  createdAt: Date
-  courseId: string
-  userId: string
-  user: {
-    id: string
-    name: string | null
-    email: string
-    image: string | null
-  }
 }
 
 interface Course {
@@ -88,7 +72,6 @@ interface Course {
     email: string
   }
   lessons: Lesson[]
-  reviews: Review[]
   _count: {
     enrollments: number
     lessons: number
@@ -272,10 +255,6 @@ export default function CourseEditClient({ course, categories, session }: Props)
     }
   }
 
-  const averageRating = course.reviews.length > 0
-    ? course.reviews.reduce((acc, review) => acc + review.rating, 0) / course.reviews.length
-    : 0
-
   return (
     <div className="min-h-screen bg-gray-900">
       {/* Header */}
@@ -307,7 +286,7 @@ export default function CourseEditClient({ course, categories, session }: Props)
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Course Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
             <div className="flex items-center justify-between">
               <div>
@@ -324,15 +303,6 @@ export default function CourseEditClient({ course, categories, session }: Props)
                 <p className="text-2xl font-bold text-white">{course._count.lessons}</p>
               </div>
               <Play className="h-8 w-8 text-orange-500" />
-            </div>
-          </div>
-          <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-400 text-sm">Puan</p>
-                <p className="text-2xl font-bold text-white">{averageRating.toFixed(1)}</p>
-              </div>
-              <Star className="h-8 w-8 text-yellow-500" />
             </div>
           </div>
           <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
@@ -355,7 +325,6 @@ export default function CourseEditClient({ course, categories, session }: Props)
               {[
                 { id: 'basic', label: 'Temel Bilgiler', icon: BookOpen },
                 { id: 'lessons', label: 'Dersler', icon: Play },
-                { id: 'reviews', label: 'Yorumlar', icon: Star },
                 { id: 'analytics', label: 'Analitik', icon: Settings }
               ].map((tab) => {
                 const Icon = tab.icon
@@ -712,56 +681,6 @@ export default function CourseEditClient({ course, categories, session }: Props)
               </div>
             )}
 
-            {/* Reviews Tab */}
-            {activeTab === 'reviews' && (
-              <div>
-                <h3 className="text-lg font-semibold text-white mb-6">Yorumlar ({course.reviews.length})</h3>
-                <div className="space-y-4">
-                  {course.reviews.map((review) => (
-                    <div key={review.id} className="bg-gray-700 rounded-lg p-6 border border-gray-600">
-                      <div className="flex items-start space-x-4">
-                        <div className="w-10 h-10 rounded-full bg-orange-600 flex items-center justify-center">
-                          {review.user.image ? (
-                            <Image
-                              src={review.user.image}
-                              alt={review.user.name || 'User'}
-                              width={40}
-                              height={40}
-                              className="rounded-full"
-                            />
-                          ) : (
-                            <span className="text-white font-medium">
-                              {review.user.name?.charAt(0).toUpperCase() || 'U'}
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex justify-between items-start mb-2">
-                            <div>
-                              <h4 className="text-white font-semibold">{review.user.name || 'Anonymous'}</h4>
-                              <div className="flex items-center space-x-1">
-                                {[...Array(5)].map((_, i) => (
-                                  <Star
-                                    key={i}
-                                    className={`h-4 w-4 ${i < review.rating ? 'text-yellow-400 fill-current' : 'text-gray-400'
-                                      }`}
-                                  />
-                                ))}
-                              </div>
-                            </div>
-                            <span className="text-gray-400 text-sm">
-                              {new Date(review.createdAt).toLocaleDateString('tr-TR')}
-                            </span>
-                          </div>
-                          <p className="text-gray-300">{review.comment}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {/* Analytics Tab */}
             {activeTab === 'analytics' && (
               <div>
@@ -777,14 +696,6 @@ export default function CourseEditClient({ course, categories, session }: Props)
                       <div className="flex justify-between">
                         <span className="text-gray-400">Toplam Ders:</span>
                         <span className="text-white">{course._count.lessons}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-400">Ortalama Puan:</span>
-                        <span className="text-white">{averageRating.toFixed(1)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-400">Toplam Yorum:</span>
-                        <span className="text-white">{course.reviews.length}</span>
                       </div>
                     </div>
                   </div>

@@ -29,9 +29,6 @@ async function getLandingData() {
           },
           category: {
             select: { id: true, name: true }
-          },
-          reviews: {
-            select: { rating: true }
           }
         },
         orderBy: { createdAt: 'desc' },
@@ -62,9 +59,6 @@ async function getLandingData() {
       },
       category: {
         select: { id: true, name: true }
-      },
-      reviews: {
-        select: { rating: true }
       }
     },
     orderBy: { createdAt: 'desc' },

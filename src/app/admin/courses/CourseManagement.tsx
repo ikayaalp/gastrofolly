@@ -34,13 +34,9 @@ interface Course {
     order: number
     isFree: boolean
   }>
-  reviews: Array<{
-    rating: number
-  }>
   _count: {
     enrollments: number
     lessons: number
-    reviews: number
   }
 }
 

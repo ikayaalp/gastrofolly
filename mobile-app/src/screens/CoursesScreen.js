@@ -70,12 +70,6 @@ export default function CoursesScreen({ navigation }) {
         loadFavorites();
     };
 
-    const calculateAverageRating = (reviews) => {
-        if (!reviews || reviews.length === 0) return 0;
-        const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
-        return (sum / reviews.length).toFixed(1);
-    };
-
     const renderCourseItem = ({ item }) => {
         const courseData = item.course || item;
         const imageUrl = courseData.imageUrl || 'https://images.unsplash.com/photo-1556910103-1c02745a30bf?q=80&w=400';

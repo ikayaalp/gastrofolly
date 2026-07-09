@@ -1,34 +1,14 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import jwt from "jsonwebtoken";
+import { getAuthUser } from "@/lib/mobileAuth";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
     try {
-        let currentUserId = null;
-
-        // Try getting session from NextAuth first
-        const session = await getServerSession(authOptions);
-        if (session && session.user && session.user.id) {
-            currentUserId = session.user.id;
-        } else {
-            // Check for JWT token (mobile app)
-            const authHeader = req.headers.get("Authorization");
-            if (authHeader && authHeader.startsWith("Bearer ")) {
-                const token = authHeader.substring(7);
-                try {
-                    const decoded = jwt.verify(token, process.env.NEXTAUTH_SECRET!);
-                    currentUserId = (decoded as any).userId || (decoded as any).id;
-                } catch (e) {
-                    return NextResponse.json({ error: "Geçersiz token" }, { status: 401 });
-                }
-            }
-        }
-
-        if (!currentUserId) {
+        const authUser = await getAuthUser(req);
+        if (!authUser) {
             return NextResponse.json({ error: "Bu işlem için giriş yapmalısınız" }, { status: 401 });
         }
+        const currentUserId = authUser.id;
 
         const body = await req.json();
         const { targetId, targetType, reason } = body;

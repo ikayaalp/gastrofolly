@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { Search, X, Star, Users, Clock } from "lucide-react"
+import { Search, X, Users, Clock } from "lucide-react"
 import Link from "next/link"
 
 interface Course {
@@ -19,9 +19,6 @@ interface Course {
   category: {
     name: string
   }
-  reviews: Array<{
-    rating: number
-  }>
   _count: {
     enrollments: number
     lessons: number
@@ -79,12 +76,6 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
     const debounceTimer = setTimeout(searchCourses, 300)
     return () => clearTimeout(debounceTimer)
   }, [query])
-
-  const calculateAverageRating = (reviews: Array<{ rating: number }>) => {
-    if (!reviews || reviews.length === 0) return 0
-    const sum = reviews.reduce((acc, review) => acc + review.rating, 0)
-    return sum / reviews.length
-  }
 
   const formatDuration = (minutes?: number | null) => {
     if (!minutes) return "N/A"
@@ -155,8 +146,6 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
             {!loading && courses.length > 0 && (
               <div className="p-4 space-y-3">
                 {courses.map((course) => {
-                  const averageRating = calculateAverageRating(course.reviews)
-
                   return (
                     <Link
                       key={course.id}
@@ -192,13 +181,6 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                           <div className="flex items-center flex-wrap gap-3 mt-3 text-xs text-gray-500">
                             <span className="text-gray-400">{course.instructor.name}</span>
                             <span className="px-2 py-1 bg-orange-500/10 text-orange-400 rounded-md border border-orange-500/20">{course.category.name}</span>
-
-                            {averageRating > 0 && (
-                              <div className="flex items-center bg-yellow-500/10 px-2 py-1 rounded-md border border-yellow-500/20">
-                                <Star className="h-3 w-3 text-yellow-400 fill-current mr-1" />
-                                <span className="text-yellow-400 font-medium">{averageRating.toFixed(1)}</span>
-                              </div>
-                            )}
 
                             <div className="flex items-center">
                               <Users className="h-3 w-3 mr-1" />

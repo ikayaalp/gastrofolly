@@ -10,7 +10,6 @@ import {
   Trash2,
   BookOpen,
   Users,
-  Star,
   Calendar,
   Play,
   Settings,
@@ -66,20 +65,6 @@ interface Course {
     email: string
   }
   lessons: Lesson[]
-  reviews: Array<{
-    id: string
-    rating: number
-    comment: string | null
-    createdAt: Date
-    courseId: string
-    userId: string
-    user: {
-      id: string
-      name: string | null
-      email: string
-      image: string | null
-    }
-  }>
   _count: {
     enrollments: number
     lessons: number
@@ -409,14 +394,6 @@ export default function InstructorCoursesClient({ courses, categories, session }
                       <span>{course._count.lessons}</span>
                     </span>
                   </div>
-                  {course.reviews.length > 0 && (
-                    <div className="flex items-center space-x-1">
-                      <Star className="h-3 w-3 text-yellow-400 fill-current" />
-                      <span>
-                        {(course.reviews.reduce((acc, r) => acc + r.rating, 0) / course.reviews.length).toFixed(1)}
-                      </span>
-                    </div>
-                  )}
                 </div>
 
                 <div className="flex space-x-2">

@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { Star, Users, Clock, TrendingUp } from "lucide-react"
+import { Clock, TrendingUp } from "lucide-react"
 
 interface Course {
   id: string
@@ -19,11 +19,7 @@ interface Course {
   }
   _count: {
     enrollments: number
-    reviews: number
   }
-  reviews: {
-    rating: number
-  }[]
   lessons: {
     duration: number | null
   }[]
@@ -41,12 +37,6 @@ export default function RecommendedCourses({ courses, currentCourseId }: Recomme
 
   if (recommendedCourses.length === 0) {
     return null
-  }
-
-  const calculateAverageRating = (reviews: { rating: number }[]) => {
-    if (reviews.length === 0) return 0
-    const sum = reviews.reduce((acc, review) => acc + review.rating, 0)
-    return sum / reviews.length
   }
 
   const calculateTotalDuration = (lessons: { duration: number | null }[]) => {
@@ -71,7 +61,6 @@ export default function RecommendedCourses({ courses, currentCourseId }: Recomme
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {recommendedCourses.map((course) => {
-          const averageRating = calculateAverageRating(course.reviews)
           const totalDuration = calculateTotalDuration(course.lessons)
 
           return (
@@ -126,20 +115,7 @@ export default function RecommendedCourses({ courses, currentCourseId }: Recomme
                   )}
 
                   {/* Stats */}
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center space-x-3">
-                      {/* Rating */}
-                      {course.reviews.length > 0 && (
-                        <div className="flex items-center space-x-1">
-                          <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-                          <span className="text-white font-medium">{averageRating.toFixed(1)}</span>
-                          <span className="text-gray-500">({course._count.reviews})</span>
-                        </div>
-                      )}
-
-
-                    </div>
-
+                  <div className="flex items-center justify-end text-sm">
                     {/* Süre */}
                     {totalDuration && (
                       <div className="flex items-center space-x-1 text-gray-400">

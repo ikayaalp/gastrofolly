@@ -49,19 +49,10 @@ async function getCourse(id: string) {
           user: true
         }
       },
-      reviews: {
-        include: {
-          user: true
-        },
-        orderBy: {
-          createdAt: 'desc'
-        }
-      },
       _count: {
         select: {
           lessons: true,
-          enrollments: true,
-          reviews: true
+          enrollments: true
         }
       }
     }

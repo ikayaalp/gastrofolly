@@ -6,7 +6,6 @@ import Link from "next/link"
 import Image from "next/image"
 import {
   ChefHat,
-  Star,
   Users,
   Play,
   BookOpen,
@@ -34,8 +33,7 @@ async function getInstructor(id: string) {
           _count: {
             select: {
               enrollments: true,
-              lessons: true,
-              reviews: true
+              lessons: true
             }
           }
         },
@@ -71,18 +69,6 @@ export default async function InstructorPage({ params }: InstructorPageProps) {
     (acc: number, course: typeof instructor.createdCourses[0]) => acc + course._count.enrollments,
     0
   )
-
-  const totalReviews = instructor.createdCourses.reduce(
-    (acc: number, course: typeof instructor.createdCourses[0]) => acc + course._count.reviews,
-    0
-  )
-
-  const averageRating = totalReviews > 0 && instructor.createdCourses.length > 0
-    ? instructor.createdCourses.reduce((acc: number) => {
-      // Burada gerçek rating hesaplaması yapılabilir
-      return acc + 4.5 // Örnek değer
-    }, 0) / instructor.createdCourses.length
-    : 0
 
   return (
     <div className="min-h-screen bg-black">

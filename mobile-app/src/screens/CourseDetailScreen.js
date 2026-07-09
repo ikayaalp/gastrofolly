@@ -186,12 +186,6 @@ export default function CourseDetailScreen({ route, navigation }) {
         }
     };
 
-    const calculateAverageRating = (reviews) => {
-        if (!reviews || reviews.length === 0) return 0;
-        const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
-        return (sum / reviews.length).toFixed(1);
-    };
-
     const getTotalDuration = (lessons) => {
         if (!lessons || lessons.length === 0) return 0;
         return lessons.reduce((acc, lesson) => acc + (lesson.duration || 0), 0);
@@ -229,7 +223,6 @@ export default function CourseDetailScreen({ route, navigation }) {
     }
 
     const levelInfo = getLevelInfo(course.level);
-    const avgRating = calculateAverageRating(course.reviews || []);
     const totalDuration = getTotalDuration(course.lessons || []);
     const isEnrolled = course.isEnrolled || false;
     

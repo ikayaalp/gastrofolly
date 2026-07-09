@@ -29,8 +29,7 @@ export default async function UsersPage() {
       _count: {
         select: {
           createdCourses: true,
-          enrollments: true,
-          reviews: true
+          enrollments: true
         }
       }
     },

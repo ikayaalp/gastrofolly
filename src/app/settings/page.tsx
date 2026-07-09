@@ -26,7 +26,6 @@ async function getUserData(userId: string) {
       _count: {
         select: {
           enrollments: true,
-          reviews: true,
           payments: true
         }
       }

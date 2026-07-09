@@ -1,51 +1,25 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
-import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import jwt from "jsonwebtoken"
+import { getAuthUser } from "@/lib/mobileAuth"
 
 export async function GET(request: NextRequest) {
   try {
-    let userId: string | null = null;
-
-    // Try NextAuth session first (web)
-    const session = await getServerSession(authOptions);
-    if (session?.user?.id) {
-      userId = session.user.id;
-    } else {
-      // Try JWT token (mobile)
-      const authHeader = request.headers.get('authorization');
-      if (authHeader?.startsWith('Bearer ')) {
-        const token = authHeader.substring(7);
-        try {
-          const decoded = jwt.verify(token, process.env.NEXTAUTH_SECRET!) as { userId: string };
-          userId = decoded.userId;
-        } catch (err) {
-          console.error('JWT verification failed:', err);
-        }
-      }
-    }
-
-    if (!userId) {
+    const authUser = await getAuthUser(request);
+    if (!authUser) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
       )
     }
+    const userId = authUser.id;
 
-    // 1. Kullanıcı bilgilerini al (abonelik durumu ve satın alma kayıtları)
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        subscriptionPlan: true,
-        subscriptionEndDate: true,
-      }
-    })
-
+    // getAuthUser zaten guncel abonelik durumunu getiriyor (ve suresi dolmus
+    // Premium'u lazy-cleanup ile temizliyor) -- ayrica bir user sorgusuna
+    // gerek yok.
     const isSubscriptionActive = !!(
-      user?.subscriptionPlan &&
-      user?.subscriptionEndDate &&
-      new Date(user.subscriptionEndDate) > new Date()
+      authUser.subscriptionPlan &&
+      authUser.subscriptionEndDate &&
+      new Date(authUser.subscriptionEndDate) > new Date()
     )
 
     // 2. Bu kullanıcının "ilişkisi olduğu" tüm kursları topla: Enrollment,
@@ -93,7 +67,6 @@ export async function GET(request: NextRequest) {
         instructor: true,
         category: true,
         lessons: true,
-        reviews: true,
         _count: { select: { lessons: true } }
       },
       orderBy: { updatedAt: 'desc' },

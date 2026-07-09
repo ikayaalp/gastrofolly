@@ -20,7 +20,6 @@ interface UserData {
   subscriptionCancelled: boolean
   _count: {
     enrollments: number
-    reviews: number
     payments: number
   }
 }
@@ -639,7 +638,7 @@ export default function SettingsClient({ user }: SettingsClientProps) {
 
             <div className="space-y-6">
               {/* Hesap İstatistikleri */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 gap-6">
                 <div className="bg-[#1a1a1a] border border-gray-800 rounded-lg p-4">
                   <div className="flex items-center space-x-3">
                     <div className="bg-blue-500/20 p-2 rounded">
@@ -648,18 +647,6 @@ export default function SettingsClient({ user }: SettingsClientProps) {
                     <div>
                       <p className="text-lg font-bold text-white">{user._count.enrollments}</p>
                       <p className="text-gray-400 text-sm">Kayıtlı Kurs</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-[#1a1a1a] border border-gray-800 rounded-lg p-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="bg-yellow-500/20 p-2 rounded">
-                      <Award className="h-5 w-5 text-yellow-400" />
-                    </div>
-                    <div>
-                      <p className="text-lg font-bold text-white">{user._count.reviews}</p>
-                      <p className="text-gray-400 text-sm">Değerlendirme</p>
                     </div>
                   </div>
                 </div>

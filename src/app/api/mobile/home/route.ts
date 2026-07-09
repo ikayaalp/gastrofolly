@@ -18,7 +18,6 @@ export async function GET(req: Request) {
         include: {
           instructor: { select: { id: true, name: true, image: true } },
           category: { select: { id: true, name: true, slug: true } },
-          reviews: { select: { rating: true } },
           _count: { select: { enrollments: true, lessons: true } }
         },
         orderBy: { createdAt: 'desc' },
@@ -29,7 +28,6 @@ export async function GET(req: Request) {
         include: {
           instructor: { select: { id: true, name: true, image: true } },
           category: { select: { id: true, name: true, slug: true } },
-          reviews: { select: { rating: true } },
           _count: { select: { enrollments: true, lessons: true } }
         },
         orderBy: { enrollments: { _count: 'desc' } },
@@ -42,7 +40,6 @@ export async function GET(req: Request) {
             include: {
               instructor: { select: { id: true, name: true, image: true } },
               category: { select: { id: true, name: true, slug: true } },
-              reviews: { select: { rating: true } },
               _count: { select: { enrollments: true, lessons: true } }
             },
             take: 6,
@@ -61,7 +58,6 @@ export async function GET(req: Request) {
             select: {
               id: true,
               enrollments: { select: { id: true } },
-              reviews: { select: { rating: true } },
             }
           }
         }
@@ -84,7 +80,6 @@ export async function GET(req: Request) {
                 include: {
                   instructor: { select: { id: true, name: true, image: true } },
                   category: { select: { id: true, name: true, slug: true } },
-                  reviews: { select: { rating: true } },
                   _count: { select: { enrollments: true, lessons: true } }
                 }
               }
@@ -98,24 +93,15 @@ export async function GET(req: Request) {
 
     const instructors = rawInstructors.map((chef: any) => {
       let totalStudents = 0
-      let totalRating = 0
-      let reviewCount = 0
 
       chef.createdCourses.forEach((course: any) => {
         totalStudents += course.enrollments.length
-        course.reviews.forEach((review: any) => {
-          totalRating += review.rating
-          reviewCount++
-        })
       })
-
-      const averageRating = reviewCount > 0 ? (totalRating / reviewCount).toFixed(1) : "0.0"
 
       return {
         id: chef.id,
         name: chef.name || "İsimsiz Şef",
         specialty: chef.createdCourses.length > 0 ? "Kıdemli Şef Eğitmeni" : "Eğitmen",
-        rating: averageRating,
         courseCount: chef.createdCourses.length,
         image: chef.image,
       }

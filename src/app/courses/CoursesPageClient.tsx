@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link"
 import Image from "next/image";
-import { ChefHat, Search, Star, ArrowLeft, Clock } from "lucide-react";
+import { ChefHat, Search, ArrowLeft, Clock } from "lucide-react";
 import HeaderSearch from "@/components/layout/HeaderSearch";
 import UserDropdown from "@/components/ui/UserDropdown";
 import { useSession } from "next-auth/react";
@@ -36,7 +36,6 @@ interface Course {
     };
     lessonCount: number;
     enrollmentCount: number;
-    averageRating: number;
 }
 
 export default function CoursesPageClient() {
@@ -44,7 +43,7 @@ export default function CoursesPageClient() {
     const [categories, setCategories] = useState<Category[]>([]);
     const [courses, setCourses] = useState<Course[]>([]);
     const [loading, setLoading] = useState(true);
-    const [sortBy, setSortBy] = useState<"newest" | "popular" | "rating">("newest");
+    const [sortBy, setSortBy] = useState<"newest" | "popular">("newest");
     const [selectedCategoryId, setSelectedCategoryId] = useState<string>("all");
 
     useEffect(() => {
@@ -78,7 +77,6 @@ export default function CoursesPageClient() {
         .filter(course => selectedCategoryId === "all" || course.category.id === selectedCategoryId)
         .sort((a, b) => {
             if (sortBy === "popular") return (b.enrollmentCount || 0) - (a.enrollmentCount || 0);
-            if (sortBy === "rating") return (b.averageRating || 0) - (a.averageRating || 0);
             return 0; // Default: createdAt desc (from API)
         });
 

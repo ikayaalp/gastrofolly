@@ -163,17 +163,10 @@ export default function HomeScreen({ navigation }) {
         alert(`${title}: ${message}`);
     };
 
-    const calculateAverageRating = (reviews) => {
-        if (!reviews || reviews.length === 0) return 0;
-        const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
-        return (sum / reviews.length).toFixed(1);
-    };
-
     const renderCourseCard = (course, index) => {
         // Handle both direct course and enrollment.course structure
         const courseData = course.course || course;
         const imageUrl = courseData.imageUrl || 'https://images.unsplash.com/photo-1556910103-1c02745a30bf?q=80&w=400';
-        const avgRating = calculateAverageRating(courseData.reviews);
         const instructorFirstName = courseData.instructor?.name?.split(' ')[0] || 'Eğitmen';
 
         return (
@@ -262,7 +255,6 @@ export default function HomeScreen({ navigation }) {
     const renderLargeCourseCard = (course, index) => {
         const courseData = course.course || course;
         const imageUrl = courseData.imageUrl || 'https://images.unsplash.com/photo-1556910103-1c02745a30bf?q=80&w=400';
-        const avgRating = calculateAverageRating(courseData.reviews);
 
         return (
             <TouchableOpacity

@@ -16,7 +16,6 @@ async function getInstructorData(userId: string) {
       createdAt: true,
       _count: {
         select: {
-          reviews: true,
           enrollments: true
         }
       }
@@ -39,8 +38,7 @@ async function getInstructorData(userId: string) {
       _count: {
         select: {
           enrollments: true,
-          lessons: true,
-          reviews: true
+          lessons: true
         }
       }
     }

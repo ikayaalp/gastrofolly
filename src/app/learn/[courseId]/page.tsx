@@ -4,7 +4,6 @@ import { redirect, notFound } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import VideoPlayer from "@/components/video/VideoPlayer"
 import CourseSidebar from "@/components/learn/CourseSidebar"
-import CommentsSection from "@/components/course/CommentsSection"
 import RecommendedCourses from "@/components/course/RecommendedCourses"
 import Link from "next/link"
 import Image from "next/image"
@@ -19,13 +18,6 @@ interface LearnPageLesson {
   videoUrl: string | null;
   duration: number | null;
   order?: number;
-}
-interface ReviewItem {
-  id: string;
-  rating: number;
-  user: { name: string | null; image: string | null };
-  createdAt: string;
-  comment?: string | null;
 }
 interface ProgressItem {
   lessonId: string;
@@ -178,19 +170,6 @@ async function getCourseWithProgress(courseId: string, userId: string, requested
       category: true,
       lessons: {
         orderBy: { order: 'asc' }
-      },
-      reviews: {
-        include: {
-          user: {
-            select: {
-              name: true,
-              image: true
-            }
-          }
-        },
-        orderBy: {
-          createdAt: 'desc'
-        }
       }
     }
   })
@@ -230,13 +209,7 @@ async function getRecommendedCourses(categoryId: string, currentCourseId: string
       },
       _count: {
         select: {
-          enrollments: true,
-          reviews: true
-        }
-      },
-      reviews: {
-        select: {
-          rating: true
+          enrollments: true
         }
       },
       lessons: {
@@ -421,15 +394,6 @@ export default async function LearnPage({ params, searchParams }: LearnPageProps
                 </div>
               </div>
             )}
-
-            {/* Comments Section */}
-            <CommentsSection
-              reviews={course.reviews}
-              courseId={course.id}
-              canComment={true}
-              userId={session.user.id}
-              instructor={course.instructor}
-            />
 
             {/* Recommended Courses */}
             <RecommendedCourses

@@ -1,29 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import jwt from 'jsonwebtoken';
+import { getAuthUser } from '@/lib/mobileAuth';
 
 export async function POST(request: NextRequest) {
     try {
-        // Token'ı başlık (header) kısmından al
-        const authHeader = request.headers.get('authorization');
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        const authUser = await getAuthUser(request);
+        if (!authUser) {
             return NextResponse.json({ message: 'Yetkisiz erişim' }, { status: 401 });
-        }
-
-        const token = authHeader.split(' ')[1];
-
-        // Token'ı doğrula
-        let decoded: any;
-        try {
-            decoded = jwt.verify(token, process.env.NEXTAUTH_SECRET!);
-        } catch (err) {
-            return NextResponse.json({ message: 'Geçersiz token' }, { status: 401 });
         }
 
         const body = await request.json();
         const { isPremium, expirationDate } = body;
 
-        const userId = decoded.userId || decoded.id || decoded.sub;
+        const userId = authUser.id;
         const existingUser = await prisma.user.findUnique({
             where: { id: userId }
         });

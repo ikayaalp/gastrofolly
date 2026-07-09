@@ -13,19 +13,6 @@ async function getCourseData(courseId: string, userId: string) {
     include: {
       category: true,
       instructor: true,
-      reviews: {
-        include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              image: true
-            }
-          }
-        },
-        orderBy: { createdAt: 'desc' }
-      },
       lessons: {
         orderBy: { order: 'asc' }
       },
