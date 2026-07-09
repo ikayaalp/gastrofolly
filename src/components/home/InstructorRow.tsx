@@ -144,7 +144,7 @@ export default function InstructorRow({ title, instructors }: InstructorRowProps
             )
 
             const cls =
-              "flex flex-col items-start min-w-[140px] md:min-w-[160px] p-2 hover:bg-[#111] rounded-xl transition-colors shrink-0 group"
+              "flex flex-col items-start w-[140px] md:w-[160px] p-2 hover:bg-[#111] rounded-xl transition-colors shrink-0 group"
 
             return href ? (
               <Link key={instructor.id} href={href} className={cls}>
