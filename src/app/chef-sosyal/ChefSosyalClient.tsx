@@ -141,9 +141,11 @@ export default function ChefSosyalClient({
 
   // State'i session storage'dan yükle veya props'tan al
   useEffect(() => {
+    // Her zaman sunucudan gelen taze veriyi kullan
+    setTopics(initialTopics);
+
     const key = `chef-sosyal-state`;
     const stored = sessionStorage.getItem(key);
-    let shouldUpdateFromProps = true;
 
     if (stored) {
       try {
@@ -151,15 +153,8 @@ export default function ChefSosyalClient({
         if (
           parsed.category === searchParams.get('category') &&
           parsed.search === searchParams.get('search') &&
-          parsed.sort === searchParams.get('sort') &&
-          parsed.topics &&
-          parsed.topics.length >= initialTopics.length
+          parsed.sort === searchParams.get('sort')
         ) {
-          setTopics(parsed.topics);
-          setPage(parsed.page);
-          setHasMore(parsed.hasMore);
-          shouldUpdateFromProps = false;
-          
           setTimeout(() => {
             window.scrollTo({ top: parsed.scrollY, behavior: 'instant' });
           }, 100);
@@ -168,13 +163,9 @@ export default function ChefSosyalClient({
         console.error("Session restore error", e);
       }
     }
-
-    if (shouldUpdateFromProps) {
-      setTopics(initialTopics);
-    }
   }, [initialTopics, searchParams]);
 
-  // State ve scroll değişikliklerini kaydet
+  // Sadece scroll pozisyonunu kaydet
   useEffect(() => {
     const saveState = () => {
       const key = `chef-sosyal-state`;
@@ -182,9 +173,6 @@ export default function ChefSosyalClient({
         category: searchParams.get('category'),
         search: searchParams.get('search'),
         sort: searchParams.get('sort'),
-        topics,
-        page,
-        hasMore,
         scrollY: window.scrollY
       }));
     };
@@ -194,7 +182,7 @@ export default function ChefSosyalClient({
       clearInterval(interval);
       saveState();
     };
-  }, [topics, page, hasMore, searchParams]);
+  }, [searchParams]);
 
   const isFirstMount = useRef(true);
 
