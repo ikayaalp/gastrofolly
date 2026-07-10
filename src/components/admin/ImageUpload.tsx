@@ -115,6 +115,11 @@ export default function ImageUpload({ onImageUploaded, currentImageUrl, type = "
             </>
           )}
         </button>
+        {type === "image" && (
+          <p className="text-xs text-gray-500 mt-2 text-center">
+            Görsel otomatik olarak kart boyutuna sığdırılır, kırpılmaz — yatay/geniş görseller daha az boşlukla görünür.
+          </p>
+        )}
       </div>
 
       {/* Hata mesajı */}
