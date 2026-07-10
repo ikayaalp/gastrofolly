@@ -15,6 +15,7 @@ const StoryViewer = ({ stories, initialIndex, onClose, navigation }) => {
     const progressInterval = useRef(null);
     const videoRef = useRef(null);
     const [isVideoReady, setIsVideoReady] = useState(false);
+    const [nextStoryMedia, setNextStoryMedia] = useState(null);
 
     // Group structure: { user: {...}, stories: [story1, story2...] }
     const currentStoryGroup = stories[currentIndex];
@@ -43,6 +44,28 @@ const StoryViewer = ({ stories, initialIndex, onClose, navigation }) => {
 
         return () => stopProgress();
     }, [currentIndex, currentStoryIndex, isVideo, currentStoryItem]); // Added dependencies
+
+    // Preload next story
+    useEffect(() => {
+        let nextGroupIndex = currentIndex;
+        let nextStoryIdx = currentStoryIndex + 1;
+        
+        if (stories[nextGroupIndex] && nextStoryIdx >= stories[nextGroupIndex].stories.length) {
+            nextGroupIndex++;
+            nextStoryIdx = 0;
+        }
+
+        const nextStory = stories[nextGroupIndex]?.stories?.[nextStoryIdx];
+        if (nextStory) {
+            setNextStoryMedia(nextStory);
+            const isNextVideo = nextStory.mediaType === 'VIDEO' || nextStory.mediaUrl?.endsWith('.mp4') || nextStory.mediaUrl?.includes('/video/');
+            if (!isNextVideo && nextStory.mediaUrl) {
+                Image.prefetch(nextStory.mediaUrl);
+            }
+        } else {
+            setNextStoryMedia(null);
+        }
+    }, [currentIndex, currentStoryIndex, stories]);
 
     const startProgress = () => {
         stopProgress();
@@ -134,26 +157,48 @@ const StoryViewer = ({ stories, initialIndex, onClose, navigation }) => {
             <View style={viewerStyles.container}>
                 <StatusBar hidden />
 
+                {/* Hidden Next Video for Preload */}
+                {nextStoryMedia && (nextStoryMedia.mediaType === 'VIDEO' || nextStoryMedia.mediaUrl?.endsWith('.mp4') || nextStoryMedia.mediaUrl?.includes('/video/')) && (
+                    <Video
+                        source={{ uri: nextStoryMedia.mediaUrl }}
+                        shouldPlay={false}
+                        isMuted={true}
+                        style={{ position: 'absolute', width: 1, height: 1, opacity: 0 }}
+                    />
+                )}
+
                 {/* Media Content */}
                 {isVideo ? (
-                    <Video
-                        ref={videoRef}
-                        style={viewerStyles.backgroundImage}
-                        source={{ uri: currentStoryItem.mediaUrl }}
-                        useNativeControls={false}
-                        resizeMode={ResizeMode.COVER}
-                        isLooping={false}
-                        shouldPlay={true}
-                        onPlaybackStatusUpdate={status => {
-                            if (status.didJustFinish) {
-                                handleNext();
-                            }
-                        }}
-                        onLoad={handleVideoLoad}
-                    />
+                    <>
+                        {/* Placeholder while video is loading */}
+                        {!isVideoReady && currentStoryItem.coverImage && (
+                            <Image
+                                source={currentStoryItem.coverImage}
+                                style={[viewerStyles.backgroundImage, { position: 'absolute', zIndex: 1 }]}
+                                contentFit="cover"
+                                cachePolicy="memory-disk"
+                            />
+                        )}
+                        <Video
+                            ref={videoRef}
+                            style={viewerStyles.backgroundImage}
+                            source={{ uri: currentStoryItem.mediaUrl }}
+                            useNativeControls={false}
+                            resizeMode={ResizeMode.COVER}
+                            isLooping={false}
+                            shouldPlay={true}
+                            onPlaybackStatusUpdate={status => {
+                                if (status.didJustFinish) {
+                                    handleNext();
+                                }
+                            }}
+                            onLoad={handleVideoLoad}
+                        />
+                    </>
                 ) : (
                     <Image
                         source={currentStoryItem.mediaUrl || currentStoryItem.content}
+                        placeholder={currentStoryItem.coverImage ? { uri: currentStoryItem.coverImage } : null}
                         style={viewerStyles.backgroundImage}
                         contentFit="cover"
                         transition={100}
