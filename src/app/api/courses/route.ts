@@ -9,6 +9,7 @@ export async function GET(request: NextRequest) {
         const limit = searchParams.get('limit');
         const page = searchParams.get('page');
         const categoryId = searchParams.get('categoryId');
+        const sort = searchParams.get('sort');
 
         const take = limit ? parseInt(limit) : undefined;
         const skip = page && take ? (parseInt(page) - 1) * take : undefined;
@@ -64,9 +65,9 @@ export async function GET(request: NextRequest) {
                     },
                 },
             },
-            orderBy: {
-                createdAt: 'desc',
-            },
+            orderBy: sort === 'popular' 
+                ? { enrollments: { _count: 'desc' } }
+                : { createdAt: 'desc' },
         });
 
         if (page) {

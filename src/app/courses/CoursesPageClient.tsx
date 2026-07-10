@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link"
 import Image from "next/image";
 import { ChefHat, Search, ArrowLeft, Clock } from "lucide-react";
@@ -44,9 +44,12 @@ export default function CoursesPageClient() {
     const [courses, setCourses] = useState<Course[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedCategoryId, setSelectedCategoryId] = useState<string>("all");
+    const [sortBy, setSortBy] = useState<"newest" | "popular">("newest");
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(false);
     const [loadingMore, setLoadingMore] = useState(false);
+    
+    const fetchIdRef = useRef(0);
 
     useEffect(() => {
         const fetchCategories = async () => {
@@ -63,7 +66,9 @@ export default function CoursesPageClient() {
         fetchCategories();
     }, []);
 
-    const fetchCourses = async (pageNum: number, categoryId: string) => {
+    const fetchCourses = async (pageNum: number, categoryId: string, sortOrder: string) => {
+        const currentFetchId = ++fetchIdRef.current;
+        
         try {
             if (pageNum === 1) setLoading(true);
             else setLoadingMore(true);
@@ -71,6 +76,8 @@ export default function CoursesPageClient() {
             const params = new URLSearchParams();
             params.append("limit", "12");
             params.append("page", pageNum.toString());
+            params.append("sort", sortOrder);
+            
             if (categoryId !== "all") {
                 params.append("categoryId", categoryId);
             }
@@ -78,6 +85,10 @@ export default function CoursesPageClient() {
             const res = await fetch(`/api/courses?${params.toString()}`);
             if (res.ok) {
                 const data = await res.json();
+                
+                // Eğer bu sırada yeni bir istek atıldıysa (race condition), eski cevabı yoksay
+                if (currentFetchId !== fetchIdRef.current) return;
+
                 const fetchedCourses = data.courses || [];
                 if (pageNum === 1) {
                     setCourses(fetchedCourses);
@@ -89,21 +100,23 @@ export default function CoursesPageClient() {
         } catch (error) {
             console.error("Error loading courses:", error);
         } finally {
-            setLoading(false);
-            setLoadingMore(false);
+            if (currentFetchId === fetchIdRef.current) {
+                setLoading(false);
+                setLoadingMore(false);
+            }
         }
     };
 
     useEffect(() => {
         setPage(1);
-        fetchCourses(1, selectedCategoryId);
-    }, [selectedCategoryId]);
+        fetchCourses(1, selectedCategoryId, sortBy);
+    }, [selectedCategoryId, sortBy]);
 
     const handleLoadMore = () => {
         if (loadingMore || !hasMore) return;
         const nextPage = page + 1;
         setPage(nextPage);
-        fetchCourses(nextPage, selectedCategoryId);
+        fetchCourses(nextPage, selectedCategoryId, sortBy);
     };
 
     return (
@@ -179,7 +192,23 @@ export default function CoursesPageClient() {
                         {/* Sidebar */}
                         <aside className="lg:w-64 flex-shrink-0">
                             {/* Sorting */}
-
+                            <div className="mb-8">
+                                <h3 className="text-white text-sm font-bold mb-4 uppercase tracking-wider">Sıralama</h3>
+                                <div className="flex flex-col gap-2">
+                                    <button
+                                        onClick={() => setSortBy("newest")}
+                                        className={`text-left text-sm py-1 transition-colors ${sortBy === "newest" ? "text-orange-500 font-bold" : "text-gray-400 hover:text-gray-200"}`}
+                                    >
+                                        En Yeni
+                                    </button>
+                                    <button
+                                        onClick={() => setSortBy("popular")}
+                                        className={`text-left text-sm py-1 transition-colors ${sortBy === "popular" ? "text-orange-500 font-bold" : "text-gray-400 hover:text-gray-200"}`}
+                                    >
+                                        En Popüler
+                                    </button>
+                                </div>
+                            </div>
 
                             {/* Category Filter */}
                             <div>

@@ -48,7 +48,7 @@ const resizeImageBeforeUpload = (file: File, maxDimension: number, quality: numb
           URL.revokeObjectURL(img.src)
           if (blob) {
             const resizedFile = new File([blob], file.name, {
-              type: mimeType,
+              type: blob.type,
               lastModified: Date.now(),
             })
             resolve(resizedFile)
