@@ -9,6 +9,17 @@ import {
     Dimensions,
     StatusBar,
     Animated,
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    ScrollView,
+    TouchableOpacity,
+    ActivityIndicator,
+    Dimensions,
+    StatusBar,
+    Animated,
     KeyboardAvoidingView,
     Platform,
     Keyboard,
@@ -18,6 +29,7 @@ import {
 } from 'react-native';
 import { Image } from 'expo-image';
 import * as ScreenOrientation from 'expo-screen-orientation';
+import * as WebBrowser from 'expo-web-browser';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Video, ResizeMode } from 'expo-av';
 import Slider from '@react-native-community/slider';
@@ -804,21 +816,12 @@ export default function LearnScreen({ route, navigation }) {
                                         flexDirection: 'row',
                                         alignItems: 'center',
                                         backgroundColor: '#ea580c',
-                                        paddingVertical: 10,
-                                        paddingHorizontal: 16,
-                                        borderRadius: 8,
+                                        paddingVertical: 6,
+                                        paddingHorizontal: 12,
+                                        borderRadius: 6,
                                         marginTop: 16,
                                         alignSelf: 'flex-start'
                                     }}
-                                    onPress={() => Linking.openURL(currentLesson.pdfUrl)}
-                                >
-                                    <FileText size={18} color="#fff" style={{ marginRight: 8 }} />
-                                    <Text style={{ color: '#fff', fontSize: 14, fontWeight: '600' }}>Re�ete / PDF G�r�nt�le</Text>
-                                </TouchableOpacity>
-                            ) : null}
-                        </View>
-
-                        {/* Instructor Row */}
                         {course.instructor && (
                             <TouchableOpacity
                                 style={styles.instructorRow}
