@@ -11,6 +11,7 @@ interface Course {
   description: string
   price: number
   imageUrl?: string | null
+  thumbnailImageUrl?: string | null
   level: string
   duration?: number | null
   instructor: {
@@ -137,10 +138,10 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                   >
                     <div className="flex items-start space-x-4 p-4 rounded-xl bg-zinc-950 border border-zinc-800 hover:border-orange-500/50 hover:bg-zinc-900 transition-all duration-300 group">
                       {/* Course Image */}
-                      <div className="w-24 h-20 bg-zinc-800 rounded-lg overflow-hidden flex-shrink-0 border border-zinc-700">
-                        {course.imageUrl ? (
+                      <div className="w-20 h-20 bg-zinc-800 rounded-lg overflow-hidden flex-shrink-0 border border-zinc-700">
+                        {course.thumbnailImageUrl || course.imageUrl ? (
                           <img
-                            src={course.imageUrl}
+                            src={course.thumbnailImageUrl || course.imageUrl || undefined}
                             alt={course.title}
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                           />

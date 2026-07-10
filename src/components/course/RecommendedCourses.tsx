@@ -71,7 +71,7 @@ export default function RecommendedCourses({ courses, currentCourseId }: Recomme
             >
               <div className="bg-[#0a0a0a] rounded-xl border border-gray-800 overflow-hidden hover:border-orange-500/50 transition-all hover:shadow-lg hover:shadow-orange-500/10">
                 {/* Kurs Resmi */}
-                <div className="relative h-48 bg-gray-900 overflow-hidden">
+                <div className="relative aspect-[1.45/1] bg-gray-900 overflow-hidden">
                   {course.imageUrl ? (
                     <Image
                       src={course.imageUrl}

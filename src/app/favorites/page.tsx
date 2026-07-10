@@ -249,7 +249,7 @@ export default function FavoritesPage() {
               {/* Course Card - simplified version matching home page style */}
               <Link
                 href={`/course/${course.id}`}
-                className="block relative bg-black border border-gray-800 rounded-xl overflow-hidden hover:border-orange-500/50 transition-all duration-300 group cursor-pointer min-w-[320px] w-[320px] h-[256px] flex-shrink-0"
+                className="block relative bg-black border border-gray-800 rounded-xl overflow-hidden hover:border-orange-500/50 transition-all duration-300 group cursor-pointer min-w-[320px] w-[320px] h-[221px] flex-shrink-0"
               >
                 {course.imageUrl ? (
                   <img

@@ -259,7 +259,7 @@ export default function MyCoursesPage() {
                   className="group block w-full max-w-[95%] mx-auto md:max-w-none md:mx-0 transition-transform active:scale-[0.98]"
                 >
                   <div className="relative rounded-2xl overflow-hidden bg-[#0a0a0a] border border-gray-800 group-hover:border-orange-500/30 transition-all duration-300 shadow-xl scroll-mt-20">
-                    <div className="aspect-video relative w-full overflow-hidden">
+                    <div className="aspect-[1.45/1] relative w-full overflow-hidden">
                       {course.imageUrl ? (
                         <Image
                           src={course.imageUrl}
@@ -335,7 +335,7 @@ export default function MyCoursesPage() {
                   >
                     <div className="relative rounded-2xl overflow-hidden bg-[#0a0a0a] border border-gray-800 group-hover:border-orange-500/30 transition-all duration-300 shadow-xl scroll-mt-20">
                       {/* ... Image Section ... */}
-                      <div className="aspect-video relative w-full overflow-hidden">
+                      <div className="aspect-[1.45/1] relative w-full overflow-hidden">
                         {course.imageUrl ? (
                           <Image
                             src={course.imageUrl}

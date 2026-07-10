@@ -14,6 +14,7 @@ interface Course {
     description: string
     price: number
     imageUrl?: string | null
+    posterImageUrl?: string | null
     level: string
     duration?: number | null
     instructor: {
@@ -277,13 +278,13 @@ export default function ExpandableCourseCard({ course, showProgress, rank, large
                                 <div className="absolute top-3 left-3 z-30 bg-orange-600 text-white text-xs font-bold px-2 py-1 rounded shadow-lg uppercase tracking-wider">
                                     Yakında
                                 </div>
-                                {course.imageUrl && (
+                                {course.posterImageUrl || course.imageUrl ? (
                                     <img
-                                        src={course.imageUrl}
+                                        src={course.posterImageUrl || course.imageUrl || undefined}
                                         alt={course.title}
                                         className="w-full h-full object-cover"
                                     />
-                                )}
+                                ) : null}
                                 {/* Video would go here */}
                                 <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-transparent to-transparent" />
                             </div>

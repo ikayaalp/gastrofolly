@@ -217,7 +217,7 @@ export default function CourseManagement({ initialCourses, categories, instructo
                   <tr key={course.id} className="hover:bg-white/5 transition-colors group">
                     <td className="py-4 px-6">
                       <div className="flex items-center space-x-4">
-                        <div className="w-16 h-10 bg-gray-800 rounded-lg overflow-hidden flex-shrink-0 relative">
+                        <div className="w-16 h-11 bg-gray-800 rounded-lg overflow-hidden flex-shrink-0 relative">
                           {course.imageUrl ? (
                             <Image
                               src={course.imageUrl}

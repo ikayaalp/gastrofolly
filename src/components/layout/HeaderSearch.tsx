@@ -13,6 +13,7 @@ interface SearchResult {
         name: string;
     };
     imageUrl?: string;
+    thumbnailImageUrl?: string;
 }
 
 export default function HeaderSearch() {
@@ -107,7 +108,7 @@ export default function HeaderSearch() {
                                 >
                                     <div className="w-10 h-10 rounded-md bg-gray-800 overflow-hidden flex-shrink-0">
                                         <img
-                                            src={course.imageUrl || 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=200&q=80'}
+                                            src={course.thumbnailImageUrl || course.imageUrl || 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=200&q=80'}
                                             alt=""
                                             className="w-full h-full object-cover group-hover:scale-110 transition-transform"
                                         />
