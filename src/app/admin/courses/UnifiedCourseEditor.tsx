@@ -223,6 +223,7 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
                 title: lesson.title,
                 description: lesson.description || "",
                 videoUrl: lesson.videoUrl || "",
+                pdfUrl: lesson.pdfUrl || "",
                 duration: lesson.duration || 0,
                 order: lesson.order,
                 isFree: lesson.isFree
@@ -233,6 +234,7 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
                 title: "",
                 description: "",
                 videoUrl: "",
+                pdfUrl: "",
                 duration: 0,
                 order: lessons.length + 1,
                 isFree: false
