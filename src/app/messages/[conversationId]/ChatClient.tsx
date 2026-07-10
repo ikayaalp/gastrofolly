@@ -280,46 +280,49 @@ export default function ChatClient({ conversationId, currentUserId }: ChatClient
             style={viewportStyle.height ? viewportStyle : undefined}
         >
             {/* Header */}
-            <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-800 bg-[#0a0a0a]">
-                <Link
-                    href="/messages"
-                    className="p-2 rounded-full hover:bg-gray-800 transition-colors text-gray-400 hover:text-white"
-                >
-                    <ArrowLeft className="h-5 w-5" />
-                </Link>
-
-                {otherUser ? (
+            <div className="border-b border-gray-800 bg-[#0a0a0a]">
+                <div className="max-w-2xl mx-auto flex items-center gap-3 px-4 py-3">
                     <Link
-                        href={`/chef-sosyal/profil/${otherUser.id}`}
-                        className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+                        href="/messages"
+                        className="p-2 rounded-full hover:bg-gray-800 transition-colors text-gray-400 hover:text-white"
                     >
-                        {otherUser.image ? (
-                            <Image
-                                src={otherUser.image}
-                                alt={otherUser.name || 'Kullanıcı'}
-                                width={32}
-                                height={32}
-                                className="rounded-full object-cover"
-                            />
-                        ) : (
-                            <div className="w-8 h-8 rounded-full bg-[#1f2937] flex items-center justify-center text-xs font-semibold text-gray-300">
-                                {getInitials(otherUser.name)}
-                            </div>
-                        )}
-                        <span className="text-white font-semibold text-sm">
-                            {otherUser.name || 'Kullanıcı'}
-                        </span>
+                        <ArrowLeft className="h-5 w-5" />
                     </Link>
-                ) : (
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-[#1f2937] animate-pulse" />
-                        <div className="h-4 w-24 bg-[#1f2937] rounded animate-pulse" />
-                    </div>
-                )}
+
+                    {otherUser ? (
+                        <Link
+                            href={`/chef-sosyal/profil/${otherUser.id}`}
+                            className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+                        >
+                            {otherUser.image ? (
+                                <Image
+                                    src={otherUser.image}
+                                    alt={otherUser.name || 'Kullanıcı'}
+                                    width={32}
+                                    height={32}
+                                    className="rounded-full object-cover"
+                                />
+                            ) : (
+                                <div className="w-8 h-8 rounded-full bg-[#1f2937] flex items-center justify-center text-xs font-semibold text-gray-300">
+                                    {getInitials(otherUser.name)}
+                                </div>
+                            )}
+                            <span className="text-white font-semibold text-sm">
+                                {otherUser.name || 'Kullanıcı'}
+                            </span>
+                        </Link>
+                    ) : (
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-[#1f2937] animate-pulse" />
+                            <div className="h-4 w-24 bg-[#1f2937] rounded animate-pulse" />
+                        </div>
+                    )}
+                </div>
             </div>
 
             {/* Messages area */}
-            <div className="flex-1 overflow-y-auto px-4 py-6 space-y-3">
+            <div className="flex-1 overflow-y-auto px-4 py-6">
+                <div className="max-w-2xl mx-auto space-y-3">
                 {loading ? (
                     <div className="flex items-center justify-center h-full">
                         <Loader2 className="h-8 w-8 text-orange-500 animate-spin" />
@@ -370,26 +373,29 @@ export default function ChatClient({ conversationId, currentUserId }: ChatClient
                     })
                 )}
                 <div ref={messagesEndRef} />
+                </div>
             </div>
 
             {/* Input area */}
-            <div className="flex items-center gap-3 px-4 py-3 border-t border-gray-800 bg-[#0a0a0a]">
-                <input
-                    type="text"
-                    value={inputText}
-                    onChange={(e) => setInputText(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder="Bir mesaj yazın..."
-                    className="flex-1 bg-[#111] text-white rounded-full px-5 py-3 text-base border border-gray-800 focus:border-orange-500 focus:outline-none placeholder-gray-500"
-                    disabled={sending}
-                />
-                <button
-                    onClick={handleSend}
-                    disabled={!inputText.trim() || sending}
-                    className="p-3 rounded-full bg-orange-600 hover:bg-orange-700 text-white disabled:bg-gray-700 disabled:cursor-not-allowed transition-colors"
-                >
-                    <Send className="h-5 w-5" />
-                </button>
+            <div className="border-t border-gray-800 bg-[#0a0a0a]">
+                <div className="max-w-2xl mx-auto flex items-center gap-3 px-4 py-3">
+                    <input
+                        type="text"
+                        value={inputText}
+                        onChange={(e) => setInputText(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        placeholder="Bir mesaj yazın..."
+                        className="flex-1 bg-[#111] text-white rounded-full px-5 py-3 text-base border border-gray-800 focus:border-orange-500 focus:outline-none placeholder-gray-500"
+                        disabled={sending}
+                    />
+                    <button
+                        onClick={handleSend}
+                        disabled={!inputText.trim() || sending}
+                        className="p-3 rounded-full bg-orange-600 hover:bg-orange-700 text-white disabled:bg-gray-700 disabled:cursor-not-allowed transition-colors"
+                    >
+                        <Send className="h-5 w-5" />
+                    </button>
+                </div>
             </div>
         </div>
     )
