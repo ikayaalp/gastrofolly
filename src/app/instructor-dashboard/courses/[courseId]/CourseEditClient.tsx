@@ -223,7 +223,7 @@ export default function CourseEditClient({ course, categories, session }: Props)
       })
 
       if (response.ok) {
-        setNewLesson({ title: "", description: "", duration: "", videoUrl: "" })
+        setNewLesson({ title: "", description: "", duration: "", videoUrl: "", pdfUrl: "" })
         window.location.reload()
       }
     } catch (error) {

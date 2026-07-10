@@ -33,6 +33,7 @@ interface Lesson {
     title: string
     description: string | null
     videoUrl: string | null
+    pdfUrl?: string | null
     duration: number | null
     order: number
     isFree: boolean
@@ -103,8 +104,8 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
         order: 0,
         isFree: false
     })
-    const [showVideoUploadForLessonId, setShowVideoUploadForLessonId] = useState<string | null>(null)
-    const [showPdfUploadForLessonId, setShowPdfUploadForLessonId] = useState<string | null>(null) // If set, showing upload modal for this lesson ID
+    const [showVideoUploadForLessonId, setShowVideoUploadForLessonId] = useState<string | null>(null) // If set, showing upload modal for this lesson ID
+    const [showPdfUploadForLessonId, setShowPdfUploadForLessonId] = useState<string | null>(null)
 
     // Delete Modal State
     const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -738,27 +739,28 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
                                                         <Upload className="h-3 w-3" />
                                                         <span>Video Yükle</span>
                                                     </button>
-                                                )
+                                                )}
+
                                                 {/* PDF Upload Button */}
                                                 {lesson.pdfUrl ? (
                                                     <button
                                                         onClick={() => setShowPdfUploadForLessonId(lesson.id)}
                                                         className="flex items-center space-x-2 bg-green-500/10 text-green-400 px-3 py-1.5 rounded-lg text-xs font-mono border border-green-500/20 hover:bg-green-500/20 cursor-pointer transition-colors"
-                                                        title="PDF / Re�ete G�ncelle"
+                                                        title="PDF / Reçete Güncelle"
                                                     >
                                                         <Check className="h-3 w-3" />
-                                                        <span>PDF Y�kl�</span>
+                                                        <span>PDF Yüklü</span>
                                                     </button>
                                                 ) : (
                                                     <button
                                                         onClick={() => setShowPdfUploadForLessonId(lesson.id)}
                                                         className="flex items-center space-x-2 bg-blue-500/10 text-blue-400 px-3 py-1.5 rounded-lg text-xs font-mono border border-blue-500/20 hover:bg-blue-500/20 transition-colors"
-                                                        title="PDF / Re�ete Y�kle"
+                                                        title="PDF / Reçete Yükle"
                                                     >
                                                         <Upload className="h-3 w-3" />
                                                         <span>PDF</span>
                                                     </button>
-                                                )}}
+                                                )}
 
                                                 <div className="h-6 w-px bg-gray-700 mx-2"></div>
 
@@ -820,12 +822,13 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
                         </div>
                     </div>
                 )}
+
                 {/* OVERLAY MODAL FOR PDF UPLOAD */}
                 {showPdfUploadForLessonId && (
                     <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
                         <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-lg p-6 shadow-2xl">
                             <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-lg font-bold text-white">PDF / Re�ete Y�kle</h3>
+                                <h3 className="text-lg font-bold text-white">PDF / Reçete Yükle</h3>
                                 <button onClick={() => setShowPdfUploadForLessonId(null)} className="text-gray-400 hover:text-white"><X className="h-5 w-5" /></button>
                             </div>
                             <DocumentUpload
