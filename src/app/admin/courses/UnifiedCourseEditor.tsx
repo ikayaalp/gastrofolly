@@ -389,6 +389,37 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
         } catch (e) { console.error(e) }
     }
 
+    const handleRemovePdfForLesson = async (lessonId: string) => {
+        const confirmed = window.confirm("Bu dersin PDF/Reçete dosyasını kaldırmak istediğinize emin misiniz?")
+        if (!confirmed) return
+
+        const lesson = lessons.find(l => l.id === lessonId)
+        if (!lesson) return
+        
+        try {
+            const response = await fetch(`/api/admin/lessons/${lesson.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title: lesson.title,
+                    description: lesson.description,
+                    videoUrl: lesson.videoUrl,
+                    duration: lesson.duration,
+                    order: lesson.order,
+                    isFree: lesson.isFree,
+                    pdfUrl: null
+                })
+            })
+            if (response.ok) {
+                setLessons(prev => prev.map(l => l.id === lesson.id ? { ...l, pdfUrl: null } : l))
+            } else {
+                console.error("PDF kaldırılamadı, HTTP status:", response.status)
+            }
+        } catch (e) {
+            console.error(e)
+        }
+    }
+
     const handleVideoUploadedForLesson = async (videoUrl: string, duration?: number) => {
         // Just save this URL to the lesson directly
         if (!showVideoUploadForLessonId) return
@@ -797,6 +828,13 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
                                                             title="PDF'i Değiştir"
                                                         >
                                                             <Edit className="h-3 w-3" />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleRemovePdfForLesson(lesson.id)}
+                                                            className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
+                                                            title="PDF'i Kaldır"
+                                                        >
+                                                            <X className="h-3 w-3" />
                                                         </button>
                                                     </div>
                                                 ) : (
