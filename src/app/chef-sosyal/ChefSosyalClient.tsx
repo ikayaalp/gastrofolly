@@ -120,6 +120,7 @@ export default function ChefSosyalClient({
   } | null>(null)
 
   const [submitting, setSubmitting] = useState(false)
+  const [mediaUploading, setMediaUploading] = useState(false)
   const [likedTopics, setLikedTopics] = useState<Set<string>>(new Set())
   const [savedTopics, setSavedTopics] = useState<Set<string>>(new Set())
 
@@ -447,6 +448,7 @@ export default function ChefSosyalClient({
     }
 
     try {
+      setMediaUploading(true)
       // Create FormData
       const formData = new FormData()
       formData.append('file', file)
@@ -489,6 +491,8 @@ export default function ChefSosyalClient({
         type: 'error'
       });
       setTopicMedia(null)
+    } finally {
+      setMediaUploading(false)
     }
   }
 
@@ -795,13 +799,13 @@ export default function ChefSosyalClient({
 
               <button
                 onClick={handleCreateTopic}
-                disabled={submitting || (!newTopicForm.content.trim() && !topicMedia)}
-                className={`px-5 py-1.5 rounded-full font-bold text-sm transition-all ${submitting || (!newTopicForm.content.trim() && !topicMedia)
+                disabled={submitting || mediaUploading || (!newTopicForm.content.trim() && !topicMedia)}
+                className={`px-5 py-1.5 rounded-full font-bold text-sm transition-all ${submitting || mediaUploading || (!newTopicForm.content.trim() && !topicMedia)
                   ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
                   : 'bg-[#ea580c] text-white hover:bg-[#c2410c]'
                   }`}
               >
-                {submitting ? 'Paylaşılıyor...' : 'Paylaş'}
+                {mediaUploading ? 'Medya yükleniyor...' : submitting ? 'Paylaşılıyor...' : 'Paylaş'}
               </button>
             </div>
 
