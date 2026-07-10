@@ -7,7 +7,7 @@ import CourseSidebar from "@/components/learn/CourseSidebar"
 import RecommendedCourses from "@/components/course/RecommendedCourses"
 import Link from "next/link"
 import Image from "next/image"
-import { Home, BookOpen, Users, MessageCircle, ChefHat, CheckCircle, FileText } from "lucide-react"
+import { Home, BookOpen, Users, MessageCircle, ChefHat, CheckCircle } from "lucide-react"
 import UserDropdown from "@/components/ui/UserDropdown"
 
 // types
@@ -382,37 +382,28 @@ export default async function LearnPage({ params, searchParams }: LearnPageProps
           />
 
           <div className="p-6 space-y-8">
-            {/* Lesson PDF / Material */}
-            {currentLesson.pdfUrl && (
-              <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="bg-orange-500/20 p-2 rounded-lg">
-                    <FileText className="h-6 w-6 text-orange-500" />
-                  </div>
-                  <div>
-                    <h3 className="text-white font-medium">Ders Reçetesi / PDF</h3>
-                    <p className="text-gray-400 text-sm">Bu ders için hazırlanmış yazılı materyali inceleyin</p>
-                  </div>
-                </div>
-                <a 
-                  href={currentLesson.pdfUrl} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-colors text-sm flex items-center gap-2"
-                >
-                  <BookOpen className="h-4 w-4" />
-                  Görüntüle
-                </a>
-              </div>
-            )}
-
-            {/* Lesson Description */}
-            {currentLesson.description && (
+            {/* Lesson Content / Material */}
+            {(currentLesson.description || currentLesson.pdfUrl) && (
               <div className="bg-black border border-gray-800 rounded-xl p-6">
-                <h2 className="text-xl font-bold text-white mb-4">Ders İçeriği</h2>
-                <div className="text-gray-300 whitespace-pre-wrap leading-relaxed">
-                  {currentLesson.description}
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-bold text-white">Ders İçeriği</h2>
+                  {currentLesson.pdfUrl && (
+                    <a
+                      href={currentLesson.pdfUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-3 py-1.5 bg-gray-900 hover:bg-gray-800 text-gray-300 border border-gray-700 hover:text-white rounded-lg transition-colors text-xs font-medium"
+                    >
+                      <BookOpen className="h-3.5 w-3.5" />
+                      Görüntüle
+                    </a>
+                  )}
                 </div>
+                {currentLesson.description && (
+                  <div className="text-gray-300 whitespace-pre-wrap leading-relaxed">
+                    {currentLesson.description}
+                  </div>
+                )}
               </div>
             )}
 
