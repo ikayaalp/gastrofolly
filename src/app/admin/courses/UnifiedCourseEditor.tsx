@@ -628,7 +628,7 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
                                             </select>
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-300 mb-2">Kapak Görseli</label>
+                                            <label className="block text-sm font-medium text-gray-300 mb-2">Kapak Görseli (1.45:1 — Kurslar, Kategori, Kurslarım, Favoriler ve Eğitmen Profili sayfalarındaki kurs kartları, admin kurs tablosu, önerilen kurslar ve ana sayfa kart listeleri — web ve mobil)</label>
                                             <div className="bg-black border border-gray-800 rounded-xl p-4">
                                                 <ImageUpload onImageUploaded={handleImageUploaded} currentImageUrl={formData.imageUrl} type="course" />
                                                 {formData.imageUrl && (
@@ -642,7 +642,7 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
                                             </div>
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-300 mb-2">Kare Thumbnail Görseli (1:1 — arama sonuçları, küçük ikonlar)</label>
+                                            <label className="block text-sm font-medium text-gray-300 mb-2">Kare Thumbnail Görseli (1:1 — header ve arama modalı sonuçları (web), arama ekranı ve favoriler ekranı (mobil))</label>
                                             <div className="bg-black border border-gray-800 rounded-xl p-4">
                                                 <ImageUpload onImageUploaded={handleThumbnailImageUploaded} currentImageUrl={formData.thumbnailImageUrl} type="thumbnail" />
                                                 {formData.thumbnailImageUrl && (
@@ -656,7 +656,7 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
                                             </div>
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-300 mb-2">Dikey Poster Görseli (2:3 — öne çıkan/geniş kartlar)</label>
+                                            <label className="block text-sm font-medium text-gray-300 mb-2">Dikey Poster Görseli (2:3 — ana sayfada kart üzerine gelince açılan önizleme (web), mobil ana ekrandaki sıralı liste ve büyük dikey kartlar)</label>
                                             <div className="bg-black border border-gray-800 rounded-xl p-4">
                                                 <ImageUpload onImageUploaded={handlePosterImageUploaded} currentImageUrl={formData.posterImageUrl} type="poster" />
                                                 {formData.posterImageUrl && (
