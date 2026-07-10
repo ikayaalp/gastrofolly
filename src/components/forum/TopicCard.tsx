@@ -311,7 +311,7 @@ const TopicCard = ({ topic, isLiked, onLike, isSaved, onSave, currentUserId }: T
                                     <button
                                         onClick={handleLike}
                                         className={`flex items-center space-x-1.5 pl-3 pr-1 py-2 rounded-l-full transition-all duration-200 ${isLiked
-                                            ? 'bg-orange-500/10 text-orange-500'
+                                            ? 'text-orange-500'
                                             : 'hover:bg-white/5 text-[#71767b] hover:text-[#e7e9ea]'
                                             }`}
                                     >
@@ -320,7 +320,7 @@ const TopicCard = ({ topic, isLiked, onLike, isSaved, onSave, currentUserId }: T
                                     <button
                                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (topic.likeCount > 0) setShowLikersModal(true); }}
                                         className={`pl-1 pr-3 py-2 rounded-r-full transition-all duration-200 ${isLiked
-                                            ? 'bg-orange-500/10 text-orange-500'
+                                            ? 'text-orange-500'
                                             : 'hover:bg-white/5 text-[#71767b] hover:text-[#e7e9ea]'
                                             } ${topic.likeCount > 0 ? 'hover:underline cursor-pointer' : ''}`}
                                     >
