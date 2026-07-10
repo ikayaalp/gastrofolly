@@ -43,42 +43,68 @@ export default function CoursesPageClient() {
     const [categories, setCategories] = useState<Category[]>([]);
     const [courses, setCourses] = useState<Course[]>([]);
     const [loading, setLoading] = useState(true);
-    const [sortBy, setSortBy] = useState<"newest" | "popular">("newest");
     const [selectedCategoryId, setSelectedCategoryId] = useState<string>("all");
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(false);
+    const [loadingMore, setLoadingMore] = useState(false);
 
     useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true);
+        const fetchCategories = async () => {
             try {
-                const [categoriesRes, coursesRes] = await Promise.all([
-                    fetch("/api/categories"),
-                    fetch("/api/courses")
-                ]);
-
-                if (categoriesRes.ok) {
-                    const catData = await categoriesRes.json();
-                    setCategories(catData.categories || []);
-                }
-
-                if (coursesRes.ok) {
-                    const courseData = await coursesRes.json();
-                    setCourses(courseData || []);
+                const res = await fetch("/api/categories");
+                if (res.ok) {
+                    const data = await res.json();
+                    setCategories(data.categories || []);
                 }
             } catch (error) {
-                console.error("Error loading courses:", error);
-            } finally {
-                setLoading(false);
+                console.error("Error loading categories:", error);
             }
         };
-        fetchData();
+        fetchCategories();
     }, []);
 
-    const filteredCourses = courses
-        .filter(course => selectedCategoryId === "all" || course.category.id === selectedCategoryId)
-        .sort((a, b) => {
-            if (sortBy === "popular") return (b.enrollmentCount || 0) - (a.enrollmentCount || 0);
-            return 0; // Default: createdAt desc (from API)
-        });
+    const fetchCourses = async (pageNum: number, categoryId: string) => {
+        try {
+            if (pageNum === 1) setLoading(true);
+            else setLoadingMore(true);
+
+            const params = new URLSearchParams();
+            params.append("limit", "12");
+            params.append("page", pageNum.toString());
+            if (categoryId !== "all") {
+                params.append("categoryId", categoryId);
+            }
+
+            const res = await fetch(`/api/courses?${params.toString()}`);
+            if (res.ok) {
+                const data = await res.json();
+                const fetchedCourses = data.courses || [];
+                if (pageNum === 1) {
+                    setCourses(fetchedCourses);
+                } else {
+                    setCourses(prev => [...prev, ...fetchedCourses]);
+                }
+                setHasMore(data.hasMore || false);
+            }
+        } catch (error) {
+            console.error("Error loading courses:", error);
+        } finally {
+            setLoading(false);
+            setLoadingMore(false);
+        }
+    };
+
+    useEffect(() => {
+        setPage(1);
+        fetchCourses(1, selectedCategoryId);
+    }, [selectedCategoryId]);
+
+    const handleLoadMore = () => {
+        if (loadingMore || !hasMore) return;
+        const nextPage = page + 1;
+        setPage(nextPage);
+        fetchCourses(nextPage, selectedCategoryId);
+    };
 
     return (
         <div className="min-h-screen bg-[#0a0a0a] text-gray-200 font-sans">
@@ -165,7 +191,7 @@ export default function CoursesPageClient() {
                                     >
                                         Tüm Kategoriler
                                     </button>
-                                    {categories.filter(cat => courses.some(course => course.category && course.category.id === cat.id)).map((cat) => (
+                                    {categories.map((cat) => (
                                         <button
                                             key={cat.id}
                                             onClick={() => setSelectedCategoryId(cat.id)}
@@ -185,41 +211,68 @@ export default function CoursesPageClient() {
                                     <div className="w-12 h-12 border-2 border-orange-500 border-t-transparent rounded-full animate-spin mb-4"></div>
                                     <p className="text-gray-500">Kütüphane taranıyor...</p>
                                 </div>
-                            ) : filteredCourses.length > 0 ? (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
-                                    {filteredCourses.map((course) => (
-                                        <Link
-                                            key={course.id}
-                                            href={`/course/${course.id}`}
-                                            className="group block"
-                                        >
-                                            <div className="relative aspect-[1.45/1] rounded-xl overflow-hidden mb-4 bg-gray-900 border border-gray-800 shadow-xl">
-                                                <img
-                                                    src={getOptimizedMediaUrl(course.imageUrl || 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&q=80', 'IMAGE')}
-                                                    alt={course.title}
-                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
-                                                />
-                                                {course.duration && (
-                                                    <div className="absolute bottom-3 right-3 bg-black/80 backdrop-blur-md px-2 py-1 rounded text-[10px] font-bold text-white flex items-center gap-1">
-                                                        <Clock className="w-3 h-3" />
-                                                        {Math.floor(course.duration / 60)}s {course.duration % 60}dk
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <div>
-                                                <h4 className="text-[10px] font-extrabold text-orange-500 uppercase tracking-[0.2em] mb-2">
-                                                    {course.category?.name || "GENEL"}
-                                                </h4>
-                                                <h3 className="text-white text-lg font-bold leading-snug mb-2 group-hover:text-orange-500 transition-colors line-clamp-2">
-                                                    {course.title}
-                                                </h3>
-                                                <div className="flex items-center gap-4 text-xs text-gray-400 font-medium">
-                                                    <span>{course.instructor?.name || "culinora"}</span>
+                            ) : courses.length > 0 ? (
+                                <>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12 mb-12">
+                                        {courses.map((course) => (
+                                            <Link
+                                                key={course.id}
+                                                href={`/course/${course.id}`}
+                                                className="group block"
+                                            >
+                                                <div className="relative aspect-[1.45/1] rounded-xl overflow-hidden mb-4 bg-gray-900 border border-gray-800 shadow-xl">
+                                                    <img
+                                                        src={getOptimizedMediaUrl(course.imageUrl || 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&q=80', 'IMAGE')}
+                                                        alt={course.title}
+                                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
+                                                    />
+                                                    {course.duration && (
+                                                        <div className="absolute bottom-3 right-3 bg-black/80 backdrop-blur-md px-2 py-1 rounded text-[10px] font-bold text-white flex items-center gap-1">
+                                                            <Clock className="w-3 h-3" />
+                                                            {Math.floor(course.duration / 60)}s {course.duration % 60}dk
+                                                        </div>
+                                                    )}
                                                 </div>
-                                            </div>
-                                        </Link>
-                                    ))}
-                                </div>
+                                                <div>
+                                                    <h4 className="text-[10px] font-extrabold text-orange-500 uppercase tracking-[0.2em] mb-2">
+                                                        {course.category?.name || "GENEL"}
+                                                    </h4>
+                                                    <h3 className="text-white text-lg font-bold leading-snug mb-2 group-hover:text-orange-500 transition-colors line-clamp-2">
+                                                        {course.title}
+                                                    </h3>
+                                                    <div className="flex items-center gap-4 text-xs text-gray-400 font-medium">
+                                                        <span>{course.instructor?.name || "culinora"}</span>
+                                                    </div>
+                                                </div>
+                                            </Link>
+                                        ))}
+                                    </div>
+                                    
+                                    {hasMore && (
+                                        <div className="flex justify-center mt-8">
+                                            <button
+                                                onClick={handleLoadMore}
+                                                disabled={loadingMore}
+                                                className="px-6 py-3 bg-zinc-900 hover:bg-zinc-800 text-white font-medium rounded-full transition-colors disabled:opacity-50 flex items-center gap-2 border border-zinc-800"
+                                            >
+                                                {loadingMore ? (
+                                                    <>
+                                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                                        Yükleniyor...
+                                                    </>
+                                                ) : (
+                                                    'Daha Fazla Eğitim Göster'
+                                                )}
+                                            </button>
+                                        </div>
+                                    )}
+                                    
+                                    {!hasMore && courses.length > 0 && (
+                                        <div className="text-center mt-8 text-sm text-gray-600">
+                                            Tüm eğitimleri görüntülediniz
+                                        </div>
+                                    )}
+                                </>
                             ) : (
                                 <div className="text-center py-20 bg-[#111] rounded-2xl border border-gray-800">
                                     <Search className="w-12 h-12 text-gray-700 mx-auto mb-4" />

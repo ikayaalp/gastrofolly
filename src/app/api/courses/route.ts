@@ -7,6 +7,11 @@ export async function GET(request: NextRequest) {
         const instructorId = searchParams.get('instructorId');
         const searchQuery = searchParams.get('search');
         const limit = searchParams.get('limit');
+        const page = searchParams.get('page');
+        const categoryId = searchParams.get('categoryId');
+
+        const take = limit ? parseInt(limit) : undefined;
+        const skip = page && take ? (parseInt(page) - 1) * take : undefined;
 
         const where: any = {
             isPublished: true,
@@ -14,6 +19,10 @@ export async function GET(request: NextRequest) {
 
         if (instructorId) {
             where.instructorId = instructorId;
+        }
+
+        if (categoryId && categoryId !== 'all') {
+            where.categoryId = categoryId;
         }
 
         if (searchQuery) {
@@ -26,7 +35,8 @@ export async function GET(request: NextRequest) {
 
         const courses = await prisma.course.findMany({
             where,
-            take: limit ? parseInt(limit) : undefined,
+            take,
+            skip,
             include: {
                 instructor: {
                     select: {
@@ -58,6 +68,15 @@ export async function GET(request: NextRequest) {
                 createdAt: 'desc',
             },
         });
+
+        if (page) {
+            const total = await prisma.course.count({ where });
+            return NextResponse.json({
+                courses,
+                total,
+                hasMore: take ? (skip || 0) + take < total : false
+            });
+        }
 
         return NextResponse.json(courses);
     } catch (error) {

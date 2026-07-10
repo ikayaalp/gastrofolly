@@ -6,6 +6,71 @@ interface ImageUploadProps {
   type?: string
 }
 
+const resizeImageBeforeUpload = (file: File, maxDimension: number, quality: number): Promise<File> => {
+  return new Promise((resolve) => {
+    try {
+      const img = new globalThis.Image()
+      img.onload = () => {
+        let { width, height } = img
+        if (width <= maxDimension && height <= maxDimension) {
+          URL.revokeObjectURL(img.src)
+          return resolve(file)
+        }
+
+        if (width > height) {
+          if (width > maxDimension) {
+            height = Math.round((height * maxDimension) / width)
+            width = maxDimension
+          }
+        } else {
+          if (height > maxDimension) {
+            width = Math.round((width * maxDimension) / height)
+            height = maxDimension
+          }
+        }
+
+        const canvas = document.createElement('canvas')
+        canvas.width = width
+        canvas.height = height
+
+        const ctx = canvas.getContext('2d')
+        if (!ctx) {
+          URL.revokeObjectURL(img.src)
+          return resolve(file)
+        }
+
+        ctx.drawImage(img, 0, 0, width, height)
+        
+        const mimeType = file.type === 'image/png' ? 'image/png' : 'image/webp'
+        const outputQuality = file.type === 'image/png' ? undefined : quality
+        
+        canvas.toBlob((blob) => {
+          URL.revokeObjectURL(img.src)
+          if (blob) {
+            const resizedFile = new File([blob], file.name, {
+              type: mimeType,
+              lastModified: Date.now(),
+            })
+            resolve(resizedFile)
+          } else {
+            resolve(file)
+          }
+        }, mimeType, outputQuality)
+      }
+      
+      img.onerror = () => {
+        URL.revokeObjectURL(img.src)
+        resolve(file)
+      }
+
+      img.src = URL.createObjectURL(file)
+    } catch (error) {
+      console.error("Resize error:", error)
+      resolve(file)
+    }
+  })
+}
+
 export default function ImageUpload({ onImageUploaded, currentImageUrl, type = "image" }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState("")
@@ -33,8 +98,10 @@ export default function ImageUpload({ onImageUploaded, currentImageUrl, type = "
     setSuccess("")
 
     try {
+      const optimizedFile = await resizeImageBeforeUpload(file, 2000, 0.85)
+
       const formData = new FormData()
-      formData.append('file', file)
+      formData.append('file', optimizedFile)
       formData.append('type', type)
 
       const response = await fetch('/api/upload-image-cloud', {
@@ -104,7 +171,7 @@ export default function ImageUpload({ onImageUploaded, currentImageUrl, type = "
           {uploading ? (
             <>
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-              <span>Yükleniyor...</span>
+              <span>İşleniyor & Yükleniyor...</span>
             </>
           ) : (
             <>
