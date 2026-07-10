@@ -347,27 +347,28 @@ export default function HomeScreen({ navigation }) {
         const imageUrl = courseData.imageUrl || 'https://images.unsplash.com/photo-1556910103-1c02745a30bf?q=80&w=400';
 
         return (
-            <TouchableOpacity
-                key={courseData.id || index}
-                style={styles.listCard}
-                onPress={() => navigation.navigate('CourseDetail', { courseId: courseData.id, initialCourse: courseData })}
-                activeOpacity={0.85}
-            >
-                <Image
-                    source={imageUrl}
-                    style={styles.listCardImage}
-                    contentFit="cover"
-                    transition={200}
-                    cachePolicy="memory-disk"
-                />
-                <LinearGradient
-                    colors={['transparent', 'rgba(0,0,0,0.7)', 'rgba(0,0,0,0.95)']}
-                    style={styles.listCardOverlay}
+            <View key={courseData.id || index} style={{ width: '100%', alignSelf: 'stretch' }}>
+                <TouchableOpacity
+                    style={styles.listCard}
+                    onPress={() => navigation.navigate('CourseDetail', { courseId: courseData.id, initialCourse: courseData })}
+                    activeOpacity={0.85}
                 >
-                    <Text style={styles.listCardTitle} numberOfLines={2}>{courseData.title}</Text>
-                    <Text style={styles.listCardInstructor} numberOfLines={1}>{courseData.instructor?.name || 'Eğitmen'}</Text>
-                </LinearGradient>
-            </TouchableOpacity>
+                    <Image
+                        source={imageUrl}
+                        style={styles.listCardImage}
+                        contentFit="cover"
+                        transition={200}
+                        cachePolicy="memory-disk"
+                    />
+                    <LinearGradient
+                        colors={['transparent', 'rgba(0,0,0,0.7)', 'rgba(0,0,0,0.95)']}
+                        style={styles.listCardOverlay}
+                    >
+                        <Text style={styles.listCardTitle} numberOfLines={2}>{courseData.title}</Text>
+                        <Text style={styles.listCardInstructor} numberOfLines={1}>{courseData.instructor?.name || 'Eğitmen'}</Text>
+                    </LinearGradient>
+                </TouchableOpacity>
+            </View>
         );
     };
 
@@ -750,6 +751,8 @@ const styles = StyleSheet.create({
         color: '#fff',
     },
     listCard: {
+        width: '100%',
+        alignSelf: 'stretch',
         marginHorizontal: 16,
         marginBottom: 20,
         aspectRatio: 1.45,
@@ -789,6 +792,7 @@ const styles = StyleSheet.create({
     },
     scrollContent: {
         paddingBottom: 140,
+        alignItems: 'stretch',
     },
     section: {
         marginTop: 24,
