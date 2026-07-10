@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react"
 import { Play, ChefHat } from "lucide-react"
 import Hls from "hls.js"
 import Modal from "@/components/ui/Modal"
+import { getCloudinaryHlsUrl } from "@/lib/cloudinaryVideo"
 
 interface FreeLessonModalProps {
     lesson: {
@@ -25,11 +26,7 @@ export default function FreeLessonModal({ lesson, courseTitle, customTrigger }: 
         if (!isOpen || !lesson.videoUrl || !videoRef.current) return;
 
         const video = videoRef.current;
-        let finalUrl = lesson.videoUrl;
-        if (finalUrl.includes('res.cloudinary.com') && finalUrl.endsWith('.mp4')) {
-            finalUrl = finalUrl.replace('/upload/', '/upload/sp_auto/');
-            finalUrl = finalUrl.replace('.mp4', '.m3u8');
-        }
+        const finalUrl = getCloudinaryHlsUrl(lesson.videoUrl) || lesson.videoUrl;
 
         if (Hls.isSupported() && finalUrl.endsWith('.m3u8')) {
             const hls = new Hls({

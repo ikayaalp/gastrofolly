@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, RotateCcw, RotateCw, SkipBack, SkipForward, Loader2, AlertTriangle, Gauge, X } from "lucide-react"
 import YouTubePlayer from "./YouTubePlayer"
 import Hls from "hls.js"
+import { getCloudinaryHlsUrl } from "@/lib/cloudinaryVideo"
 
 const PLAYBACK_RATES = [0.5, 0.75, 1, 1.25, 1.5, 2] as const
 const AUTO_NEXT_SECONDS = 5
@@ -80,14 +81,7 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
     };
   }, []);
 
-  const getCloudinaryHlsUrl = (url: string) => {
-    if (!url.includes('cloudinary.com/')) return url;
-    let hlsUrl = url.replace(/\.(mp4|mov|webm)$/i, '.m3u8');
-    if (hlsUrl.includes('/upload/') && !hlsUrl.includes('/upload/sp_auto/')) {
-      hlsUrl = hlsUrl.replace('/upload/', '/upload/sp_auto/');
-    }
-    return hlsUrl;
-  };
+
 
   const hlsRef = useRef<Hls | null>(null);
 
@@ -151,7 +145,7 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
     const video = videoRef.current;
     if (!video || !lesson.videoUrl || isYouTubeUrl(lesson.videoUrl)) return;
 
-    const url = getCloudinaryHlsUrl(lesson.videoUrl);
+    const url = getCloudinaryHlsUrl(lesson.videoUrl) || lesson.videoUrl;
 
     if (video.canPlayType('application/vnd.apple.mpegurl')) {
       // Safari natively supports HLS
