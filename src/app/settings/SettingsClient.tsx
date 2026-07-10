@@ -131,29 +131,9 @@ export default function SettingsClient({ user }: SettingsClientProps) {
           console.error('Direct upload exception:', directErr);
         }
 
-        // 2. Fallback to Server Proxy (if direct failed and file is small enough)
+        // 2. Direct upload failed
         if (!uploadSuccess) {
-          if (selectedFile.size < 4.5 * 1024 * 1024) {
-
-            const formData = new FormData();
-            formData.append('file', selectedFile);
-
-            const proxyRes = await fetch('/api/forum/upload-media', {
-              method: 'POST',
-              body: formData
-            });
-            const proxyData = await proxyRes.json();
-
-            if (proxyRes.ok) {
-              uploadedUrl = proxyData.mediaUrl;
-              uploadSuccess = true;
-
-            } else {
-              throw new Error(proxyData.error || 'Yükleme başarısız');
-            }
-          } else {
-            throw new Error('Dosya yüklenemedi. Doğrudan yükleme başarısız oldu ve dosya sunucu limiti için çok büyük.');
-          }
+          throw new Error('Dosya yüklenemedi. Doğrudan yükleme başarısız oldu.');
         }
 
         if (uploadSuccess) {

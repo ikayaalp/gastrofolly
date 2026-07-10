@@ -180,7 +180,7 @@ const forumService = {
     },
 
     // Upload media (image or video)
-    uploadMedia: async (uri, type) => {
+    uploadMedia: async (uri, type, abortController = null) => {
         try {
             const token = await AsyncStorage.getItem('authToken');
             if (!token) {
@@ -226,45 +226,59 @@ const forumService = {
             const resourceType = isVideo ? 'video' : 'image';
             const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`;
 
-            const response = await fetch(cloudinaryUrl, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'Accept': 'application/json'
-                },
-            });
-
-            const result = await response.json();
-
-            if (!response.ok) {
-                return { success: false, error: result.error?.message || 'Yükleme hatası' };
+            // Timeout fallback
+            const controller = abortController || new AbortController();
+            let timeoutId;
+            if (!abortController) {
+                // Default 30s timeout if no controller provided
+                timeoutId = setTimeout(() => controller.abort(), 30000);
             }
 
-            let thumbnailUrl = result.secure_url;
-            if (isVideo) {
-                thumbnailUrl = result.secure_url.replace(/\.[^.]+$/, '.jpg');
-            }
+            try {
+                const response = await fetch(cloudinaryUrl, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Accept': 'application/json'
+                    },
+                    signal: controller.signal
+                });
 
-            return { 
-                success: true, 
-                data: {
-                    success: true,
-                    mediaUrl: result.secure_url,
-                    mediaType: isVideo ? 'VIDEO' : 'IMAGE',
-                    thumbnailUrl: thumbnailUrl,
-                    publicId: result.public_id
-                } 
-            };
+                if (timeoutId) clearTimeout(timeoutId);
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    return { success: false, error: result.error?.message || 'Yükleme hatası' };
+                }
+
+                let thumbnailUrl = result.secure_url;
+                if (isVideo) {
+                    thumbnailUrl = result.secure_url.replace(/\.[^.]+$/, '.jpg');
+                }
+
+                return { 
+                    success: true, 
+                    data: {
+                        mediaUrl: result.secure_url,
+                        thumbnailUrl,
+                        mediaType: isVideo ? 'VIDEO' : 'IMAGE'
+                    }
+                };
+            } catch (fetchErr) {
+                if (fetchErr.name === 'AbortError') {
+                    return { success: false, error: 'Yükleme zaman aşımına uğradı veya iptal edildi.' };
+                }
+                throw fetchErr;
+            }
         } catch (error) {
             console.error('Upload media error:', error);
             return {
                 success: false,
-                error: 'Medya yüklenirken bir hata oluştu',
+                error: error.message || 'Yükleme başarısız',
             };
         }
     },
-
-
 
     // Block a user
     blockUser: async (blockedUserId) => {
