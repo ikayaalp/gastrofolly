@@ -7,7 +7,6 @@ import { Play, Heart } from "lucide-react"
 import { useFavorites } from "@/contexts/FavoritesContext"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import { getCardImageUrl } from "@/lib/cloudinaryImage"
 
 interface Course {
     id: string
@@ -193,7 +192,7 @@ export default function ExpandableCourseCard({ course, showProgress, rank, large
                         </div>
                         {course.imageUrl ? (
                             <img
-                                src={getCardImageUrl(course.imageUrl, 'landscape') || undefined}
+                                src={course.imageUrl}
                                 alt={course.title}
                                 className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                             />
@@ -280,7 +279,7 @@ export default function ExpandableCourseCard({ course, showProgress, rank, large
                                 </div>
                                 {course.imageUrl && (
                                     <img
-                                        src={getCardImageUrl(course.imageUrl, 'poster') || undefined}
+                                        src={course.imageUrl}
                                         alt={course.title}
                                         className="w-full h-full object-cover"
                                     />

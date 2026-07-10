@@ -12,7 +12,6 @@ import homeService from '../api/homeService';
 import storyService from '../api/storyService';
 import Stories from '../components/Stories';
 import ScreenContainer from '../components/ScreenContainer';
-import { getCardImageUrl } from '../utils/cloudinaryImage';
 
 const { width } = Dimensions.get('window');
 
@@ -188,7 +187,7 @@ export default function HomeScreen({ navigation }) {
             >
                 {/* Course Image with Overlay */}
                 <Image
-                    source={getCardImageUrl(imageUrl, 'landscape') || imageUrl}
+                    source={imageUrl}
                     style={styles.courseImage}
                     contentFit="cover"
                     transition={200}
@@ -236,7 +235,7 @@ export default function HomeScreen({ navigation }) {
                 {/* Course Card */}
                 <View style={styles.rankedCourseCard}>
                     <Image
-                        source={getCardImageUrl(imageUrl, 'poster') || imageUrl}
+                        source={imageUrl}
                         style={styles.rankedCourseImage}
                         contentFit="cover"
                         transition={200}
@@ -274,7 +273,7 @@ export default function HomeScreen({ navigation }) {
                 activeOpacity={0.9}
             >
                 <Image
-                    source={getCardImageUrl(imageUrl, 'poster') || imageUrl}
+                    source={imageUrl}
                     style={styles.largeCourseImage}
                     contentFit="cover"
                     transition={200}
@@ -312,7 +311,7 @@ export default function HomeScreen({ navigation }) {
                 activeOpacity={0.9}
             >
                 <Image
-                    source={getCardImageUrl(imageUrl, 'landscape') || imageUrl}
+                    source={imageUrl}
                     style={styles.courseImage}
                     contentFit="cover"
                     transition={200}
@@ -355,7 +354,7 @@ export default function HomeScreen({ navigation }) {
                 activeOpacity={0.85}
             >
                 <Image
-                    source={getCardImageUrl(imageUrl, 'landscape') || imageUrl}
+                    source={imageUrl}
                     style={styles.listCardImage}
                     contentFit="cover"
                     transition={200}
@@ -753,7 +752,7 @@ const styles = StyleSheet.create({
     listCard: {
         marginHorizontal: 16,
         marginBottom: 20,
-        aspectRatio: 1.45,
+        height: 200,
         borderRadius: 14,
         backgroundColor: '#111',
         borderWidth: 1,
@@ -829,7 +828,7 @@ const styles = StyleSheet.create({
     },
     courseCard: {
         width: 220,
-        height: 152,
+        height: 170,
         marginRight: 12,
         borderRadius: 12,
         overflow: 'hidden',
@@ -838,6 +837,7 @@ const styles = StyleSheet.create({
     courseImage: {
         width: '100%',
         height: '100%',
+        resizeMode: 'stretch',
     },
     courseOverlay: {
         position: 'absolute',
@@ -1027,7 +1027,7 @@ const styles = StyleSheet.create({
     },
     rankedCourseCard: {
         width: 160,
-        height: 240,
+        height: 200,
         borderRadius: 12,
         overflow: 'hidden',
         zIndex: 1,
@@ -1063,7 +1063,7 @@ const styles = StyleSheet.create({
     // Large vertical course card styles (like web's large prop)
     largeCourseCard: {
         width: 180,
-        height: 270,
+        height: 280,
         marginRight: 12,
         borderRadius: 12,
         overflow: 'hidden',
