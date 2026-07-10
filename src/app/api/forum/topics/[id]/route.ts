@@ -188,33 +188,47 @@ export async function PUT(
         const uniqueHashtags = [...new Set(hashtagsFound)]
 
         let updatedTopic;
-        try {
-            updatedTopic = await prisma.topic.update({
-                where: { id },
-                data: {
-                    title,
-                    content,
-                    categoryId,
-                    hashtags: {
-                        set: [], // Clear old ones
-                        connectOrCreate: uniqueHashtags.map((name: string) => ({
-                            where: { name },
-                            create: { name }
-                        }))
-                    }
-                }
-            })
-        } catch (updateError: any) {
-            if (updateError.code === 'P2021') {
+        let attempts = 0;
+        const maxAttempts = 3;
+
+        while (attempts < maxAttempts && !updatedTopic) {
+            try {
                 updatedTopic = await prisma.topic.update({
                     where: { id },
                     data: {
                         title,
                         content,
                         categoryId,
+                        hashtags: {
+                            set: [], // Clear old ones
+                            connectOrCreate: uniqueHashtags.map((name: string) => ({
+                                where: { name },
+                                create: { name }
+                            }))
+                        }
                     }
                 })
-            } else {
+            } catch (updateError: any) {
+                if (updateError.code === 'P2002') {
+                    attempts++;
+                    if (attempts >= maxAttempts) {
+                        return NextResponse.json({ error: 'Bir çakışma oluştu, lütfen tekrar deneyin.' }, { status: 500 });
+                    }
+                    continue; // Retry hashtag connection
+                }
+                
+                if (updateError.code === 'P2021') {
+                    updatedTopic = await prisma.topic.update({
+                        where: { id },
+                        data: {
+                            title,
+                            content,
+                            categoryId,
+                        }
+                    })
+                    break;
+                }
+                
                 throw updateError
             }
         }

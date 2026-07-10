@@ -195,87 +195,41 @@ export async function POST(request: NextRequest) {
     // Varsayılan kategoriyi kontrol et ve yoksa oluştur
     let finalCategoryId = categoryId
     if (categoryId === 'default-category') {
-      let defaultCategory = await prisma.forumCategory.findUnique({
-        where: { id: 'default-category' }
+      const defaultCategory = await prisma.forumCategory.upsert({
+        where: { id: 'default-category' },
+        update: {},
+        create: {
+          id: 'default-category',
+          name: 'Genel',
+          description: 'Genel tartışmalar',
+          slug: 'genel',
+          color: '#6b7280'
+        }
       })
-
-      if (!defaultCategory) {
-        console.log('POST /api/forum/topics - Creating default category')
-        defaultCategory = await prisma.forumCategory.create({
-          data: {
-            id: 'default-category',
-            name: 'Genel',
-            description: 'Genel tartışmalar',
-            slug: 'genel',
-            color: '#6b7280'
-          }
-        })
-      }
       finalCategoryId = defaultCategory.id
     }
 
     // Slug oluştur
-    const slug = title
+    const baseSlug = title
       .toLowerCase()
       .replace(/[^a-z0-9\s-]/g, '')
       .replace(/\s+/g, '-')
       .replace(/-+/g, '-')
-      .trim()
-
-    // Benzersiz slug oluştur
-    let uniqueSlug = slug
-    let counter = 1
-    while (await prisma.topic.findUnique({ where: { slug: uniqueSlug } })) {
-      uniqueSlug = `${slug}-${counter}`
-      counter++
-    }
+      .trim() || 'topic'
 
     // Hashtagleri ayıkla (e.g., #yemek #chef)
     const hashtagRegex = /#([a-zA-Z0-9çğıöşüÇĞİÖŞÜ]+)/g
     const hashtagsFound = Array.from(content.matchAll(hashtagRegex)).map(match => (match as string[])[1].toLowerCase())
     const uniqueHashtags = [...new Set(hashtagsFound)]
 
-    let topic;
-    try {
-      topic = await prisma.topic.create({
-        data: {
-          title,
-          content,
-          slug: uniqueSlug,
-          authorId: user.id,
-          categoryId: finalCategoryId,
-          mediaUrl: mediaUrl || null,
-          mediaType: mediaType || null,
-          thumbnailUrl: thumbnailUrl || null,
-          hashtags: {
-            connectOrCreate: uniqueHashtags.map(name => ({
-              where: { name },
-              create: { name }
-            }))
-          }
-        } as any,
-        include: {
-          author: {
-            select: {
-              id: true,
-              name: true,
-              image: true
-            }
-          },
-          category: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-              color: true
-            }
-          }
-        }
-      })
-    } catch (createError: any) {
-      // P2021: Table does not exist (Hashtag table not ready yet)
-      if (createError.code === 'P2021') {
-        console.warn('Hashtag table not ready, creating topic without hashtags')
+    let topic = null;
+    let attempts = 0;
+    const maxAttempts = 3;
+
+    while (attempts < maxAttempts && !topic) {
+      try {
+        const uniqueSlug = attempts === 0 ? baseSlug : `${baseSlug}-${Date.now().toString().slice(-4)}-${Math.floor(Math.random() * 1000)}`;
+
         topic = await prisma.topic.create({
           data: {
             title,
@@ -285,8 +239,14 @@ export async function POST(request: NextRequest) {
             categoryId: finalCategoryId,
             mediaUrl: mediaUrl || null,
             mediaType: mediaType || null,
-            thumbnailUrl: thumbnailUrl || null
-          },
+            thumbnailUrl: thumbnailUrl || null,
+            hashtags: {
+              connectOrCreate: uniqueHashtags.map(name => ({
+                where: { name },
+                create: { name }
+              }))
+            }
+          } as any,
           include: {
             author: {
               select: {
@@ -305,8 +265,52 @@ export async function POST(request: NextRequest) {
             }
           }
         })
-      } else {
-        throw createError
+      } catch (createError: any) {
+        if (createError.code === 'P2002') {
+          attempts++;
+          if (attempts >= maxAttempts) {
+            return NextResponse.json({ error: 'Bir çakışma oluştu, lütfen tekrar deneyin.' }, { status: 500 });
+          }
+          continue; // Retry with new slug or new hashtag connection
+        }
+
+        // P2021: Table does not exist (Hashtag table not ready yet)
+        if (createError.code === 'P2021') {
+          console.warn('Hashtag table not ready, creating topic without hashtags')
+          const fallbackSlug = attempts === 0 ? baseSlug : `${baseSlug}-${Date.now().toString().slice(-4)}-${Math.floor(Math.random() * 1000)}`;
+          topic = await prisma.topic.create({
+            data: {
+              title,
+              content,
+              slug: fallbackSlug,
+              authorId: user.id,
+              categoryId: finalCategoryId,
+              mediaUrl: mediaUrl || null,
+              mediaType: mediaType || null,
+              thumbnailUrl: thumbnailUrl || null
+            },
+            include: {
+              author: {
+                select: {
+                  id: true,
+                  name: true,
+                  image: true
+                }
+              },
+              category: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                  color: true
+                }
+              }
+            }
+          })
+          break;
+        }
+
+        throw createError;
       }
     }
 
