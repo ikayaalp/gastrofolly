@@ -378,10 +378,10 @@ const forumService = {
         }
     },
 
-    // Delete a topic (discussion) - only own topics
+    // Delete a topic (discussion) - only own topics or admin
     deleteTopic: async (topicId) => {
         try {
-            const response = await api.delete(`/api/forum/topics/${topicId}`);
+            const response = await api.delete(`/api/forum/topics/${topicId}/delete`);
             return { success: true, data: response.data };
         } catch (error) {
             console.error('Delete topic error:', error);

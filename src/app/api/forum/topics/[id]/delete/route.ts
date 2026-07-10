@@ -77,6 +77,29 @@ export async function DELETE(
             }
         }
 
+        // Fetch and delete media for all posts in the topic
+        const postsWithMedia = await prisma.post.findMany({
+            where: { topicId: id, mediaUrl: { not: null } },
+            select: { id: true, mediaUrl: true, mediaType: true }
+        })
+
+        for (const post of postsWithMedia) {
+            if (post.mediaUrl && post.mediaUrl.includes('cloudinary')) {
+                try {
+                    const regex = /\/upload\/(?:v\d+\/)?(.+)\.[a-zA-Z0-9]+$/
+                    const match = post.mediaUrl.match(regex)
+                    if (match && match[1]) {
+                        const publicId = match[1]
+                        const resourceType = post.mediaType === 'VIDEO' ? 'video' : 'image'
+                        console.log(`Attempting to delete Cloudinary media for post ${post.id}: ${publicId}`)
+                        await cloudinary.uploader.destroy(publicId, { resource_type: resourceType })
+                    }
+                } catch (cloudError) {
+                    console.error(`Failed to delete media for post ${post.id} from Cloudinary:`, cloudError)
+                }
+            }
+        }
+
         // Delete all posts (comments) in the topic first
         await prisma.post.deleteMany({
             where: { topicId: id }

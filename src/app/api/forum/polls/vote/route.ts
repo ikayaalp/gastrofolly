@@ -27,6 +27,18 @@ export async function POST(request: NextRequest) {
             )
         }
 
+        // Validate that option belongs to the poll
+        const isValidOption = await prisma.pollOption.findFirst({
+            where: { id: optionId, pollId: pollId }
+        })
+
+        if (!isValidOption) {
+            return NextResponse.json(
+                { error: 'Geçersiz seçenek' },
+                { status: 400 }
+            )
+        }
+
         // Check if poll exists and is active
         const poll = await prisma.poll.findUnique({
             where: { id: pollId },

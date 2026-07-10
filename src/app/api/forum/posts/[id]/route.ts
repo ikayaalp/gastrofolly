@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAuthUser } from '@/lib/mobileAuth'
+import { v2 as cloudinary } from 'cloudinary'
+
+cloudinary.config({
+    cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+})
 
 export async function DELETE(
     request: NextRequest,
@@ -37,6 +44,41 @@ export async function DELETE(
                 { error: 'Bu yorumu silme yetkiniz yok' },
                 { status: 403 }
             )
+        }
+
+        // Find the post and all its replies to check for media
+        const postsToDelete = await prisma.post.findMany({
+            where: {
+                OR: [
+                    { id },
+                    { parentId: id }
+                ]
+            },
+            select: { id: true, mediaUrl: true, mediaType: true }
+        })
+
+        // Delete media from Cloudinary for all affected posts
+        for (const p of postsToDelete) {
+            if (p.mediaUrl) {
+                try {
+                    // Extract public_id from Cloudinary URL
+                    // Example: https://res.cloudinary.com/.../image/upload/v1234567890/folder/filename.jpg
+                    const urlParts = p.mediaUrl.split('/')
+                    const uploadIndex = urlParts.findIndex(part => part === 'upload')
+                    if (uploadIndex !== -1) {
+                        const publicIdWithExt = urlParts.slice(uploadIndex + 2).join('/')
+                        const publicId = publicIdWithExt.split('.')[0] // Remove extension
+
+                        const resourceType = p.mediaType === 'VIDEO' ? 'video' : 'image'
+
+                        await cloudinary.uploader.destroy(publicId, { resource_type: resourceType })
+                        console.log(`Deleted post media from Cloudinary: ${publicId}`)
+                    }
+                } catch (cloudinaryError) {
+                    console.error('Failed to delete post media from Cloudinary:', cloudinaryError)
+                    // Don't block post deletion if media deletion fails
+                }
+            }
         }
 
         // Delete the post and its replies

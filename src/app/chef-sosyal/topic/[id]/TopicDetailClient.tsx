@@ -160,8 +160,13 @@ export default function TopicDetailClient({ session, topic: initialTopic, catego
     setIsLightboxOpen(true)
   }
 
+  const [pendingLikeIds, setPendingLikeIds] = useState<Set<string>>(new Set());
+
   const handleLike = async () => {
     if (!session?.user?.id) return
+    if (pendingLikeIds.has(topic.id)) return
+
+    setPendingLikeIds(prev => new Set(prev).add(topic.id));
 
     try {
       const response = await fetch('/api/forum/like', {
@@ -177,11 +182,20 @@ export default function TopicDetailClient({ session, topic: initialTopic, catego
       }
     } catch (error) {
       console.error('Error liking topic:', error)
+    } finally {
+      setPendingLikeIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(topic.id);
+        return newSet;
+      });
     }
   }
 
   const handleCommentLike = async (postId: string) => {
     if (!session?.user?.id) return
+    if (pendingLikeIds.has(postId)) return
+
+    setPendingLikeIds(prev => new Set(prev).add(postId));
 
     try {
       const response = await fetch('/api/forum/post-like', {
@@ -208,6 +222,12 @@ export default function TopicDetailClient({ session, topic: initialTopic, catego
       }
     } catch (error) {
       console.error('Error liking comment:', error)
+    } finally {
+      setPendingLikeIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(postId);
+        return newSet;
+      });
     }
   }
 

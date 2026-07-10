@@ -75,7 +75,7 @@ export default function SocialAdminPage() {
         try {
             let url = ''
             if (activeTab === 'topics') {
-                url = `/api/forum/topics?page=${page}&limit=20&sort=newest`
+                url = `/api/admin/forum/topics?page=${page}&limit=20`
                 if (search) url += `&search=${encodeURIComponent(search)}`
             } else {
                 url = `/api/admin/forum/posts?page=${page}&limit=20`

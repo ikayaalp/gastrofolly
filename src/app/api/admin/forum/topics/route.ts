@@ -24,11 +24,14 @@ export async function GET(request: Request) {
     let whereClause: any = {}
     if (search) {
       whereClause = {
-        content: { contains: search, mode: 'insensitive' }
+        OR: [
+          { title: { contains: search, mode: 'insensitive' } },
+          { content: { contains: search, mode: 'insensitive' } }
+        ]
       }
     }
 
-    const posts = await prisma.post.findMany({
+    const topics = await prisma.topic.findMany({
       where: whereClause,
       include: {
         author: {
@@ -38,12 +41,16 @@ export async function GET(request: Request) {
             image: true
           }
         },
-        topic: {
+        category: {
           select: {
             id: true,
-            title: true,
-            slug: true
+            name: true,
+            slug: true,
+            color: true
           }
+        },
+        _count: {
+          select: { posts: true }
         }
       },
       orderBy: { createdAt: 'desc' },
@@ -51,10 +58,10 @@ export async function GET(request: Request) {
       take: limit
     })
 
-    const total = await prisma.post.count({ where: whereClause })
+    const total = await prisma.topic.count({ where: whereClause })
 
     return NextResponse.json({
-      posts,
+      topics,
       pagination: {
         total,
         pages: Math.ceil(total / limit),
@@ -63,9 +70,9 @@ export async function GET(request: Request) {
       }
     })
   } catch (error) {
-    console.error('Error fetching admin posts:', error)
+    console.error('Error fetching admin topics:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch posts' },
+      { error: 'Failed to fetch topics' },
       { status: 500 }
     )
   }

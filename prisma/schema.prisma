@@ -104,6 +104,10 @@ model User {
   financeRecords   FinanceRecord[]
   conversationParticipants ConversationParticipant[]
   sentDirectMessages       DirectMessage[]
+  savedTopics              SavedTopic[]
+  reportsMade              Report[]
+  blocks                   Block[]          @relation("Blocker")
+  blockedBy                Block[]          @relation("Blocked")
 }
 
 enum UserRole {
@@ -324,9 +328,11 @@ model Topic {
   categoryId String
   category   ForumCategory @relation(fields: [categoryId], references: [id])
 
-  posts    Post[]
-  likes    TopicLike[]
-  hashtags Hashtag[]   @relation("TopicHashtags")
+  posts     Post[]
+  likes     TopicLike[]
+  hashtags  Hashtag[]   @relation("TopicHashtags")
+  savedBy   SavedTopic[]
+  reports   Report[]
 
   poll Poll?
 
@@ -420,6 +426,7 @@ model Post {
   parent  Post?      @relation("PostReplies", fields: [parentId], references: [id], onDelete: Cascade)
   replies Post[]     @relation("PostReplies")
   likes   PostLike[]
+  reports Report[]
 }
 
 // Forum Yorum Beğeni modeli
@@ -490,6 +497,8 @@ enum NotificationType {
   COURSE_UPDATE
   SYSTEM
   FORUM_REPLY
+  FORUM_MENTION
+  FORUM_LIKE
 }
 
 // Hikaye Modeli
@@ -689,4 +698,51 @@ model WebhookEvent {
   source    String // "stripe" | "iyzico" | "revenuecat"
   dedupeKey String   @unique
   createdAt DateTime @default(now())
+}
+
+// ============================================================
+// New Features: SavedTopic, Report, Block
+// ============================================================
+
+model SavedTopic {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topicId String
+  topic   Topic  @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, topicId])
+}
+
+model Report {
+  id          String   @id @default(cuid())
+  reason      String   // e.g. "Spam", "Inappropriate", etc.
+  description String?
+  status      String   @default("PENDING") // "PENDING", "RESOLVED", "REJECTED"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  reporterId  String
+  reporter    User   @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+
+  topicId     String?
+  topic       Topic? @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  postId      String?
+  post        Post?  @relation(fields: [postId], references: [id], onDelete: Cascade)
+}
+
+model Block {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  blockerId String
+  blocker   User   @relation("Blocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  
+  blockedId String
+  blocked   User   @relation("Blocked", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@unique([blockerId, blockedId])
 }

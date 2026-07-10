@@ -3,6 +3,8 @@
 import { useState, memo } from 'react'
 import Link from 'next/link'
 import { ThumbsUp, MessageCircle, MoreHorizontal, User, Play, Clock, Bookmark, ChefHat } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Edit2, Trash2, ShieldAlert } from 'lucide-react'
 import HashtagText from './HashtagText'
 import LikersModal from './LikersModal'
 import ConfirmationModal from '@/components/ui/ConfirmationModal'
@@ -62,6 +64,11 @@ const TopicCard = ({ topic, isLiked, onLike, isSaved, onSave, currentUserId }: T
     const [internalPollData, setInternalPollData] = useState(topic.poll)
     const [alertState, setAlertState] = useState<{ isOpen: boolean, message: string }>({ isOpen: false, message: '' })
     const [showLikersModal, setShowLikersModal] = useState(false)
+    const [showMenu, setShowMenu] = useState(false)
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+    const router = useRouter()
+
+    const isAuthor = currentUserId === topic.author.id
 
     // Check if current user has voted (client-side approximation if we don't have user ID handy easily, 
     // but the API response includes votes by user. Ideally we need current User ID.
@@ -105,6 +112,23 @@ const TopicCard = ({ topic, isLiked, onLike, isSaved, onSave, currentUserId }: T
         setIsLightboxOpen(true)
     }
 
+    const handleDelete = async () => {
+        try {
+            const response = await fetch(`/api/forum/topics/${topic.id}/delete`, {
+                method: 'DELETE'
+            })
+            if (response.ok) {
+                // To avoid complicated state lifting, we just reload the window or router
+                window.location.reload()
+            } else {
+                setAlertState({ isOpen: true, message: 'Silme işlemi başarısız oldu.' })
+            }
+        } catch (error) {
+            console.error(error)
+            setAlertState({ isOpen: true, message: 'Silme işlemi başarısız oldu.' })
+        }
+    }
+
     return (
         <>
             <div className="block">
@@ -132,18 +156,59 @@ const TopicCard = ({ topic, isLiked, onLike, isSaved, onSave, currentUserId }: T
                     {/* Right: Content Column */}
                     <div className="flex-1 min-w-0">
                         {/* Header metadata line */}
-                        <div className="flex items-center text-sm mb-0.5 space-x-1 flex-wrap">
-                            {internalPollData ? (
-                                <span className="font-bold text-[#e7e9ea]">Culinora Anket</span>
-                            ) : (
-                                <>
-                                    <Link href={`/chef-sosyal/profil/${topic.author.id}`} className="font-bold text-[#e7e9ea] hover:underline cursor-pointer">
-                                        {topic.author.name || 'anonim'}
-                                    </Link>
-                                </>
-                            )}
-                            <span className="text-[#71767b]">•</span>
-                            <span className="text-[#71767b]">{formatTimeAgo(topic.createdAt.toString())}</span>
+                        <div className="flex items-center justify-between mb-0.5">
+                            <div className="flex items-center text-sm space-x-1 flex-wrap">
+                                {internalPollData ? (
+                                    <span className="font-bold text-[#e7e9ea]">Culinora Anket</span>
+                                ) : (
+                                    <>
+                                        <Link href={`/chef-sosyal/profil/${topic.author.id}`} className="font-bold text-[#e7e9ea] hover:underline cursor-pointer">
+                                            {topic.author.name || 'anonim'}
+                                        </Link>
+                                    </>
+                                )}
+                                <span className="text-[#71767b]">•</span>
+                                <span className="text-[#71767b]">{formatTimeAgo(topic.createdAt.toString())}</span>
+                            </div>
+
+                            {/* Dropdown Menu */}
+                            <div className="relative">
+                                <button 
+                                    onClick={(e) => { e.preventDefault(); setShowMenu(!showMenu); }}
+                                    className="p-1.5 text-gray-500 hover:text-orange-500 hover:bg-orange-500/10 rounded-full transition-colors"
+                                >
+                                    <MoreHorizontal className="h-4 w-4" />
+                                </button>
+                                
+                                {showMenu && (
+                                    <>
+                                        <div 
+                                            className="fixed inset-0 z-40" 
+                                            onClick={(e) => { e.preventDefault(); setShowMenu(false); }} 
+                                        />
+                                        <div className="absolute right-0 mt-1 w-36 bg-[#1a1a1a] rounded-lg shadow-lg border border-gray-800 py-1 z-50">
+                                            {isAuthor && (
+                                                <>
+                                                    <button 
+                                                        onClick={(e) => { e.preventDefault(); setShowMenu(false); router.push(`/chef-sosyal/topic/${topic.id}/edit`); }}
+                                                        className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 flex items-center space-x-2"
+                                                    >
+                                                        <Edit2 className="h-4 w-4" />
+                                                        <span>Düzenle</span>
+                                                    </button>
+                                                    <button 
+                                                        onClick={(e) => { e.preventDefault(); setShowMenu(false); setDeleteModalOpen(true); }}
+                                                        className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-800 flex items-center space-x-2"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                        <span>Sil</span>
+                                                    </button>
+                                                </>
+                                            )}
+                                        </div>
+                                    </>
+                                )}
+                            </div>
                         </div>
 
                         {/* Content Preview - Clickable to Detail */}
@@ -377,16 +442,33 @@ const TopicCard = ({ topic, isLiked, onLike, isSaved, onSave, currentUserId }: T
                 )
             }
 
+            {/* Modals */}
             <ConfirmationModal
-                isOpen={alertState.isOpen}
-                onClose={() => setAlertState({ isOpen: false, message: '' })}
-                onConfirm={() => setAlertState({ isOpen: false, message: '' })}
-                title="Hata"
-                message={alertState.message}
-                confirmText="Tamam"
-                showCancelButton={false}
-                isDanger={true}
+                isOpen={deleteModalOpen}
+                onClose={() => setDeleteModalOpen(false)}
+                onConfirm={handleDelete}
+                title="Gönderiyi Sil"
+                message="Bu gönderiyi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."
+                confirmText="Evet, Sil"
+                cancelText="İptal"
             />
+            {alertState.isOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80">
+                    <div className="bg-[#1a1a1a] p-6 rounded-2xl max-w-sm w-full border border-gray-800 shadow-2xl text-center">
+                        <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                            <span className="text-red-600 font-bold text-xl">!</span>
+                        </div>
+                        <h3 className="text-lg font-bold text-white mb-2">Hata</h3>
+                        <p className="text-gray-400 mb-6">{alertState.message}</p>
+                        <button
+                            onClick={() => setAlertState({ isOpen: false, message: '' })}
+                            className="w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-2.5 px-4 rounded-xl transition-colors"
+                        >
+                            Tamam
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* Likers Modal */}
             <LikersModal

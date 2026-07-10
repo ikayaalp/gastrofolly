@@ -70,12 +70,43 @@ export async function GET(request: NextRequest) {
       delete where.OR
     }
 
-    // Get current user if logged in (for poll vote check)
+    // Get current user if logged in (for poll vote check and blocks)
     let user = null
+    let blockedIds: string[] = []
+    
     try {
       user = await getAuthUser(request)
+      if (user?.id) {
+        // Find users blocked by current user
+        const blocks = await prisma.block.findMany({
+          where: { blockerId: user.id },
+          select: { blockedId: true }
+        })
+        
+        // Find users who blocked the current user
+        const blockedBy = await prisma.block.findMany({
+          where: { blockedId: user.id },
+          select: { blockerId: true }
+        })
+        
+        blockedIds = [
+          ...blocks.map(b => b.blockedId),
+          ...blockedBy.map(b => b.blockerId)
+        ]
+      }
     } catch (e) {
       // Ignore auth error for public feed
+    }
+
+    if (blockedIds.length > 0) {
+      if (!where.AND) {
+        where.AND = []
+      }
+      where.AND.push({
+        authorId: {
+          notIn: blockedIds
+        }
+      })
     }
 
     const [topics, totalCount] = await Promise.all([
@@ -175,13 +206,29 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { title, content, categoryId, mediaUrl, mediaType, thumbnailUrl } = await request.json()
+    const body = await request.json();
+    const { categoryId, mediaUrl, mediaType, thumbnailUrl } = body;
+    let { title, content } = body;
+
+    title = title?.trim()
+    content = content?.trim()
 
     if (!title || !content || !categoryId) {
       return NextResponse.json(
-        { error: 'Title, content, and category are required' },
+        { error: 'Başlık ve içerik boş olamaz' },
         { status: 400 }
       )
+    }
+
+    const MAX_TITLE_LENGTH = 200;
+    const MAX_CONTENT_LENGTH = 5000;
+
+    if (title.length > MAX_TITLE_LENGTH) {
+        return NextResponse.json({ error: `Başlık çok uzun (maksimum ${MAX_TITLE_LENGTH} karakter)` }, { status: 400 })
+    }
+
+    if (content.length > MAX_CONTENT_LENGTH) {
+        return NextResponse.json({ error: `İçerik çok uzun (maksimum ${MAX_CONTENT_LENGTH} karakter)` }, { status: 400 })
     }
 
     // Küfür Kontrolü
@@ -312,6 +359,11 @@ export async function POST(request: NextRequest) {
 
         throw createError;
       }
+    }
+    if (topic) {
+      import('@/lib/mentions').then(({ extractMentionsAndNotify }) => {
+        extractMentionsAndNotify(content, user.id, 'TOPIC', topic.id).catch(console.error)
+      })
     }
 
     return NextResponse.json(topic, { status: 201 })

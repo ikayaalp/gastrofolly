@@ -184,9 +184,7 @@ export default function ChefSosyalClient({
     };
   }, [searchParams]);
 
-  const isFirstMount = useRef(true);
-
-  // URL parametreleri değiştiğinde state'i güncelle ve konuları yükle
+  // URL parametreleri değiştiğinde sadece state güncelle
   useEffect(() => {
     const category = searchParams.get('category') || 'all'
     const sort = searchParams.get('sort') || 'newest'
@@ -195,16 +193,8 @@ export default function ChefSosyalClient({
     setSelectedCategory(category)
     setSortBy(sort)
     setSearchTerm(search)
-
-    if (isFirstMount.current) {
-      isFirstMount.current = false;
-      return; // Skip initial fetch to allow session storage restore to work
-    }
-
     setPage(1)
     setHasMore(true)
-
-    loadTopics(false, 1)
   }, [searchParams])
 
   // Arama İşlemi
@@ -286,10 +276,18 @@ export default function ChefSosyalClient({
   }
 
   // Like/Unlike işlemi
+  const [pendingLikeIds, setPendingLikeIds] = useState<Set<string>>(new Set());
+
   const handleLike = useCallback(async (topicId: string) => {
     if (!session?.user?.id) {
       return
     }
+
+    if (pendingLikeIds.has(topicId)) {
+      return;
+    }
+
+    setPendingLikeIds(prev => new Set(prev).add(topicId));
 
     try {
       const response = await fetch('/api/forum/like', {
@@ -323,8 +321,14 @@ export default function ChefSosyalClient({
       }
     } catch (error) {
       console.error('Error liking topic:', error)
+    } finally {
+      setPendingLikeIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(topicId);
+        return newSet;
+      });
     }
-  }, [session?.user?.id]);
+  }, [session?.user?.id, pendingLikeIds]);
 
   // Save/Unsave topic
   const handleSave = useCallback((topicId: string) => {
@@ -355,7 +359,7 @@ export default function ChefSosyalClient({
       const targetPage = specificPage || (isLoadMore ? page + 1 : 1)
       const params = new URLSearchParams(searchParams.toString())
       params.set('page', targetPage.toString())
-      params.set('limit', '10')
+      params.set('limit', '20')
 
       const response = await fetch(`/api/forum/topics?${params.toString()}`)
       const data = await response.json()
@@ -375,7 +379,7 @@ export default function ChefSosyalClient({
       if (data.pagination) {
         setHasMore(targetPage < data.pagination.pages)
       } else {
-        setHasMore((data.topics || []).length === 10)
+        setHasMore((data.topics || []).length === 20)
       }
     } catch (error) {
       console.error('Error loading topics:', error)

@@ -19,7 +19,7 @@ export default function EditTopicScreen({ route, navigation }) {
     const { topic } = route.params;
     
     const [content, setContent] = useState(topic?.content || '');
-    const categoryId = topic?.categoryId || (topic?.category?.id) || '';
+    const categoryId = topic?.categoryId || topic?.category?.id || 'default-category';
     const [saving, setSaving] = useState(false);
 
     const handleSave = async () => {

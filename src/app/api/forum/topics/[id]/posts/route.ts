@@ -18,12 +18,45 @@ export async function GET(
 
     const skip = (page - 1) * limit
 
+    let user = null
+    let blockedIds: string[] = []
+    
+    try {
+      user = await getAuthUser(request)
+      if (user?.id) {
+        // Find users blocked by current user
+        const blocks = await prisma.block.findMany({
+          where: { blockerId: user.id },
+          select: { blockedId: true }
+        })
+        
+        // Find users who blocked the current user
+        const blockedBy = await prisma.block.findMany({
+          where: { blockedId: user.id },
+          select: { blockerId: true }
+        })
+        
+        blockedIds = [
+          ...blocks.map(b => b.blockedId),
+          ...blockedBy.map(b => b.blockerId)
+        ]
+      }
+    } catch (e) {
+      // Ignore auth error
+    }
+
+    const whereClause: any = {
+      topicId: resolvedParams.id,
+      parentId: null // Sadece ana yorumları getir
+    }
+
+    if (blockedIds.length > 0) {
+      whereClause.authorId = { notIn: blockedIds }
+    }
+
     const [posts, totalCount] = await Promise.all([
       prisma.post.findMany({
-        where: {
-          topicId: resolvedParams.id,
-          parentId: null // Sadece ana yorumları getir
-        },
+        where: whereClause,
         orderBy: {
           createdAt: 'asc'
         },
@@ -38,6 +71,7 @@ export async function GET(
             }
           },
           replies: {
+            where: blockedIds.length > 0 ? { authorId: { notIn: blockedIds } } : undefined,
             include: {
               author: {
                 select: {
@@ -54,9 +88,7 @@ export async function GET(
         }
       }),
       prisma.post.count({
-        where: {
-          topicId: resolvedParams.id
-        }
+        where: whereClause
       })
     ])
 
@@ -101,13 +133,22 @@ export async function POST(
       )
     }
 
-    const { content, parentId } = await request.json()
+    const body = await request.json()
+    const { parentId, mediaUrl, mediaType, thumbnailUrl } = body
+    let { content } = body
 
-    if (!content) {
+    content = content?.trim()
+
+    if (!content && !mediaUrl) {
       return NextResponse.json(
-        { error: 'Content is required' },
+        { error: 'İçerik boş olamaz' },
         { status: 400 }
       )
+    }
+
+    const MAX_POST_LENGTH = 2000;
+    if (content && content.length > MAX_POST_LENGTH) {
+      return NextResponse.json({ error: `İçerik çok uzun (maksimum ${MAX_POST_LENGTH} karakter)` }, { status: 400 })
     }
 
     // Küfür Kontrolü
@@ -139,10 +180,13 @@ export async function POST(
 
     const post = await prisma.post.create({
       data: {
-        content,
+        content: content || '...',
         authorId: user.id,
         topicId: resolvedParams.id,
-        parentId: parentId || null
+        parentId: parentId || null,
+        mediaUrl: mediaUrl || null,
+        mediaType: mediaType || null,
+        thumbnailUrl: thumbnailUrl || null
       },
       include: {
         author: {
@@ -205,6 +249,13 @@ export async function POST(
       console.error('Bildirim gönderilirken hata oluştu:', notifError);
     }
     // ---------------------------------------
+
+    // --- Mentions Sistemi ---
+    if (content) {
+      import('@/lib/mentions').then(({ extractMentionsAndNotify }) => {
+        extractMentionsAndNotify(content, user.id, 'POST', post.id).catch(console.error)
+      })
+    }
 
     // --- Culi AI Bot Bot Integration ---
     // Eğer yorumda @culi geçiyorsa arka planda Culi'nin cevap vermesini tetikle

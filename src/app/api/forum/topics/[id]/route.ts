@@ -143,13 +143,28 @@ export async function PUT(
         }
 
         const { id } = await params
-        const { title, content, categoryId } = await request.json()
+        const body = await request.json();
+        let { title, content, categoryId } = body;
+
+        title = title?.trim();
+        content = content?.trim();
 
         if (!title || !content || !categoryId) {
             return NextResponse.json(
-                { error: 'Title, content, and category are required' },
+                { error: 'Başlık ve içerik boş olamaz' },
                 { status: 400 }
             )
+        }
+
+        const MAX_TITLE_LENGTH = 200;
+        const MAX_CONTENT_LENGTH = 5000;
+
+        if (title.length > MAX_TITLE_LENGTH) {
+            return NextResponse.json({ error: `Başlık çok uzun (maksimum ${MAX_TITLE_LENGTH} karakter)` }, { status: 400 })
+        }
+
+        if (content.length > MAX_CONTENT_LENGTH) {
+            return NextResponse.json({ error: `İçerik çok uzun (maksimum ${MAX_CONTENT_LENGTH} karakter)` }, { status: 400 })
         }
 
         // Check profanity
@@ -244,55 +259,3 @@ export async function PUT(
     }
 }
 
-export async function DELETE(
-    request: NextRequest,
-    { params }: { params: Promise<{ id: string }> }
-) {
-    try {
-        const user = await getAuthUser(request)
-
-        if (!user) {
-            return NextResponse.json(
-                { error: 'Unauthorized' },
-                { status: 401 }
-            )
-        }
-
-        const { id } = await params
-
-        // Find the topic
-        const topic = await prisma.topic.findUnique({
-            where: { id },
-            select: { authorId: true }
-        })
-
-        if (!topic) {
-            return NextResponse.json(
-                { error: 'Gönderi bulunamadı' },
-                { status: 404 }
-            )
-        }
-
-        // Check if user is the author
-        if (topic.authorId !== user.id) {
-            return NextResponse.json(
-                { error: 'Bu gönderiyi silme yetkiniz yok' },
-                { status: 403 }
-            )
-        }
-
-        // Prisma schema cascade will handle related records (posts, likes, poll)
-        await prisma.topic.delete({
-            where: { id }
-        })
-
-        return NextResponse.json({ success: true, message: 'Gönderi silindi' })
-
-    } catch (error) {
-        console.error('Delete topic error:', error)
-        return NextResponse.json(
-            { error: 'Gönderi silinirken bir hata oluştu' },
-            { status: 500 }
-        )
-    }
-}

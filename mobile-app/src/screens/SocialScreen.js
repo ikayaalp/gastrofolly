@@ -156,9 +156,17 @@ export default function SocialScreen({ navigation }) {
             videoMaxDuration: 60,
         });
         if (!result.canceled && result.assets[0]) {
+            const asset = result.assets[0];
+            const maxVideoSize = 100 * 1024 * 1024; // 100 MB
+            
+            if (asset.type === 'video' && asset.fileSize && asset.fileSize > maxVideoSize) {
+                showAlert('Dosya Çok Büyük', 'Video boyutu maksimum 100MB olmalıdır.', [{ text: 'Tamam' }], 'warning');
+                return;
+            }
+
             const newMedia = {
-                uri: result.assets[0].uri,
-                type: result.assets[0].type === 'video' ? 'video' : 'image',
+                uri: asset.uri,
+                type: asset.type === 'video' ? 'video' : 'image',
             };
             setSelectedMedias(prev => [...prev, newMedia].slice(0, 10));
         }
