@@ -1,9 +1,13 @@
 "use client"
 
 import React, { useState, useRef, useEffect } from "react"
-import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, RotateCcw, RotateCw, SkipBack, SkipForward, Loader2, AlertTriangle } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, RotateCcw, RotateCw, SkipBack, SkipForward, Loader2, AlertTriangle, Gauge, X } from "lucide-react"
 import YouTubePlayer from "./YouTubePlayer"
 import Hls from "hls.js"
+
+const PLAYBACK_RATES = [0.5, 0.75, 1, 1.25, 1.5, 2] as const
+const AUTO_NEXT_SECONDS = 5
 
 // Lesson tipi interface olarak tanımlanıyor
 interface Lesson {
@@ -33,6 +37,7 @@ interface VideoPlayerProps {
 }
 
 export default function VideoPlayer({ lesson, course, userId, userEmail, isCompleted, previousLesson, nextLesson, hasFullAccess = true }: VideoPlayerProps) {
+  const router = useRouter()
   const videoRef = useRef<HTMLVideoElement>(null)
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const [isPlaying, setIsPlaying] = useState(false)
@@ -48,6 +53,9 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showCenterPlay, setShowCenterPlay] = useState(false);
   const [isSeeking, setIsSeeking] = useState(false);
+  const [playbackRate, setPlaybackRate] = useState(1);
+  const [showSpeedMenu, setShowSpeedMenu] = useState(false);
+  const [autoNextSeconds, setAutoNextSeconds] = useState<number | null>(null);
   const wasPlayingRef = useRef(false);
 
   // Kontrol barı için auto-hide id
@@ -107,6 +115,11 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
     // için bu iOS'a özel event'leri de dinlememiz gerekiyor.
     const handleIOSFullscreenBegin = () => setIsFullscreen(true)
     const handleIOSFullscreenEnd = () => setIsFullscreen(false)
+    const handleEnded = () => {
+      if (nextLesson && hasFullAccess) {
+        setAutoNextSeconds(AUTO_NEXT_SECONDS)
+      }
+    }
 
     video.addEventListener('timeupdate', updateTime)
     video.addEventListener('loadedmetadata', updateDuration)
@@ -117,6 +130,7 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
     video.addEventListener('error', handleError)
     video.addEventListener('webkitbeginfullscreen', handleIOSFullscreenBegin)
     video.addEventListener('webkitendfullscreen', handleIOSFullscreenEnd)
+    video.addEventListener('ended', handleEnded)
 
     return () => {
       video.removeEventListener('timeupdate', updateTime)
@@ -128,8 +142,9 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
       video.removeEventListener('error', handleError)
       video.removeEventListener('webkitbeginfullscreen', handleIOSFullscreenBegin)
       video.removeEventListener('webkitendfullscreen', handleIOSFullscreenEnd)
+      video.removeEventListener('ended', handleEnded)
     }
-  }, [])
+  }, [nextLesson, hasFullAccess])
 
   // HLS Setup Effect
   useEffect(() => {
@@ -201,8 +216,16 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
     };
   }, []);
 
+  // Ders linklerinde tam sayfa yenilemesi yerine Next.js client-side routing kullan
+  const navigateToLesson = (lessonId: string) => {
+    const url = new URL(window.location.href)
+    url.searchParams.set('lesson', lessonId)
+    router.push(`${url.pathname}${url.search}`)
+  }
+
   // lesson değiştiğinde progress'i çek ve otomatik oynat
   useEffect(() => {
+    setAutoNextSeconds(null);
     const video = videoRef.current;
     if (video && lesson.videoUrl) {
       // Önce süreyi çek
@@ -417,6 +440,26 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
     }
   }, [lesson.id, course.id])
 
+  // Video oynatma hızını uygula (ders değişse de kullanıcının seçtiği hız korunsun)
+  useEffect(() => {
+    const video = videoRef.current
+    if (video) video.playbackRate = playbackRate
+  }, [playbackRate, lesson.id])
+
+  // Video bittiğinde otomatik sonraki derse geçiş için geri sayım
+  useEffect(() => {
+    if (autoNextSeconds === null) return
+    if (autoNextSeconds <= 0) {
+      if (nextLesson) navigateToLesson(nextLesson.id)
+      return
+    }
+    const timeoutId = setTimeout(() => {
+      setAutoNextSeconds((s) => (s !== null ? s - 1 : null))
+    }, 1000)
+    return () => clearTimeout(timeoutId)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoNextSeconds, nextLesson])
+
   // YouTube URL kontrolü
   const isYouTubeUrl = (url: string) => {
     return url.includes('youtube.com') || url.includes('youtu.be')
@@ -424,6 +467,9 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
 
   // Video alanına tıklama için div-click ile, ortadaki büyük play için button-click ile iki ayrı fonksiyon tanımla
   const handleVideoAreaClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (showSpeedMenu) {
+      setShowSpeedMenu(false);
+    }
     if (
       e.target instanceof HTMLElement &&
       (e.target.closest('.video-control-buttons') || e.target.closest('button') || e.target.closest('input'))
@@ -452,7 +498,7 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
   return (
     <div
       ref={playerContainerRef}
-      className={`relative w-full h-[50vh] md:aspect-video md:h-[75vh] bg-black group flex-shrink-0 select-none ${isFullscreen ? 'w-screen h-screen max-w-none max-h-none !rounded-none fullscreen-active z-[10000]' : ''}`}
+      className={`relative w-full aspect-video max-h-[85vh] bg-black group flex-shrink-0 select-none ${isFullscreen ? 'w-screen h-screen max-w-none max-h-none !aspect-auto !rounded-none fullscreen-active z-[10000]' : ''}`}
       style={isFullscreen ? { minHeight: '100vh', minWidth: '100vw' } : {}}
       onClick={handleVideoAreaClick}
       onContextMenu={(e) => e.preventDefault()} // Sağ tık kapat (Anti-Download)
@@ -545,11 +591,7 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
                   {/* Önceki Ders (SkipBack) - İlk derse her zaman dönebilir */}
                   <button
                     onClick={() => {
-                      if (previousLesson) {
-                        const url = new URL(window.location.href)
-                        url.searchParams.set('lesson', previousLesson.id)
-                        window.location.href = url.toString()
-                      }
+                      if (previousLesson) navigateToLesson(previousLesson.id)
                     }}
                     disabled={!previousLesson}
                     className={`text-white hover:text-orange-400 transition-colors rounded-full p-2 ${!previousLesson ? 'opacity-40 cursor-not-allowed' : ''}`}
@@ -592,11 +634,7 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
                   {/* Sonraki Ders (SkipForward) - Sadece hasFullAccess varsa çalışır */}
                   <button
                     onClick={() => {
-                      if (nextLesson && hasFullAccess) {
-                        const url = new URL(window.location.href)
-                        url.searchParams.set('lesson', nextLesson.id)
-                        window.location.href = url.toString()
-                      }
+                      if (nextLesson && hasFullAccess) navigateToLesson(nextLesson.id)
                     }}
                     disabled={!nextLesson || !hasFullAccess}
                     className={`text-white hover:text-orange-400 transition-colors rounded-full p-2 ${(!nextLesson || !hasFullAccess) ? 'opacity-40 cursor-not-allowed' : ''}`}
@@ -627,8 +665,38 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
                     className="w-16 md:w-20 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer block"
                   />
                 </div>
-                {/* Tam ekran */}
-                <div className="flex items-center space-x-4">
+                {/* Oynatma hızı + Tam ekran */}
+                <div className="flex items-center space-x-4 relative">
+                  <div className="relative">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setShowSpeedMenu((v) => !v)
+                      }}
+                      className="text-white hover:text-orange-400 transition-colors flex items-center gap-1"
+                      title="Oynatma hızı"
+                    >
+                      <Gauge className="h-5 w-5" />
+                      <span className="text-xs font-semibold">{playbackRate}x</span>
+                    </button>
+                    {showSpeedMenu && (
+                      <div className="absolute bottom-full right-0 mb-2 bg-[#1a1a1a] border border-gray-700 rounded-lg overflow-hidden shadow-lg z-10 min-w-[72px]">
+                        {PLAYBACK_RATES.map((rate) => (
+                          <button
+                            key={rate}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setPlaybackRate(rate)
+                              setShowSpeedMenu(false)
+                            }}
+                            className={`block w-full text-center px-3 py-1.5 text-sm transition-colors ${rate === playbackRate ? 'bg-orange-600 text-white' : 'text-gray-300 hover:bg-white/10'}`}
+                          >
+                            {rate}x
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                   <button
                     onClick={toggleFullscreen}
                     className="text-white hover:text-orange-400 transition-colors"
@@ -669,6 +737,35 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
                   onClick={handleCenterPlayClick}
                 >
                   <Play className="h-10 w-10 md:h-20 md:w-20 text-white drop-shadow-md" style={{ color: '#fff6e3' }} />
+                </button>
+              </div>
+            )}
+
+            {/* Otomatik sonraki derse geçiş kartı */}
+            {autoNextSeconds !== null && nextLesson && (
+              <div className="absolute bottom-20 md:bottom-24 right-4 z-40 bg-[#141414] border border-gray-700 rounded-xl p-4 w-64 shadow-2xl">
+                <div className="flex items-start justify-between mb-2">
+                  <p className="text-gray-400 text-xs">Sonraki ders {autoNextSeconds} saniye içinde başlıyor</p>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setAutoNextSeconds(null)
+                    }}
+                    className="text-gray-500 hover:text-white transition-colors -mt-1 -mr-1"
+                    title="İptal"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+                <p className="text-white text-sm font-semibold mb-3 line-clamp-2">{nextLesson.title}</p>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    navigateToLesson(nextLesson.id)
+                  }}
+                  className="w-full bg-orange-600 hover:bg-orange-700 text-white text-sm font-semibold py-2 rounded-lg transition-colors"
+                >
+                  Şimdi İzle
                 </button>
               </div>
             )}
