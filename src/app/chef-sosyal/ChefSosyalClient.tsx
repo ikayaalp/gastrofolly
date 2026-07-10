@@ -421,79 +421,6 @@ export default function ChefSosyalClient({
   }
 
   // Yeni başlık oluştur
-  // Handle media selection from hidden inputs
-  const handleMediaSelect = async (e: React.ChangeEvent<HTMLInputElement>, type: 'IMAGE' | 'VIDEO') => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    // Simple validation
-    if (file.size > (type === 'VIDEO' ? 100 * 1024 * 1024 : 10 * 1024 * 1024)) {
-      setAlertModal({
-        isOpen: true,
-        title: 'Dosya Boyutu Hatası',
-        message: 'Dosya boyutu çok yüksek.',
-        type: 'error'
-      });
-      return
-    }
-
-    const uploadId = Date.now()
-    activeUploadRef.current = uploadId
-
-    try {
-      setMediaUploading(true)
-      // Create FormData
-      const formData = new FormData()
-      formData.append('file', file)
-
-      // Upload directly
-      // In a real app we might want to show loading state specifically for media
-      // For now let's just use a simple approach to get the URL
-
-      // Temporary optimistic preview
-      const objectUrl = URL.createObjectURL(file)
-      setTopicMedia({
-        mediaUrl: objectUrl,
-        mediaType: type
-      })
-
-      // Real upload
-      const response = await fetch('/api/forum/upload-media', {
-        method: 'POST',
-        body: formData
-      })
-
-      const data = await response.json()
-
-      if (activeUploadRef.current !== uploadId) return;
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Upload failed')
-      }
-
-      // Update with real data
-      setTopicMedia({
-        mediaUrl: data.mediaUrl,
-        mediaType: data.mediaType as 'IMAGE' | 'VIDEO'
-      })
-
-    } catch (error) {
-      if (activeUploadRef.current !== uploadId) return;
-      console.error('Upload error:', error)
-      setAlertModal({
-        isOpen: true,
-        title: 'Yükleme Hatası',
-        message: 'Medya yüklenirken hata oluştu.',
-        type: 'error'
-      });
-      setTopicMedia(null)
-    } finally {
-      if (activeUploadRef.current === uploadId) {
-        setMediaUploading(false)
-      }
-    }
-  }
-
   const handleCreateTopic = async (e?: React.FormEvent) => {
     e?.preventDefault()
 
@@ -853,88 +780,13 @@ export default function ChefSosyalClient({
                 className="w-full bg-transparent border-none p-0 text-base text-gray-300 placeholder-gray-600 focus:ring-0 min-h-[120px] resize-none"
               />
 
-              {/* Toolbar moved inline */}
-              <div className="flex items-center space-x-6 text-[#ea580c] mt-2 mb-2">
-                <button
-                  onClick={() => document.getElementById('media-upload-image')?.click()}
-                  className={`p-2 -ml-2 rounded-full transition-colors ${mediaUploading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#ea580c]/10'}`}
-                  title="Resim Ekle"
-                  disabled={mediaUploading}
-                >
-                  <ImageIcon className="h-6 w-6" />
-                </button>
-                <button
-                  onClick={() => document.getElementById('media-upload-camera')?.click()}
-                  className={`p-2 rounded-full transition-colors ${mediaUploading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#ea580c]/10'}`}
-                  title="Fotoğraf Çek"
-                  disabled={mediaUploading}
-                >
-                  <Camera className="h-6 w-6" />
-                </button>
-                <button
-                  onClick={() => document.getElementById('media-upload-video')?.click()}
-                  className={`p-2 rounded-full transition-colors ${mediaUploading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#ea580c]/10'}`}
-                  title="Video Ekle"
-                  disabled={mediaUploading}
-                >
-                  <Film className="h-6 w-6" />
-                </button>
-              </div>
-
-              {/* Hidden Inputs for Media */}
-              <input
-                type="file"
-                id="media-upload-image"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => handleMediaSelect(e, 'IMAGE')}
+              <MediaUploader 
+                currentMedia={topicMedia}
+                onUploadStart={() => setMediaUploading(true)}
+                onUploadEnd={() => setMediaUploading(false)}
+                onUploadComplete={(data) => setTopicMedia(data)}
+                onRemove={() => setTopicMedia(null)}
               />
-              <input
-                type="file"
-                id="media-upload-camera"
-                accept="image/*"
-                capture="user"
-                className="hidden"
-                onChange={(e) => handleMediaSelect(e, 'IMAGE')}
-              />
-              <input
-                type="file"
-                id="media-upload-video"
-                accept="video/*"
-                className="hidden"
-                onChange={(e) => handleMediaSelect(e, 'VIDEO')}
-              />
-
-              {/* Media Preview */}
-              {topicMedia && (
-                <div className="relative mt-4 rounded-xl overflow-hidden bg-gray-900 border border-gray-800 group">
-                  <button
-                    onClick={() => {
-                      setTopicMedia(null)
-                      activeUploadRef.current = 0
-                      setMediaUploading(false)
-                    }}
-                    className="absolute top-2 right-2 p-1.5 bg-black/60 rounded-full text-white hover:bg-black/80 transition-colors z-10"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                  {topicMedia.mediaType === 'VIDEO' ? (
-                    <video
-                      src={topicMedia.mediaUrl}
-                      className="w-full max-h-[400px] object-contain bg-black"
-                      controls
-                      controlsList="nodownload"
-                      onContextMenu={(e) => e.preventDefault()}
-                    />
-                  ) : (
-                    <img
-                      src={topicMedia.mediaUrl}
-                      alt="Preview"
-                      className="w-full max-h-[400px] object-cover"
-                    />
-                  )}
-                </div>
-              )}
             </div>
 
 

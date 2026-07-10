@@ -187,6 +187,17 @@ const forumService = {
                 return { success: false, error: 'Giriş yapmalısınız' };
             }
 
+            // 1. Get Cloudinary config
+            const configResponse = await fetch(`${config.API_BASE_URL}/api/auth/cloudinary-params`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            if (!configResponse.ok) {
+                throw new Error('Cloudinary config fetch failed');
+            }
+            const { cloudName, uploadPreset } = await configResponse.json();
+
             const formData = new FormData();
             const filename = uri.split('/').pop();
             const match = /\.(\w+)$/.exec(filename);
@@ -207,23 +218,43 @@ const forumService = {
                 name: filename || `media_${Date.now()}.${ext}`,
                 type: mimeType,
             });
+            
+            formData.append('upload_preset', uploadPreset);
+            formData.append('folder', 'forum-media');
 
-            const response = await fetch(`${config.API_BASE_URL}/api/forum/upload-media`, {
+            const isVideo = type === 'video';
+            const resourceType = isVideo ? 'video' : 'image';
+            const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`;
+
+            const response = await fetch(cloudinaryUrl, {
                 method: 'POST',
                 body: formData,
                 headers: {
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json'
                 },
             });
 
             const result = await response.json();
 
             if (!response.ok) {
-                return { success: false, error: result.error || 'Yükleme hatası' };
+                return { success: false, error: result.error?.message || 'Yükleme hatası' };
             }
 
-            return { success: true, data: result };
+            let thumbnailUrl = result.secure_url;
+            if (isVideo) {
+                thumbnailUrl = result.secure_url.replace(/\.[^.]+$/, '.jpg');
+            }
+
+            return { 
+                success: true, 
+                data: {
+                    success: true,
+                    mediaUrl: result.secure_url,
+                    mediaType: isVideo ? 'VIDEO' : 'IMAGE',
+                    thumbnailUrl: thumbnailUrl,
+                    publicId: result.public_id
+                } 
+            };
         } catch (error) {
             console.error('Upload media error:', error);
             return {
