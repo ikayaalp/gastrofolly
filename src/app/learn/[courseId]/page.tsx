@@ -392,10 +392,10 @@ export default async function LearnPage({ params, searchParams }: LearnPageProps
                       href={currentLesson.pdfUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2 px-3 py-1.5 bg-gray-900 hover:bg-gray-800 text-gray-300 border border-gray-700 hover:text-white rounded-lg transition-colors text-xs font-medium"
+                      className="flex items-center gap-2 px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors text-xs font-medium"
                     >
                       <BookOpen className="h-3.5 w-3.5" />
-                      Görüntüle
+                      Reçete / PDF
                     </a>
                   )}
                 </div>
