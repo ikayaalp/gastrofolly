@@ -173,6 +173,7 @@ model Lesson {
   title       String
   description String?
   videoUrl    String?
+  pdfUrl      String?
   duration    Int? // dakika cinsinden
   order       Int
   isFree      Boolean  @default(false)

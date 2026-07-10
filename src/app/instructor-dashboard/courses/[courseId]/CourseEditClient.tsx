@@ -26,6 +26,7 @@ import {
 } from "lucide-react"
 
 import VideoUpload from "@/components/admin/VideoUpload"
+import DocumentUpload from "@/components/admin/DocumentUpload"
 import ConfirmationModal from "@/components/ui/ConfirmationModal"
 
 interface Category {
@@ -40,6 +41,7 @@ interface Lesson {
   order: number
   duration: number | null
   videoUrl: string | null
+    pdfUrl: string | null
   isPublished: boolean
   isFree: boolean
   courseId: string
@@ -120,7 +122,7 @@ export default function CourseEditClient({ course, categories, session }: Props)
     title: "",
     description: "",
     duration: "",
-    videoUrl: ""
+    videoUrl: "", pdfUrl: ""
   })
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {

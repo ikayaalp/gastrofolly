@@ -79,7 +79,7 @@ export default function SettingsScreen({ navigation }) {
                         await authService.logout();
                         navigation.reset({
                             index: 0,
-                            routes: [{ name: 'Login' }],
+                            routes: [{ name: 'Onboarding' }],
                         });
                     }
                 }

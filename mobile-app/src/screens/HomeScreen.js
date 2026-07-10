@@ -31,6 +31,7 @@ export default function HomeScreen({ navigation }) {
     const [refreshing, setRefreshing] = useState(false);
     const scrollViewRef = useRef(null);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [selectedCategoryId, setSelectedCategoryId] = useState(null);
 
     const onRefresh = React.useCallback(async () => {
         setRefreshing(true);
@@ -157,6 +158,14 @@ export default function HomeScreen({ navigation }) {
             showAlert('Hata', 'Kursa kayıt sırasında bir sorun oluştu.', [{ text: 'Tamam' }], 'error');
         }
     };
+
+    const handleCategoryPress = (categoryId) => {
+        setSelectedCategoryId(categoryId);
+    };
+
+    const selectedCategory = selectedCategoryId
+        ? categories.find((c) => c.id === selectedCategoryId)
+        : null;
 
     const showAlert = (title, message, buttons = [{ text: 'Tamam' }], type = 'info') => {
         // Simple alert for now, can be replaced with CustomAlert if needed
@@ -332,6 +341,36 @@ export default function HomeScreen({ navigation }) {
         );
     };
 
+    // Kategori seçiliyken kursları yukarıdan aşağı, tek sütun listeleyen kart
+    const renderCategoryListCard = (course, index) => {
+        const courseData = course.course || course;
+        const imageUrl = courseData.imageUrl || 'https://images.unsplash.com/photo-1556910103-1c02745a30bf?q=80&w=400';
+
+        return (
+            <TouchableOpacity
+                key={courseData.id || index}
+                style={styles.listCard}
+                onPress={() => navigation.navigate('CourseDetail', { courseId: courseData.id, initialCourse: courseData })}
+                activeOpacity={0.85}
+            >
+                <Image
+                    source={imageUrl}
+                    style={styles.listCardImage}
+                    contentFit="cover"
+                    transition={200}
+                    cachePolicy="memory-disk"
+                />
+                <LinearGradient
+                    colors={['transparent', 'rgba(0,0,0,0.7)', 'rgba(0,0,0,0.95)']}
+                    style={styles.listCardOverlay}
+                >
+                    <Text style={styles.listCardTitle} numberOfLines={2}>{courseData.title}</Text>
+                    <Text style={styles.listCardInstructor} numberOfLines={1}>{courseData.instructor?.name || 'Eğitmen'}</Text>
+                </LinearGradient>
+            </TouchableOpacity>
+        );
+    };
+
     if (loading) {
         return (
             <ScreenContainer style={styles.loadingContainer}>
@@ -366,6 +405,46 @@ export default function HomeScreen({ navigation }) {
                 </View>
             </View>
 
+            {/* Category Pills */}
+            {categories && categories.filter((c) => c.courses && c.courses.length > 0).length > 0 && (
+                <View style={styles.categoryPillsWrapper}>
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={styles.categoryPillsContent}
+                    >
+                        <TouchableOpacity
+                            style={[styles.categoryPill, !selectedCategoryId && styles.categoryPillActive]}
+                            onPress={() => handleCategoryPress(null)}
+                            activeOpacity={0.8}
+                        >
+                            <Text style={[styles.categoryPillText, !selectedCategoryId && styles.categoryPillTextActive]}>
+                                Tümü
+                            </Text>
+                        </TouchableOpacity>
+                        {categories
+                            .filter((c) => c.courses && c.courses.length > 0)
+                            .map((category) => (
+                                <TouchableOpacity
+                                    key={category.id}
+                                    style={[styles.categoryPill, selectedCategoryId === category.id && styles.categoryPillActive]}
+                                    onPress={() => handleCategoryPress(category.id)}
+                                    activeOpacity={0.8}
+                                >
+                                    <Text style={[styles.categoryPillText, selectedCategoryId === category.id && styles.categoryPillTextActive]}>
+                                        {category.name}
+                                    </Text>
+                                </TouchableOpacity>
+                            ))}
+                    </ScrollView>
+                </View>
+            )}
+
+            {selectedCategory ? (
+                <ScrollView style={styles.scrollView} contentContainerStyle={[styles.scrollContent, { paddingTop: 16 }]}>
+                    {selectedCategory.courses.map((course, index) => renderCategoryListCard(course, index))}
+                </ScrollView>
+            ) : (
             <ScrollView
                 style={styles.scrollView}
                 contentContainerStyle={styles.scrollContent}
@@ -575,28 +654,22 @@ export default function HomeScreen({ navigation }) {
                             );
                         case 'categories':
                             if (!categories || categories.length === 0) return null;
-                            return (
-                                <View key={section.key}>
-                                    {categories.map((category) => {
-                                        if (category.courses && category.courses.length > 0) {
-                                            return (
-                                                <View key={`cat-${category.id}`} style={styles.section}>
-                                                    <Text style={styles.sectionTitle}>{category.name}</Text>
-                                                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
-                                                        {category.courses.map((course, index) => renderCourseCard(course, index))}
-                                                    </ScrollView>
-                                                </View>
-                                            );
-                                        }
-                                        return null;
-                                    })}
-                                </View>
-                            );
+                            return categories
+                                .filter((category) => category.courses && category.courses.length > 0)
+                                .map((category) => (
+                                    <View key={`cat-${category.id}`} style={styles.section}>
+                                        <Text style={styles.sectionTitle}>{category.name}</Text>
+                                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
+                                            {category.courses.map((course, index) => renderCourseCard(course, index))}
+                                        </ScrollView>
+                                    </View>
+                                ));
                         default:
                             return null;
                     }
                 })}
             </ScrollView>
+            )}
         </ScreenContainer>
     );
 }
@@ -647,6 +720,69 @@ const styles = StyleSheet.create({
     },
     headerButton: {
         padding: 4,
+    },
+    categoryPillsWrapper: {
+        paddingVertical: 10,
+    },
+    categoryPillsContent: {
+        paddingHorizontal: 16,
+        gap: 8,
+    },
+    categoryPill: {
+        backgroundColor: '#1a1a1a',
+        borderWidth: 1,
+        borderColor: '#333',
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        borderRadius: 20,
+        marginRight: 8,
+    },
+    categoryPillActive: {
+        backgroundColor: '#ea580c',
+        borderColor: '#ea580c',
+    },
+    categoryPillText: {
+        color: '#9ca3af',
+        fontSize: 13,
+        fontWeight: '600',
+    },
+    categoryPillTextActive: {
+        color: '#fff',
+    },
+    listCard: {
+        marginHorizontal: 16,
+        marginBottom: 20,
+        height: 200,
+        borderRadius: 14,
+        backgroundColor: '#111',
+        borderWidth: 1,
+        borderColor: '#1f2937',
+        position: 'relative',
+        overflow: 'hidden',
+    },
+    listCardImage: {
+        width: '100%',
+        height: '100%',
+    },
+    listCardOverlay: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        paddingHorizontal: 16,
+        paddingBottom: 16,
+        paddingTop: 60,
+    },
+    listCardTitle: {
+        color: '#fff',
+        fontSize: 18,
+        fontWeight: 'bold',
+        lineHeight: 22,
+        marginBottom: 4,
+    },
+    listCardInstructor: {
+        color: '#9ca3af',
+        fontSize: 13,
     },
     scrollView: {
         flex: 1,

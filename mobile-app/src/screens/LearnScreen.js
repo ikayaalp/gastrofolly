@@ -15,6 +15,7 @@ import {
     Modal,
     useWindowDimensions,
 } from 'react-native';
+import { Image } from 'expo-image';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Video, ResizeMode } from 'expo-av';
@@ -27,6 +28,7 @@ import {
     SkipForward,
     ChevronDown,
     ChevronUp,
+    ChevronRight,
     CheckCircle,
     Circle,
     Clock,
@@ -44,7 +46,10 @@ import {
     X,
     BookOpen,
     Lock,
-    Gauge
+    Gauge,
+    Users,
+    User,
+    BarChart3,
 } from 'lucide-react-native';
 
 const PLAYBACK_RATES = [0.5, 0.75, 1, 1.25, 1.5, 2];
@@ -80,6 +85,7 @@ export default function LearnScreen({ route, navigation }) {
     const [playbackRate, setPlaybackRate] = useState(1);
     const [showSpeedMenu, setShowSpeedMenu] = useState(false);
     const [autoNextSeconds, setAutoNextSeconds] = useState(null);
+    const [descriptionExpanded, setDescriptionExpanded] = useState(false);
     const [keyboardVisible, setKeyboardVisible] = useState(false);
     const [currentUserId, setCurrentUserId] = useState(null);
     const [alertVisible, setAlertVisible] = useState(false);
@@ -458,23 +464,10 @@ export default function LearnScreen({ route, navigation }) {
         return Object.values(progress).filter(p => p.isCompleted).length;
     };
 
-    const handleCopyEmail = async (email) => {
-        if (!email) return;
-        await Clipboard.setStringAsync(email);
-        showAlert('Başarılı', 'E-posta adresi kopyalandı.', [{ text: 'Tamam' }], 'success');
-    };
-
-    const handleSendEmail = async (email, name) => {
-        if (!email) return;
-        const subject = `Soru: ${course?.title || 'Kurs Hakkında'}`;
-        const body = `Merhaba ${name || 'Hocam'},\n\n`;
-        const mailtoUrl = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-
-        try {
-            await Linking.openURL(mailtoUrl);
-        } catch (error) {
-            handleCopyEmail(email); // Fallback copy
-        }
+    const LEVEL_LABELS = {
+        BEGINNER: 'Başlangıç',
+        INTERMEDIATE: 'Orta Seviye',
+        ADVANCED: 'İleri Seviye',
     };
 
     // Helper to get full video URL and convert to HLS if Cloudinary
@@ -607,7 +600,7 @@ export default function LearnScreen({ route, navigation }) {
                                 {/* Top Bar */}
                                 <LinearGradient
                                     colors={['rgba(0,0,0,0.8)', 'transparent']}
-                                    style={styles.topGradient}
+                                    style={[styles.topGradient, { paddingTop: (isFullscreen ? insets.top : Math.max(insets.top, 20)) + 12 }]}
                                     pointerEvents="box-none"
                                 >
                                     <TouchableOpacity
@@ -788,12 +781,6 @@ export default function LearnScreen({ route, navigation }) {
 
             {!isFullscreen && (
                 <>
-                    {/* Course Info Header */}
-                    <View style={styles.courseHeader}>
-                        <Text style={styles.courseTitle} numberOfLines={2}>{course.title}</Text>
-                    </View>
-
-
                     {/* Tab Content */}
                     <ScrollView
                         ref={scrollViewRef}
@@ -801,31 +788,103 @@ export default function LearnScreen({ route, navigation }) {
                         contentContainerStyle={styles.tabContentContainer}
                         keyboardShouldPersistTaps="handled"
                     >
-                        {/* Content... */}
-                            <View>
-                                {/* Progress Overview... */}
-                                <View style={styles.webProgressContainer}>
-                                    <View style={styles.webProgressHeader}>
-                                        <Text style={styles.webProgressTitle}>{course.title}</Text>
-                                        <View style={styles.webProgressBadge}>
-                                            <Text style={styles.webProgressText}>%{Math.round((getCompletedCount() / (lessons.length || 1)) * 100)} Tamamlandı</Text>
-                                        </View>
-                                    </View>
-                                    <View style={styles.progressBarModernBg}>
-                                        <View
-                                            style={[
-                                                styles.progressBarModernFill,
-                                                { width: `${(getCompletedCount() / lessons.length) * 100}%` }
-                                            ]}
-                                        />
-                                    </View>
-                                </View>
+                        {/* Course Title + Meta Badges */}
+                        <View style={styles.courseHeader}>
+                            <Text style={styles.courseTitle} numberOfLines={2}>{currentLesson ? currentLesson.title : course.title}</Text>
+                            {currentLesson?.description ? (
+                                <Text style={{ color: '#9ca3af', fontSize: 14, marginTop: 8, lineHeight: 20 }}>
+                                    {currentLesson.description}
+                                </Text>
+                            ) : null}
+                            {currentLesson?.pdfUrl ? (
+                                <TouchableOpacity
+                                    style={{
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        backgroundColor: '#ea580c',
+                                        paddingVertical: 10,
+                                        paddingHorizontal: 16,
+                                        borderRadius: 8,
+                                        marginTop: 16,
+                                        alignSelf: 'flex-start'
+                                    }}
+                                    onPress={() => Linking.openURL(currentLesson.pdfUrl)}
+                                >
+                                    <FileText size={18} color="#fff" style={{ marginRight: 8 }} />
+                                    <Text style={{ color: '#fff', fontSize: 14, fontWeight: '600' }}>Re�ete / PDF G�r�nt�le</Text>
+                                </TouchableOpacity>
+                            ) : null}
+                        </View>
 
-                                {/* Lesson Content... */}
-                                <View style={styles.lessonListHeader}>
-                                    <Text style={styles.lessonListTitle}>Ders İçeriği ({lessons.length} Ders)</Text>
+                        {/* Instructor Row */}
+                        {course.instructor && (
+                            <TouchableOpacity
+                                style={styles.instructorRow}
+                                activeOpacity={0.7}
+                                onPress={() => navigation.navigate('InstructorProfile', {
+                                    instructorId: course.instructor.id,
+                                    instructorName: course.instructor.name,
+                                    instructorImage: course.instructor.image,
+                                })}
+                            >
+                                {course.instructor.image ? (
+                                    <Image source={{ uri: course.instructor.image }} style={styles.instructorAvatar} contentFit="cover" />
+                                ) : (
+                                    <View style={styles.instructorAvatarPlaceholder}>
+                                        <User size={22} color="#9ca3af" />
+                                    </View>
+                                )}
+                                <View style={styles.instructorRowInfo}>
+                                    <Text style={styles.instructorRowLabel}>Eğitmen</Text>
+                                    <Text style={styles.instructorRowName} numberOfLines={1}>{course.instructor.name}</Text>
                                 </View>
+                                <ChevronRight size={20} color="#6b7280" />
+                            </TouchableOpacity>
+                        )}
 
+                        {/* Progress Overview */}
+                        <View style={styles.webProgressContainer}>
+                            <View style={styles.webProgressHeader}>
+                                <Text style={styles.webProgressTitle}>İlerlemen</Text>
+                                <View style={styles.webProgressBadge}>
+                                    <Text style={styles.webProgressText}>%{Math.round((getCompletedCount() / (lessons.length || 1)) * 100)} Tamamlandı</Text>
+                                </View>
+                            </View>
+                            <View style={styles.progressBarModernBg}>
+                                <View
+                                    style={[
+                                        styles.progressBarModernFill,
+                                        { width: `${(getCompletedCount() / lessons.length) * 100}%` }
+                                    ]}
+                                />
+                            </View>
+                            <Text style={styles.progressCountText}>{getCompletedCount()}/{lessons.length} ders tamamlandı</Text>
+                        </View>
+
+                        {/* Description */}
+                        {!!course.description && (
+                            <View style={styles.descriptionSection}>
+                                <Text style={styles.descriptionSectionTitle}>Bu Kurs Hakkında</Text>
+                                <Text
+                                    style={styles.descriptionText}
+                                    numberOfLines={descriptionExpanded ? undefined : 3}
+                                >
+                                    {course.description}
+                                </Text>
+                                <TouchableOpacity onPress={() => setDescriptionExpanded(v => !v)}>
+                                    <Text style={styles.descriptionToggle}>
+                                        {descriptionExpanded ? 'Daha Az Göster' : 'Devamını Oku'}
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
+                        )}
+
+                        {/* Lesson Content... */}
+                        <View style={styles.lessonListHeader}>
+                            <Text style={styles.lessonListTitle}>Ders İçeriği ({lessons.length} Ders)</Text>
+                        </View>
+
+                        <View>
                                 {lessons.map((lesson, index) => (
                                     <TouchableOpacity
                                         key={lesson.id}
@@ -870,10 +929,8 @@ export default function LearnScreen({ route, navigation }) {
                                         )}
                                     </TouchableOpacity>
                                 ))}
-                            </View>
-
-                        {/* Other tabs... */}
-                                            </ScrollView>
+                        </View>
+                    </ScrollView>
                 </>
             )}
 
@@ -926,7 +983,7 @@ const styles = StyleSheet.create({
     // Video Section
     videoContainer: {
         backgroundColor: '#0a0a0a',
-        minHeight: 280,
+        minHeight: 300,
     },
     videoContainerFullscreen: {
         position: 'absolute',
@@ -964,7 +1021,7 @@ const styles = StyleSheet.create({
     topGradient: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingTop: 60, // Increased from 44 to push header down
+        // paddingTop artık gerçek güvenli alan (safe area) üstünden dinamik olarak inline set ediliyor
         paddingHorizontal: 16,
         paddingBottom: 20,
     },
@@ -1083,14 +1140,101 @@ const styles = StyleSheet.create({
     // Course Header
     courseHeader: {
         paddingHorizontal: 16,
-        paddingVertical: 12,
-        backgroundColor: '#0a0a0a',
+        paddingTop: 20,
+        paddingBottom: 4,
     },
     courseTitle: {
         color: 'white',
-        fontSize: 18,
+        fontSize: 22,
         fontWeight: 'bold',
-        marginBottom: 4,
+        marginBottom: 10,
+        lineHeight: 28,
+    },
+    courseMetaRow: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8,
+    },
+    metaBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 5,
+        backgroundColor: '#151515',
+        borderWidth: 1,
+        borderColor: '#262626',
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        borderRadius: 20,
+    },
+    metaBadgeText: {
+        color: '#9ca3af',
+        fontSize: 12,
+        fontWeight: '600',
+    },
+    instructorRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginHorizontal: 16,
+        marginTop: 16,
+        padding: 12,
+        backgroundColor: '#111',
+        borderRadius: 14,
+        borderWidth: 1,
+        borderColor: '#1f2937',
+        gap: 12,
+    },
+    instructorAvatar: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        backgroundColor: '#1f2937',
+    },
+    instructorAvatarPlaceholder: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        backgroundColor: '#1f2937',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    instructorRowInfo: {
+        flex: 1,
+    },
+    instructorRowLabel: {
+        color: '#6b7280',
+        fontSize: 12,
+        marginBottom: 2,
+    },
+    instructorRowName: {
+        color: 'white',
+        fontSize: 15,
+        fontWeight: '700',
+    },
+    progressCountText: {
+        color: '#6b7280',
+        fontSize: 12,
+        marginTop: 10,
+    },
+    descriptionSection: {
+        marginHorizontal: 16,
+        marginBottom: 24,
+    },
+    descriptionSectionTitle: {
+        color: 'white',
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginBottom: 10,
+    },
+    descriptionText: {
+        color: '#9ca3af',
+        fontSize: 14,
+        lineHeight: 21,
+    },
+    descriptionToggle: {
+        color: '#ea580c',
+        fontSize: 13,
+        fontWeight: '700',
+        marginTop: 8,
     },
     instructorNameClickable: {
         color: '#d1d5db', // Lighter gray/white
@@ -1772,6 +1916,8 @@ const styles = StyleSheet.create({
     webProgressContainer: {
         backgroundColor: '#111',
         padding: 20,
+        marginHorizontal: 16,
+        marginTop: 16,
         marginBottom: 24,
         borderRadius: 16,
         borderWidth: 1,
@@ -1816,7 +1962,7 @@ const styles = StyleSheet.create({
     },
     lessonListHeader: {
         marginBottom: 16,
-        paddingHorizontal: 4,
+        paddingHorizontal: 16,
     },
     lessonListTitle: {
         color: 'white',

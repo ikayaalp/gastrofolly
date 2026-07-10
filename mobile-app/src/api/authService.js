@@ -116,6 +116,7 @@ const authService = {
             await AsyncStorage.removeItem('authToken');
             await AsyncStorage.removeItem('userData');
             await AsyncStorage.removeItem('userId');
+            await AsyncStorage.removeItem('onboardingCompleted');
             await logoutRevenueCat();
             return { success: true };
         } catch (error) {

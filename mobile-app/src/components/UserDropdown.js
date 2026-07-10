@@ -30,7 +30,10 @@ export default function UserDropdown({ navigation }) {
     const handleLogout = async () => {
         setVisible(false);
         await authService.logout();
-        navigation.navigate('Login');
+        navigation.reset({
+            index: 0,
+            routes: [{ name: 'Onboarding' }],
+        });
     };
 
     const getRoleName = (role) => {

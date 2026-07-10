@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { X, Save, Check, Plus, Edit, Trash2, Upload, Play, Clock, Layout, List, Settings, Eye } from "lucide-react"
 import ImageUpload from "@/components/admin/ImageUpload"
 import VideoUpload from "@/components/admin/VideoUpload"
+import DocumentUpload from "@/components/admin/DocumentUpload"
 import ConfirmationModal from '@/components/ui/ConfirmationModal'
 
 interface Course {
@@ -102,7 +103,8 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
         order: 0,
         isFree: false
     })
-    const [showVideoUploadForLessonId, setShowVideoUploadForLessonId] = useState<string | null>(null) // If set, showing upload modal for this lesson ID
+    const [showVideoUploadForLessonId, setShowVideoUploadForLessonId] = useState<string | null>(null)
+    const [showPdfUploadForLessonId, setShowPdfUploadForLessonId] = useState<string | null>(null) // If set, showing upload modal for this lesson ID
 
     // Delete Modal State
     const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -356,6 +358,23 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
         } finally {
             setUploadingVideo(false)
         }
+    }
+
+    const handlePdfUploadedForLesson = async (pdfUrl: string) => {
+        if (!showPdfUploadForLessonId) return
+        const lesson = lessons.find(l => l.id === showPdfUploadForLessonId)
+        if (!lesson) return
+        try {
+            const response = await fetch(`/api/admin/lessons/${lesson.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pdfUrl })
+            })
+            if (response.ok) {
+                setLessons(prev => prev.map(l => l.id === lesson.id ? { ...l, pdfUrl } : l))
+                setShowPdfUploadForLessonId(null)
+            }
+        } catch (e) { console.error(e) }
     }
 
     const handleVideoUploadedForLesson = async (videoUrl: string, duration?: number) => {
@@ -719,7 +738,27 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
                                                         <Upload className="h-3 w-3" />
                                                         <span>Video Yükle</span>
                                                     </button>
-                                                )}
+                                                )
+                                                {/* PDF Upload Button */}
+                                                {lesson.pdfUrl ? (
+                                                    <button
+                                                        onClick={() => setShowPdfUploadForLessonId(lesson.id)}
+                                                        className="flex items-center space-x-2 bg-green-500/10 text-green-400 px-3 py-1.5 rounded-lg text-xs font-mono border border-green-500/20 hover:bg-green-500/20 cursor-pointer transition-colors"
+                                                        title="PDF / Re�ete G�ncelle"
+                                                    >
+                                                        <Check className="h-3 w-3" />
+                                                        <span>PDF Y�kl�</span>
+                                                    </button>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => setShowPdfUploadForLessonId(lesson.id)}
+                                                        className="flex items-center space-x-2 bg-blue-500/10 text-blue-400 px-3 py-1.5 rounded-lg text-xs font-mono border border-blue-500/20 hover:bg-blue-500/20 transition-colors"
+                                                        title="PDF / Re�ete Y�kle"
+                                                    >
+                                                        <Upload className="h-3 w-3" />
+                                                        <span>PDF</span>
+                                                    </button>
+                                                )}}
 
                                                 <div className="h-6 w-px bg-gray-700 mx-2"></div>
 
@@ -777,6 +816,21 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
                             <VideoUpload
                                 lessonId={showVideoUploadForLessonId}
                                 onVideoUploaded={handleVideoUploadedForLesson}
+                            />
+                        </div>
+                    </div>
+                )}
+                {/* OVERLAY MODAL FOR PDF UPLOAD */}
+                {showPdfUploadForLessonId && (
+                    <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+                        <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-lg p-6 shadow-2xl">
+                            <div className="flex justify-between items-center mb-6">
+                                <h3 className="text-lg font-bold text-white">PDF / Re�ete Y�kle</h3>
+                                <button onClick={() => setShowPdfUploadForLessonId(null)} className="text-gray-400 hover:text-white"><X className="h-5 w-5" /></button>
+                            </div>
+                            <DocumentUpload
+                                lessonId={showPdfUploadForLessonId}
+                                onDocumentUploaded={handlePdfUploadedForLesson}
                             />
                         </div>
                     </div>
