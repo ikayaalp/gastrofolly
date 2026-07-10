@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Modal, ScrollView, Alert, Image } from 'react-native';
-import { User, Settings, LogOut, BookOpen, Heart, MessageCircle, ChevronDown, Award, Play, MessageSquare } from 'lucide-react-native';
+import { User, Settings, LogOut, BookOpen, Heart, ChevronDown, Award, Play } from 'lucide-react-native';
 import authService from '../api/authService';
 
 export default function UserDropdown({ navigation }) {
@@ -143,16 +143,7 @@ export default function UserDropdown({ navigation }) {
                                 <Text style={styles.menuText}>Favorilerim</Text>
                             </TouchableOpacity>
 
-                            <TouchableOpacity
-                                style={styles.menuItem}
-                                onPress={() => {
-                                    setVisible(false);
-                                    navigation.navigate('ChefSor');
-                                }}
-                            >
-                                <MessageCircle size={18} color="#9ca3af" />
-                                <Text style={styles.menuText}>Chef'e Sor</Text>
-                            </TouchableOpacity>
+
 
                             <TouchableOpacity
                                 style={styles.menuItem}
@@ -165,19 +156,7 @@ export default function UserDropdown({ navigation }) {
                                 <Text style={styles.menuText}>Sertifikalarım</Text>
                             </TouchableOpacity>
 
-                            {/* Instructor Only */}
-                            {userData?.role === 'INSTRUCTOR' && (
-                                <TouchableOpacity
-                                    style={styles.menuItem}
-                                    onPress={() => {
-                                        setVisible(false);
-                                        navigation.navigate('ChefSor');
-                                    }}
-                                >
-                                    <MessageSquare size={18} color="#9ca3af" />
-                                    <Text style={styles.menuText}>Öğrencilerden Sorular</Text>
-                                </TouchableOpacity>
-                            )}
+
 
                             {/* Admin Only */}
                             {userData?.role === 'ADMIN' && (

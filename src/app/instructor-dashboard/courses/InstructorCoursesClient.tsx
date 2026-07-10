@@ -19,7 +19,6 @@ import {
   Filter,
   Home,
   GraduationCap,
-  MessageCircle,
   Phone,
   User
 } from "lucide-react"
@@ -194,9 +193,6 @@ export default function InstructorCoursesClient({ courses, categories, session }
                 <Link href="/chef-sosyal" className="text-gray-300 hover:text-white transition-colors">
                   Chef Sosyal
                 </Link>
-                <Link href="/chef-sor" className="text-gray-300 hover:text-white transition-colors">
-                  Chef&apos;e Sor
-                </Link>
                 <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
                   İletişim
                 </Link>
@@ -218,7 +214,7 @@ export default function InstructorCoursesClient({ courses, categories, session }
 
       {/* Mobile Bottom Navigation */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-gray-900 border-t border-gray-800">
-        <div className="grid grid-cols-5 gap-1">
+        <div className="grid grid-cols-4 gap-1">
           <Link href="/home" className="flex flex-col items-center py-3 text-gray-400 hover:text-white transition-colors">
             <Home className="h-5 w-5" />
             <span className="text-xs mt-1">Ana Sayfa</span>
@@ -230,10 +226,6 @@ export default function InstructorCoursesClient({ courses, categories, session }
           <Link href="/instructor-dashboard/courses" className="flex flex-col items-center py-3 text-orange-500">
             <BookOpen className="h-5 w-5" />
             <span className="text-xs mt-1">Kurslar</span>
-          </Link>
-          <Link href="/chef-sor" className="flex flex-col items-center py-3 text-gray-400 hover:text-white transition-colors">
-            <MessageCircle className="h-5 w-5" />
-            <span className="text-xs mt-1">Chef&apos;e Sor</span>
           </Link>
           <Link href="/contact" className="flex flex-col items-center py-3 text-gray-400 hover:text-white transition-colors">
             <Phone className="h-5 w-5" />

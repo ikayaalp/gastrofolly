@@ -25,7 +25,6 @@ import {
     Star,
     Crown,
     AlertCircle,
-    MessageSquare,
     Play
 } from 'lucide-react-native';
 import authService from '../api/authService';
@@ -257,13 +256,7 @@ export default function SettingsScreen({ navigation }) {
 
                     {(userData?.role === 'INSTRUCTOR' || userData?.role === 'ADMIN') && (
                         <SettingSection title="Yönetim">
-                            {userData?.role === 'INSTRUCTOR' && (
-                                <SettingItem
-                                    icon={MessageSquare}
-                                    title="Öğrencilerden Sorular"
-                                    onPress={() => navigation.navigate('ChefSor')}
-                                />
-                            )}
+
                             {userData?.role === 'ADMIN' && (
                                 <>
                                     <SettingItem

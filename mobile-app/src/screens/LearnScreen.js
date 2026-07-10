@@ -13,7 +13,6 @@ import {
     Platform,
     Keyboard,
     Modal,
-    Image,
     useWindowDimensions,
 } from 'react-native';
 import * as ScreenOrientation from 'expo-screen-orientation';
@@ -41,17 +40,16 @@ import {
     List,
     Send,
     Trash2,
-    Copy,
     GraduationCap,
     X,
-    Mail,
-    User,
     BookOpen,
-    Lock
+    Lock,
+    Gauge
 } from 'lucide-react-native';
+
+const PLAYBACK_RATES = [0.5, 0.75, 1, 1.25, 1.5, 2];
+const AUTO_NEXT_SECONDS = 5;
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Clipboard from 'expo-clipboard';
-import { Linking } from 'react-native';
 import axios from 'axios';
 import config from '../api/config';
 import { TextInput } from 'react-native';
@@ -79,7 +77,9 @@ export default function LearnScreen({ route, navigation }) {
     const [videoPosition, setVideoPosition] = useState(0);
     const [isBuffering, setIsBuffering] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(false);
-    const [activeTab, setActiveTab] = useState('lessons'); // 'lessons', 'chef'
+    const [playbackRate, setPlaybackRate] = useState(1);
+    const [showSpeedMenu, setShowSpeedMenu] = useState(false);
+    const [autoNextSeconds, setAutoNextSeconds] = useState(null);
     const [keyboardVisible, setKeyboardVisible] = useState(false);
     const [currentUserId, setCurrentUserId] = useState(null);
     const [alertVisible, setAlertVisible] = useState(false);
@@ -286,6 +286,10 @@ export default function LearnScreen({ route, navigation }) {
             if (status.durationMillis && status.positionMillis / status.durationMillis > 0.9) {
                 markLessonComplete(status.positionMillis);
             }
+            // Video bittiğinde, sonraki ders erişilebilirse otomatik geçiş geri sayımını başlat
+            if (status.didJustFinish && isNextLessonAccessible()) {
+                setAutoNextSeconds(AUTO_NEXT_SECONDS);
+            }
         }
     };
 
@@ -374,6 +378,20 @@ export default function LearnScreen({ route, navigation }) {
         };
     }, [currentLesson, saveProgress]);
 
+    // Video bittiğinde otomatik sonraki derse geçiş için geri sayım
+    useEffect(() => {
+        if (autoNextSeconds === null) return;
+        if (autoNextSeconds <= 0) {
+            goToNextLesson();
+            return;
+        }
+        const timeoutId = setTimeout(() => {
+            setAutoNextSeconds((s) => (s !== null ? s - 1 : null));
+        }, 1000);
+        return () => clearTimeout(timeoutId);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [autoNextSeconds]);
+
     const checkAccess = (lesson, index) => {
         // If server says user has global access, all lessons are unlocked
         if (course?.hasAccess) return true;
@@ -395,6 +413,7 @@ export default function LearnScreen({ route, navigation }) {
             setCurrentLesson(lesson);
             setShowLessonList(false);
             setVideoPosition(0);
+            setAutoNextSeconds(null);
         } else {
             navigation.navigate('Subscription');
         }
@@ -407,6 +426,16 @@ export default function LearnScreen({ route, navigation }) {
         if (currentIndex < lessons.length - 1) {
             selectLesson(lessons[currentIndex + 1]);
         }
+    };
+
+    // Sıradaki ders var mı ve erişilebilir mi (otomatik geçiş kartını göstermek için)
+    const isNextLessonAccessible = () => {
+        if (!course || !currentLesson) return false;
+        const lessons = course.lessons || [];
+        const currentIndex = lessons.findIndex(l => l.id === currentLesson.id);
+        const next = lessons[currentIndex + 1];
+        if (!next) return false;
+        return checkAccess(next, currentIndex + 1);
     };
 
     const goToPrevLesson = () => {
@@ -508,7 +537,7 @@ export default function LearnScreen({ route, navigation }) {
             {!keyboardVisible && (
                 <View style={[
                     styles.videoContainer,
-                    { width: width, height: isFullscreen ? height : height * 0.4 },
+                    { width: width, height: isFullscreen ? height : Math.min(width * (9 / 16), height * 0.45) },
                     isFullscreen && styles.videoContainerFullscreen
                 ]}>
                     {currentLesson.videoUrl ? (
@@ -522,6 +551,8 @@ export default function LearnScreen({ route, navigation }) {
                             resizeMode={ResizeMode.CONTAIN}
                             shouldPlay={isPlaying}
                             isMuted={isMuted}
+                            rate={playbackRate}
+                            shouldCorrectPitch
                             onPlaybackStatusUpdate={handleVideoStatusUpdate}
                             onLoad={async () => {
                                 setIsBuffering(false);
@@ -688,6 +719,32 @@ export default function LearnScreen({ route, navigation }) {
                                                 </TouchableOpacity>
                                             </View>
 
+                                            <View>
+                                                <TouchableOpacity
+                                                    style={[styles.iconControl, styles.speedControl]}
+                                                    onPress={() => setShowSpeedMenu(v => !v)}
+                                                >
+                                                    <Gauge size={20} color="white" />
+                                                    <Text style={styles.speedControlText}>{playbackRate}x</Text>
+                                                </TouchableOpacity>
+                                                {showSpeedMenu && (
+                                                    <View style={styles.speedMenu}>
+                                                        {PLAYBACK_RATES.map((rate) => (
+                                                            <TouchableOpacity
+                                                                key={rate}
+                                                                style={[styles.speedMenuItem, rate === playbackRate && styles.speedMenuItemActive]}
+                                                                onPress={() => {
+                                                                    setPlaybackRate(rate);
+                                                                    setShowSpeedMenu(false);
+                                                                }}
+                                                            >
+                                                                <Text style={[styles.speedMenuItemText, rate === playbackRate && styles.speedMenuItemTextActive]}>{rate}x</Text>
+                                                            </TouchableOpacity>
+                                                        ))}
+                                                    </View>
+                                                )}
+                                            </View>
+
                                             <TouchableOpacity
                                                 style={styles.iconControl}
                                                 onPress={async () => {
@@ -705,6 +762,24 @@ export default function LearnScreen({ route, navigation }) {
                                         </View>
                                     </LinearGradient>
                                 )}
+
+                                {/* Otomatik sonraki derse geçiş kartı */}
+                                {autoNextSeconds !== null && (
+                                    <View style={[styles.autoNextCard, { bottom: isFullscreen ? Math.max(insets.bottom, 20) + 90 : 90 }]} pointerEvents="box-none">
+                                        <View style={styles.autoNextHeader}>
+                                            <Text style={styles.autoNextLabel}>Sonraki ders {autoNextSeconds} saniye içinde başlıyor</Text>
+                                            <TouchableOpacity onPress={() => setAutoNextSeconds(null)}>
+                                                <X size={16} color="#9ca3af" />
+                                            </TouchableOpacity>
+                                        </View>
+                                        <Text style={styles.autoNextTitle} numberOfLines={2}>
+                                            {lessons[currentIndex + 1]?.title}
+                                        </Text>
+                                        <TouchableOpacity style={styles.autoNextButton} onPress={goToNextLesson}>
+                                            <Text style={styles.autoNextButtonText}>Şimdi İzle</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                )}
                             </Animated.View>
                         )}
                     </View>
@@ -718,26 +793,6 @@ export default function LearnScreen({ route, navigation }) {
                         <Text style={styles.courseTitle} numberOfLines={2}>{course.title}</Text>
                     </View>
 
-                    {/* Tab Navigation */}
-                    <View style={styles.tabContainer}>
-                        <TouchableOpacity
-                            style={[styles.tab, activeTab === 'lessons' && styles.tabActive]}
-                            onPress={() => setActiveTab('lessons')}
-                        >
-                            <Text style={[styles.tabText, activeTab === 'lessons' && styles.tabTextActive]}>
-                                Dersler
-                            </Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            style={[styles.tab, activeTab === 'chef' && styles.tabActive]}
-                            onPress={() => setActiveTab('chef')}
-                        >
-                            <Text style={[styles.tabText, activeTab === 'chef' && styles.tabTextActive]}>
-                                Chef'e Sor
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
 
                     {/* Tab Content */}
                     <ScrollView
@@ -747,7 +802,6 @@ export default function LearnScreen({ route, navigation }) {
                         keyboardShouldPersistTaps="handled"
                     >
                         {/* Content... */}
-                        {activeTab === 'lessons' && (
                             <View>
                                 {/* Progress Overview... */}
                                 <View style={styles.webProgressContainer}>
@@ -817,48 +871,9 @@ export default function LearnScreen({ route, navigation }) {
                                     </TouchableOpacity>
                                 ))}
                             </View>
-                        )}
+
                         {/* Other tabs... */}
-                        {activeTab === 'chef' && (
-                            <View style={styles.tabContentContainer}>
-                                <View style={styles.instructorCard}>
-                                    <View style={styles.instructorHeader}>
-                                        <View style={styles.avatarContainer}>
-                                            {course.instructor?.image ? (
-                                                <Image source={{ uri: course.instructor.image }} style={styles.avatar} />
-                                            ) : (
-                                                <View style={styles.avatarPlaceholder}>
-                                                    <User size={32} color="#fff" />
-                                                </View>
-                                            )}
-                                        </View>
-                                        <View style={styles.instructorInfo}>
-                                            <Text style={styles.instructorName}>{course.instructor?.name || 'İsimsiz Eğitmen'}</Text>
-                                            <Text style={{ color: '#9ca3af', fontSize: 13, marginTop: 4 }}>
-                                                {course.instructor?.email}
-                                            </Text>
-                                        </View>
-                                    </View>
-                                    <View style={styles.emailContainer}>
-                                        <TouchableOpacity
-                                            style={styles.copyButton}
-                                            onPress={() => handleCopyEmail(course.instructor?.email)}
-                                        >
-                                            <Copy size={20} color="#ea580c" />
-                                            <Text style={styles.copyButtonText}>Kopyala</Text>
-                                        </TouchableOpacity>
-                                        <TouchableOpacity
-                                            style={styles.gmailButton}
-                                            onPress={() => handleSendEmail(course.instructor?.email, course.instructor?.name)}
-                                        >
-                                            <Mail size={20} color="white" />
-                                            <Text style={styles.gmailButtonText}>Mail Gönder</Text>
-                                        </TouchableOpacity>
-                                    </View>
-                                </View>
-                            </View>
-                        )}
-                    </ScrollView>
+                                            </ScrollView>
                 </>
             )}
 
@@ -1077,11 +1092,6 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginBottom: 4,
     },
-    instructorName: {
-        color: '#9ca3af',
-        fontSize: 14,
-        fontWeight: '500',
-    },
     instructorNameClickable: {
         color: '#d1d5db', // Lighter gray/white
         fontWeight: '600', // Bold to indicate importance/interactivity
@@ -1089,29 +1099,11 @@ const styles = StyleSheet.create({
     },
 
     // Tab Navigation
-    tabContainer: {
-        flexDirection: 'row',
-        backgroundColor: '#0a0a0a',
-        borderBottomWidth: 1,
-        borderBottomColor: '#1f2937',
-    },
-    tab: {
-        flex: 1,
-        paddingVertical: 14,
-        alignItems: 'center',
-    },
-    tabActive: {
-        borderBottomWidth: 2,
-        borderBottomColor: '#ea580c',
-    },
-    tabText: {
-        color: '#9ca3af',
-        fontSize: 15,
-        fontWeight: '500',
-    },
-    tabTextActive: {
-        color: 'white',
-    },
+
+
+
+
+
 
     // Tab Content
     tabContent: {
@@ -1272,6 +1264,85 @@ const styles = StyleSheet.create({
     centerNavRow: {
         flexDirection: 'row',
         gap: 32,
+    },
+    speedControl: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        paddingHorizontal: 12,
+    },
+    speedControlText: {
+        color: 'white',
+        fontSize: 12,
+        fontWeight: '700',
+    },
+    speedMenu: {
+        position: 'absolute',
+        bottom: '100%',
+        right: 0,
+        marginBottom: 8,
+        backgroundColor: '#1a1a1a',
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.1)',
+        overflow: 'hidden',
+        minWidth: 64,
+    },
+    speedMenuItem: {
+        paddingVertical: 10,
+        paddingHorizontal: 14,
+        alignItems: 'center',
+    },
+    speedMenuItemActive: {
+        backgroundColor: '#ea580c',
+    },
+    speedMenuItemText: {
+        color: '#d1d5db',
+        fontSize: 13,
+        fontWeight: '600',
+    },
+    speedMenuItemTextActive: {
+        color: 'white',
+    },
+    autoNextCard: {
+        position: 'absolute',
+        right: 16,
+        width: 240,
+        backgroundColor: '#141414',
+        borderRadius: 14,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.1)',
+        padding: 14,
+        zIndex: 40,
+    },
+    autoNextHeader: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        justifyContent: 'space-between',
+        marginBottom: 6,
+        gap: 8,
+    },
+    autoNextLabel: {
+        color: '#9ca3af',
+        fontSize: 11,
+        flex: 1,
+    },
+    autoNextTitle: {
+        color: 'white',
+        fontSize: 14,
+        fontWeight: '700',
+        marginBottom: 10,
+    },
+    autoNextButton: {
+        backgroundColor: '#ea580c',
+        borderRadius: 10,
+        paddingVertical: 10,
+        alignItems: 'center',
+    },
+    autoNextButtonText: {
+        color: 'white',
+        fontSize: 13,
+        fontWeight: '700',
     },
     navIcon: {
         padding: 8,
@@ -1681,91 +1752,21 @@ const styles = StyleSheet.create({
     },
 
     // Instructor Card Styles
-    instructorCard: {
-        backgroundColor: '#111',
-        borderRadius: 16,
-        padding: 16,
-        marginTop: 16,
-        borderWidth: 1,
-        borderColor: '#1f2937',
-    },
-    instructorHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 16,
-        gap: 16,
-    },
-    avatarContainer: {
-        width: 64,
-        height: 64,
-        borderRadius: 32,
-        backgroundColor: '#1f2937',
-        alignItems: 'center',
-        justifyContent: 'center',
-        overflow: 'hidden',
-        borderWidth: 2,
-        borderColor: '#ea580c',
-    },
-    avatar: {
-        width: '100%',
-        height: '100%',
-    },
-    avatarPlaceholder: {
-        width: '100%',
-        height: '100%',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#374151',
-    },
-    instructorInfo: {
-        flex: 1,
-    },
-    instructorName: {
-        color: 'white',
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 4,
-    },
+
+
+
+
+
+
     instructorEmail: {
         color: '#9ca3af',
         fontSize: 14,
     },
-    emailContainer: {
-        flexDirection: 'row',
-        gap: 12,
-    },
-    copyButton: {
-        flex: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 8,
-        backgroundColor: 'rgba(234, 88, 12, 0.1)',
-        paddingVertical: 12,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: 'rgba(234, 88, 12, 0.3)',
-    },
-    copyButtonText: {
-        color: '#ea580c',
-        fontWeight: '600',
-        fontSize: 14,
-    },
-    gmailButton: {
-        flex: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 8,
-        backgroundColor: '#ea580c',
-        paddingVertical: 12,
-        borderRadius: 12,
-    },
-    gmailButtonText: {
-        color: 'white',
-        fontWeight: '600',
-        fontSize: 14,
-    },
+
+
+
+
+
 
     // Web Style Progress & Lessons
     webProgressContainer: {

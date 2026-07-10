@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     canonical: "/contact",
   },
 }
-import { ChefHat, Mail, Phone, Clock, MapPin, Send, Headphones, Building2, Globe, Home, BookOpen, Users, MessageCircle } from "lucide-react"
+import { ChefHat, Mail, Phone, Clock, MapPin, Send, Headphones, Building2, Globe, Home, BookOpen, Users } from "lucide-react"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import UserDropdown from "@/components/ui/UserDropdown"
@@ -399,10 +399,6 @@ export default async function ContactPage() {
           <Link href="/chef-sosyal" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
             <Users className="h-6 w-6" />
             <span className="text-xs font-medium mt-1">Sosyal</span>
-          </Link>
-          <Link href="/chef-sor" className="flex flex-col items-center py-2 px-3 text-gray-300 hover:text-white transition-colors">
-            <MessageCircle className="h-6 w-6" />
-            <span className="text-xs font-medium mt-1">Chef&apos;e Sor</span>
           </Link>
         </div>
       </div>

@@ -141,14 +141,14 @@ export default function ImageUpload({ onImageUploaded, currentImageUrl, type = "
         </div>
       )}
 
-      {/* Chef&apos;e Sorı temizle butonu */}
+      {/* Mesajı temizle butonu */}
       {(error || success) && (
         <button
           type="button"
           onClick={clearMessages}
           className="text-sm text-gray-400 hover:text-white transition-colors"
         >
-          Chef&apos;e Sorı Temizle
+          Mesajı Temizle
         </button>
       )}
     </div>

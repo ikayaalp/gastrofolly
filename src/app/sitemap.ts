@@ -125,12 +125,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             changeFrequency: 'weekly',
             priority: 0.7,
         },
-        {
-            url: `${baseUrl}/chef-sor`,
-            lastModified: new Date(),
-            changeFrequency: 'daily',
-            priority: 0.7,
-        },
+
         {
             url: `${baseUrl}/about`,
             lastModified: new Date(),

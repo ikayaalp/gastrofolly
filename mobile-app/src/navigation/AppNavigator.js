@@ -15,7 +15,7 @@ import HomeScreen from '../screens/HomeScreen';
 import CoursesScreen from '../screens/CoursesScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import SocialScreen from '../screens/SocialScreen';
-import ChefSorScreen from '../screens/ChefSorScreen';
+
 import TopicDetailScreen from '../screens/TopicDetailScreen';
 import EditTopicScreen from '../screens/EditTopicScreen';
 import LoginScreen from '../screens/LoginScreen';
@@ -62,7 +62,7 @@ function HomeStackNavigator() {
             <HomeStack.Screen name="InstructorProfile" component={InstructorProfileScreen} />
             <HomeStack.Screen name="Search" component={SearchScreen} />
             <HomeStack.Screen name="Notifications" component={NotificationsScreen} />
-            <HomeStack.Screen name="ChefSor" component={ChefSorScreen} />
+
             <HomeStack.Screen name="Chat" component={ChatScreen} />
         </HomeStack.Navigator>
     );
@@ -76,7 +76,7 @@ function CoursesStackNavigator() {
             <CoursesStack.Screen name="CourseDetail" component={CourseDetailScreen} />
             <CoursesStack.Screen name="Learn" component={LearnScreen} />
             <CoursesStack.Screen name="InstructorProfile" component={InstructorProfileScreen} />
-            <CoursesStack.Screen name="ChefSor" component={ChefSorScreen} />
+
             <CoursesStack.Screen name="Chat" component={ChatScreen} />
         </CoursesStack.Navigator>
     );
@@ -250,7 +250,7 @@ export default function AppNavigator() {
                 <Stack.Screen name="Profile" component={ProfileScreen} />
                 <Stack.Screen name="EditProfile" component={EditProfileScreen} />
                 <Stack.Screen name="Settings" component={SettingsScreen} />
-                <Stack.Screen name="ChefSor" component={ChefSorScreen} />
+
                 <Stack.Screen name="Search" component={SearchScreen} />
                 <Stack.Screen name="Subscription" component={SubscriptionScreen} />
                 <Stack.Screen name="Favorites" component={FavoritesScreen} />
