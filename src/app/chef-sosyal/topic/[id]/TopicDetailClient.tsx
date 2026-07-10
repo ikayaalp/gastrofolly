@@ -305,11 +305,17 @@ export default function TopicDetailClient({ session, topic: initialTopic, catego
     if (!newComment.trim() || !session?.user || !replyingTo) return
     setSubmitting(true)
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 20000);
+
       const response = await fetch(`/api/forum/topics/${topic.id}/posts`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: newComment, parentId: replyingTo })
+        body: JSON.stringify({ content: newComment, parentId: replyingTo }),
+        signal: controller.signal
       })
+      
+      clearTimeout(timeoutId);
       if (response.ok) {
         const newReply = await response.json()
         setComments(comments.map(c => c.id === replyingTo ? { ...c, replies: [...(c.replies || []), newReply] } : c))
@@ -320,9 +326,9 @@ export default function TopicDetailClient({ session, topic: initialTopic, catego
         const errorData = await response.json().catch(() => ({}))
         setAlertModal({ isOpen: true, title: 'Hata', message: errorData.error || 'Yanıt gönderilirken bir hata oluştu.', type: 'error' })
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(error)
-      setAlertModal({ isOpen: true, title: 'Hata', message: 'Bir ağ hatası oluştu, lütfen tekrar deneyin.', type: 'error' })
+      setAlertModal({ isOpen: true, title: 'Hata', message: error.name === 'AbortError' ? 'İstek zaman aşımına uğradı, lütfen tekrar deneyin.' : 'Bir ağ hatası oluştu, lütfen tekrar deneyin.', type: 'error' })
     }
     finally { setSubmitting(false) }
   }
@@ -334,11 +340,17 @@ export default function TopicDetailClient({ session, topic: initialTopic, catego
 
     setSubmitting(true)
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 20000);
+
       const response = await fetch(`/api/forum/topics/${topic.id}/posts`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: newComment })
+        body: JSON.stringify({ content: newComment }),
+        signal: controller.signal
       })
+
+      clearTimeout(timeoutId);
       if (response.ok) {
         const newPost = await response.json()
         setComments([newPost, ...comments])
@@ -347,9 +359,9 @@ export default function TopicDetailClient({ session, topic: initialTopic, catego
         const errorData = await response.json().catch(() => ({}))
         setAlertModal({ isOpen: true, title: 'Hata', message: errorData.error || 'Yorum gönderilirken bir hata oluştu.', type: 'error' })
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(error)
-      setAlertModal({ isOpen: true, title: 'Hata', message: 'Bir ağ hatası oluştu, lütfen tekrar deneyin.', type: 'error' })
+      setAlertModal({ isOpen: true, title: 'Hata', message: error.name === 'AbortError' ? 'İstek zaman aşımına uğradı, lütfen tekrar deneyin.' : 'Bir ağ hatası oluştu, lütfen tekrar deneyin.', type: 'error' })
     }
     finally { setSubmitting(false) }
   }

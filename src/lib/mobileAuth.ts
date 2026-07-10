@@ -23,37 +23,13 @@ export async function getAuthUser(request: NextRequest): Promise<MobileUser | nu
         const session = await getServerSession(authOptions);
 
         if (session?.user?.id) {
-            // Always fetch fresh user data to get latest subscription status
-            const user = await prisma.user.findUnique({
-                where: { id: session.user.id },
-                select: {
-                    id: true,
-                    email: true,
-                    role: true,
-                    subscriptionEndDate: true,
-                    subscriptionPlan: true
-                }
-            });
-
-            if (user) {
-                // Lazy cleanup
-                if (user.subscriptionPlan === 'Premium' && user.subscriptionEndDate && new Date(user.subscriptionEndDate) < new Date()) {
-                    await prisma.user.update({
-                        where: { id: user.id },
-                        data: { subscriptionPlan: null, subscriptionStartDate: null, subscriptionEndDate: null }
-                    });
-                    user.subscriptionPlan = null;
-                    user.subscriptionEndDate = null;
-                }
-
-                return {
-                    id: user.id,
-                    email: user.email,
-                    role: user.role,
-                    subscriptionEndDate: user.subscriptionEndDate,
-                    subscriptionPlan: user.subscriptionPlan
-                };
-            }
+            return {
+                id: session.user.id,
+                email: session.user.email,
+                role: (session.user as any).role,
+                subscriptionEndDate: (session.user as any).subscriptionEndDate,
+                subscriptionPlan: (session.user as any).subscriptionPlan
+            };
         }
     } catch (err) {
         // Silent error for session fetch

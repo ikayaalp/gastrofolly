@@ -531,6 +531,9 @@ export default function ChefSosyalClient({
     }
 
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 20000);
+
       const response = await fetch('/api/forum/topics', {
         method: 'POST',
         headers: {
@@ -543,8 +546,11 @@ export default function ChefSosyalClient({
           mediaUrl: topicMedia?.mediaUrl || null,
           mediaType: topicMedia?.mediaType || null,
           thumbnailUrl: topicMedia?.thumbnailUrl || null
-        })
+        }),
+        signal: controller.signal
       })
+
+      clearTimeout(timeoutId);
 
       if (response.ok) {
         setShowNewTopicModal(false)
@@ -566,12 +572,12 @@ export default function ChefSosyalClient({
           type: 'error'
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating topic:', error)
       setAlertModal({
         isOpen: true,
         title: 'Hata',
-        message: 'Başlık oluşturulurken hata oluştu',
+        message: error.name === 'AbortError' ? 'İstek zaman aşımına uğradı, lütfen tekrar deneyin.' : 'Başlık oluşturulurken hata oluştu',
         type: 'error'
       });
     } finally {
