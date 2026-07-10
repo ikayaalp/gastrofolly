@@ -9,7 +9,7 @@ export default async function CoursesPage() {
       include: {
         instructor: { select: { id: true, name: true, email: true, image: true } },
         category: { select: { id: true, name: true } },
-        lessons: { select: { id: true, title: true, videoUrl: true, description: true, duration: true, order: true } },
+        lessons: { select: { id: true, title: true, videoUrl: true, pdfUrl: true, isFree: true, description: true, duration: true, order: true } },
         _count: { select: { enrollments: true, lessons: true, payments: true } }
       },
       orderBy: { createdAt: 'desc' }
