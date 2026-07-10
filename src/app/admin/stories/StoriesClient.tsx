@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { Plus, Trash, Play, Image as ImageIcon, Video, Loader2, ArrowUp, ArrowDown, Edit2, X } from "lucide-react";
 import Image from "next/image";
 import ConfirmationModal from "@/components/ui/ConfirmationModal";
+import Cropper from 'react-easy-crop';
+import getCroppedImg from '@/lib/cropImage';
 
 interface Course {
     id: string;
@@ -48,6 +50,14 @@ export default function AdminStoriesPage() {
     const [storyToDelete, setStoryToDelete] = useState<string | null>(null);
     const [deleteLoading, setDeleteLoading] = useState(false);
 
+    // Crop State
+    const [crop, setCrop] = useState({ x: 0, y: 0 });
+    const [zoom, setZoom] = useState(1);
+    const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+    const [showCropModal, setShowCropModal] = useState(false);
+    const [cropTarget, setCropTarget] = useState<'main' | 'cover' | null>(null);
+    const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
+
     useEffect(() => {
         fetchData();
     }, []);
@@ -81,15 +91,19 @@ export default function AdminStoriesPage() {
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            setSelectedFile(file);
-            const url = URL.createObjectURL(file);
-            setPreviewUrl(url);
-
-            // Auto detect type
-            if (file.type.startsWith("video/")) {
+            const isVideo = file.type.startsWith("video/");
+            if (isVideo) {
+                setSelectedFile(file);
+                const url = URL.createObjectURL(file);
+                setPreviewUrl(url);
                 setMediaType("VIDEO");
             } else {
                 setMediaType("IMAGE");
+                setCropTarget('main');
+                setCropImageSrc(URL.createObjectURL(file));
+                setCrop({ x: 0, y: 0 });
+                setZoom(1);
+                setShowCropModal(true);
             }
         }
     };
@@ -98,10 +112,44 @@ export default function AdminStoriesPage() {
     const handleCoverSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            setSelectedCoverFile(file);
-            const url = URL.createObjectURL(file);
-            setCoverPreviewUrl(url);
+            setCropTarget('cover');
+            setCropImageSrc(URL.createObjectURL(file));
+            setCrop({ x: 0, y: 0 });
+            setZoom(1);
+            setShowCropModal(true);
         }
+    };
+
+    const onCropComplete = (croppedArea: any, croppedAreaPixels: any) => {
+        setCroppedAreaPixels(croppedAreaPixels);
+    };
+
+    const handleCropConfirm = async () => {
+        if (!cropImageSrc || !croppedAreaPixels) return;
+        try {
+            const croppedFile = await getCroppedImg(cropImageSrc, croppedAreaPixels);
+            if (!croppedFile) return;
+
+            const url = URL.createObjectURL(croppedFile);
+            if (cropTarget === 'main') {
+                setSelectedFile(croppedFile);
+                setPreviewUrl(url);
+            } else if (cropTarget === 'cover') {
+                setSelectedCoverFile(croppedFile);
+                setCoverPreviewUrl(url);
+            }
+            setShowCropModal(false);
+            setCropImageSrc(null);
+            setCropTarget(null);
+        } catch (e) {
+            console.error("Crop error:", e);
+        }
+    };
+
+    const handleCropCancel = () => {
+        setShowCropModal(false);
+        setCropImageSrc(null);
+        setCropTarget(null);
     };
 
     const handleDeleteClick = (id: string) => {
@@ -376,6 +424,10 @@ export default function AdminStoriesPage() {
                         {/* File Input (Main Media) */}
                         <div>
                             <label className="block text-sm font-medium text-gray-400 mb-2">Medya Dosyası (Resim/Video)</label>
+                            <p className="text-xs text-gray-500 mb-2">
+                                Story'ler 9:16 (dikey) oranında tam ekran gösterilir. Farklı oranlı görseller kırpılır — 
+                                aşağıdaki araçla nasıl kırpılacağını kendin seçebilirsin. (Video kırpma desteklenmez.)
+                            </p>
                             <div className="flex items-center justify-center w-full">
                                 <label className={`flex flex-col items-center justify-center w-full h-32 border-2 border-gray-700 ${!editingStoryId ? 'border-dashed cursor-pointer hover:bg-gray-700 hover:border-orange-500' : ''} rounded-lg bg-gray-800 transition-all overflow-hidden relative`}>
                                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
@@ -403,7 +455,10 @@ export default function AdminStoriesPage() {
                         {/* Cover Image Input */}
                         <div>
                             <label className="block text-sm font-medium text-gray-400 mb-2">Kapak Resmi (Opsiyonel)</label>
-                            <p className="text-xs text-gray-500 mb-2">Listenin başında görünecek yuvarlak resim. Seçilmezse medya kullanılır.</p>
+                            <p className="text-xs text-gray-500 mb-2">
+                                Listenin başında görünecek yuvarlak resim (1:1 oranlı). Seçilmezse medya kullanılır.
+                                Farklı oranlı görseller otomatik kırpılır — araçla seçebilirsin.
+                            </p>
                             <div className="flex items-center justify-center w-full">
                                 <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-gray-700 border-dashed rounded-lg cursor-pointer bg-gray-800 hover:bg-gray-700 hover:border-orange-500 transition-all">
                                     <div className="flex flex-col items-center justify-center pt-2 pb-2">
@@ -569,16 +624,56 @@ export default function AdminStoriesPage() {
 
             </div>
 
+            {/* Delete Modal */}
             <ConfirmationModal
                 isOpen={showDeleteModal}
-                onClose={() => setShowDeleteModal(false)}
-                onConfirm={handleConfirmDelete}
                 title="Hikayeyi Sil"
-                message="Bu hikayeyi silmek istediğinize emin misiniz?"
-                confirmText="Evet, Sil"
-                isDanger={true}
+                message="Bu hikayeyi kalıcı olarak silmek istediğinize emin misiniz? (Medya dosyası da silinecektir)"
+                confirmText="Sil"
+                cancelText="İptal"
+                onConfirm={handleConfirmDelete}
+                onClose={() => setShowDeleteModal(false)}
                 isLoading={deleteLoading}
             />
+
+            {/* Crop Modal */}
+            {showCropModal && cropImageSrc && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4">
+                    <div className="bg-gray-900 rounded-xl w-full max-w-lg overflow-hidden flex flex-col">
+                        <div className="p-4 border-b border-gray-800 flex justify-between items-center">
+                            <h3 className="text-lg font-semibold text-white">Görseli Kırp</h3>
+                            <button onClick={handleCropCancel} className="text-gray-400 hover:text-white">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <div className="relative w-full h-[60vh] bg-black">
+                            <Cropper
+                                image={cropImageSrc}
+                                crop={crop}
+                                zoom={zoom}
+                                aspect={cropTarget === 'main' ? 9 / 16 : 1}
+                                onCropChange={setCrop}
+                                onZoomChange={setZoom}
+                                onCropComplete={onCropComplete}
+                            />
+                        </div>
+                        <div className="p-4 border-t border-gray-800 flex justify-end gap-3">
+                            <button
+                                onClick={handleCropCancel}
+                                className="px-4 py-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700 transition-colors"
+                            >
+                                İptal
+                            </button>
+                            <button
+                                onClick={handleCropConfirm}
+                                className="px-4 py-2 rounded-lg bg-orange-600 text-white hover:bg-orange-700 transition-colors"
+                            >
+                                Onayla
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
