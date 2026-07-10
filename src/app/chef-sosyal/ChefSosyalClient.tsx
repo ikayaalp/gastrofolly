@@ -119,6 +119,8 @@ export default function ChefSosyalClient({
     thumbnailUrl?: string
   } | null>(null)
 
+  const activeUploadRef = useRef<number>(0);
+
   const [submitting, setSubmitting] = useState(false)
   const [mediaUploading, setMediaUploading] = useState(false)
   const [likedTopics, setLikedTopics] = useState<Set<string>>(new Set())
@@ -447,6 +449,9 @@ export default function ChefSosyalClient({
       return
     }
 
+    const uploadId = Date.now()
+    activeUploadRef.current = uploadId
+
     try {
       setMediaUploading(true)
       // Create FormData
@@ -472,6 +477,8 @@ export default function ChefSosyalClient({
 
       const data = await response.json()
 
+      if (activeUploadRef.current !== uploadId) return;
+
       if (!response.ok) {
         throw new Error(data.error || 'Upload failed')
       }
@@ -483,6 +490,7 @@ export default function ChefSosyalClient({
       })
 
     } catch (error) {
+      if (activeUploadRef.current !== uploadId) return;
       console.error('Upload error:', error)
       setAlertModal({
         isOpen: true,
@@ -492,7 +500,9 @@ export default function ChefSosyalClient({
       });
       setTopicMedia(null)
     } finally {
-      setMediaUploading(false)
+      if (activeUploadRef.current === uploadId) {
+        setMediaUploading(false)
+      }
     }
   }
 
@@ -793,7 +803,13 @@ export default function ChefSosyalClient({
 
             {/* Header */}
             <div className="flex justify-between items-center px-4 py-3 border-b border-gray-900">
-              <button onClick={() => setShowNewTopicModal(false)} className="p-2 -ml-2 text-white hover:bg-gray-900 rounded-full transition-colors">
+              <button onClick={() => {
+                setShowNewTopicModal(false)
+                setNewTopicForm({ title: '', content: '', categoryId: categories.length > 0 ? categories[0].id : '' })
+                setTopicMedia(null)
+                activeUploadRef.current = 0
+                setMediaUploading(false)
+              }} className="p-2 -ml-2 text-white hover:bg-gray-900 rounded-full transition-colors">
                 <X className="h-6 w-6" />
               </button>
 
@@ -840,22 +856,25 @@ export default function ChefSosyalClient({
               <div className="flex items-center space-x-6 text-[#ea580c] mt-2 mb-2">
                 <button
                   onClick={() => document.getElementById('media-upload-image')?.click()}
-                  className="p-2 -ml-2 hover:bg-[#ea580c]/10 rounded-full transition-colors"
+                  className={`p-2 -ml-2 rounded-full transition-colors ${mediaUploading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#ea580c]/10'}`}
                   title="Resim Ekle"
+                  disabled={mediaUploading}
                 >
                   <ImageIcon className="h-6 w-6" />
                 </button>
                 <button
                   onClick={() => document.getElementById('media-upload-camera')?.click()}
-                  className="p-2 hover:bg-[#ea580c]/10 rounded-full transition-colors"
+                  className={`p-2 rounded-full transition-colors ${mediaUploading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#ea580c]/10'}`}
                   title="Fotoğraf Çek"
+                  disabled={mediaUploading}
                 >
                   <Camera className="h-6 w-6" />
                 </button>
                 <button
                   onClick={() => document.getElementById('media-upload-video')?.click()}
-                  className="p-2 hover:bg-[#ea580c]/10 rounded-full transition-colors"
+                  className={`p-2 rounded-full transition-colors ${mediaUploading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#ea580c]/10'}`}
                   title="Video Ekle"
+                  disabled={mediaUploading}
                 >
                   <Film className="h-6 w-6" />
                 </button>
@@ -889,7 +908,11 @@ export default function ChefSosyalClient({
               {topicMedia && (
                 <div className="relative mt-4 rounded-xl overflow-hidden bg-gray-900 border border-gray-800 group">
                   <button
-                    onClick={() => setTopicMedia(null)}
+                    onClick={() => {
+                      setTopicMedia(null)
+                      activeUploadRef.current = 0
+                      setMediaUploading(false)
+                    }}
                     className="absolute top-2 right-2 p-1.5 bg-black/60 rounded-full text-white hover:bg-black/80 transition-colors z-10"
                   >
                     <X className="h-4 w-4" />
