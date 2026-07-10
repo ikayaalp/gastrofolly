@@ -3,12 +3,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import { X, ChevronUp, ChevronLeft, ChevronRight, Plus, Video } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { getOptimizedMediaUrl } from '@/lib/utils';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface Story {
     id: string;
     title?: string;
     mediaUrl: string;
     mediaType: string;
+    coverImage?: string;
     duration: number;
     courseId?: string;
     course?: { title: string };
@@ -36,6 +38,7 @@ const StoryViewer = ({ stories, initialIndex, onClose }: StoryViewerProps) => {
     const [currentGroupIndex, setCurrentGroupIndex] = useState(initialIndex);
     const [internalStoryIndex, setInternalStoryIndex] = useState(0);
     const [progress, setProgress] = useState(0);
+    const [mediaReady, setMediaReady] = useState(false);
     const progressInterval = useRef<NodeJS.Timeout | null>(null);
 
     const currentGroup = stories[currentGroupIndex];
@@ -45,14 +48,41 @@ const StoryViewer = ({ stories, initialIndex, onClose }: StoryViewerProps) => {
         if (!currentGroup) return;
         setInternalStoryIndex(0);
         setProgress(0);
+        setMediaReady(false);
     }, [currentGroupIndex]);
 
     useEffect(() => {
         if (!currentStory) return;
         setProgress(0);
-        startProgress();
+        setMediaReady(false);
+        stopProgress();
+        
+        // Preload next story
+        const nextGroupIndex = internalStoryIndex < (currentGroup?.stories.length || 0) - 1 ? currentGroupIndex : currentGroupIndex + 1;
+        const nextStoryIndex = internalStoryIndex < (currentGroup?.stories.length || 0) - 1 ? internalStoryIndex + 1 : 0;
+        const nextStory = stories[nextGroupIndex]?.stories[nextStoryIndex];
+        
+        if (nextStory) {
+            const optimizedUrl = getOptimizedMediaUrl(nextStory.mediaUrl, nextStory.mediaType as 'IMAGE' | 'VIDEO');
+            if (nextStory.mediaType === 'VIDEO') {
+                const video = document.createElement('video');
+                video.preload = 'auto';
+                video.src = optimizedUrl;
+            } else {
+                const img = new globalThis.Image();
+                img.src = optimizedUrl;
+            }
+        }
+    }, [currentStory, currentGroupIndex, internalStoryIndex, stories, currentGroup]); 
+
+    useEffect(() => {
+        if (mediaReady) {
+            startProgress();
+        } else {
+            stopProgress();
+        }
         return () => stopProgress();
-    }, [currentStory]); // Remove unnecessary deps to avoid restart bugs
+    }, [mediaReady, currentStory]);
 
     const startProgress = () => {
         stopProgress();
@@ -117,24 +147,50 @@ const StoryViewer = ({ stories, initialIndex, onClose }: StoryViewerProps) => {
     return (
         <div className="fixed inset-0 z-[100] bg-black flex items-center justify-center">
             {/* Background Media */}
-            <div className="absolute inset-0 bg-black flex items-center justify-center">
-                {currentStory.mediaType === 'VIDEO' ? (
-                    <video
-                        src={getOptimizedMediaUrl(currentStory.mediaUrl, 'VIDEO')}
-                        className="w-full h-full object-contain"
-                        autoPlay
-                        playsInline
-                    // muted={false} // Autoplay policy might block unmuted. 
-                    // Usually stories start muted or user interaction required.
-                    // For mobile web usually strict.
-                    />
-                ) : (
-                    <img
-                        src={getOptimizedMediaUrl(currentStory.mediaUrl, 'IMAGE')}
-                        className="w-full h-full object-contain"
-                        alt="Story"
-                    />
-                )}
+            <div className="absolute inset-0 bg-black flex items-center justify-center overflow-hidden">
+                <AnimatePresence>
+                    <motion.div
+                        key={currentStory.id}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="absolute inset-0 w-full h-full flex items-center justify-center"
+                    >
+                        {/* Placeholder (blur-up or spinner) */}
+                        {!mediaReady && (
+                            currentStory.coverImage ? (
+                                <img
+                                    src={getOptimizedMediaUrl(currentStory.coverImage, 'IMAGE')}
+                                    className="absolute inset-0 w-full h-full object-cover blur-md scale-105"
+                                    alt="Loading placeholder"
+                                />
+                            ) : (
+                                <div className="absolute inset-0 flex items-center justify-center z-10">
+                                    <div className="w-8 h-8 border-4 border-white/20 border-t-white rounded-full animate-spin"></div>
+                                </div>
+                            )
+                        )}
+
+                        {/* Actual Media */}
+                        {currentStory.mediaType === 'VIDEO' ? (
+                            <video
+                                src={getOptimizedMediaUrl(currentStory.mediaUrl, 'VIDEO')}
+                                className={`w-full h-full object-cover transition-opacity duration-300 ${mediaReady ? 'opacity-100' : 'opacity-0'}`}
+                                autoPlay
+                                playsInline
+                                onLoadedData={() => setMediaReady(true)}
+                            />
+                        ) : (
+                            <img
+                                src={getOptimizedMediaUrl(currentStory.mediaUrl, 'IMAGE')}
+                                className={`w-full h-full object-cover transition-opacity duration-300 ${mediaReady ? 'opacity-100' : 'opacity-0'}`}
+                                alt="Story"
+                                onLoad={() => setMediaReady(true)}
+                            />
+                        )}
+                    </motion.div>
+                </AnimatePresence>
             </div>
 
             {/* Overlay Gradient */}
