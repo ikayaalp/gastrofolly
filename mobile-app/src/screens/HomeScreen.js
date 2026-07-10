@@ -217,7 +217,7 @@ export default function HomeScreen({ navigation }) {
     // Netflix-style ranked course card with large orange numbers
     const renderRankedCourseCard = (course, index) => {
         const courseData = course.course || course;
-        const imageUrl = courseData.imageUrl || 'https://images.unsplash.com/photo-1556910103-1c02745a30bf?q=80&w=400';
+        const imageUrl = courseData.posterImageUrl || courseData.imageUrl || 'https://images.unsplash.com/photo-1556910103-1c02745a30bf?q=80&w=400';
         const rank = index + 1;
 
         return (
@@ -263,7 +263,7 @@ export default function HomeScreen({ navigation }) {
     // Large vertical course card (like web's large prop)
     const renderLargeCourseCard = (course, index) => {
         const courseData = course.course || course;
-        const imageUrl = courseData.imageUrl || 'https://images.unsplash.com/photo-1556910103-1c02745a30bf?q=80&w=400';
+        const imageUrl = courseData.posterImageUrl || courseData.imageUrl || 'https://images.unsplash.com/photo-1556910103-1c02745a30bf?q=80&w=400';
 
         return (
             <TouchableOpacity
@@ -752,7 +752,7 @@ const styles = StyleSheet.create({
     listCard: {
         marginHorizontal: 16,
         marginBottom: 20,
-        height: 200,
+        aspectRatio: 1.45,
         borderRadius: 14,
         backgroundColor: '#111',
         borderWidth: 1,
@@ -828,7 +828,7 @@ const styles = StyleSheet.create({
     },
     courseCard: {
         width: 220,
-        height: 170,
+        height: 152,
         marginRight: 12,
         borderRadius: 12,
         overflow: 'hidden',
@@ -837,7 +837,6 @@ const styles = StyleSheet.create({
     courseImage: {
         width: '100%',
         height: '100%',
-        resizeMode: 'stretch',
     },
     courseOverlay: {
         position: 'absolute',
@@ -1007,7 +1006,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         marginRight: 12,
-        height: 200,
+        height: 240,
     },
     rankNumberContainer: {
         width: 70,
@@ -1027,7 +1026,7 @@ const styles = StyleSheet.create({
     },
     rankedCourseCard: {
         width: 160,
-        height: 200,
+        height: 240,
         borderRadius: 12,
         overflow: 'hidden',
         zIndex: 1,
@@ -1063,7 +1062,7 @@ const styles = StyleSheet.create({
     // Large vertical course card styles (like web's large prop)
     largeCourseCard: {
         width: 180,
-        height: 280,
+        height: 270,
         marginRight: 12,
         borderRadius: 12,
         overflow: 'hidden',

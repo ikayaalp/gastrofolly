@@ -314,14 +314,14 @@ const styles = StyleSheet.create({
     },
     imageContainer: {
         width: '100%',
-        aspectRatio: 16 / 9,
+        aspectRatio: 1.45,
         position: 'relative',
         backgroundColor: '#111',
     },
     courseImage: {
         width: '100%',
         height: '100%',
-        resizeMode: 'stretch',
+        resizeMode: 'cover',
     },
     imageOverlay: {
         position: 'absolute',

@@ -73,7 +73,7 @@ export default function FavoritesScreen({ navigation }) {
             activeOpacity={0.8}
         >
             <Image
-                source={item.imageUrl || 'https://images.unsplash.com/photo-1556910103-1c02745a30bf?q=80&w=400'}
+                source={item.thumbnailImageUrl || item.imageUrl || 'https://images.unsplash.com/photo-1556910103-1c02745a30bf?q=80&w=400'}
                 style={styles.courseImage}
                 contentFit="cover"
                 cachePolicy="memory-disk"

@@ -71,9 +71,9 @@ export default function SearchScreen({ navigation }) {
             onPress={() => navigation.navigate('CourseDetail', { courseId: item.id, initialCourse: item })}
         >
             <View style={styles.thumbnailContainer}>
-                {item.imageUrl ? (
+                {item.thumbnailImageUrl || item.imageUrl ? (
                     <Image
-                        source={item.imageUrl}
+                        source={item.thumbnailImageUrl || item.imageUrl}
                         style={styles.thumbnail}
                         contentFit="cover"
                         transition={200}
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
     thumbnail: {
         width: '100%',
         height: '100%',
-        resizeMode: 'stretch',
+        resizeMode: 'cover',
     },
     thumbnailPlaceholder: {
         flex: 1,
