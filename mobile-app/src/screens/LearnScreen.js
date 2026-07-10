@@ -812,7 +812,10 @@ export default function LearnScreen({ route, navigation }) {
                                         alignSelf: 'flex-start'
                                     }}
                                     onPress={() => {
-                                        const pdfUrl = currentLesson.pdfUrl;
+                                        let pdfUrl = currentLesson.pdfUrl;
+                                        if (pdfUrl && !pdfUrl.toLowerCase().endsWith('.pdf')) {
+                                            pdfUrl = pdfUrl + '.pdf';
+                                        }
                                         const viewerUrl = Platform.OS === 'android' 
                                             ? `https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(pdfUrl)}` 
                                             : pdfUrl;
