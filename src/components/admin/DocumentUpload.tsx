@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useState, useRef, useCallback } from "react"
 import { Upload, X, CheckCircle, AlertCircle, FileText } from "lucide-react"
@@ -56,7 +56,7 @@ export default function DocumentUpload({ onDocumentUploaded, lessonId }: Documen
             const data = JSON.parse(xhr.responseText)
             setSuccess(`PDF başarıyla yüklendi: ${file.name}`)
             setUploadProgress(100)
-            onDocumentUploaded(data.secure_url)
+            onDocumentUploaded(data.url || data.secure_url)
             resolve()
           } else {
             reject(new Error('Yükleme başarısız'))
