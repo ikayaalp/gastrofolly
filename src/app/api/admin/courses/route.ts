@@ -29,6 +29,8 @@ export async function POST(request: NextRequest) {
         discountRate,
         discountedPrice: data.isFree ? null : discountedPrice,
         imageUrl: data.imageUrl || null,
+        thumbnailImageUrl: data.thumbnailImageUrl || null,
+        posterImageUrl: data.posterImageUrl || null,
         detailImageUrl: data.detailImageUrl || null,
         level: data.level,
         duration: data.duration ? parseInt(data.duration) : null,

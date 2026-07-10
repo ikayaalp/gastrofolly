@@ -12,6 +12,8 @@ export async function GET() {
         description: true,
         price: true,
         imageUrl: true,
+        thumbnailImageUrl: true,
+        posterImageUrl: true,
         level: true,
         instructor: {
           select: { name: true }

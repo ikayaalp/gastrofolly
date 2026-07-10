@@ -49,6 +49,8 @@ export async function GET(
         description: course.description,
         price: course.price,
         imageUrl: course.imageUrl,
+        thumbnailImageUrl: course.thumbnailImageUrl,
+        posterImageUrl: course.posterImageUrl,
         isPublished: course.isPublished,
         createdAt: course.createdAt,
         _count: course._count

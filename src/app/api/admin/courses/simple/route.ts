@@ -17,6 +17,8 @@ export async function GET() {
         id: true,
         title: true,
         imageUrl: true,
+        thumbnailImageUrl: true,
+        posterImageUrl: true,
         instructor: {
           select: { name: true }
         }

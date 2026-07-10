@@ -12,6 +12,8 @@ interface Course {
     title: string
     description: string
     imageUrl: string | null
+    thumbnailImageUrl: string | null
+    posterImageUrl: string | null
     level: string
     duration: number | null
     isPublished: boolean
@@ -82,6 +84,8 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
         title: course?.title || "",
         description: course?.description || "",
         imageUrl: course?.imageUrl || "",
+        thumbnailImageUrl: course?.thumbnailImageUrl || "",
+        posterImageUrl: course?.posterImageUrl || "",
         level: course?.level || "BEGINNER",
         duration: course?.duration || 0,
         isPublished: course?.isPublished || false,
@@ -127,6 +131,14 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
 
     const handleImageUploaded = (imageUrl: string) => {
         setFormData(prev => ({ ...prev, imageUrl }))
+    }
+
+    const handleThumbnailImageUploaded = (thumbnailImageUrl: string) => {
+        setFormData(prev => ({ ...prev, thumbnailImageUrl }))
+    }
+
+    const handlePosterImageUploaded = (posterImageUrl: string) => {
+        setFormData(prev => ({ ...prev, posterImageUrl }))
     }
 
     const togglePlanAccess = (planId: string) => {
@@ -619,6 +631,42 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
                                             <label className="block text-sm font-medium text-gray-300 mb-2">Kapak Görseli</label>
                                             <div className="bg-black border border-gray-800 rounded-xl p-4">
                                                 <ImageUpload onImageUploaded={handleImageUploaded} currentImageUrl={formData.imageUrl} type="course" />
+                                                {formData.imageUrl && (
+                                                    <div className="mt-4 pt-4 border-t border-gray-800">
+                                                        <label className="block text-xs font-medium text-gray-500 mb-2">Kart Önizleme (1.45:1)</label>
+                                                        <div className="aspect-[1.45/1] max-w-[200px] rounded-lg overflow-hidden border border-gray-700 bg-zinc-900">
+                                                            <img src={formData.imageUrl} className="w-full h-full object-cover" />
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-300 mb-2">Kare Thumbnail Görseli (1:1 — arama sonuçları, küçük ikonlar)</label>
+                                            <div className="bg-black border border-gray-800 rounded-xl p-4">
+                                                <ImageUpload onImageUploaded={handleThumbnailImageUploaded} currentImageUrl={formData.thumbnailImageUrl} type="thumbnail" />
+                                                {formData.thumbnailImageUrl && (
+                                                    <div className="mt-4 pt-4 border-t border-gray-800">
+                                                        <label className="block text-xs font-medium text-gray-500 mb-2">Thumbnail Önizleme (1:1)</label>
+                                                        <div className="aspect-square max-w-[100px] rounded-lg overflow-hidden border border-gray-700 bg-zinc-900">
+                                                            <img src={formData.thumbnailImageUrl} className="w-full h-full object-cover" />
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-300 mb-2">Dikey Poster Görseli (2:3 — öne çıkan/geniş kartlar)</label>
+                                            <div className="bg-black border border-gray-800 rounded-xl p-4">
+                                                <ImageUpload onImageUploaded={handlePosterImageUploaded} currentImageUrl={formData.posterImageUrl} type="poster" />
+                                                {formData.posterImageUrl && (
+                                                    <div className="mt-4 pt-4 border-t border-gray-800">
+                                                        <label className="block text-xs font-medium text-gray-500 mb-2">Poster Önizleme (2:3)</label>
+                                                        <div className="aspect-[2/3] max-w-[140px] rounded-lg overflow-hidden border border-gray-700 bg-zinc-900">
+                                                            <img src={formData.posterImageUrl} className="w-full h-full object-cover" />
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     </div>

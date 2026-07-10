@@ -11,6 +11,8 @@ interface Course {
   title: string
   description: string
   imageUrl: string | null
+  thumbnailImageUrl: string | null
+  posterImageUrl: string | null
   level: string
   duration: number | null
   isPublished: boolean

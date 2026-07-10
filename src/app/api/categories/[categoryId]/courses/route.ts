@@ -40,6 +40,8 @@ export async function GET(
             description: course.description,
             price: course.price,
             imageUrl: course.imageUrl,
+            thumbnailImageUrl: course.thumbnailImageUrl,
+            posterImageUrl: course.posterImageUrl,
             level: course.level,
             duration: course.duration,
             instructor: course.instructor,
