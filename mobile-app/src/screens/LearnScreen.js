@@ -14,6 +14,7 @@ import {
     Keyboard,
     Modal,
     useWindowDimensions,
+    Linking,
 } from 'react-native';
 import { Image } from 'expo-image';
 import * as ScreenOrientation from 'expo-screen-orientation';
@@ -50,6 +51,7 @@ import {
     Users,
     User,
     BarChart3,
+    FileText,
 } from 'lucide-react-native';
 
 const PLAYBACK_RATES = [0.5, 0.75, 1, 1.25, 1.5, 2];
