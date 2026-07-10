@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server"
+ï»¿import { NextRequest, NextResponse } from "next/server"
 import { v2 as cloudinary } from 'cloudinary'
 import { getAuthUser } from '@/lib/mobileAuth'
 
@@ -14,15 +14,15 @@ export async function POST(request: NextRequest) {
     const type = formData.get("type") as string || "document"
 
     if (!file) {
-      return NextResponse.json({ error: "Dosya bulunamadý" }, { status: 400 })
+      return NextResponse.json({ error: "Dosya bulunamadÄ±" }, { status: 400 })
     }
 
     if (file.type !== 'application/pdf') {
-      return NextResponse.json({ error: "Lütfen bir PDF dosyasý seçin" }, { status: 400 })
+      return NextResponse.json({ error: "LÃ¼tfen bir PDF dosyasÄ± seÃ§in" }, { status: 400 })
     }
 
     if (file.size > 50 * 1024 * 1024) {
-      return NextResponse.json({ error: "PDF dosyasý 50MB'dan küçük olmalýdýr" }, { status: 400 })
+      return NextResponse.json({ error: "PDF dosyasÄ± 50MB'dan kÃ¼Ã§Ã¼k olmalÄ±dÄ±r" }, { status: 400 })
     }
 
     const cloudinaryUpload = async (file: File) => {
@@ -73,13 +73,13 @@ export async function POST(request: NextRequest) {
       width: uploadResult.width,
       height: uploadResult.height,
       size: uploadResult.size,
-      message: "PDF baþarýyla cloud'a yüklendi"
+      message: "PDF baÅŸarÄ±yla cloud'a yÃ¼klendi"
     })
 
   } catch (error) {
     console.error("Cloud document upload error:", error)
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Belge yüklenirken hata oluþtu" },
+      { error: error instanceof Error ? error.message : "Belge yÃ¼klenirken hata oluÅŸtu" },
       { status: 500 }
     )
   }
