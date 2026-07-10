@@ -3,7 +3,9 @@
 import React, { useState, useRef, useEffect } from "react"
 import { createPortal } from "react-dom"
 import Link from "next/link"
+import Image from "next/image"
 import { Play, Heart } from "lucide-react"
+import { getOptimizedMediaUrl } from "@/lib/utils"
 import { useFavorites } from "@/contexts/FavoritesContext"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
@@ -192,10 +194,12 @@ export default function ExpandableCourseCard({ course, showProgress, rank, large
                             Yakında
                         </div>
                         {course.imageUrl ? (
-                            <img
-                                src={course.imageUrl}
+                            <Image
+                                src={getOptimizedMediaUrl(course.imageUrl)}
                                 alt={course.title}
-                                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                fill
+                                sizes="(max-width: 768px) 330px, 368px"
+                                className="object-cover group-hover:scale-105 transition-transform duration-300"
                             />
                         ) : (
                             <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-black">
@@ -279,10 +283,12 @@ export default function ExpandableCourseCard({ course, showProgress, rank, large
                                     Yakında
                                 </div>
                                 {course.posterImageUrl || course.imageUrl ? (
-                                    <img
-                                        src={course.posterImageUrl || course.imageUrl || undefined}
+                                    <Image
+                                        src={getOptimizedMediaUrl(course.posterImageUrl || course.imageUrl)}
                                         alt={course.title}
-                                        className="w-full h-full object-cover"
+                                        fill
+                                        sizes="(max-width: 768px) 100vw, 250px"
+                                        className="object-cover"
                                     />
                                 ) : null}
                                 {/* Video would go here */}

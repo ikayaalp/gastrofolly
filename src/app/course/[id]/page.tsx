@@ -23,6 +23,7 @@ import {
   Gift
 } from "lucide-react"
 import FavoriteButton from "@/components/course/FavoriteButton"
+import { getOptimizedMediaUrl } from "@/lib/utils"
 import ShareButton from "@/components/course/ShareButton"
 import UserDropdown from "@/components/ui/UserDropdown"
 import NotificationDropdown from "@/components/ui/NotificationDropdown"
@@ -250,7 +251,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
         <div className="md:hidden relative w-full aspect-video mt-14">
           {bannerImage ? (
             <Image
-              src={bannerImage}
+              src={getOptimizedMediaUrl(bannerImage)}
               alt={course.title}
               fill
               priority
@@ -273,7 +274,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
           <div className="hidden md:block absolute inset-0">
             {course.imageUrl ? (
               <Image
-                src={course.imageUrl}
+                src={getOptimizedMediaUrl(course.imageUrl)}
                 alt={course.title}
                 fill
                 priority

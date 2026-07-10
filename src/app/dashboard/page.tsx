@@ -19,6 +19,7 @@ import {
 import { signOut } from "next-auth/react"
 import SignOutButton from "@/components/auth/SignOutButton"
 import UserDropdown from "@/components/ui/UserDropdown"
+import { getOptimizedMediaUrl } from "@/lib/utils"
 
 async function getUserData(userId: string) {
   const [enrollments, progress] = await Promise.all([
@@ -265,7 +266,7 @@ export default async function DashboardPage() {
                           <div className="flex items-center space-x-4">
                             {enrollment.course.imageUrl ? (
                               <img
-                                src={enrollment.course.imageUrl}
+                                src={getOptimizedMediaUrl(enrollment.course.imageUrl)}
                                 alt={enrollment.course.title}
                                 className="w-16 h-16 rounded-lg object-cover"
                               />

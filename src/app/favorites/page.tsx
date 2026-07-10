@@ -6,6 +6,7 @@ import { ChefHat, Heart, Trash2, Home, BookOpen, MessageCircle, Search, Users } 
 import Link from 'next/link'
 import Image from 'next/image'
 import UserDropdown from '@/components/ui/UserDropdown'
+import { getOptimizedMediaUrl } from '@/lib/utils'
 
 export default function FavoritesPage() {
   const { state, removeFavorite, clearFavorites } = useFavorites()
@@ -252,10 +253,12 @@ export default function FavoritesPage() {
                 className="block relative bg-black border border-gray-800 rounded-xl overflow-hidden hover:border-orange-500/50 transition-all duration-300 group cursor-pointer min-w-[320px] w-[320px] h-[221px] flex-shrink-0"
               >
                 {course.imageUrl ? (
-                  <img
-                    src={course.imageUrl}
+                  <Image
+                    src={getOptimizedMediaUrl(course.imageUrl)}
                     alt={course.title}
-                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    fill
+                    sizes="320px"
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 ) : (
                   <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-black">

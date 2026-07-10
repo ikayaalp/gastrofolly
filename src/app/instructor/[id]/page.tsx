@@ -15,6 +15,7 @@ import {
 import UserDropdown from "@/components/ui/UserDropdown"
 import InstructorShareButton from "@/components/instructor/InstructorShareButton"
 import InstructorMessageButton from "@/components/instructor/InstructorMessageButton"
+import { getOptimizedMediaUrl } from "@/lib/utils"
 
 interface InstructorPageProps {
   params: Promise<{
@@ -346,7 +347,7 @@ export default async function InstructorPage({ params }: InstructorPageProps) {
                           <div className="relative h-48 overflow-hidden">
                             {course.imageUrl ? (
                               <Image
-                                src={course.imageUrl}
+                                src={getOptimizedMediaUrl(course.imageUrl)}
                                 alt={course.title}
                                 width={400}
                                 height={276}

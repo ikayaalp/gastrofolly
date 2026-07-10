@@ -9,6 +9,7 @@ import { ChefHat, Play, Clock, BookOpen, Star, Home, Users, Search } from "lucid
 import UserDropdown from "@/components/ui/UserDropdown"
 import NotificationDropdown from "@/components/ui/NotificationDropdown"
 import SearchModal from "@/components/ui/SearchModal"
+import { getOptimizedMediaUrl } from "@/lib/utils"
 
 interface Enrollment {
   id: string
@@ -262,7 +263,7 @@ export default function MyCoursesPage() {
                     <div className="aspect-[1.45/1] relative w-full overflow-hidden">
                       {course.imageUrl ? (
                         <Image
-                          src={course.imageUrl}
+                          src={getOptimizedMediaUrl(course.imageUrl)}
                           alt={course.title}
                           fill
                           className="object-cover group-hover:scale-105 transition-transform duration-500"
@@ -338,7 +339,7 @@ export default function MyCoursesPage() {
                       <div className="aspect-[1.45/1] relative w-full overflow-hidden">
                         {course.imageUrl ? (
                           <Image
-                            src={course.imageUrl}
+                            src={getOptimizedMediaUrl(course.imageUrl)}
                             alt={course.title}
                             fill
                             className="object-cover group-hover:scale-105 transition-transform duration-500"

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import { Search, Users, Clock } from "lucide-react"
 import Link from "next/link"
 import Modal from "./Modal"
+import { getOptimizedMediaUrl } from "@/lib/utils"
 
 interface Course {
   id: string
@@ -141,7 +142,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                       <div className="w-20 h-20 bg-zinc-800 rounded-lg overflow-hidden flex-shrink-0 border border-zinc-700">
                         {course.thumbnailImageUrl || course.imageUrl ? (
                           <img
-                            src={course.thumbnailImageUrl || course.imageUrl || undefined}
+                            src={getOptimizedMediaUrl(course.thumbnailImageUrl || course.imageUrl || undefined)}
                             alt={course.title}
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                           />
