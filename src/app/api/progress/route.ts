@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { lessonId, courseId, isCompleted } = await request.json()
+    const { lessonId, courseId, isCompleted, timeWatched } = await request.json()
 
     if (!lessonId || !courseId) {
       return NextResponse.json(
@@ -54,14 +54,17 @@ export async function POST(request: NextRequest) {
         }
       },
       update: {
-        isCompleted: isCompleted,
+        // Zaten tamamlanmışsa tamamlanmış kalsın; yeni değer true ise tamamla
+        isCompleted: isCompleted ? true : undefined,
+        ...(typeof timeWatched === 'number' ? { timeWatched: Math.floor(timeWatched) } : {}),
         watchedAt: new Date(),
       },
       create: {
         userId: userId,
         lessonId: lessonId,
         courseId: courseId,
-        isCompleted: isCompleted,
+        isCompleted: isCompleted || false,
+        timeWatched: typeof timeWatched === 'number' ? Math.floor(timeWatched) : 0,
         watchedAt: new Date(),
       }
     })

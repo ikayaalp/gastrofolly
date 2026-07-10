@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useRef, useEffect } from "react"
-import { Play, Pause, Volume2, VolumeX, Maximize, RotateCcw, RotateCw, SkipBack, SkipForward } from "lucide-react"
+import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, RotateCcw, RotateCw, SkipBack, SkipForward, Loader2, AlertTriangle } from "lucide-react"
 import YouTubePlayer from "./YouTubePlayer"
 import Hls from "hls.js"
 
@@ -44,6 +44,7 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
   const [isMuted, setIsMuted] = useState(false)
   const [showControls, setShowControls] = useState(true)
   const [isLoading, setIsLoading] = useState(true)
+  const [hasError, setHasError] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showCenterPlay, setShowCenterPlay] = useState(false);
   const [isSeeking, setIsSeeking] = useState(false);
@@ -91,11 +92,21 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
     const handlePlay = () => setIsPlaying(true)
     const handlePause = () => setIsPlaying(false)
     const handleCanPlay = () => setIsLoading(false)
-    const handleLoadStart = () => setIsLoading(true)
+    const handleLoadStart = () => {
+      setIsLoading(true)
+      setHasError(false)
+    }
     const handleError = () => {
+      if (process.env.NODE_ENV === 'development') { console.log('Video error:', video.error) }
       setIsPlaying(false)
       setIsLoading(false)
+      setHasError(true)
     }
+    // iOS Safari, requestFullscreen yerine webkitEnterFullscreen kullanır ve
+    // document 'fullscreenchange' event'i tetiklemez; state'i senkron tutmak
+    // için bu iOS'a özel event'leri de dinlememiz gerekiyor.
+    const handleIOSFullscreenBegin = () => setIsFullscreen(true)
+    const handleIOSFullscreenEnd = () => setIsFullscreen(false)
 
     video.addEventListener('timeupdate', updateTime)
     video.addEventListener('loadedmetadata', updateDuration)
@@ -104,6 +115,8 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
     video.addEventListener('canplay', handleCanPlay)
     video.addEventListener('loadstart', handleLoadStart)
     video.addEventListener('error', handleError)
+    video.addEventListener('webkitbeginfullscreen', handleIOSFullscreenBegin)
+    video.addEventListener('webkitendfullscreen', handleIOSFullscreenEnd)
 
     return () => {
       video.removeEventListener('timeupdate', updateTime)
@@ -113,6 +126,8 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
       video.removeEventListener('canplay', handleCanPlay)
       video.removeEventListener('loadstart', handleLoadStart)
       video.removeEventListener('error', handleError)
+      video.removeEventListener('webkitbeginfullscreen', handleIOSFullscreenBegin)
+      video.removeEventListener('webkitendfullscreen', handleIOSFullscreenEnd)
     }
   }, [])
 
@@ -217,6 +232,25 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
     }
   }, [isPlaying]);
 
+  const saveProgress = async (timeWatched: number, isCompletedOverride?: boolean) => {
+    if (!lesson.id || !course.id || timeWatched <= 0) return
+    try {
+      await fetch('/api/video-progress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lessonId: lesson.id,
+          courseId: course.id,
+          timeWatched,
+          ...(isCompletedOverride ? { isCompleted: true } : {}),
+        }),
+        keepalive: true,
+      })
+    } catch (error) {
+      console.error("Progress save error", error);
+    }
+  }
+
   const togglePlay = async () => {
     const video = videoRef.current
     if (!video) return
@@ -225,6 +259,7 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
       if (isPlaying) {
         video.pause()
         setIsPlaying(false)
+        saveProgress(video.currentTime)
       } else {
         // Video yüklenene kadar bekle
         if (video.readyState < 2) {
@@ -337,61 +372,50 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
     return `${minutes}:${seconds.toString().padStart(2, '0')}`
   }
 
-  const markAsCompleted = async () => {
-    try {
-      await fetch('/api/video-progress', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          lessonId: lesson.id,
-          courseId: course.id,
-          timeWatched: videoRef.current?.currentTime || currentTime,
-          isCompleted: true,
-        }),
-      })
-    } catch (error) {
-      console.error('Error marking lesson as completed:', error)
-    }
-  }
-
   // Video %80'i izlendiğinde tamamlandı olarak işaretle
   useEffect(() => {
     if (duration > 0 && currentTime / duration >= 0.8 && !isCompleted) {
-      markAsCompleted()
+      saveProgress(videoRef.current?.currentTime || currentTime, true)
     }
-  }, [currentTime, duration, isCompleted, lesson.id, course.id, markAsCompleted])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentTime, duration, isCompleted, lesson.id, course.id])
 
-  // Periyodik izleme süresi kaydetme (her 10 saniyede)
+  // Periyodik izleme süresi kaydetme (her 10 saniyede, oynatılırken)
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
 
     if (isPlaying && lesson.id && course.id) {
-      intervalId = setInterval(async () => {
+      intervalId = setInterval(() => {
         const video = videoRef.current;
         if (!video) return;
-
-        try {
-          await fetch('/api/video-progress', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              lessonId: lesson.id,
-              courseId: course.id,
-              timeWatched: video.currentTime,
-            })
-          });
-        } catch (error) {
-          console.error("Progress save error", error);
-        }
+        saveProgress(video.currentTime);
       }, 10000);
     }
 
     return () => {
       if (intervalId) clearInterval(intervalId);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPlaying, lesson.id, course.id]);
+
+  // Dersten ayrılırken (unmount/ders değişimi) veya sekme kapatılırken son konumu kaydet
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      const video = videoRef.current
+      if (!video || video.currentTime <= 0) return
+      const payload = JSON.stringify({
+        lessonId: lesson.id,
+        courseId: course.id,
+        timeWatched: video.currentTime,
+      })
+      navigator.sendBeacon?.('/api/video-progress', new Blob([payload], { type: 'application/json' }))
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+      handleBeforeUnload()
+    }
+  }, [lesson.id, course.id])
 
   // YouTube URL kontrolü
   const isYouTubeUrl = (url: string) => {
@@ -456,13 +480,40 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
                 setShowControls(true)
                 setTimeout(() => setShowControls(false), 3000)
               }}
-              onError={(e) => {
-                if (process.env.NODE_ENV === 'development') { console.log('Video error:', e) }
-                setIsPlaying(false)
-              }}
             >
               Tarayıcınız video oynatmayı desteklemiyor.
             </video>
+
+            {/* Yükleniyor göstergesi */}
+            {isLoading && !hasError && (
+              <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+                <Loader2 className="h-10 w-10 md:h-14 md:w-14 text-orange-500 animate-spin" />
+              </div>
+            )}
+
+            {/* Hata durumu */}
+            {hasError && (
+              <div className="absolute inset-0 flex items-center justify-center z-30 bg-black/80">
+                <div className="text-center px-4">
+                  <AlertTriangle className="h-10 w-10 md:h-14 md:w-14 text-orange-500 mx-auto mb-3" />
+                  <p className="text-white text-sm md:text-base mb-4">Video yüklenirken bir sorun oluştu.</p>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      const video = videoRef.current
+                      if (!video) return
+                      setHasError(false)
+                      setIsLoading(true)
+                      video.load()
+                      video.play().catch(() => { })
+                    }}
+                    className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+                  >
+                    Tekrar Dene
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Video Controls */}
             <div
@@ -507,6 +558,15 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
                     <SkipBack className="h-5 w-5 md:h-7 md:w-7" />
                   </button>
 
+                  {/* 10sn geri sar */}
+                  <button
+                    onClick={() => skip(-10)}
+                    className="text-white hover:text-orange-400 transition-colors rounded-full p-2"
+                    title="10 saniye geri"
+                  >
+                    <RotateCcw className="h-5 w-5 md:h-6 md:w-6" />
+                  </button>
+
                   {/* Play/Pause */}
                   <button
                     onClick={togglePlay}
@@ -518,6 +578,15 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
                     ) : (
                       <Play className="h-5 w-5 md:h-7 md:w-7 ml-1" />
                     )}
+                  </button>
+
+                  {/* 10sn ileri sar */}
+                  <button
+                    onClick={() => skip(10)}
+                    className="text-white hover:text-orange-400 transition-colors rounded-full p-2"
+                    title="10 saniye ileri"
+                  >
+                    <RotateCw className="h-5 w-5 md:h-6 md:w-6" />
                   </button>
 
                   {/* Sonraki Ders (SkipForward) - Sadece hasFullAccess varsa çalışır */}
@@ -563,8 +632,9 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
                   <button
                     onClick={toggleFullscreen}
                     className="text-white hover:text-orange-400 transition-colors"
+                    title={isFullscreen ? "Tam ekrandan çık" : "Tam ekran"}
                   >
-                    <Maximize className="h-5 w-5" />
+                    {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
                   </button>
                 </div>
               </div>

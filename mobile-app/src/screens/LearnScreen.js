@@ -93,6 +93,8 @@ export default function LearnScreen({ route, navigation }) {
     const controlsOpacity = useRef(new Animated.Value(1)).current;
     const controlsTimeout = useRef(null);
     const scrollViewRef = useRef(null);
+    const videoPositionRef = useRef(0);
+    const resumedLessonIdRef = useRef(null);
 
     const showAlert = (title, message, buttons = [{ text: 'Tamam' }], type = 'info') => {
         setAlertConfig({ title, message, buttons, type });
@@ -257,6 +259,7 @@ export default function LearnScreen({ route, navigation }) {
         if (!videoRef.current) return;
         if (isPlaying) {
             await videoRef.current.pauseAsync();
+            saveProgress(videoPosition / 1000);
         } else {
             await videoRef.current.playAsync();
         }
@@ -281,7 +284,7 @@ export default function LearnScreen({ route, navigation }) {
             }
             // Auto mark as completed when 90% watched
             if (status.durationMillis && status.positionMillis / status.durationMillis > 0.9) {
-                markLessonComplete();
+                markLessonComplete(status.positionMillis);
             }
         }
     };
@@ -292,8 +295,9 @@ export default function LearnScreen({ route, navigation }) {
     const handleSliderStart = () => {
         isDraggingSlider.current = true;
         wasPlayingBeforeDrag.current = isPlaying;
-        // Pause briefly while dragging to prevent fighting updates
-        // videoRef.current?.pauseAsync(); 
+        // Sürüklerken oynatmayı durdur, yoksa video sesi arka planda akmaya devam eder
+        // ve pozisyon güncellemeleri sürükleme ile yarışır.
+        videoRef.current?.pauseAsync();
     };
 
     const handleSliderComplete = async (value) => {
@@ -310,8 +314,9 @@ export default function LearnScreen({ route, navigation }) {
         }, 500);
     };
 
-    const markLessonComplete = async () => {
-        if (!currentLesson || progress[currentLesson.id]?.isCompleted) return;
+    // İzleme süresini (saniye) ve isteğe bağlı tamamlanma durumunu backend'e kaydeder
+    const saveProgress = useCallback(async (timeWatchedSeconds, isCompletedFlag = false) => {
+        if (!currentLesson || !timeWatchedSeconds || timeWatchedSeconds <= 0) return;
 
         try {
             const token = await AsyncStorage.getItem('authToken');
@@ -322,19 +327,52 @@ export default function LearnScreen({ route, navigation }) {
                 {
                     lessonId: currentLesson.id,
                     courseId: courseId,
-                    isCompleted: true,
+                    timeWatched: Math.floor(timeWatchedSeconds),
+                    ...(isCompletedFlag ? { isCompleted: true } : {}),
                 },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
 
             setProgress(prev => ({
                 ...prev,
-                [currentLesson.id]: { ...prev[currentLesson.id], isCompleted: true }
+                [currentLesson.id]: {
+                    ...prev[currentLesson.id],
+                    timeWatched: Math.floor(timeWatchedSeconds),
+                    isCompleted: isCompletedFlag ? true : prev[currentLesson.id]?.isCompleted,
+                }
             }));
         } catch (error) {
-            console.error('Mark complete error:', error);
+            console.error('Progress save error:', error);
         }
+    }, [currentLesson, courseId]);
+
+    const markLessonComplete = async (positionMillis) => {
+        if (!currentLesson || progress[currentLesson.id]?.isCompleted) return;
+        await saveProgress((positionMillis ?? videoPosition) / 1000, true);
     };
+
+    // En güncel pozisyonu interval/cleanup içinde stale-closure olmadan okuyabilmek için ref'te tut
+    useEffect(() => {
+        videoPositionRef.current = videoPosition;
+    }, [videoPosition]);
+
+    // Oynatılırken her 10 saniyede bir izleme süresini kaydet (web ile aynı davranış)
+    useEffect(() => {
+        if (!isPlaying || !currentLesson) return;
+        const intervalId = setInterval(() => {
+            saveProgress(videoPositionRef.current / 1000);
+        }, 10000);
+        return () => clearInterval(intervalId);
+    }, [isPlaying, currentLesson, saveProgress]);
+
+    // Ders değiştiğinde veya ekrandan çıkılırken son konumu kaydet
+    useEffect(() => {
+        return () => {
+            if (videoPositionRef.current > 0) {
+                saveProgress(videoPositionRef.current / 1000);
+            }
+        };
+    }, [currentLesson, saveProgress]);
 
     const checkAccess = (lesson, index) => {
         // If server says user has global access, all lessons are unlocked
@@ -430,7 +468,6 @@ export default function LearnScreen({ route, navigation }) {
             fullUrl = hlsUrl;
         }
 
-        // Debug log
         return fullUrl;
     };
 
@@ -486,8 +523,18 @@ export default function LearnScreen({ route, navigation }) {
                             shouldPlay={isPlaying}
                             isMuted={isMuted}
                             onPlaybackStatusUpdate={handleVideoStatusUpdate}
-                            onLoad={() => {
+                            onLoad={async () => {
                                 setIsBuffering(false);
+                                // Kaldığı yerden devam ettir (her ders için sadece bir kere)
+                                const savedSeconds = progress[currentLesson.id]?.timeWatched;
+                                if (
+                                    savedSeconds > 0 &&
+                                    resumedLessonIdRef.current !== currentLesson.id &&
+                                    videoRef.current
+                                ) {
+                                    resumedLessonIdRef.current = currentLesson.id;
+                                    await videoRef.current.setPositionAsync(savedSeconds * 1000);
+                                }
                             }}
                             onLoadStart={() => setIsBuffering(true)}
                             onError={(error) => {
