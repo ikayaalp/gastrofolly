@@ -811,7 +811,13 @@ export default function LearnScreen({ route, navigation }) {
                                         marginTop: 16,
                                         alignSelf: 'flex-start'
                                     }}
-                                    onPress={() => WebBrowser.openBrowserAsync(currentLesson.pdfUrl)}
+                                    onPress={() => {
+                                        const pdfUrl = currentLesson.pdfUrl;
+                                        const viewerUrl = Platform.OS === 'android' 
+                                            ? `https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(pdfUrl)}` 
+                                            : pdfUrl;
+                                        WebBrowser.openBrowserAsync(viewerUrl);
+                                    }}
                                 >
                                     <FileText size={16} color="#fff" style={{ marginRight: 6 }} />
                                     <Text style={{ color: '#fff', fontSize: 13, fontWeight: '600' }}>Reçete / PDF Görüntüle</Text>
