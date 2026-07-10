@@ -26,9 +26,10 @@ export async function GET(request: NextRequest) {
                     },
                 },
             },
-            orderBy: {
-                createdAt: "desc",
-            },
+            orderBy: [
+                { order: "asc" },
+                { createdAt: "desc" }
+            ],
         });
 
         // console.log("API GET Stories:", stories.length, stories[0]); // Debug log

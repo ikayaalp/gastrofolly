@@ -509,6 +509,7 @@ model Story {
 
   title      String? // Hikaye başlığı
   coverImage String? // Hikaye kapak resmi URL
+  order      Int      @default(0)
 }
 
 // Culi AI Sohbet modeli
