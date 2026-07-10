@@ -9,17 +9,6 @@ import {
     Dimensions,
     StatusBar,
     Animated,
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import {
-    StyleSheet,
-    Text,
-    View,
-    ScrollView,
-    TouchableOpacity,
-    ActivityIndicator,
-    Dimensions,
-    StatusBar,
-    Animated,
     KeyboardAvoidingView,
     Platform,
     Keyboard,
@@ -822,6 +811,15 @@ export default function LearnScreen({ route, navigation }) {
                                         marginTop: 16,
                                         alignSelf: 'flex-start'
                                     }}
+                                    onPress={() => WebBrowser.openBrowserAsync(currentLesson.pdfUrl)}
+                                >
+                                    <FileText size={16} color="#fff" style={{ marginRight: 6 }} />
+                                    <Text style={{ color: '#fff', fontSize: 13, fontWeight: '600' }}>Reçete / PDF Görüntüle</Text>
+                                </TouchableOpacity>
+                            ) : null}
+                        </View>
+
+                        {/* Instructor Row */}
                         {course.instructor && (
                             <TouchableOpacity
                                 style={styles.instructorRow}
