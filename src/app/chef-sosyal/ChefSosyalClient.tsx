@@ -553,10 +553,17 @@ export default function ChefSosyalClient({
       clearTimeout(timeoutId);
 
       if (response.ok) {
+        const createdTopic = await response.json()
         setShowNewTopicModal(false)
         setNewTopicForm({ title: '', content: '', categoryId: categories.length > 0 ? categories[0].id : '' })
         setTopicMedia(null)
+        activeUploadRef.current = 0
+        setMediaUploading(false)
         setActiveTab('post')
+        
+        setTopics(prev => [createdTopic, ...prev])
+        sessionStorage.removeItem('chef-sosyal-state')
+
         // Sayfayı yenile veya yeniden fetch et
         router.refresh()
       } else {
