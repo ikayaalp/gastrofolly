@@ -40,6 +40,7 @@ const StoryViewer = ({ stories, initialIndex, onClose }: StoryViewerProps) => {
     const [progress, setProgress] = useState(0);
     const [mediaReady, setMediaReady] = useState(false);
     const progressInterval = useRef<NodeJS.Timeout | null>(null);
+    const currentStoryIdRef = useRef<string | undefined>(undefined);
 
     const currentGroup = stories[currentGroupIndex];
     const currentStory = currentGroup?.stories[internalStoryIndex];
@@ -53,6 +54,7 @@ const StoryViewer = ({ stories, initialIndex, onClose }: StoryViewerProps) => {
 
     useEffect(() => {
         if (!currentStory) return;
+        currentStoryIdRef.current = currentStory.id;
         setProgress(0);
         setMediaReady(false);
         stopProgress();
@@ -73,16 +75,16 @@ const StoryViewer = ({ stories, initialIndex, onClose }: StoryViewerProps) => {
                 img.src = optimizedUrl;
             }
         }
+        
+        return () => stopProgress();
     }, [currentStory, currentGroupIndex, internalStoryIndex, stories, currentGroup]); 
 
-    useEffect(() => {
-        if (mediaReady) {
+    const handleMediaReady = (storyId: string) => {
+        if (currentStoryIdRef.current === storyId) {
+            setMediaReady(true);
             startProgress();
-        } else {
-            stopProgress();
         }
-        return () => stopProgress();
-    }, [mediaReady, currentStory]);
+    };
 
     const startProgress = () => {
         stopProgress();
@@ -179,14 +181,14 @@ const StoryViewer = ({ stories, initialIndex, onClose }: StoryViewerProps) => {
                                 className={`w-full h-full object-cover transition-opacity duration-300 ${mediaReady ? 'opacity-100' : 'opacity-0'}`}
                                 autoPlay
                                 playsInline
-                                onLoadedData={() => setMediaReady(true)}
+                                onLoadedData={() => handleMediaReady(currentStory.id)}
                             />
                         ) : (
                             <img
                                 src={getOptimizedMediaUrl(currentStory.mediaUrl, 'IMAGE')}
                                 className={`w-full h-full object-cover transition-opacity duration-300 ${mediaReady ? 'opacity-100' : 'opacity-0'}`}
                                 alt="Story"
-                                onLoad={() => setMediaReady(true)}
+                                onLoad={() => handleMediaReady(currentStory.id)}
                             />
                         )}
                     </motion.div>

@@ -164,13 +164,17 @@ export default function AdminStoriesPage() {
         setStories(newStories);
 
         try {
-            await fetch('/api/stories/reorder', {
+            const res = await fetch('/api/stories/reorder', {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ storyIds: newStories.map(s => s.id) })
             });
+            if (!res.ok) {
+                throw new Error("Sıralama güncellenemedi");
+            }
         } catch (error) {
             console.error("Reorder error:", error);
+            alert("Sıralama güncellenirken hata oluştu");
             fetchData();
         }
     };

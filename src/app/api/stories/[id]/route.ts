@@ -34,7 +34,7 @@ export async function PATCH(
 
         const updatedStory = await prisma.story.update({
             where: { id },
-            data: { title, courseId, coverImage },
+            data: { title, courseId: courseId || null, coverImage },
         });
 
         return NextResponse.json({ success: true, story: updatedStory });

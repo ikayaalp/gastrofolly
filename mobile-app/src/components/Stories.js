@@ -201,6 +201,7 @@ const StoryViewer = ({ stories, initialIndex, onClose, navigation }) => {
                         placeholder={currentStoryItem.coverImage ? { uri: currentStoryItem.coverImage } : null}
                         style={viewerStyles.backgroundImage}
                         contentFit="cover"
+                        placeholderContentFit="cover"
                         transition={100}
                         cachePolicy="memory-disk"
                     />
