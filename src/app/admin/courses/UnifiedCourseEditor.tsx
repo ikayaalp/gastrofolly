@@ -717,6 +717,7 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
                                                             <Check className="h-4 w-4 text-green-400" />
                                                             <div className="overflow-hidden">
                                                                 <p className="text-green-400 text-sm font-medium">PDF Hazır</p>
+                                                                <p className="text-gray-500 text-xs truncate max-w-[200px]">{lessonForm.pdfUrl.split('/').pop()}</p>
                                                             </div>
                                                         </div>
                                                         <button
@@ -779,14 +780,25 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
 
                                                 {/* PDF Upload Button */}
                                                 {lesson.pdfUrl ? (
-                                                    <button
-                                                        onClick={() => setShowPdfUploadForLessonId(lesson.id)}
-                                                        className="flex items-center space-x-2 bg-green-500/10 text-green-400 px-3 py-1.5 rounded-lg text-xs font-mono border border-green-500/20 hover:bg-green-500/20 cursor-pointer transition-colors"
-                                                        title="PDF / Reçete Güncelle"
-                                                    >
-                                                        <Check className="h-3 w-3" />
-                                                        <span>PDF Yüklü</span>
-                                                    </button>
+                                                    <div className="flex items-center space-x-2">
+                                                        <a
+                                                            href={lesson.pdfUrl}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="flex items-center space-x-2 bg-green-500/10 text-green-400 px-3 py-1.5 rounded-lg text-xs font-mono border border-green-500/20 hover:bg-green-500/20 transition-colors"
+                                                            title="PDF'i Görüntüle"
+                                                        >
+                                                            <Check className="h-3 w-3" />
+                                                            <span className="truncate max-w-[100px]">{lesson.pdfUrl.split('/').pop()}</span>
+                                                        </a>
+                                                        <button
+                                                            onClick={() => setShowPdfUploadForLessonId(lesson.id)}
+                                                            className="p-1.5 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg"
+                                                            title="PDF'i Değiştir"
+                                                        >
+                                                            <Edit className="h-3 w-3" />
+                                                        </button>
+                                                    </div>
                                                 ) : (
                                                     <button
                                                         onClick={() => setShowPdfUploadForLessonId(lesson.id)}
