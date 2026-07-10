@@ -316,8 +316,14 @@ export default function TopicDetailClient({ session, topic: initialTopic, catego
         setNewComment('')
         setReplyingTo(null)
         setReplyingToName(null)
+      } else {
+        const errorData = await response.json().catch(() => ({}))
+        setAlertModal({ isOpen: true, title: 'Hata', message: errorData.error || 'Yanıt gönderilirken bir hata oluştu.', type: 'error' })
       }
-    } catch (error) { console.error(error) }
+    } catch (error) {
+      console.error(error)
+      setAlertModal({ isOpen: true, title: 'Hata', message: 'Bir ağ hatası oluştu, lütfen tekrar deneyin.', type: 'error' })
+    }
     finally { setSubmitting(false) }
   }
 
@@ -337,8 +343,14 @@ export default function TopicDetailClient({ session, topic: initialTopic, catego
         const newPost = await response.json()
         setComments([newPost, ...comments])
         setNewComment('')
+      } else {
+        const errorData = await response.json().catch(() => ({}))
+        setAlertModal({ isOpen: true, title: 'Hata', message: errorData.error || 'Yorum gönderilirken bir hata oluştu.', type: 'error' })
       }
-    } catch (error) { console.error(error) }
+    } catch (error) {
+      console.error(error)
+      setAlertModal({ isOpen: true, title: 'Hata', message: 'Bir ağ hatası oluştu, lütfen tekrar deneyin.', type: 'error' })
+    }
     finally { setSubmitting(false) }
   }
 
