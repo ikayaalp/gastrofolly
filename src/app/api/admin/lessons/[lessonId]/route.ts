@@ -24,6 +24,7 @@ export async function PUT(
         title: data.title,
         description: data.description || null,
         videoUrl: data.videoUrl || null,
+        pdfUrl: data.pdfUrl !== undefined ? data.pdfUrl : undefined,
         duration: data.duration ? parseInt(data.duration) : null,
         order: parseInt(data.order),
         isFree: data.isFree || false

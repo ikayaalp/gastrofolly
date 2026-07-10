@@ -19,6 +19,7 @@ export async function POST(request: NextRequest) {
         title: data.title,
         description: data.description || null,
         videoUrl: data.videoUrl || null,
+        pdfUrl: data.pdfUrl || null,
         duration: data.duration ? parseInt(data.duration) : null,
         order: parseInt(data.order),
         isFree: data.isFree || false,

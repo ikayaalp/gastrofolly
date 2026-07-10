@@ -100,6 +100,7 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
         title: "",
         description: "",
         videoUrl: "",
+        pdfUrl: "",
         duration: 0,
         order: 0,
         isFree: false
@@ -369,7 +370,15 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
             const response = await fetch(`/api/admin/lessons/${lesson.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ pdfUrl })
+                body: JSON.stringify({
+                    title: lesson.title,
+                    description: lesson.description,
+                    videoUrl: lesson.videoUrl,
+                    duration: lesson.duration,
+                    order: lesson.order,
+                    isFree: lesson.isFree,
+                    pdfUrl: pdfUrl
+                })
             })
             if (response.ok) {
                 setLessons(prev => prev.map(l => l.id === lesson.id ? { ...l, pdfUrl } : l))
@@ -398,7 +407,8 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
                     videoUrl: videoUrl,
                     duration: durationInMinutes,
                     order: lesson.order,
-                    isFree: lesson.isFree
+                    isFree: lesson.isFree,
+                    pdfUrl: lesson.pdfUrl
                 })
             })
 
@@ -646,7 +656,7 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
                                             </div>
 
                                             {/* Video Upload Area for Inline Form */}
-                                            <div className="col-span-1 md:col-span-2">
+                                            <div className="col-span-1">
                                                 <label className="block text-xs font-medium text-gray-500 mb-2 uppercase">Ders Videosu</label>
                                                 {lessonForm.videoUrl ? (
                                                     <div className="flex items-center justify-between bg-green-500/10 border border-green-500/20 rounded-lg p-3">
@@ -693,6 +703,30 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
                                                             )}
                                                         </label>
                                                     </div>
+                                                )}
+                                            </div>
+
+                                            {/* PDF Upload Area for Inline Form */}
+                                            <div className="col-span-1">
+                                                <label className="block text-xs font-medium text-gray-500 mb-2 uppercase">Ders PDF/Reçete</label>
+                                                {lessonForm.pdfUrl ? (
+                                                    <div className="flex items-center justify-between bg-green-500/10 border border-green-500/20 rounded-lg p-3">
+                                                        <div className="flex items-center space-x-3">
+                                                            <Check className="h-4 w-4 text-green-400" />
+                                                            <div className="overflow-hidden">
+                                                                <p className="text-green-400 text-sm font-medium">PDF Hazır</p>
+                                                            </div>
+                                                        </div>
+                                                        <button
+                                                            onClick={() => setLessonForm(prev => ({ ...prev, pdfUrl: "" }))}
+                                                            className="p-1 hover:bg-green-500/20 rounded text-green-400"
+                                                            title="PDF'i Kaldır"
+                                                        >
+                                                            <X className="h-4 w-4" />
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <DocumentUpload onDocumentUploaded={(url) => setLessonForm(prev => ({ ...prev, pdfUrl: url }))} />
                                                 )}
                                             </div>
 

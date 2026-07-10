@@ -45,6 +45,7 @@ export async function GET(
                         isFree: true,
                         order: true,
                         videoUrl: true,
+                        pdfUrl: true,
                     },
                 },
                 _count: {
