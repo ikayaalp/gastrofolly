@@ -25,7 +25,7 @@ export async function getAuthUser(request: NextRequest): Promise<MobileUser | nu
         if (session?.user?.id) {
             return {
                 id: session.user.id,
-                email: session.user.email,
+                email: session.user.email || '',
                 role: (session.user as any).role,
                 subscriptionEndDate: (session.user as any).subscriptionEndDate,
                 subscriptionPlan: (session.user as any).subscriptionPlan
