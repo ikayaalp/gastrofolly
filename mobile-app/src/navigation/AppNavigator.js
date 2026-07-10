@@ -33,6 +33,8 @@ import CuliScreen from '../screens/CuliScreen';
 
 import { Home, BookOpen, Users, MessageCircle, User, Sparkles, ChefHat } from 'lucide-react-native';
 
+import FloatingTabBar from '../components/FloatingTabBar';
+
 import SearchScreen from '../screens/SearchScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
 import SettingsScreen from '../screens/SettingsScreen';
@@ -116,27 +118,9 @@ function TabNavigator() {
 
     return (
         <Tab.Navigator
+            tabBar={(props) => <FloatingTabBar {...props} />}
             screenOptions={{
                 headerShown: false,
-                tabBarActiveTintColor: '#ea580c',
-                tabBarInactiveTintColor: '#9ca3af',
-                tabBarStyle: {
-                    backgroundColor: '#000000',
-                    borderTopColor: '#1a1a1a',
-                    height: Platform.OS === 'android' ? 65 + bottomPadding : 85,
-                    paddingBottom: bottomPadding,
-                    paddingTop: 8,
-                    position: 'absolute',
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    elevation: 0,
-                },
-                tabBarLabelStyle: {
-                    fontSize: 12,
-                    fontWeight: '500',
-                    marginTop: 4,
-                },
             }}
         >
             <Tab.Screen
