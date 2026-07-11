@@ -41,7 +41,7 @@ export default function SmartAppBanner() {
   const appStoreUrl = "https://apps.apple.com/app/id6760206517"
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-[100] p-4 pb-8 pointer-events-none">
+    <div className="fixed bottom-20 left-0 right-0 z-[60] p-4 pointer-events-none">
       <div className="bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl p-4 flex items-center justify-between pointer-events-auto">
         
         <div className="flex items-center gap-3">
