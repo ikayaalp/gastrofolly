@@ -8,7 +8,7 @@ export async function GET(req: Request) {
     const session = await getServerSession(authOptions)
 
     if (!session?.user || session.user.role !== "ADMIN") {
-      return new NextResponse("Forbidden", { status: 403 })
+      return new NextResponse("Unauthorized", { status: 401 })
     }
 
     const { searchParams } = new URL(req.url)
@@ -56,7 +56,7 @@ export async function POST(req: Request) {
     const session = await getServerSession(authOptions)
 
     if (!session?.user || session.user.role !== "ADMIN") {
-      return new NextResponse("Forbidden", { status: 403 })
+      return new NextResponse("Unauthorized", { status: 401 })
     }
 
     const body = await req.json()
@@ -91,7 +91,7 @@ export async function DELETE(req: Request) {
     const session = await getServerSession(authOptions)
 
     if (!session?.user || session.user.role !== "ADMIN") {
-      return new NextResponse("Forbidden", { status: 403 })
+      return new NextResponse("Unauthorized", { status: 401 })
     }
 
     const { searchParams } = new URL(req.url)

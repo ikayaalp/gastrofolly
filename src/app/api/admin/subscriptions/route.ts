@@ -7,7 +7,7 @@ export async function GET() {
     try {
         const session = await getServerSession(authOptions)
         if (!session?.user || session.user.role !== "ADMIN") {
-            return new NextResponse("Forbidden", { status: 403 })
+            return new NextResponse("Unauthorized", { status: 401 })
         }
 
         const plans = await prisma.subscriptionPlan.findMany({
@@ -26,7 +26,7 @@ export async function POST(req: Request) {
     try {
         const session = await getServerSession(authOptions)
         if (!session?.user || session.user.role !== "ADMIN") {
-            return new NextResponse("Forbidden", { status: 403 })
+            return new NextResponse("Unauthorized", { status: 401 })
         }
 
         const body = await req.json()

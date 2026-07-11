@@ -9,7 +9,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ category
         const session = await getServerSession(authOptions)
 
         if (!session?.user?.id || session.user.role !== 'ADMIN') {
-            return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
         }
 
         const { categoryId } = await params
@@ -61,7 +61,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ categ
         const session = await getServerSession(authOptions)
 
         if (!session?.user?.id || session.user.role !== 'ADMIN') {
-            return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
         }
 
         const { categoryId } = await params
