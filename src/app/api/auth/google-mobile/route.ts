@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import jwt from 'jsonwebtoken'
 import { randomUUID } from 'crypto'
+import { generateUniqueUsername } from '@/lib/generateUsername'
 
 // Google token verification endpoint for mobile app
 export async function POST(request: NextRequest) {
@@ -44,9 +45,11 @@ export async function POST(request: NextRequest) {
 
         if (!user) {
             // Create new user from Google
+            const username = await generateUniqueUsername(name || email.split('@')[0], email)
             user = await prisma.user.create({
                 data: {
                     email,
+                    username,
                     name: name || email.split('@')[0],
                     image: picture,
                     emailVerified: new Date(), // Google already verified email

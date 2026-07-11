@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { randomUUID } from "crypto"
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rateLimit"
+import { generateUniqueUsername } from "@/lib/generateUsername"
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -87,10 +88,18 @@ export const authOptions: NextAuthOptions = {
         const newSessionId = randomUUID()
         token.sessionId = newSessionId
         
-        // Save to DB
+        // Save to DB and check username
+        const dbUser = await prisma.user.findUnique({ where: { id: user.id } })
+        let dataToUpdate: any = { currentSessionId: newSessionId }
+        
+        if (dbUser && !dbUser.username) {
+          const newUsername = await generateUniqueUsername(dbUser.name, dbUser.email)
+          dataToUpdate.username = newUsername
+        }
+
         await prisma.user.update({
           where: { id: user.id },
-          data: { currentSessionId: newSessionId }
+          data: dataToUpdate
         })
       }
       if (trigger === "update" && session?.user) {

@@ -4,15 +4,15 @@ export async function extractMentionsAndNotify(content: string, sourceUserId: st
   // Regex to match @username. Assuming usernames or names might not have spaces, or we just match single words for now.
   const mentionRegex = /@([a-zA-Z0-9_]+)/g
   const matches = [...content.matchAll(mentionRegex)]
-  const mentionedNames = [...new Set(matches.map(m => m[1]))].slice(0, 10)
+  const mentionedUsernames = [...new Set(matches.map(m => m[1]))].slice(0, 10)
 
-  if (mentionedNames.length === 0) return
+  if (mentionedUsernames.length === 0) return
 
-  // Find users by name or id
+  // Find users by username or id
   const users = await prisma.user.findMany({
     where: {
-      name: {
-        in: mentionedNames
+      username: {
+        in: mentionedUsernames
       },
       id: {
         not: sourceUserId

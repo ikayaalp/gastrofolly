@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs"
 import { generateVerificationCode, sendVerificationEmail, getCodeExpiry } from "@/lib/emailService"
 import { validatePassword } from "@/lib/passwordValidator"
 import { checkRateLimit, getClientIp, RATE_LIMITS } from "@/lib/rateLimit"
+import { generateUniqueUsername } from "@/lib/generateUsername"
 
 export async function POST(request: NextRequest) {
   try {
@@ -92,10 +93,14 @@ export async function POST(request: NextRequest) {
     const verificationCode = generateVerificationCode()
     const codeExpiry = getCodeExpiry()
 
+    // Username oluştur
+    const username = await generateUniqueUsername(name, email)
+
     // Kullanıcıyı veritabanına kaydet (emailVerified=null ile)
     await prisma.user.create({
       data: {
         name,
+        username,
         email,
         password: hashedPassword,
         phoneNumber: phoneNumber || null,

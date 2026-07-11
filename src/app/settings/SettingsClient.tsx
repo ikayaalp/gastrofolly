@@ -9,6 +9,7 @@ import ConfirmationModal from '@/components/ui/ConfirmationModal'
 interface UserData {
   id: string
   name: string | null
+  username: string | null
   email: string
   phoneNumber: string | null
   image: string | null
@@ -41,6 +42,7 @@ export default function SettingsClient({ user }: SettingsClientProps) {
   const [activeTab, setActiveTab] = useState("profile")
   const [profileData, setProfileData] = useState({
     name: user.name || "",
+    username: user.username || "",
     email: user.email,
     phoneNumber: user.phoneNumber || "",
     image: user.image || ""
@@ -148,6 +150,7 @@ export default function SettingsClient({ user }: SettingsClientProps) {
         },
         body: JSON.stringify({
           name: profileData.name,
+          username: profileData.username,
           phoneNumber: profileData.phoneNumber,
           image: imageUrl
         })
@@ -377,6 +380,25 @@ export default function SettingsClient({ user }: SettingsClientProps) {
                   className="w-full px-4 py-3 bg-[#1a1a1a] border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
                   placeholder="Adınız ve soyadınız"
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Kullanıcı Adı
+                </label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">@</span>
+                  <input
+                    type="text"
+                    value={profileData.username}
+                    onChange={(e) => {
+                      const val = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '')
+                      setProfileData(prev => ({ ...prev, username: val }))
+                    }}
+                    className="w-full pl-9 pr-4 py-3 bg-[#1a1a1a] border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+                    placeholder="kullanici_adi"
+                  />
+                </div>
               </div>
 
               <div>

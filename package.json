@@ -15,7 +15,8 @@
     "db:migrate": "prisma migrate deploy",
     "db:push": "prisma db push",
     "migrate": "node scripts/migrate.js",
-    "create-admin": "node scripts/create-admin.js"
+    "create-admin": "node scripts/create-admin.js",
+    "backfill-usernames": "node scripts/backfill-usernames.js"
   },
   "dependencies": {
     "@google/genai": "^1.38.0",

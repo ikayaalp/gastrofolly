@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import jwt from 'jsonwebtoken'
 import { randomUUID } from 'crypto'
+import { generateUniqueUsername } from '@/lib/generateUsername'
 
 interface AppleTokenPayload {
     iss: string
@@ -115,10 +116,12 @@ export async function POST(request: NextRequest) {
             }
 
             console.log('✨ Creating new user for Apple Sign-In:', userEmail);
+            const username = await generateUniqueUsername(name || userEmail.split('@')[0], userEmail)
             user = await prisma.user.create({
                 data: {
                     email: userEmail,
-                    name: name || userEmail.split('@')[0],
+                    username,
+                    name: name || userEmail.split('@')[0], // Varsayılan isim olarak email'in @ öncesini kullan
                     emailVerified: new Date(),
                     role: 'STUDENT',
                     accounts: {
