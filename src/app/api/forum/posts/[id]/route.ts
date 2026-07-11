@@ -87,7 +87,7 @@ export async function PUT(
             )
         }
 
-        const MAX_POST_LENGTH = 5000;
+        const MAX_POST_LENGTH = 2000;
         if (content.length > MAX_POST_LENGTH) {
             return NextResponse.json(
                 { error: `İçerik çok uzun (maksimum ${MAX_POST_LENGTH} karakter)` },
