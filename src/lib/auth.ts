@@ -143,17 +143,18 @@ export const authOptions: NextAuthOptions = {
           if (user.subscriptionPlan === 'Premium' && user.subscriptionEndDate && new Date(user.subscriptionEndDate) < new Date()) {
               await prisma.user.update({
                   where: { id: user.id },
-                  data: { subscriptionPlan: null, subscriptionEndDate: null }
-              })
-              ;(session as any).user.subscriptionPlan = null
-          } else {
-              ;(session as any).user.subscriptionPlan = user.subscriptionPlan
-              ;(session as any).user.subscriptionEndDate = user.subscriptionEndDate
-              ;(session as any).user.subscriptionCancelled = user.subscriptionCancelled
+                  data: { subscriptionPlan: null, subscriptionStartDate: null, subscriptionEndDate: null }
+              });
+              user.subscriptionPlan = null;
+              user.subscriptionEndDate = null;
           }
-          ;(session as any).user.phoneNumber = user.phoneNumber
-          ;(session as any).user.referralCode = user.referralCode
-          session.user.username = user.username
+
+          (session.user as any).subscriptionPlan = user.subscriptionPlan;
+          (session.user as any).subscriptionEndDate = user.subscriptionEndDate;
+          (session.user as any).subscriptionCancelled = user.subscriptionCancelled;
+          (session.user as any).phoneNumber = user.phoneNumber;
+          (session.user as any).referralCode = user.referralCode;
+          session.user.username = user.username;
         }
       }
       return session
