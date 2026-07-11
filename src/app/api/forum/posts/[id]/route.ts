@@ -1,13 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAuthUser } from '@/lib/mobileAuth'
-import { v2 as cloudinary } from 'cloudinary'
+import { deleteForumPost } from '@/lib/forumDelete'
 
-cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
-})
 
 export async function DELETE(
     request: NextRequest,
@@ -46,46 +41,15 @@ export async function DELETE(
             )
         }
 
-        // Find the post and all its replies to check for media
-        const postsToDelete = await prisma.post.findMany({
-            where: {
-                OR: [
-                    { id },
-                    { parentId: id }
-                ]
-            },
-            select: { id: true, mediaUrl: true, mediaType: true }
-        })
+        // Use shared deletion logic
+        const deleted = await deleteForumPost(id)
 
-        // Delete media from Cloudinary for all affected posts
-        for (const p of postsToDelete) {
-            if (p.mediaUrl) {
-                try {
-                    const regex = /\/upload\/(?:v\d+\/)?([^\.]+)/
-                    const match = p.mediaUrl.match(regex)
-                    if (match && match[1]) {
-                        const publicId = match[1]
-                        const resourceType = p.mediaType === 'VIDEO' ? 'video' : 'image'
-
-                        await cloudinary.uploader.destroy(publicId, { resource_type: resourceType })
-                        console.log(`Deleted post media from Cloudinary: ${publicId}`)
-                    }
-                } catch (cloudinaryError) {
-                    console.error('Failed to delete post media from Cloudinary:', cloudinaryError)
-                    // Don't block post deletion if media deletion fails
-                }
-            }
+        if (!deleted) {
+            return NextResponse.json(
+                { error: 'Yorum silinirken bir hata oluştu veya bulunamadı' },
+                { status: 500 }
+            )
         }
-
-        // Delete the post and its replies
-        await prisma.post.deleteMany({
-            where: {
-                OR: [
-                    { id },
-                    { parentId: id }
-                ]
-            }
-        })
 
         return NextResponse.json({ success: true, message: 'Yorum silindi' })
 

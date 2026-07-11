@@ -57,8 +57,9 @@ export default async function ChefProfilPage({ params }: PageProps) {
     )
   }
 
-  // Takip durumu
+  // Takip durumu ve engelleme durumu
   let isFollowing = false
+  let isBlocked = false
   if (session?.user?.id && session.user.id !== userId) {
     const follow = await prisma.follow.findUnique({
       where: {
@@ -69,6 +70,16 @@ export default async function ChefProfilPage({ params }: PageProps) {
       }
     })
     isFollowing = !!follow
+
+    const block = await prisma.block.findUnique({
+      where: {
+        blockerId_blockedId: {
+          blockerId: session.user.id,
+          blockedId: userId
+        }
+      }
+    })
+    isBlocked = !!block
   }
 
   // Kullanıcının gönderileri
@@ -119,6 +130,7 @@ export default async function ChefProfilPage({ params }: PageProps) {
       profile={profileData as any}
       initialTopics={topics as any}
       isFollowing={isFollowing}
+      initialIsBlocked={isBlocked}
       isOwnProfile={session?.user?.id === userId}
       currentUserId={session?.user?.id}
     />

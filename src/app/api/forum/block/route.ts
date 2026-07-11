@@ -1,12 +1,13 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { getAuthUser } from '@/lib/mobileAuth'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.id) {
+    const user = await getAuthUser(req)
+    if (!user) {
       return new NextResponse('Unauthorized', { status: 401 })
     }
 
@@ -16,7 +17,7 @@ export async function POST(req: Request) {
       return new NextResponse('Missing required fields', { status: 400 })
     }
 
-    if (session.user.id === blockedId) {
+    if (user.id === blockedId) {
       return new NextResponse('Cannot block yourself', { status: 400 })
     }
 
@@ -24,7 +25,7 @@ export async function POST(req: Request) {
     const existingBlock = await prisma.block.findUnique({
       where: {
         blockerId_blockedId: {
-          blockerId: session.user.id,
+          blockerId: user.id,
           blockedId,
         },
       },
@@ -50,7 +51,7 @@ export async function POST(req: Request) {
       // Create block
       const block = await prisma.block.create({
         data: {
-          blockerId: session.user.id,
+          blockerId: user.id,
           blockedId,
         },
       })
@@ -59,8 +60,8 @@ export async function POST(req: Request) {
       await prisma.follow.deleteMany({
         where: {
           OR: [
-            { followerId: session.user.id, followingId: blockedId },
-            { followerId: blockedId, followingId: session.user.id }
+            { followerId: user.id, followingId: blockedId },
+            { followerId: blockedId, followingId: user.id }
           ]
         }
       })

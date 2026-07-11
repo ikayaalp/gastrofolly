@@ -283,7 +283,7 @@ const forumService = {
     // Block a user
     blockUser: async (blockedUserId) => {
         try {
-            const response = await api.post('/api/user/block', { blockedUserId });
+            const response = await api.post('/api/forum/block', { blockedId: blockedUserId });
             return { success: true, data: response.data };
         } catch (error) {
             console.error('Block user error:', error);

@@ -59,6 +59,7 @@ interface ChefProfilClientProps {
     profile: Profile
     initialTopics: Topic[]
     isFollowing: boolean
+    initialIsBlocked?: boolean
     isOwnProfile: boolean
     currentUserId?: string
 }
@@ -67,12 +68,15 @@ export default function ChefProfilClient({
     profile,
     initialTopics,
     isFollowing: initialIsFollowing,
+    initialIsBlocked = false,
     isOwnProfile,
     currentUserId
 }: ChefProfilClientProps) {
     const router = useRouter()
     const [isFollowing, setIsFollowing] = useState(initialIsFollowing)
+    const [isBlocked, setIsBlocked] = useState(initialIsBlocked)
     const [followLoading, setFollowLoading] = useState(false)
+    const [blockLoading, setBlockLoading] = useState(false)
     const [messageLoading, setMessageLoading] = useState(false)
     const [followersCount, setFollowersCount] = useState(profile.followersCount)
     const [topics, setTopics] = useState(initialTopics)
@@ -145,6 +149,35 @@ export default function ChefProfilClient({
             setFollowersCount(prev => wasFollowing ? prev + 1 : prev - 1)
         } finally {
             setFollowLoading(false)
+        }
+    }
+
+    const handleBlock = async () => {
+        if (blockLoading || !currentUserId || isOwnProfile) return
+        setBlockLoading(true)
+
+        try {
+            const response = await fetch('/api/forum/block', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ blockedId: profile.id })
+            })
+
+            if (response.ok) {
+                setIsBlocked(!isBlocked)
+                // If blocking, unfollow optimistically as well to reflect backend
+                if (!isBlocked && isFollowing) {
+                    setIsFollowing(false)
+                    setFollowersCount(prev => prev - 1)
+                }
+                router.refresh()
+            } else {
+                console.error('Block operation failed')
+            }
+        } catch (error) {
+            console.error('Error during block:', error)
+        } finally {
+            setBlockLoading(false)
         }
     }
 
@@ -369,28 +402,46 @@ export default function ChefProfilClient({
                                     Profili Düzenle
                                 </Link>
                             ) : currentUserId ? (
-                                <button
-                                    onClick={handleFollow}
-                                    disabled={followLoading}
-                                    className={`flex items-center gap-2 px-6 py-2 rounded-full text-sm font-bold transition-all duration-300 transform active:scale-95 ${isFollowing
-                                        ? 'bg-transparent border border-orange-600 text-orange-500 hover:bg-orange-600/10'
-                                        : 'bg-orange-600 hover:bg-orange-700 text-white'
-                                        }`}
-                                >
-                                    {followLoading ? (
-                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                    ) : isFollowing ? (
-                                        <>
-                                            <UserCheck className="h-4 w-4" />
-                                            <span>Takip Ediliyor</span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <UserPlus className="h-4 w-4" />
-                                            Takip Et
-                                        </>
-                                    )}
-                                </button>
+                                <>
+                                    <button
+                                        onClick={handleFollow}
+                                        disabled={followLoading || isBlocked}
+                                        className={`flex items-center gap-2 px-6 py-2 rounded-full text-sm font-bold transition-all duration-300 transform active:scale-95 ${isFollowing
+                                            ? 'bg-transparent border border-orange-600 text-orange-500 hover:bg-orange-600/10'
+                                            : 'bg-orange-600 hover:bg-orange-700 text-white'
+                                            } ${isBlocked ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    >
+                                        {followLoading ? (
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : isFollowing ? (
+                                            <>
+                                                <UserCheck className="h-4 w-4" />
+                                                <span>Takip Ediliyor</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <UserPlus className="h-4 w-4" />
+                                                Takip Et
+                                            </>
+                                        )}
+                                    </button>
+                                    <button
+                                        onClick={handleBlock}
+                                        disabled={blockLoading}
+                                        className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-bold transition-all duration-300 transform active:scale-95 ${isBlocked
+                                            ? 'border-gray-600 text-gray-400 hover:bg-gray-800'
+                                            : 'border-red-600 text-red-500 hover:bg-red-600/10'
+                                            }`}
+                                    >
+                                        {blockLoading ? (
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : isBlocked ? (
+                                            <span>Engeli Kaldır</span>
+                                        ) : (
+                                            <span>Engelle</span>
+                                        )}
+                                    </button>
+                                </>
                             ) : (
                                 <Link
                                     href="/auth/signin"

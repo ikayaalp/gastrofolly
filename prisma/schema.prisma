@@ -720,7 +720,9 @@ model Report {
   id          String   @id @default(cuid())
   reason      String   // e.g. "Spam", "Inappropriate", etc.
   description String?
-  status      String   @default("PENDING") // "PENDING", "RESOLVED", "REJECTED"
+  status      String   @default("PENDING") // "PENDING", "REVIEWED_DISMISSED", "REVIEWED_REMOVED"
+  reviewedAt  DateTime?
+  reviewedBy  String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

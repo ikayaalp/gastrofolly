@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAuthUser } from '@/lib/mobileAuth'
-import { v2 as cloudinary } from 'cloudinary'
+import { deleteForumTopic } from '@/lib/forumDelete'
 
 export async function DELETE(
     request: NextRequest,
@@ -44,74 +44,17 @@ export async function DELETE(
             )
         }
 
-        // Configure Cloudinary globally for this request
-        cloudinary.config({
-            cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-            api_key: process.env.CLOUDINARY_API_KEY,
-            api_secret: process.env.CLOUDINARY_API_SECRET
-        })
+        // Use shared deletion logic
+        const deleted = await deleteForumTopic(id)
 
-        // Cloudinary Media Deletion Logic
-        if (topic.mediaUrl && topic.mediaUrl.includes('cloudinary')) {
-            try {
-                // Extract Public ID
-
-                // Regex matches content after /upload/(v.../)? and before file extension
-                const regex = /\/upload\/(?:v\d+\/)?([^\.]+)/
-                const match = topic.mediaUrl.match(regex)
-
-                if (match && match[1]) {
-                    const publicId = match[1]
-                    const resourceType = topic.mediaType === 'VIDEO' ? 'video' : 'image'
-
-                    console.log(`Attempting to delete Cloudinary media: ${publicId} (${resourceType})`)
-
-                    await cloudinary.uploader.destroy(publicId, {
-                        resource_type: resourceType
-                    })
-
-                    console.log('Cloudinary media deleted successfully')
-                }
-            } catch (cloudError) {
-                console.error('Failed to delete media from Cloudinary:', cloudError)
-                // We proceed with DB deletion even if image delete fails to prevent "stuck" posts
-            }
+        if (!deleted) {
+            return NextResponse.json(
+                { error: 'Tartışma silinirken bir hata oluştu veya bulunamadı' },
+                { status: 500 }
+            )
         }
 
-        // Fetch and delete media for all posts in the topic
-        const postsWithMedia = await prisma.post.findMany({
-            where: { topicId: id, mediaUrl: { not: null } },
-            select: { id: true, mediaUrl: true, mediaType: true }
-        })
-
-        for (const post of postsWithMedia) {
-            if (post.mediaUrl && post.mediaUrl.includes('cloudinary')) {
-                try {
-                    const regex = /\/upload\/(?:v\d+\/)?([^\.]+)/
-                    const match = post.mediaUrl.match(regex)
-                    if (match && match[1]) {
-                        const publicId = match[1]
-                        const resourceType = post.mediaType === 'VIDEO' ? 'video' : 'image'
-                        console.log(`Attempting to delete Cloudinary media for post ${post.id}: ${publicId}`)
-                        await cloudinary.uploader.destroy(publicId, { resource_type: resourceType })
-                    }
-                } catch (cloudError) {
-                    console.error(`Failed to delete media for post ${post.id} from Cloudinary:`, cloudError)
-                }
-            }
-        }
-
-        // Delete all posts (comments) in the topic first
-        await prisma.post.deleteMany({
-            where: { topicId: id }
-        })
-
-        // Delete the topic
-        await prisma.topic.delete({
-            where: { id }
-        })
-
-        return NextResponse.json({ success: true, message: 'Tartışma ve medyası silindi' })
+        return NextResponse.json({ success: true, message: 'Tartışma silindi' })
 
     } catch (error) {
         console.error('Delete topic error:', error)

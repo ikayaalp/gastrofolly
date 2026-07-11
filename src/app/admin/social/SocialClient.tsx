@@ -11,7 +11,9 @@ import {
     Search,
     ExternalLink,
     Plus,
-    Loader2
+    Loader2,
+    AlertTriangle,
+    XCircle
 } from 'lucide-react'
 import ConfirmationModal from '@/components/ui/ConfirmationModal'
 import PollCreationModal from '@/components/admin/PollCreationModal'
@@ -47,11 +49,22 @@ interface Post {
     author: Author
 }
 
+interface Report {
+    id: string
+    reason: string
+    description: string | null
+    status: string
+    createdAt: string
+    reporter: Author
+    topic: { id: string; title: string } | null
+    post: { id: string; content: string } | null
+}
+
 export default function SocialAdminPage() {
     const router = useRouter()
-    const [activeTab, setActiveTab] = useState<'topics' | 'posts'>('topics')
+    const [activeTab, setActiveTab] = useState<'topics' | 'posts' | 'reports'>('topics')
     const [loading, setLoading] = useState(true)
-    const [items, setItems] = useState<Topic[] | Post[]>([])
+    const [items, setItems] = useState<Topic[] | Post[] | Report[]>([])
     const [search, setSearch] = useState('')
     const [page, setPage] = useState(1)
     const [totalPages, setTotalPages] = useState(1)
@@ -60,7 +73,7 @@ export default function SocialAdminPage() {
     const [deleteModal, setDeleteModal] = useState<{
         isOpen: boolean;
         id: string | null;
-        type: 'topic' | 'post';
+        type: 'topic' | 'post' | 'report';
     }>({
         isOpen: false,
         id: null,
@@ -77,8 +90,12 @@ export default function SocialAdminPage() {
             if (activeTab === 'topics') {
                 url = `/api/admin/forum/topics?page=${page}&limit=20`
                 if (search) url += `&search=${encodeURIComponent(search)}`
-            } else {
+            } else if (activeTab === 'posts') {
                 url = `/api/admin/forum/posts?page=${page}&limit=20`
+                if (search) url += `&search=${encodeURIComponent(search)}`
+            } else {
+                url = `/api/admin/forum/reports?status=PENDING&page=${page}&limit=20`
+                // reports arama desteklemiyorsa query'ye eklemeyebiliriz, veya ekleriz arka uç desteklemiyorsa görmezden gelir
                 if (search) url += `&search=${encodeURIComponent(search)}`
             }
 
@@ -88,8 +105,11 @@ export default function SocialAdminPage() {
             if (activeTab === 'topics') {
                 setItems(data.topics)
                 setTotalPages(data.pagination?.pages || 1)
-            } else {
+            } else if (activeTab === 'posts') {
                 setItems(data.posts)
+                setTotalPages(data.pagination?.pages || 1)
+            } else {
+                setItems(data.reports)
                 setTotalPages(data.pagination?.pages || 1)
             }
         } catch (error) {
@@ -103,8 +123,29 @@ export default function SocialAdminPage() {
         loadData()
     }, [activeTab, page, search])
 
-    const handleDeleteClick = (id: string, type: 'topic' | 'post') => {
+    const handleDeleteClick = (id: string, type: 'topic' | 'post' | 'report') => {
         setDeleteModal({ isOpen: true, id, type })
+    }
+
+    const handleDismissReport = async (id: string) => {
+        if (!confirm('Bu şikayeti reddetmek istediğinizden emin misiniz? İçerik silinmeyecek.')) return
+        setActionLoading(true)
+        try {
+            const response = await fetch(`/api/admin/forum/reports/${id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'DISMISS' })
+            })
+            if (response.ok) {
+                loadData()
+            } else {
+                alert('İşlem başarısız oldu')
+            }
+        } catch (error) {
+            console.error('Dismiss report error:', error)
+        } finally {
+            setActionLoading(false)
+        }
     }
 
     const handleConfirmDelete = async () => {
@@ -113,13 +154,23 @@ export default function SocialAdminPage() {
 
         try {
             let url = ''
+            let method = 'DELETE'
+            let body = null
+
             if (deleteModal.type === 'topic') {
                 url = `/api/forum/topics/${deleteModal.id}/delete`
-            } else {
+            } else if (deleteModal.type === 'post') {
                 url = `/api/forum/posts/${deleteModal.id}`
+            } else if (deleteModal.type === 'report') {
+                url = `/api/admin/forum/reports/${deleteModal.id}`
+                method = 'PATCH'
+                body = JSON.stringify({ action: 'REMOVE' })
             }
 
-            const response = await fetch(url, { method: 'DELETE' })
+            const response = await fetch(url, { 
+                method,
+                ...(body && { headers: { 'Content-Type': 'application/json' }, body })
+            })
 
             if (response.ok) {
                 // Refresh list
@@ -174,6 +225,12 @@ export default function SocialAdminPage() {
                     >
                         Yorumlar (Posts)
                     </button>
+                    <button 
+                        onClick={() => { setActiveTab('reports'); setPage(1); }}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center ${activeTab === 'reports' ? 'bg-red-600 text-white shadow-lg shadow-red-900/40' : 'text-gray-400 hover:text-white hover:bg-gray-800'}`}
+                    >
+                        Şikayetler (Reports)
+                    </button>
                 </div>
 
                 <div className="relative w-full md:w-64">
@@ -213,6 +270,71 @@ export default function SocialAdminPage() {
                                             Hiç içerik bulunamadı.
                                         </td>
                                     </tr>
+                                ) : activeTab === 'reports' ? (
+                                    (items as Report[]).map((report) => (
+                                        <tr key={report.id} className="hover:bg-gray-800/30 transition-colors">
+                                            <td className="px-6 py-4">
+                                                <div className="flex flex-col max-w-sm">
+                                                    <div className="flex items-center mb-1">
+                                                        <AlertTriangle className="w-4 h-4 text-red-400 mr-2" />
+                                                        <span className="text-sm font-bold text-red-400">{report.reason}</span>
+                                                    </div>
+                                                    {report.description && <span className="text-xs text-gray-400 mb-2">{report.description}</span>}
+                                                    <div className="bg-gray-900 p-2 rounded border border-gray-800">
+                                                        <span className="text-xs text-gray-300 line-clamp-2">
+                                                            {report.topic ? `Başlık: ${report.topic.title}` : report.post ? `Yorum: ${report.post.content}` : 'Bilinmeyen İçerik'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="flex items-center">
+                                                    {report.reporter?.image ? (
+                                                        <img src={report.reporter.image} alt="" className="w-6 h-6 rounded-full mr-2" />
+                                                    ) : (
+                                                        <div className="w-6 h-6 rounded-full bg-gray-700 mr-2 flex items-center justify-center">
+                                                            <Users className="w-3 h-3 text-gray-400" />
+                                                        </div>
+                                                    )}
+                                                    <span className="text-sm text-gray-300">{report.reporter?.name || 'Anonim'}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
+                                                {format(new Date(report.createdAt), 'dd MMMM yyyy HH:mm', { locale: tr })}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
+                                                <span className="px-2 py-1 bg-yellow-500/20 text-yellow-500 rounded text-xs">Bekliyor</span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-right">
+                                                <div className="flex justify-end space-x-2">
+                                                    {report.topic && (
+                                                        <Link
+                                                            href={`/chef-sosyal/topic/${report.topic.id}`}
+                                                            target="_blank"
+                                                            className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
+                                                            title="İçeriğe Git"
+                                                        >
+                                                            <ExternalLink className="w-4 h-4" />
+                                                        </Link>
+                                                    )}
+                                                    <button
+                                                        onClick={() => handleDismissReport(report.id)}
+                                                        className="p-2 text-yellow-500 hover:text-yellow-400 hover:bg-yellow-500/10 rounded-lg transition-colors"
+                                                        title="Reddet (Kalsın)"
+                                                    >
+                                                        <XCircle className="w-4 h-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteClick(report.id, 'report')}
+                                                        className="p-2 text-red-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                                                        title="Kaldır (Sil)"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
                                 ) : activeTab === 'topics' ? (
                                     (items as Topic[]).map((topic) => (
                                         <tr key={topic.id} className="hover:bg-gray-800/30 transition-colors">

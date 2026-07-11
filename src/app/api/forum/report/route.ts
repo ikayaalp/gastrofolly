@@ -44,6 +44,7 @@ export async function POST(req: Request) {
     const existingReport = await prisma.report.findFirst({
         where: {
             reporterId: session.user.id,
+            status: 'PENDING',
             ...(targetType === 'topic' ? { topicId: targetId } : { postId: targetId })
         }
     })
