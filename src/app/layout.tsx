@@ -5,6 +5,7 @@ import "./globals.css";
 import AuthSessionProvider from "@/components/providers/SessionProvider";
 import { CartProvider } from "@/contexts/CartContext";
 import { FavoritesProvider } from "@/contexts/FavoritesContext";
+import SmartAppBanner from "@/components/layout/SmartAppBanner";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import MobileNavbar from "@/components/layout/MobileNavbar";
@@ -97,6 +98,7 @@ export default async function RootLayout({
           <CartProvider>
             <FavoritesProvider>
               {children}
+              <SmartAppBanner />
             </FavoritesProvider>
           </CartProvider>
           <MobileNavbar initialSession={session} />
