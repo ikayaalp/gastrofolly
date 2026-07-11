@@ -178,6 +178,23 @@ export async function POST(
       )
     }
 
+    // --- Block Kontrolü ---
+    const blockCheck = await prisma.block.findFirst({
+        where: {
+            OR: [
+                { blockerId: user.id, blockedId: topic.authorId },
+                { blockerId: topic.authorId, blockedId: user.id }
+            ]
+        }
+    })
+
+    if (blockCheck) {
+        return NextResponse.json(
+            { error: 'Bu kullanıcıya yorum yapamazsınız.' },
+            { status: 403 }
+        )
+    }
+
     const post = await prisma.post.create({
       data: {
         content: content || '...',

@@ -12,7 +12,7 @@ export async function PATCH(
 
     // Admin kontrolü
     if (!session || session.user.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     const { userId } = await params

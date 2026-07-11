@@ -13,24 +13,7 @@ import ConfirmationModal from "@/components/ui/ConfirmationModal"
 import EditTopicModal from "@/components/forum/EditTopicModal"
 import { getOptimizedMediaUrl } from "@/lib/utils"
 
-// Helper function to colorize @culi mentions
-const renderCommentContent = (content: string) => {
-  if (!content) return null;
-
-  // Split the content by the @culi keyword (case-insensitive)
-  const parts = content.split(/(@culi)/i);
-
-  return (
-    <>
-      {parts.map((part, index) => {
-        if (part.toLowerCase() === '@culi') {
-          return <span key={index} className="text-orange-500 font-bold">{part}</span>;
-        }
-        return <span key={index}>{part}</span>;
-      })}
-    </>
-  );
-};
+// Using HashtagText for rendering content instead of renderCommentContent
 
 interface Author {
   id: string
@@ -565,7 +548,7 @@ export default function TopicDetailClient({ session, topic: initialTopic, catego
                           </div>
                         </div>
                       ) : (
-                        <div className="text-sm text-[#e7e9ea] mb-2 whitespace-pre-wrap">{renderCommentContent(comment.content)}</div>
+                        <div className="text-sm text-[#e7e9ea] mb-2 whitespace-pre-wrap"><HashtagText text={comment.content} /></div>
                       )}
 
                       <div className="flex items-center space-x-4">
@@ -613,7 +596,7 @@ export default function TopicDetailClient({ session, topic: initialTopic, catego
                                   </div>
                                 ) : (
                                   <div className="text-sm text-[#e7e9ea] mb-2 whitespace-pre-wrap">
-                                    <span className="text-orange-500 font-medium">@{comment.author.name?.replace(/\s+/g, '')}</span> {renderCommentContent(reply.content)}
+                                    <span className="text-orange-500 font-medium">@{comment.author.name?.replace(/\s+/g, '')}</span> <HashtagText text={reply.content} />
                                   </div>
                                 )}
 

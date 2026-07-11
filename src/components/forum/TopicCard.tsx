@@ -4,10 +4,11 @@ import { useState, memo } from 'react'
 import Link from 'next/link'
 import { ThumbsUp, MessageCircle, MoreHorizontal, User, Play, Clock, Bookmark, ChefHat } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { Edit2, Trash2, ShieldAlert } from 'lucide-react'
+import { Edit2, Trash2, ShieldAlert, Ban } from 'lucide-react'
 import HashtagText from './HashtagText'
 import LikersModal from './LikersModal'
 import ConfirmationModal from '@/components/ui/ConfirmationModal'
+import ReportModal from '@/components/forum/ReportModal'
 import { getOptimizedMediaUrl } from '@/lib/utils'
 
 interface TopicCardProps {
@@ -66,6 +67,7 @@ const TopicCard = ({ topic, isLiked, onLike, isSaved, onSave, currentUserId }: T
     const [showLikersModal, setShowLikersModal] = useState(false)
     const [showMenu, setShowMenu] = useState(false)
     const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+    const [reportModalOpen, setReportModalOpen] = useState(false)
     const router = useRouter()
 
     const isAuthor = currentUserId === topic.author.id
@@ -129,6 +131,25 @@ const TopicCard = ({ topic, isLiked, onLike, isSaved, onSave, currentUserId }: T
         }
     }
 
+    const handleBlockUser = async () => {
+        try {
+            const response = await fetch('/api/forum/block', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ blockedId: topic.author.id })
+            })
+            if (response.ok) {
+                setAlertState({ isOpen: true, message: 'Kullanıcı engellendi.' })
+                window.location.reload()
+            } else {
+                setAlertState({ isOpen: true, message: 'Engelleme işlemi başarısız oldu.' })
+            }
+        } catch (error) {
+            console.error(error)
+            setAlertState({ isOpen: true, message: 'Engelleme işlemi başarısız oldu.' })
+        }
+    }
+
     return (
         <>
             <div className="block">
@@ -187,7 +208,7 @@ const TopicCard = ({ topic, isLiked, onLike, isSaved, onSave, currentUserId }: T
                                             onClick={(e) => { e.preventDefault(); setShowMenu(false); }} 
                                         />
                                         <div className="absolute right-0 mt-1 w-36 bg-[#1a1a1a] rounded-lg shadow-lg border border-gray-800 py-1 z-50">
-                                            {isAuthor && (
+                                            {isAuthor ? (
                                                 <>
                                                     <button 
                                                         onClick={(e) => { e.preventDefault(); setShowMenu(false); router.push(`/chef-sosyal/topic/${topic.id}/edit`); }}
@@ -202,6 +223,23 @@ const TopicCard = ({ topic, isLiked, onLike, isSaved, onSave, currentUserId }: T
                                                     >
                                                         <Trash2 className="h-4 w-4" />
                                                         <span>Sil</span>
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <button 
+                                                        onClick={(e) => { e.preventDefault(); setShowMenu(false); setReportModalOpen(true); }}
+                                                        className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 flex items-center space-x-2"
+                                                    >
+                                                        <ShieldAlert className="h-4 w-4" />
+                                                        <span>Şikayet Et</span>
+                                                    </button>
+                                                    <button 
+                                                        onClick={(e) => { e.preventDefault(); setShowMenu(false); handleBlockUser(); }}
+                                                        className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-800 flex items-center space-x-2"
+                                                    >
+                                                        <Ban className="h-4 w-4" />
+                                                        <span>Kullanıcıyı Engelle</span>
                                                     </button>
                                                 </>
                                             )}
@@ -478,6 +516,16 @@ const TopicCard = ({ topic, isLiked, onLike, isSaved, onSave, currentUserId }: T
                 targetId={topic.id}
                 likeCount={topic.likeCount}
             />
+            
+            {/* Report Modal */}
+            {reportModalOpen && (
+                <ReportModal 
+                    isOpen={reportModalOpen}
+                    onClose={() => setReportModalOpen(false)}
+                    targetId={topic.id}
+                    targetType="topic"
+                />
+            )}
         </>
     )
 }

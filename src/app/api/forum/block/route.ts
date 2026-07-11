@@ -31,22 +31,48 @@ export async function POST(req: Request) {
     })
 
     if (existingBlock) {
-      // Unblock if it already exists
-      await prisma.block.delete({
-        where: { id: existingBlock.id },
-      })
-      return NextResponse.json({ success: true, action: 'unblocked' })
+      try {
+        // Unblock if it already exists
+        await prisma.block.delete({
+          where: { id: existingBlock.id },
+        })
+        return NextResponse.json({ success: true, action: 'unblocked' })
+      } catch (e: any) {
+        if (e.code === 'P2025') {
+            // Already deleted
+            return NextResponse.json({ success: true, action: 'unblocked' })
+        }
+        throw e;
+      }
     }
 
-    // Create block
-    const block = await prisma.block.create({
-      data: {
-        blockerId: session.user.id,
-        blockedId,
-      },
-    })
+    try {
+      // Create block
+      const block = await prisma.block.create({
+        data: {
+          blockerId: session.user.id,
+          blockedId,
+        },
+      })
 
-    return NextResponse.json({ success: true, action: 'blocked', block })
+      // Clean up follows (both directions)
+      await prisma.follow.deleteMany({
+        where: {
+          OR: [
+            { followerId: session.user.id, followingId: blockedId },
+            { followerId: blockedId, followingId: session.user.id }
+          ]
+        }
+      })
+
+      return NextResponse.json({ success: true, action: 'blocked', block })
+    } catch (e: any) {
+      if (e.code === 'P2002') {
+        // Already blocked
+        return NextResponse.json({ success: true, action: 'blocked' })
+      }
+      throw e;
+    }
   } catch (error) {
     console.error('Error blocking user:', error)
     return new NextResponse('Internal Server Error', { status: 500 })

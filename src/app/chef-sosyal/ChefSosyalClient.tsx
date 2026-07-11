@@ -251,18 +251,18 @@ export default function ChefSosyalClient({
     }
   }
 
-  // Load saved topics from localStorage
+  // Fetch saved topics from API
   useEffect(() => {
-    const storedSaved = localStorage.getItem('chef-saved-topics')
-    if (storedSaved) {
-      try {
-        const savedIds = JSON.parse(storedSaved)
-        setSavedTopics(new Set(savedIds))
-      } catch (e) {
-        console.error('Error parsing saved topics:', e)
-      }
-    }
-  }, [])
+    if (!session?.user?.id) return;
+    fetch('/api/forum/save')
+      .then(res => res.json())
+      .then(data => {
+        if (data.savedTopicIds) {
+          setSavedTopics(new Set(data.savedTopicIds))
+        }
+      })
+      .catch(err => console.error(err))
+  }, [session])
 
   // Kategorileri yeniden yükle
   const loadCategories = async () => {
@@ -331,19 +331,32 @@ export default function ChefSosyalClient({
   }, [session?.user?.id, pendingLikeIds]);
 
   // Save/Unsave topic
-  const handleSave = useCallback((topicId: string) => {
-    setSavedTopics(prev => {
-      const newSet = new Set(prev)
-      if (newSet.has(topicId)) {
-        newSet.delete(topicId)
-      } else {
-        newSet.add(topicId)
+  const handleSaveTopic = async (topicId: string) => {
+    if (!session?.user?.id) return
+
+    try {
+      const res = await fetch('/api/forum/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topicId })
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        setSavedTopics(prev => {
+          const newSet = new Set(prev)
+          if (data.saved) {
+            newSet.add(topicId)
+          } else {
+            newSet.delete(topicId)
+          }
+          return newSet
+        })
       }
-      // Persist to localStorage
-      localStorage.setItem('chef-saved-topics', JSON.stringify([...newSet]))
-      return newSet
-    })
-  }, []);
+    } catch (error) {
+      console.error('Error toggling save:', error)
+    }
+  };
 
   // Client side fetching logic (for actions that don't change URL like refresh button, though mostly we use URL now)
   const loadTopics = async (isLoadMore = false, specificPage?: number) => {
@@ -684,7 +697,7 @@ export default function ChefSosyalClient({
                     isLiked={likedTopics.has(topic.id)}
                     onLike={handleLike}
                     isSaved={savedTopics.has(topic.id)}
-                    onSave={handleSave}
+                    onSave={handleSaveTopic}
                     currentUserId={session?.user?.id}
                   />
                 ))
@@ -696,7 +709,7 @@ export default function ChefSosyalClient({
                     isLiked={likedTopics.has(topic.id)}
                     onLike={handleLike}
                     isSaved={savedTopics.has(topic.id)}
-                    onSave={handleSave}
+                    onSave={handleSaveTopic}
                     currentUserId={session?.user?.id}
                   />
                 ))

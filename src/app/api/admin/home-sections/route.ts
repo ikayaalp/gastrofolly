@@ -9,7 +9,7 @@ export async function GET() {
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user || session.user.role !== "ADMIN") {
-      return new NextResponse("Unauthorized", { status: 401 })
+      return new NextResponse("Forbidden", { status: 403 })
     }
 
     const dbSections = await prisma.homeSection.findMany({
@@ -32,7 +32,7 @@ export async function PUT(req: Request) {
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user || session.user.role !== "ADMIN") {
-      return new NextResponse("Unauthorized", { status: 401 })
+      return new NextResponse("Forbidden", { status: 403 })
     }
 
     const { sections } = await req.json()

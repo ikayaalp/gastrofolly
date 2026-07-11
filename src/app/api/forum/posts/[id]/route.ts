@@ -4,7 +4,7 @@ import { getAuthUser } from '@/lib/mobileAuth'
 import { v2 as cloudinary } from 'cloudinary'
 
 cloudinary.config({
-    cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET,
 })
@@ -61,14 +61,10 @@ export async function DELETE(
         for (const p of postsToDelete) {
             if (p.mediaUrl) {
                 try {
-                    // Extract public_id from Cloudinary URL
-                    // Example: https://res.cloudinary.com/.../image/upload/v1234567890/folder/filename.jpg
-                    const urlParts = p.mediaUrl.split('/')
-                    const uploadIndex = urlParts.findIndex(part => part === 'upload')
-                    if (uploadIndex !== -1) {
-                        const publicIdWithExt = urlParts.slice(uploadIndex + 2).join('/')
-                        const publicId = publicIdWithExt.split('.')[0] // Remove extension
-
+                    const regex = /\/upload\/(?:v\d+\/)?([^\.]+)/
+                    const match = p.mediaUrl.match(regex)
+                    if (match && match[1]) {
+                        const publicId = match[1]
                         const resourceType = p.mediaType === 'VIDEO' ? 'video' : 'image'
 
                         await cloudinary.uploader.destroy(publicId, { resource_type: resourceType })
@@ -117,11 +113,20 @@ export async function PUT(
         }
 
         const { id } = await params
-        const { content } = await request.json()
+        let { content } = await request.json()
+        content = content?.trim()
 
         if (!content) {
             return NextResponse.json(
                 { error: 'Yorum içeriği boş olamaz' },
+                { status: 400 }
+            )
+        }
+
+        const MAX_POST_LENGTH = 5000;
+        if (content.length > MAX_POST_LENGTH) {
+            return NextResponse.json(
+                { error: `İçerik çok uzun (maksimum ${MAX_POST_LENGTH} karakter)` },
                 { status: 400 }
             )
         }

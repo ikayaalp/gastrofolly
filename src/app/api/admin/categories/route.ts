@@ -27,7 +27,7 @@ export async function GET(req: Request) {
         const session = await getServerSession(authOptions)
 
         if (!session?.user?.id || session.user.role !== 'ADMIN') {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+            return NextResponse.json({ error: "Forbidden" }, { status: 403 })
         }
 
         const categories = await prisma.category.findMany({
@@ -51,7 +51,7 @@ export async function POST(req: Request) {
         const session = await getServerSession(authOptions)
 
         if (!session?.user?.id || session.user.role !== 'ADMIN') {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+            return NextResponse.json({ error: "Forbidden" }, { status: 403 })
         }
 
         const body = await req.json()

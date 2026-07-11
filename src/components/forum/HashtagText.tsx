@@ -10,15 +10,13 @@ interface HashtagTextProps {
 export default function HashtagText({ text, className = "" }: HashtagTextProps) {
     if (!text) return null;
 
-    // Hashtagleri bulmak için regex: # harfi ile başlayan ve boşluk/noktalama işaretine kadar devam eden kelimeler
-    // Not: Türkçe karakter desteği için \w yerine daha geniş bir kapsam kullanıyoruz
-    const parts = text.split(/(#[a-zA-Z0-9çğıöşüÇĞİÖŞÜ]+)/g);
+    // Hashtag ve Mentionları bulmak için regex
+    const parts = text.split(/(#[a-zA-Z0-9çğıöşüÇĞİÖŞÜ]+|@[a-zA-Z0-9çğıöşüÇĞİÖŞÜ_]+)/g);
 
     return (
         <div className={className}>
             {parts.map((part, i) => {
                 if (part.startsWith('#')) {
-                    const tag = part.slice(1);
                     return (
                         <Link
                             key={i}
@@ -28,6 +26,13 @@ export default function HashtagText({ text, className = "" }: HashtagTextProps) 
                         >
                             {part}
                         </Link>
+                    );
+                }
+                if (part.startsWith('@')) {
+                    return (
+                        <span key={i} className="text-orange-500 font-bold hover:underline cursor-pointer">
+                            {part}
+                        </span>
                     );
                 }
                 return <span key={i}>{part}</span>;

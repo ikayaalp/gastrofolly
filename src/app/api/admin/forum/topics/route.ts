@@ -9,8 +9,8 @@ export async function GET(request: Request) {
     
     if (!session?.user?.email || session.user.role !== 'ADMIN') {
       return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
+        { error: 'Forbidden' },
+        { status: 403 }
       )
     }
 

@@ -8,7 +8,7 @@ export async function GET() {
     try {
         const session = await getServerSession(authOptions)
         if (!session?.user || session.user.role !== "ADMIN") {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+            return NextResponse.json({ error: "Forbidden" }, { status: 403 })
         }
 
         // 1. Fetch all topics

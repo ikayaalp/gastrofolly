@@ -93,15 +93,18 @@ export default function ChefProfilClient({
         }
     }, [currentUserId])
 
-    // Load saved from localStorage
+    // Fetch saved topics from API
     useEffect(() => {
-        const stored = localStorage.getItem('chef-saved-topics')
-        if (stored) {
-            try {
-                setSavedTopics(new Set(JSON.parse(stored)))
-            } catch { }
-        }
-    }, [])
+        if (!currentUserId) return;
+        fetch('/api/forum/save')
+          .then(res => res.json())
+          .then(data => {
+            if (data.savedTopicIds) {
+              setSavedTopics(new Set(data.savedTopicIds))
+            }
+          })
+          .catch(err => console.error(err))
+    }, [currentUserId])
 
     const loadLikedTopics = async () => {
         try {
@@ -200,15 +203,32 @@ export default function ChefProfilClient({
         }
     }, [currentUserId])
 
-    const handleSave = useCallback((topicId: string) => {
-        setSavedTopics(prev => {
-            const newSet = new Set(prev)
-            if (newSet.has(topicId)) newSet.delete(topicId)
-            else newSet.add(topicId)
-            localStorage.setItem('chef-saved-topics', JSON.stringify([...newSet]))
-            return newSet
-        })
-    }, [])
+    const handleSaveTopic = async (topicId: string) => {
+        if (!currentUserId) return
+
+        try {
+            const res = await fetch('/api/forum/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ topicId })
+            })
+
+            if (res.ok) {
+                const data = await res.json()
+                setSavedTopics(prev => {
+                    const newSet = new Set(prev)
+                    if (data.saved) {
+                        newSet.add(topicId)
+                    } else {
+                        newSet.delete(topicId)
+                    }
+                    return newSet
+                })
+            }
+        } catch (error) {
+            console.error('Error toggling save:', error)
+        }
+    }
 
     const handleBioSave = async () => {
         setBioSaving(true)
@@ -526,7 +546,7 @@ export default function ChefProfilClient({
                                     isLiked={likedTopics.has(topic.id)}
                                     onLike={handleLike}
                                     isSaved={savedTopics.has(topic.id)}
-                                    onSave={handleSave}
+                                    onSave={handleSaveTopic}
                                     currentUserId={currentUserId}
                                 />
                             ))}

@@ -44,19 +44,20 @@ export async function DELETE(
             )
         }
 
+        // Configure Cloudinary globally for this request
+        cloudinary.config({
+            cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+            api_key: process.env.CLOUDINARY_API_KEY,
+            api_secret: process.env.CLOUDINARY_API_SECRET
+        })
+
         // Cloudinary Media Deletion Logic
         if (topic.mediaUrl && topic.mediaUrl.includes('cloudinary')) {
             try {
-                // Configure Cloudinary
-                cloudinary.config({
-                    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-                    api_key: process.env.CLOUDINARY_API_KEY,
-                    api_secret: process.env.CLOUDINARY_API_SECRET
-                })
-
                 // Extract Public ID
+
                 // Regex matches content after /upload/(v.../)? and before file extension
-                const regex = /\/upload\/(?:v\d+\/)?(.+)\.[a-zA-Z0-9]+$/
+                const regex = /\/upload\/(?:v\d+\/)?([^\.]+)/
                 const match = topic.mediaUrl.match(regex)
 
                 if (match && match[1]) {
@@ -86,7 +87,7 @@ export async function DELETE(
         for (const post of postsWithMedia) {
             if (post.mediaUrl && post.mediaUrl.includes('cloudinary')) {
                 try {
-                    const regex = /\/upload\/(?:v\d+\/)?(.+)\.[a-zA-Z0-9]+$/
+                    const regex = /\/upload\/(?:v\d+\/)?([^\.]+)/
                     const match = post.mediaUrl.match(regex)
                     if (match && match[1]) {
                         const publicId = match[1]

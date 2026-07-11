@@ -4,7 +4,7 @@ export async function extractMentionsAndNotify(content: string, sourceUserId: st
   // Regex to match @username. Assuming usernames or names might not have spaces, or we just match single words for now.
   const mentionRegex = /@([a-zA-Z0-9_]+)/g
   const matches = [...content.matchAll(mentionRegex)]
-  const mentionedNames = matches.map(m => m[1])
+  const mentionedNames = [...new Set(matches.map(m => m[1]))].slice(0, 10)
 
   if (mentionedNames.length === 0) return
 
@@ -13,6 +13,9 @@ export async function extractMentionsAndNotify(content: string, sourceUserId: st
     where: {
       name: {
         in: mentionedNames
+      },
+      id: {
+        not: sourceUserId
       }
     }
   })
