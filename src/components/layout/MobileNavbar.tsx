@@ -3,9 +3,18 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useSession } from "next-auth/react"
-import { Home, BookOpen, Users, User, Bot } from "lucide-react"
+import { Home, BookOpen, Users, User, ChefHat, Sparkles } from "lucide-react"
 
 import { Session } from "next-auth"
+
+function CuliIcon({ className, strokeWidth }: { className?: string; strokeWidth?: number }) {
+    return (
+        <span className="relative inline-flex items-center justify-center">
+            <ChefHat className={className} strokeWidth={strokeWidth} />
+            <Sparkles className="absolute -top-1 -right-1.5 h-2.5 w-2.5" strokeWidth={strokeWidth} />
+        </span>
+    )
+}
 
 export default function MobileNavbar({ initialSession }: { initialSession?: Session | null }) {
     const pathname = usePathname()
@@ -37,7 +46,7 @@ export default function MobileNavbar({ initialSession }: { initialSession?: Sess
         {
             name: 'Culi',
             path: '/chef-ai',
-            icon: Bot
+            icon: CuliIcon
         },
         {
             name: 'Sosyal',

@@ -44,6 +44,7 @@ api.interceptors.response.use(
                     await AsyncStorage.removeItem('authToken');
                     await AsyncStorage.removeItem('userData');
                     await AsyncStorage.removeItem('userId');
+                    await AsyncStorage.removeItem('onboardingCompleted');
                     await logoutRevenueCat();
 
                     Alert.alert(
@@ -56,7 +57,7 @@ api.interceptors.response.use(
                                     if (navigationRef.isReady()) {
                                         navigationRef.reset({
                                             index: 0,
-                                            routes: [{ name: 'Welcome' }],
+                                            routes: [{ name: 'Onboarding' }],
                                         });
                                     }
                                 }

@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Clock, Trash2, AlertTriangle, ChevronLeft } from 'lucide-react';
+import { Send, Clock, Trash2, AlertTriangle, ChevronLeft, ChefHat, Sparkles } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import Link from 'next/link';
@@ -160,20 +160,11 @@ export default function ChefAIClient() {
             <div className="flex items-center justify-between px-4 py-4 border-b border-[#27272a] bg-black/80 backdrop-blur sticky top-0 z-10">
                 <div className="flex items-center">
                     {/* If coming from somewhere else, maybe back button? But usually this is a tab. */}
-                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-orange-600 to-orange-500 flex items-center justify-center mr-3 shadow-lg shadow-orange-900/20">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="w-6 h-6 text-white"
-                        >
-                            <path d="M6 13.87A4 4 0 0 1 7.41 6a5.11 5.11 0 0 1 1.05-1.54 5 5 0 0 1 7.08 0A5.11 5.11 0 0 1 16.59 6 4 4 0 0 1 18 13.87V21H6Z" />
-                            <line x1="6" x2="18" y1="17" y2="17" />
-                        </svg>
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/20 mr-3">
+                        <div className="relative flex items-center justify-center">
+                            <ChefHat className="w-6 h-6 text-white" />
+                            <Sparkles className="w-3 h-3 text-white absolute -top-1 -right-1" />
+                        </div>
                     </div>
                     <div>
                         <h1 className="text-lg font-bold text-white tracking-wide">Culi</h1>
@@ -193,7 +184,10 @@ export default function ChefAIClient() {
                 {messages.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full text-center px-4 pt-10">
                         <div className="w-20 h-20 rounded-full bg-[#27272a] border border-[#3f3f46] flex items-center justify-center mb-6">
-                            <span className="text-4xl">👋</span>
+                            <div className="relative flex items-center justify-center text-orange-500">
+                                <ChefHat className="w-10 h-10" />
+                                <Sparkles className="w-4 h-4 absolute -top-1 -right-2" />
+                            </div>
                         </div>
                         <h2 className="text-2xl font-bold text-white mb-3">Merhaba Şef!</h2>
                         <p className="text-gray-400 mb-8 max-w-xs leading-relaxed">
@@ -214,19 +208,10 @@ export default function ChefAIClient() {
                             >
                                 {msg.role !== 'user' && (
                                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex-shrink-0 flex items-center justify-center mt-1">
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            strokeWidth="2"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            className="w-4 h-4 text-white"
-                                        >
-                                            <path d="M6 13.87A4 4 0 0 1 7.41 6a5.11 5.11 0 0 1 1.05-1.54 5 5 0 0 1 7.08 0A5.11 5.11 0 0 1 16.59 6 4 4 0 0 1 18 13.87V21H6Z" />
-                                            <line x1="6" x2="18" y1="17" y2="17" />
-                                        </svg>
+                                        <div className="relative flex items-center justify-center">
+                                            <ChefHat className="w-4 h-4 text-white" />
+                                            <Sparkles className="w-2 h-2 text-white absolute -top-0.5 -right-1" />
+                                        </div>
                                     </div>
                                 )}
                                 <div

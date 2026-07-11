@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import useTabBarClearance from '../hooks/useTabBarClearance';
 import {
     StyleSheet,
     Text,
@@ -41,7 +41,7 @@ import LikersModal from '../components/LikersModal';
 
 export default function TopicDetailScreen({ route, navigation }) {
     const insets = useSafeAreaInsets();
-    const tabBarHeight = useBottomTabBarHeight();
+    const tabBarHeight = useTabBarClearance();
     const { topicId } = route.params;
     const [topic, setTopic] = useState(null);
     const [comments, setComments] = useState([]);
@@ -887,7 +887,7 @@ export default function TopicDetailScreen({ route, navigation }) {
                     styles.container,
                     Platform.OS === 'android'
                         ? { paddingBottom: androidPaddingBottom }
-                        : { paddingBottom: keyboardVisible ? 0 : tabBarHeight },
+                        : { paddingBottom: 0 },
                 ]}
                 behavior={Platform.OS === 'ios' ? 'padding' : undefined}
                 keyboardVerticalOffset={0}
@@ -922,7 +922,7 @@ export default function TopicDetailScreen({ route, navigation }) {
             <View style={[
                 styles.replyInputContainer,
                 {
-                    paddingBottom: Platform.OS === 'android' ? 12 : (keyboardVisible ? 24 : 16)
+                    paddingBottom: Platform.OS === 'android' ? 12 : (keyboardVisible ? 24 : tabBarHeight + 16)
                 }
             ]}>
                 {isLoggedIn ? (

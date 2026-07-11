@@ -23,9 +23,11 @@ import { Send, Bot, User, ChefHat, History, X, Clock, Trash2, AlertTriangle, Spa
 import { sendMessageToAI } from '../api/aiService';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation, useIsFocused } from '@react-navigation/native';
 import Markdown from 'react-native-markdown-display';
 import LoginRequiredModal from '../components/LoginRequiredModal';
+import useTabBarClearance from '../hooks/useTabBarClearance';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const SUGGESTIONS = [
     { id: 1, text: "🍝 İtalyan Makarnası Tarifi", icon: "🍝" },
@@ -38,16 +40,20 @@ const MAX_HISTORY_ITEMS = 10;
 
 export default function CuliScreen() {
     const navigation = useNavigation();
+    const isFocused = useIsFocused();
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [keyboardVisible, setKeyboardVisible] = useState(false);
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
+    const insets = useSafeAreaInsets();
     const [isMenuVisible, setIsMenuVisible] = useState(false);
     const [showClearConfirm, setShowClearConfirm] = useState(false);
     const [chatHistory, setChatHistory] = useState([]);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [showLoginModal, setShowLoginModal] = useState(false);
     const flatListRef = useRef(null);
+    const tabBarClearance = useTabBarClearance();
 
     // Initial load of history
     useEffect(() => {
@@ -55,11 +61,17 @@ export default function CuliScreen() {
 
         const keyboardWillShowListener = Keyboard.addListener(
             Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
-            () => setKeyboardVisible(true)
+            (e) => {
+                setKeyboardVisible(true);
+                setKeyboardHeight(e.endCoordinates?.height || 0);
+            }
         );
         const keyboardWillHideListener = Keyboard.addListener(
             Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
-            () => setKeyboardVisible(false)
+            () => {
+                setKeyboardVisible(false);
+                setKeyboardHeight(0);
+            }
         );
 
         return () => {
@@ -275,8 +287,9 @@ export default function CuliScreen() {
 
                 <KeyboardAvoidingView
                     style={{ flex: 1 }}
-                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                    keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+                    behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                    keyboardVerticalOffset={0}
+                    enabled={isFocused}
                 >
                     <View style={styles.content}>
                         {messages.length === 0 ? (
@@ -340,7 +353,7 @@ export default function CuliScreen() {
 
                     <View style={[
                         styles.inputWrapper,
-                        { paddingBottom: keyboardVisible ? (Platform.OS === 'ios' ? 20 : 8) : (Platform.OS === 'ios' ? 110 : 120) }
+                        { paddingBottom: keyboardVisible ? (Platform.OS === 'ios' ? 20 : keyboardHeight + insets.bottom + 8) : tabBarClearance + 12 }
                     ]}>
                         <View style={styles.inputContainer}>
                             <TextInput

@@ -2,20 +2,29 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { TAB_BAR_HEIGHT, TAB_BAR_BOTTOM_GAP } from '../constants/layout';
 
 export default function FloatingTabBar({ state, descriptors, navigation }) {
     const insets = useSafeAreaInsets();
-    const bottomPadding = Platform.OS === 'android' ? Math.max(insets.bottom, 36) : insets.bottom;
+    const focusedOptions = descriptors[state.routes[state.index].key].options;
+    if (focusedOptions.tabBarStyle?.display === 'none') {
+        return null;
+    }
+
+    const bottomPadding = Platform.OS === 'android' ? Math.max(insets.bottom - 12, 24) : Math.max(insets.bottom - 12, 0);
 
     const activeColor = '#ea580c';
-    const inactiveColor = '#9ca3af';
+    const inactiveColor = '#ffffff';
+    // iOS: cam efekti (kullanıcı onayladı, dokunulmuyor). Android: expo-blur'da aynı
+    // ayarlar çok daha şeffaf/farklı render olduğu için eski mat görünümüne geri alındı.
+    const blurIntensity = Platform.OS === 'android' ? 80 : 20;
 
     return (
-        <View style={[styles.container, { bottom: bottomPadding + 8 }]}>
-            <BlurView intensity={75} tint="dark" style={styles.blurContainer}>
+        <View style={[styles.container, { bottom: bottomPadding + TAB_BAR_BOTTOM_GAP }]}>
+            <BlurView intensity={blurIntensity} tint="dark" style={styles.blurContainer}>
                 {/* Overlay layers */}
                 <View style={styles.overlay} />
-                <View style={styles.highlight} />
+                <View style={[styles.highlight, Platform.OS === 'android' && styles.highlightAndroid]} />
 
                 <View style={styles.tabBar}>
                     {state.routes.map((route, index) => {
@@ -94,15 +103,18 @@ const styles = StyleSheet.create({
     },
     overlay: {
         ...StyleSheet.absoluteFillObject,
-        backgroundColor: 'rgba(0,0,0,0.3)',
+        backgroundColor: 'rgba(0,0,0,0.35)',
     },
     highlight: {
         ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(255,255,255,0.02)',
+    },
+    highlightAndroid: {
         backgroundColor: 'rgba(255,255,255,0.05)',
     },
     tabBar: {
         flexDirection: 'row',
-        height: 65,
+        height: TAB_BAR_HEIGHT,
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 10,

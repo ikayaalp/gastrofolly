@@ -7,6 +7,7 @@ import { ChefHat, BookOpen, Star, Play, Plus, Info } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Logo from '../components/Logo';
 import courseService from '../api/courseService';
+import useTabBarClearance from '../hooks/useTabBarClearance';
 import authService from '../api/authService';
 import homeService from '../api/homeService';
 import storyService from '../api/storyService';
@@ -32,6 +33,7 @@ export default function HomeScreen({ navigation }) {
     const scrollViewRef = useRef(null);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [selectedCategoryId, setSelectedCategoryId] = useState(null);
+    const tabBarClearance = useTabBarClearance();
 
     const onRefresh = React.useCallback(async () => {
         setRefreshing(true);
@@ -442,13 +444,13 @@ export default function HomeScreen({ navigation }) {
             )}
 
             {selectedCategory ? (
-                <ScrollView style={styles.scrollView} contentContainerStyle={[styles.scrollContent, { paddingTop: 16 }]}>
+                <ScrollView style={styles.scrollView} contentContainerStyle={[styles.scrollContent, { paddingBottom: tabBarClearance, paddingTop: 16 }]}>
                     {selectedCategory.courses.map((course, index) => renderCategoryListCard(course, index))}
                 </ScrollView>
             ) : (
             <ScrollView
                 style={styles.scrollView}
-                contentContainerStyle={styles.scrollContent}
+                contentContainerStyle={[styles.scrollContent, { paddingBottom: tabBarClearance }]}
                 refreshControl={
                     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ea580c" colors={['#ea580c']} />
                 }
@@ -751,8 +753,7 @@ const styles = StyleSheet.create({
         color: '#fff',
     },
     listCard: {
-        width: '100%',
-        alignSelf: 'stretch',
+        width: width - 32,
         marginHorizontal: 16,
         marginBottom: 20,
         aspectRatio: 1.45,
@@ -791,7 +792,6 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     scrollContent: {
-        paddingBottom: 140,
         alignItems: 'stretch',
     },
     section: {

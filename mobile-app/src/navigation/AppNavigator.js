@@ -23,7 +23,6 @@ import RegisterScreen from '../screens/RegisterScreen';
 import EmailVerificationScreen from '../screens/EmailVerificationScreen';
 import CourseDetailScreen from '../screens/CourseDetailScreen';
 import LearnScreen from '../screens/LearnScreen';
-import WelcomeScreen from '../screens/WelcomeScreen';
 import InstructorProfileScreen from '../screens/InstructorProfileScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
 
@@ -196,7 +195,11 @@ export default function AppNavigator() {
                 if (onboardingDone !== 'true') {
                     setInitialRoute('Onboarding');
                 } else if (!token) {
-                    setInitialRoute('Welcome');
+                    // Güvenlik ağı: Token yoksa (herhangi bir şekilde temizlenmişse),
+                    // OnboardingScreen'in otomatik olarak Main'e atlamasını engellemek için
+                    // onboardingCompleted bayrağını zorla temizliyoruz.
+                    await AsyncStorage.removeItem('onboardingCompleted');
+                    setInitialRoute('Onboarding');
                 } else {
                     setInitialRoute('Main');
                 }
@@ -225,7 +228,6 @@ export default function AppNavigator() {
             >
                 <Stack.Screen name="Onboarding" component={OnboardingScreen} />
 
-                <Stack.Screen name="Welcome" component={WelcomeScreen} />
                 <Stack.Screen name="Login" component={LoginScreen} />
                 <Stack.Screen name="Register" component={RegisterScreen} />
                 <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
