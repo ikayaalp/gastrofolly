@@ -60,6 +60,32 @@ export async function POST(request: NextRequest) {
         }
       })
 
+      // Abonelik Güncelleme (Premium)
+      if (payment.subscriptionPlan) {
+        const now = new Date()
+        let endDate = new Date(now)
+
+        if (payment.billingPeriod === 'yearly') {
+          endDate.setFullYear(endDate.getFullYear() + 1)
+        } else if (payment.billingPeriod === '6monthly') {
+          endDate.setMonth(endDate.getMonth() + 6)
+        } else {
+          endDate.setMonth(endDate.getMonth() + 1)
+        }
+
+        await prisma.user.update({
+          where: { id: session.user.id },
+          data: {
+            subscriptionPlan: "Premium",
+            subscriptionBillingPeriod: payment.billingPeriod === 'yearly' ? 'YEARLY' : payment.billingPeriod === '6monthly' ? 'SIXMONTHLY' : 'MONTHLY',
+            subscriptionStartDate: now,
+            subscriptionEndDate: endDate,
+            subscriptionReferenceCode: payment.stripePaymentId || null,
+            subscriptionCancelled: false,
+          }
+        })
+      }
+
       // Enrollment kontrolü ve oluşturma (sadece kurs ödemeleri için)
       if (payment.courseId) {
         const existingEnrollment = await prisma.enrollment.findFirst({

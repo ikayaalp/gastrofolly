@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { redirect, notFound } from "next/navigation"
 import { prisma } from "@/lib/prisma"
+import { isPremiumUser } from "@/lib/subscription"
 import VideoPlayer from "@/components/video/VideoPlayer"
 import CourseSidebar from "@/components/learn/CourseSidebar"
 import RecommendedCourses from "@/components/course/RecommendedCourses"
@@ -90,8 +91,7 @@ async function getCourseWithProgress(courseId: string, userId: string, requested
   // const user = await prisma.user.findUnique(...) -> KALDIRILDI
 
   // Abonelik süresi devam ediyor mu? (Plan iptal edilmiş olsa bile tarih bitmediyse devam eder)
-  const isSubscriptionValid = user?.subscriptionPlan === 'Premium' && 
-    (!user.subscriptionEndDate || new Date(user.subscriptionEndDate) > new Date())
+  const isSubscriptionValid = isPremiumUser(user)
 
   const enrollment = await prisma.enrollment.findUnique({
     where: {

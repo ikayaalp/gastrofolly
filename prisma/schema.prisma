@@ -65,6 +65,7 @@ model User {
   createdAt                 DateTime  @default(now())
   updatedAt                 DateTime  @updatedAt
   subscriptionPlan          String? // "Commis", "Chef D party", "Executive"
+  subscriptionBillingPeriod String? // "MONTHLY" | "SIXMONTHLY" | "YEARLY"
   subscriptionStartDate     DateTime? // Abonelik başlangıç tarihi
   subscriptionEndDate       DateTime? // Abonelik bitiş tarihi
   subscriptionReferenceCode String? // Iyzico Abonelik Referans Kodu (İptal için gerekli)

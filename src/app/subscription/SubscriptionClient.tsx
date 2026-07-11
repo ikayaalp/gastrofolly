@@ -27,14 +27,15 @@ function SubscriptionContent({ monthlyPrice, yearlyPrice }: SubscriptionClientPr
         if (!session) {
             // Include plan and courseId in callback URL so user returns here after login
             const callbackParams = new URLSearchParams()
-            callbackParams.set('plan', planName)
+            callbackParams.set('plan', 'Premium')
+            callbackParams.set('billingPeriod', billingPeriod)
             if (courseId) callbackParams.set('courseId', courseId)
             router.push(`/auth/signin?callbackUrl=/subscription?${callbackParams.toString()}`)
             return
         }
 
         // Checkout sayfasına yönlendir
-        const checkoutUrl = `/checkout?plan=${encodeURIComponent(planName)}${courseId ? `&courseId=${courseId}` : ''}`
+        const checkoutUrl = `/checkout?plan=Premium&billingPeriod=${billingPeriod}${courseId ? `&courseId=${courseId}` : ''}`
         router.push(checkoutUrl)
     }
 
@@ -249,7 +250,7 @@ function SubscriptionContent({ monthlyPrice, yearlyPrice }: SubscriptionClientPr
                                 price: displayPrice,
                                 period: displayPeriod,
                                 total: `${displayPrice} ₺ / ${displayPeriod}`,
-                                planName: isYearly ? "Premium Yıllık" : "Premium",
+                                planName: "Premium",
                                 color: "from-orange-900 to-red-900",
                                 borderColor: "border-orange-500/50",
                                 buttonColor: "bg-orange-600 hover:bg-orange-700",

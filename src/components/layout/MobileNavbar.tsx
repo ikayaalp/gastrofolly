@@ -57,7 +57,7 @@ export default function MobileNavbar({ initialSession }: { initialSession?: Sess
     ]
 
     return (
-        <div id="mobile-bottom-nav" className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-black border-t border-[#1a1a1a] transition-transform duration-200">
+        <div id="mobile-bottom-nav" className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-black border-t border-[#1a1a1a] transition-transform duration-200" style={{ transform: 'translateY(6px)' }}>
             <div className="flex justify-around items-center py-2 pb-safe">
                 {tabs.map((tab) => {
                     const Icon = tab.icon

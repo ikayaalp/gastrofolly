@@ -205,7 +205,7 @@ export async function POST(request: NextRequest) {
 
     } catch (error) {
         console.error('[RC Webhook] Error:', error);
-        // RevenueCat 500'de retry yapar, bu yüzden 200 dönelim
-        return NextResponse.json({ success: false, error: 'Internal error' }, { status: 200 });
+        // RevenueCat 500'de retry yapar, bu yüzden 500 dönelim (hatalar kaybolmasın)
+        return NextResponse.json({ success: false, error: 'Internal error' }, { status: 500 });
     }
 }

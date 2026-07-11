@@ -17,10 +17,20 @@
     "production": {
       "android": {
         "buildType": "app-bundle"
+      },
+      "ios": {
+        "credentialsSource": "remote"
       }
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {
+        "appleId": "ismailkayaalp@gmail.com",
+        "ascAppId": "6745252495",
+        "appleTeamId": "7YWUU97SVU",
+        "language": "en-US"
+      }
+    }
   }
 }

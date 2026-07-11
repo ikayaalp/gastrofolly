@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, Text, View, Dimensions, TouchableOpacity, ScrollView, ActivityIndicator, Platform, RefreshControl } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, TouchableOpacity, ScrollView, ActivityIndicator, Platform, RefreshControl, Linking } from 'react-native';
 import { Image } from 'expo-image';
+import Carousel from 'react-native-reanimated-carousel';
 
 import { Ionicons } from '@expo/vector-icons';
 import { ChefHat, BookOpen, Star, Play, Plus, Info } from 'lucide-react-native';
@@ -8,13 +9,15 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Logo from '../components/Logo';
 import courseService from '../api/courseService';
 import useTabBarClearance from '../hooks/useTabBarClearance';
-import authService from '../api/authService';
+import authService, { isPremiumUser } from '../api/authService';
 import homeService from '../api/homeService';
 import storyService from '../api/storyService';
 import Stories from '../components/Stories';
 import ScreenContainer from '../components/ScreenContainer';
 
 const { width } = Dimensions.get('window');
+const cardMargin = 16;
+const cardWidth = width - cardMargin * 2;
 
 export default function HomeScreen({ navigation }) {
     const [featuredCourses, setFeaturedCourses] = useState([]);
@@ -29,8 +32,8 @@ export default function HomeScreen({ navigation }) {
     const [homeInstructors, setHomeInstructors] = useState([]);
     const [loading, setLoading] = useState(true);
     const [userName, setUserName] = useState('');
+    const [currentUser, setCurrentUser] = useState(null);
     const [refreshing, setRefreshing] = useState(false);
-    const scrollViewRef = useRef(null);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [selectedCategoryId, setSelectedCategoryId] = useState(null);
     const tabBarClearance = useTabBarClearance();
@@ -45,8 +48,6 @@ export default function HomeScreen({ navigation }) {
         loadData();
     }, []);
 
-    // ... (keep auto-scroll effect same) ...
-
     const loadData = async () => {
         setLoading(true);
 
@@ -55,6 +56,9 @@ export default function HomeScreen({ navigation }) {
         if (!user) user = await authService.getCurrentUser();
         if (user) {
             setUserName(user.name || 'Kullanıcı');
+            setCurrentUser(user);
+        } else {
+            setCurrentUser(null);
         }
 
         const homeResult = await homeService.getHomeData();
@@ -133,7 +137,7 @@ export default function HomeScreen({ navigation }) {
             console.error("Story load error", e);
         }
 
-        if (user && user.subscriptionPlan && user.subscriptionPlan !== 'FREE') {
+        if (isPremiumUser(user)) {
             const userCoursesResult = await courseService.getUserCourses();
             if (userCoursesResult.success) {
                 setUserCourses(userCoursesResult.data.courses || []);
@@ -455,22 +459,52 @@ export default function HomeScreen({ navigation }) {
                     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ea580c" colors={['#ea580c']} />
                 }
             >
+                {/* Premium Banner */}
+                {!isPremiumUser(currentUser) && (
+                    <View style={styles.premiumBanner}>
+                        {featuredCourses && featuredCourses.length > 0 ? (
+                            <View style={styles.premiumBannerImageRow}>
+                                {featuredCourses.slice(0, 3).map((c, i) => (
+                                    <Image key={i} source={{ uri: c.imageUrl }} style={styles.premiumBannerImage} contentFit="cover" />
+                                ))}
+                            </View>
+                        ) : null}
+                        <LinearGradient
+                            colors={['rgba(0,0,0,0.3)', 'rgba(0,0,0,0.75)', '#000']}
+                            style={StyleSheet.absoluteFill}
+                        />
+                        <View style={styles.premiumBannerContent}>
+                            <Text style={styles.premiumBannerText}>Türkiye'nin En İyi Şefleri Seninle</Text>
+                            <TouchableOpacity
+                                style={styles.premiumBannerButton}
+                                onPress={() => navigation.getParent()?.navigate('Subscription')}
+                            >
+                                <Text style={styles.premiumBannerButtonText}>Üyeliğimi Başlat</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                )}
+
                 {/* Auto-Scrolling Carousel */}
                 {(homeCovers && homeCovers.length > 0) ? (
                     <View style={styles.carouselSection}>
-                        <ScrollView
-                            ref={scrollViewRef}
-                            horizontal
-                            showsHorizontalScrollIndicator={false}
-                            pagingEnabled
-                            decelerationRate="fast"
-                            snapToInterval={width}
-                            style={styles.carousel}
-                        >
-                            {homeCovers.map((cover, index) => (
+                        <Carousel
+                            width={width}
+                            height={cardWidth}
+                            style={{ width, alignItems: 'center' }}
+                            data={homeCovers}
+                            loop={true}
+                            autoPlay={false}
+                            mode="parallax"
+                            modeConfig={{
+                                parallaxScrollingScale: 0.88,
+                                parallaxScrollingOffset: 60,
+                            }}
+                            scrollAnimationDuration={700}
+                            onSnapToItem={(index) => setCurrentIndex(index)}
+                            renderItem={({ item: cover, index }) => (
                                 <TouchableOpacity
-                                    key={cover.id || `cover-${index}`}
-                                    style={[styles.carouselCard, { width }]}
+                                    style={[styles.carouselCard, { width: cardWidth }]}
                                     activeOpacity={0.9}
                                     onPress={() => {
                                         if (cover.linkUrl) {
@@ -496,28 +530,53 @@ export default function HomeScreen({ navigation }) {
                                             <View style={styles.metaContainer}>
                                                 <Text style={styles.metaText}>{cover.subtitle || ''}</Text>
                                             </View>
+                                            {cover.linkUrl ? (
+                                                <View style={styles.actionButtons}>
+                                                    <TouchableOpacity
+                                                        style={styles.heroButton}
+                                                        onPress={() => Linking.openURL(cover.linkUrl)}
+                                                    >
+                                                        <Text style={styles.heroButtonText}>İncele</Text>
+                                                    </TouchableOpacity>
+                                                </View>
+                                            ) : null}
                                         </View>
                                     </LinearGradient>
                                 </TouchableOpacity>
+                            )}
+                        />
+                        <View style={styles.paginationContainer}>
+                            {homeCovers.map((_, idx) => (
+                                <View
+                                    key={`dot-${idx}`}
+                                    style={[
+                                        styles.paginationDot,
+                                        currentIndex === idx ? styles.paginationDotActive : null
+                                    ]}
+                                />
                             ))}
-                        </ScrollView>
+                        </View>
                     </View>
                 ) : (
                     featuredCourses && featuredCourses.length > 0 && (
                         <View style={styles.carouselSection}>
-                            <ScrollView
-                                ref={scrollViewRef}
-                                horizontal
-                                showsHorizontalScrollIndicator={false}
-                                pagingEnabled
-                                decelerationRate="fast"
-                                snapToInterval={width}
-                                style={styles.carousel}
-                            >
-                                {featuredCourses.slice(0, 5).map((course, index) => (
+                            <Carousel
+                                width={width}
+                                height={cardWidth}
+                                style={{ width, alignItems: 'center' }}
+                                data={featuredCourses.slice(0, 5)}
+                                loop={true}
+                                autoPlay={false}
+                                mode="parallax"
+                                modeConfig={{
+                                    parallaxScrollingScale: 0.88,
+                                    parallaxScrollingOffset: 60,
+                                }}
+                                scrollAnimationDuration={700}
+                                onSnapToItem={(index) => setCurrentIndex(index)}
+                                renderItem={({ item: course, index }) => (
                                     <TouchableOpacity
-                                        key={course.id || `featured-${index}`}
-                                        style={[styles.carouselCard, { width }]}
+                                        style={[styles.carouselCard, { width: cardWidth }]}
                                         activeOpacity={0.9}
                                         onPress={() => navigation.navigate('CourseDetail', { courseId: course.id, initialCourse: course })}
                                     >
@@ -541,18 +600,28 @@ export default function HomeScreen({ navigation }) {
                                                 </View>
                                                 <View style={styles.actionButtons}>
                                                     <TouchableOpacity
-                                                        style={styles.playButton}
+                                                        style={styles.heroButton}
                                                         onPress={() => navigation.navigate('Learn', { courseId: course.id })}
                                                     >
-                                                        <Play size={20} color="white" fill="white" />
-                                                        <Text style={styles.playButtonText}>İzle</Text>
+                                                        <Text style={styles.heroButtonText}>İzle</Text>
                                                     </TouchableOpacity>
                                                 </View>
                                             </View>
                                         </LinearGradient>
                                     </TouchableOpacity>
+                                )}
+                            />
+                            <View style={styles.paginationContainer}>
+                                {featuredCourses.slice(0, 5).map((_, idx) => (
+                                    <View
+                                        key={`dot-${idx}`}
+                                        style={[
+                                            styles.paginationDot,
+                                            currentIndex === idx ? styles.paginationDotActive : null
+                                        ]}
+                                    />
                                 ))}
-                            </ScrollView>
+                            </View>
                         </View>
                     )
                 )}
@@ -902,16 +971,20 @@ const styles = StyleSheet.create({
         marginBottom: 24,
     },
     carousel: {
-        height: 500,
+        height: cardWidth,
     },
     carouselCard: {
-        height: 500,
+        height: cardWidth,
         position: 'relative',
+        borderRadius: 16,
+        overflow: 'hidden',
+        renderToHardwareTextureAndroid: true,
     },
     carouselImage: {
         width: '100%',
         height: '100%',
         resizeMode: 'cover',
+        borderRadius: 16,
     },
     carouselGradient: {
         position: 'absolute',
@@ -922,6 +995,7 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-end',
         paddingBottom: 40,
         paddingHorizontal: 20,
+        borderRadius: 16,
     },
     carouselContent: {
         alignItems: 'center',
@@ -976,19 +1050,86 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         gap: 16,
     },
-    playButton: {
+    heroButton: {
+        backgroundColor: '#ea580c',
         flexDirection: 'row',
         alignItems: 'center',
+        paddingVertical: 8,
+        paddingHorizontal: 20,
+        borderRadius: 24,
+        alignSelf: 'flex-start',
+        marginTop: 8,
+    },
+    heroButtonText: {
+        color: 'white',
+        fontSize: 15,
+        fontWeight: 'bold',
+    },
+    premiumBanner: {
+        marginHorizontal: 16,
+        marginBottom: 16,
+        borderRadius: 16,
+        overflow: 'hidden',
+        minHeight: 110,
+        backgroundColor: '#0a0a0a',
+        borderWidth: 1,
+        borderColor: '#333',
+        renderToHardwareTextureAndroid: true,
+    },
+    premiumBannerImageRow: {
+        ...StyleSheet.absoluteFillObject,
+        flexDirection: 'row',
+    },
+    premiumBannerImage: {
+        flex: 1,
+        height: '100%',
+        borderRadius: 16,
+    },
+    premiumBannerContent: {
+        flex: 1,
+        paddingVertical: 16,
+        paddingHorizontal: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexDirection: 'column',
+    },
+    premiumBannerText: {
+        color: '#fff',
+        fontSize: 18,
+        fontWeight: '800',
+        marginBottom: 8,
+        textAlign: 'center',
+    },
+    premiumBannerButton: {
         backgroundColor: '#ea580c',
         paddingVertical: 10,
-        paddingHorizontal: 24,
-        borderRadius: 4,
-        gap: 8,
+        paddingHorizontal: 20,
+        borderRadius: 24,
+        alignSelf: 'center',
     },
-    playButtonText: {
-        color: 'white',
-        fontSize: 16,
-        fontWeight: 'bold',
+    premiumBannerButtonText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: '600',
+    },
+    paginationContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 12,
+        marginBottom: 8,
+    },
+    paginationDot: {
+        width: 6,
+        height: 6,
+        borderRadius: 3,
+        backgroundColor: 'rgba(255,255,255,0.3)',
+        marginHorizontal: 4,
+    },
+    paginationDotActive: {
+        width: 16,
+        height: 6,
+        backgroundColor: '#ea580c',
     },
     listButton: {
         flexDirection: 'column',

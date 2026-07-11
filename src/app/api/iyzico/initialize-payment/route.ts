@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { createSubscriptionCheckoutForm, IyzicoSubscriptionCheckoutRequest } from "@/lib/iyzico"
+import { isPremiumUser } from "@/lib/subscription"
 
 export async function POST(request: NextRequest) {
     try {
@@ -55,7 +56,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Zaten aktif bir aboneliği var mı kontrol et
-        const isSubActive = user.subscriptionPlan === "Premium" && (!user.subscriptionEndDate || new Date(user.subscriptionEndDate) > new Date())
+        const isSubActive = isPremiumUser(user)
         if (isSubActive) {
             return NextResponse.json(
                 { error: "Zaten aktif bir Premium üyeliğiniz bulunuyor." },

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getAuthUser } from "@/lib/mobileAuth"
+import { isPremiumUser } from "@/lib/subscription"
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,11 +17,7 @@ export async function GET(request: NextRequest) {
     // getAuthUser zaten guncel abonelik durumunu getiriyor (ve suresi dolmus
     // Premium'u lazy-cleanup ile temizliyor) -- ayrica bir user sorgusuna
     // gerek yok.
-    const isSubscriptionActive = !!(
-      authUser.subscriptionPlan &&
-      authUser.subscriptionEndDate &&
-      new Date(authUser.subscriptionEndDate) > new Date()
-    )
+    const isSubscriptionActive = isPremiumUser(authUser);
 
     // 2. Bu kullanıcının "ilişkisi olduğu" tüm kursları topla: Enrollment,
     // Progress (en az 1 ders izlemiş) ve Payment (satın almış). Enrollment

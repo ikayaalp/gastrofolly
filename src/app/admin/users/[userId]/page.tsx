@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { notFound, redirect } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, User, Mail, Calendar, CheckCircle, XCircle, Clock, Star } from "lucide-react"
+import { isPremiumUser } from "@/lib/subscription"
 
 export default async function UserDetailPage({ params }: { params: Promise<{ userId: string }> }) {
     const session = await getServerSession(authOptions)
@@ -27,7 +28,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ use
         notFound()
     }
 
-    const isPremium = user.subscriptionEndDate && new Date(user.subscriptionEndDate) > new Date()
+    const isPremium = isPremiumUser(user)
 
     return (
         <div className="space-y-6">

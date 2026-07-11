@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getAuthUser } from '@/lib/mobileAuth';
+import { isPremiumUser } from '@/lib/subscription';
 
 export async function GET(
     request: NextRequest,
@@ -65,8 +66,7 @@ export async function GET(
         }
 
         // Check for valid subscription
-        const hasValidSubscription = user?.subscriptionPlan === 'Premium' &&
-            (!user.subscriptionEndDate || new Date(user.subscriptionEndDate) > new Date());
+        const hasValidSubscription = isPremiumUser(user);
 
         console.log(`[Course Access] User: ${user?.id || 'anonymous'} | Plan: ${user?.subscriptionPlan || 'none'} | EndDate: ${user?.subscriptionEndDate || 'null'} | hasAccess: ${!!hasValidSubscription}`);
 

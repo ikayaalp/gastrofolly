@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Asset } from 'expo-asset';
 import { View, ActivityIndicator } from 'react-native';
+import { SystemBars } from 'react-native-edge-to-edge';
 import AppNavigator from './src/navigation/AppNavigator';
 import notificationService from './src/api/notificationService';
 import { initRevenueCat } from './src/api/revenueCatService';
@@ -86,10 +88,13 @@ export default function App() {
   }
 
   return (
-    <SafeAreaProvider>
-      <StatusBar style="light" />
-      <AppNavigator />
-      <OfflineBanner />
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#000' }}>
+      <SafeAreaProvider>
+        <SystemBars style="light" />
+        <StatusBar style="light" />
+        <AppNavigator />
+        <OfflineBanner />
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }

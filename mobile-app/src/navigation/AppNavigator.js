@@ -1,8 +1,17 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { NavigationContainer, createNavigationContainerRef } from '@react-navigation/native';
+import { NavigationContainer, createNavigationContainerRef, DarkTheme } from '@react-navigation/native';
 
 export const navigationRef = createNavigationContainerRef();
+
+const AppTheme = {
+    ...DarkTheme,
+    colors: {
+        ...DarkTheme.colors,
+        background: '#000000',
+        card: '#000000',
+    },
+};
 
 import React, { useState, useEffect } from 'react';
 import { Platform, View, ActivityIndicator } from 'react-native';
@@ -221,7 +230,7 @@ export default function AppNavigator() {
     }
 
     return (
-        <NavigationContainer ref={navigationRef}>
+        <NavigationContainer ref={navigationRef} theme={AppTheme}>
             <Stack.Navigator
                 screenOptions={{ headerShown: false }}
                 initialRouteName={initialRoute}
@@ -244,6 +253,7 @@ export default function AppNavigator() {
                 <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
                 <Stack.Screen name="InstructorProfile" component={InstructorProfileScreen} />
                 <Stack.Screen name="ChefSocialProfile" component={ChefSocialProfileScreen} />
+                <Stack.Screen name="Chat" component={ChatScreen} />
             </Stack.Navigator>
         </NavigationContainer>
     );

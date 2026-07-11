@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { ArrowLeft, Send } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import useTabBarClearance from '../hooks/useTabBarClearance';
 import { getPusherClient } from '../api/pusherClient';
 import ScreenContainer from '../components/ScreenContainer';
 import dmService from '../api/dmService';
@@ -23,7 +23,7 @@ import authService, { isPremiumUser } from '../api/authService';
 
 export default function ChatScreen({ route, navigation }) {
     const insets = useSafeAreaInsets();
-    const tabBarHeight = useBottomTabBarHeight();
+    const tabBarClearance = useTabBarClearance();
     const [keyboardVisible, setKeyboardVisible] = useState(false);
     const [keyboardHeight, setKeyboardHeight] = useState(0);
     const { conversationId: initialConversationId, otherUserId, otherUser: initialOtherUser } = route.params || {};
@@ -284,7 +284,7 @@ export default function ChatScreen({ route, navigation }) {
         );
     };
 
-    const androidPaddingBottom = keyboardVisible ? keyboardHeight + insets.bottom : tabBarHeight;
+    const androidPaddingBottom = keyboardVisible ? keyboardHeight + 12 : tabBarClearance;
 
     return (
         <ScreenContainer style={{ flex: 1, backgroundColor: '#000' }} edges={['top', 'left', 'right']}>
@@ -293,7 +293,7 @@ export default function ChatScreen({ route, navigation }) {
                     styles.container,
                     Platform.OS === 'android'
                         ? { paddingBottom: androidPaddingBottom }
-                        : { paddingBottom: keyboardVisible ? 0 : tabBarHeight },
+                        : { paddingBottom: keyboardVisible ? 0 : tabBarClearance },
                 ]}
                 behavior={Platform.OS === 'ios' ? 'padding' : undefined}
                 keyboardVerticalOffset={0}
@@ -323,12 +323,7 @@ export default function ChatScreen({ route, navigation }) {
                         style={[
                             styles.inputContainer,
                             {
-                                paddingBottom:
-                                    Platform.OS === 'android'
-                                        ? 12
-                                        : keyboardVisible
-                                            ? Math.max(insets.bottom, 12)
-                                            : 12,
+                                paddingBottom: Platform.OS === 'ios' && keyboardVisible ? Math.max(insets.bottom, 12) : 12,
                             },
                         ]}
                     >

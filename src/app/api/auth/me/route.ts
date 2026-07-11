@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isPremiumUser, lazyCleanupExpiredSubscription } from '@/lib/subscription';
 import { prisma } from '@/lib/prisma';
 import { getAuthUser } from '@/lib/mobileAuth';
 
@@ -30,26 +31,10 @@ export async function GET(request: NextRequest) {
         }
 
         // ⚠️ Süresi dolmuş aboneliği temizle (Lazy cleanup)
-        if (user.subscriptionPlan === 'Premium' && user.subscriptionEndDate && new Date(user.subscriptionEndDate) < new Date()) {
-            await prisma.user.update({
-                where: { id: user.id },
-                data: {
-                    subscriptionPlan: null,
-                    subscriptionStartDate: null,
-                    subscriptionEndDate: null,
-                    subscriptionReferenceCode: null,
-                    subscriptionCancelled: false,
-                }
-            });
-            user.subscriptionPlan = null;
-            user.subscriptionStartDate = null;
-            user.subscriptionEndDate = null;
-            console.log(`[Lazy Cleanup] User ${user.id} subscription expired. Updated DB to FREE.`);
-        }
+        await lazyCleanupExpiredSubscription(prisma, user);
 
         // Check subscription validity
-        const isSubscriptionValid = user.subscriptionPlan === 'Premium' && 
-            (!user.subscriptionEndDate || new Date(user.subscriptionEndDate) > new Date());
+        const isSubscriptionValid = isPremiumUser(user);
 
         return NextResponse.json({
             user: {

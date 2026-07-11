@@ -3,6 +3,7 @@ import { Metadata } from "next"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { isPremiumUser } from "@/lib/subscription"
 import Link from "next/link"
 import Image from "next/image"
 import {
@@ -117,10 +118,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
       select: { subscriptionPlan: true, subscriptionEndDate: true }
     })
 
-    hasActiveSubscription = !!(
-      user?.subscriptionPlan === 'Premium' &&
-      (!user.subscriptionEndDate || new Date(user.subscriptionEndDate) > new Date())
-    )
+    hasActiveSubscription = isPremiumUser(user)
   }
 
   const isEnrolled = session?.user?.id

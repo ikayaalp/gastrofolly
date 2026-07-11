@@ -7,7 +7,9 @@ import {
     TouchableOpacity,
     KeyboardAvoidingView,
     Platform,
-    ScrollView
+    ScrollView,
+    Image,
+    ActivityIndicator
 } from 'react-native';
 
 import { ArrowLeft, Save, User, Mail, Camera, ImageIcon, AlignLeft } from 'lucide-react-native';

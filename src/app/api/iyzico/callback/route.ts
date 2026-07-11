@@ -123,17 +123,18 @@ export async function GET(request: NextRequest) {
                   const user = await tx.user.update({
                     where: { id: userId },
                     data: {
-                      subscriptionPlan: payment.subscriptionPlan,
+                      subscriptionPlan: "Premium",
+                      subscriptionBillingPeriod: payment.billingPeriod === "yearly" ? "YEARLY" : payment.billingPeriod === "6monthly" ? "SIXMONTHLY" : "MONTHLY",
                       subscriptionStartDate: new Date(),
                       subscriptionEndDate: endDate,
                       subscriptionReferenceCode: result.referenceCode || null,
                       subscriptionCancelled: false,
                     }
                   })
-                  console.log(`✅ Subscription updated for user ${userId}: ${payment.subscriptionPlan}`)
+                  console.log(`✅ Subscription updated for user ${userId}: Premium`)
 
                   if (user.email) {
-                    emailsToSend.push({ email: user.email, name: user.name || 'Chef', plan: payment.subscriptionPlan, endDate })
+                    emailsToSend.push({ email: user.email, name: user.name || 'Chef', plan: "Premium", endDate })
                   }
                 }
 
@@ -355,17 +356,18 @@ export async function GET(request: NextRequest) {
             const user = await tx.user.update({
               where: { id: userId },
               data: {
-                subscriptionPlan: payment.subscriptionPlan,
+                subscriptionPlan: "Premium",
+                subscriptionBillingPeriod: payment.billingPeriod === "yearly" ? "YEARLY" : payment.billingPeriod === "6monthly" ? "SIXMONTHLY" : "MONTHLY",
                 subscriptionStartDate: new Date(),
                 subscriptionEndDate: endDate,
                 subscriptionReferenceCode: result.referenceCode || null,
                 subscriptionCancelled: false,
               }
             })
-            console.log(`✅ Subscription updated for user ${userId}: ${payment.subscriptionPlan} (Until: ${endDate.toISOString()})`)
+            console.log(`✅ Subscription updated for user ${userId}: Premium (Until: ${endDate.toISOString()})`)
 
             if (user.email) {
-              emailsToSend.push({ email: user.email, name: user.name || 'Chef', plan: payment.subscriptionPlan, endDate })
+              emailsToSend.push({ email: user.email, name: user.name || 'Chef', plan: "Premium", endDate })
             }
           }
 
@@ -672,17 +674,18 @@ export async function POST(request: NextRequest) {
             const user = await tx.user.update({
               where: { id: userId },
               data: {
-                subscriptionPlan: payment.subscriptionPlan,
+                subscriptionPlan: "Premium",
+                subscriptionBillingPeriod: payment.billingPeriod === "yearly" ? "YEARLY" : payment.billingPeriod === "6monthly" ? "SIXMONTHLY" : "MONTHLY",
                 subscriptionStartDate: new Date(),
                 subscriptionEndDate: endDate,
                 subscriptionReferenceCode: result.referenceCode || null,
                 subscriptionCancelled: false,
               }
             })
-            console.log(`✅ Subscription updated: ${userId} -> ${payment.subscriptionPlan} until ${endDate.toISOString()}`)
+            console.log(`✅ Subscription updated: ${userId} -> Premium until ${endDate.toISOString()}`)
 
             if (user.email) {
-              emailsToSend.push({ email: user.email, name: user.name || 'Chef', plan: payment.subscriptionPlan, endDate })
+              emailsToSend.push({ email: user.email, name: user.name || 'Chef', plan: "Premium", endDate })
             }
           }
 

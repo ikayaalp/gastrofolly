@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
+import { isPremiumUser } from "@/lib/subscription"
 import Link from "next/link"
 import Image from "next/image"
 import {
@@ -175,7 +176,7 @@ export default function HomePageClient({
   // Client-side session'dan abonelik durumunu oku (en güvenilir yöntem)
   const subscriptionPlan = (clientSession?.user as any)?.subscriptionPlan
   const userRole = (clientSession?.user as any)?.role || session?.user?.role
-  const showSubscriptionPopup = clientSession !== undefined && subscriptionPlan !== "Premium" && userRole !== "ADMIN"
+  const showSubscriptionPopup = clientSession !== undefined && !isPremiumUser({ subscriptionPlan, subscriptionEndDate: (clientSession?.user as any)?.subscriptionEndDate }) && userRole !== "ADMIN"
 
   return (
     <div className="min-h-screen bg-black text-white">

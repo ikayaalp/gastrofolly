@@ -987,6 +987,7 @@ const styles = StyleSheet.create({
     videoContainer: {
         backgroundColor: '#0a0a0a',
         minHeight: 300,
+        overflow: 'hidden',
     },
     videoContainerFullscreen: {
         position: 'absolute',
@@ -1048,6 +1049,7 @@ const styles = StyleSheet.create({
 
     // Center Controls
     centerControls: {
+        flex: 1,
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
@@ -1087,6 +1089,10 @@ const styles = StyleSheet.create({
 
     // Bottom Gradient
     bottomGradient: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
         paddingHorizontal: 16,
         paddingBottom: 16,
         paddingTop: 40,

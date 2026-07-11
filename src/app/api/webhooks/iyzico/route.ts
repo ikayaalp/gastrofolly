@@ -68,11 +68,11 @@ export async function POST(request: NextRequest) {
                 newEndDate = new Date(user.subscriptionEndDate);
             }
             
-            // Güncel sistemde tek plan (Premium) var, tüm yenilemeler 1 ay
-            // uzatılır. (Eskiden burada artık kullanılmayan bir "EXECUTIVE"
-            // kademesi için 6 aylık uzatma vardı — güncel abonelik sistemiyle
-            // tutarsızdı, kaldırıldı.)
-            newEndDate.setMonth(newEndDate.getMonth() + 1);
+            switch (user.subscriptionBillingPeriod) {
+                case 'YEARLY': newEndDate.setFullYear(newEndDate.getFullYear() + 1); break;
+                case 'SIXMONTHLY': newEndDate.setMonth(newEndDate.getMonth() + 6); break;
+                default: newEndDate.setMonth(newEndDate.getMonth() + 1); // MONTHLY veya bilinmiyorsa
+            }
 
             // Abonelik guncellemesi + odeme kaydi tek transaction'da: biri
             // basarisiz olursa hicbiri uygulanmaz.
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
                     data: {
                         subscriptionEndDate: newEndDate,
                         subscriptionCancelled: false, // Eğer iptal edip geri açtıysa düzelt
-                        subscriptionPlan: user.subscriptionPlan || 'Premium'
+                        subscriptionPlan: 'Premium'
                     }
                 });
 
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
                         amount: 0, // Webhook'ta miktar gelmiyorsa 0, veya plan türüne göre sabit miktar yazılabilir
                         currency: 'TRY',
                         status: 'COMPLETED',
-                        subscriptionPlan: user.subscriptionPlan || 'Premium'
+                        subscriptionPlan: 'Premium'
                     }
                 });
             });

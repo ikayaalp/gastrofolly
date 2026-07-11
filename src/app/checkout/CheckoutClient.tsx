@@ -5,6 +5,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { ChefHat, Check, BookOpen, Home, Users, Loader2, Tag, X, LucideIcon, CheckCircle2 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
+import { isPremiumUser } from "@/lib/subscription"
 import UserDropdown from "@/components/ui/UserDropdown"
 import { useState, Suspense, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -21,11 +22,14 @@ function CheckoutContent({ monthlyPrice, yearlyPrice }: CheckoutClientProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const planName = searchParams.get("plan")
+  const billingParam = searchParams.get("billingPeriod")
   const courseId = searchParams.get("courseId")
   const refParam = searchParams.get("ref")
 
+  const actualPlanName = planName === "Premium Yıllık" ? "Premium" : planName
+
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">(
-    planName === "Premium Yıllık" ? "yearly" : "monthly"
+    billingParam === "yearly" || planName === "Premium Yıllık" ? "yearly" : "monthly"
   )
   const [referralCode, setReferralCode] = useState(refParam || "")
   const [appliedReferral, setAppliedReferral] = useState<{ code: string, discountPercent: number, influencerName: string } | null>(null)
@@ -37,11 +41,10 @@ function CheckoutContent({ monthlyPrice, yearlyPrice }: CheckoutClientProps) {
 
   // Plan bilgileri
   const plans: Record<string, { price: number, color: string }> = {
-    "Premium": { price: monthlyPrice, color: "from-orange-600 to-red-600" },
-    "Premium Yıllık": { price: yearlyPrice, color: "from-orange-600 to-red-600" }
+    "Premium": { price: billingPeriod === "yearly" ? yearlyPrice : monthlyPrice, color: "from-orange-600 to-red-600" }
   }
 
-  const selectedPlan = planName && plans[planName] ? plans[planName] : null
+  const selectedPlan = actualPlanName && plans[actualPlanName] ? plans[actualPlanName] : null
 
   useEffect(() => {
     if (status === "loading") return
@@ -53,7 +56,7 @@ function CheckoutContent({ monthlyPrice, yearlyPrice }: CheckoutClientProps) {
 
     const userSubPlan = (session.user as any)?.subscriptionPlan
     const userSubEnd = (session.user as any)?.subscriptionEndDate
-    const isSubActive = userSubPlan === "Premium" && (!userSubEnd || new Date(userSubEnd) > new Date())
+    const isSubActive = isPremiumUser({ subscriptionPlan: userSubPlan, subscriptionEndDate: userSubEnd })
 
     if (isSubActive) {
       toast.error("Zaten aktif bir Premium üyeliğiniz bulunuyor.")
@@ -61,10 +64,10 @@ function CheckoutContent({ monthlyPrice, yearlyPrice }: CheckoutClientProps) {
       return
     }
 
-    if (!planName || !selectedPlan) {
+    if (!actualPlanName || !selectedPlan) {
       router.push('/subscription')
     }
-  }, [session, status, planName, selectedPlan, router, courseId])
+  }, [session, status, actualPlanName, selectedPlan, router, courseId])
 
   // URL'den gelen referral kodu varsa otomatik doğrula
   useEffect(() => {

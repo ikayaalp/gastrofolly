@@ -97,7 +97,15 @@ export default {
             "expo-web-browser",
             "expo-font",
             "expo-asset",
-            "expo-apple-authentication"
+            "expo-apple-authentication",
+            [
+                "react-native-edge-to-edge",
+                {
+                    "android": {
+                        "enforceNavigationBarContrast": false
+                    }
+                }
+            ]
         ],
         "owner": "ismailkayaalp",
         "extra": {

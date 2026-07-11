@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { isPremiumUser } from '@/lib/subscription';
 import { getAuthUser } from '@/lib/mobileAuth';
 
 export async function POST(request: NextRequest) {
@@ -27,8 +28,7 @@ export async function POST(request: NextRequest) {
         // RC premium değilse → DB'deki mevcut aboneliğe dokunma.
 
         // Mevcut DB'de geçerli bir abonelik var mı kontrol et
-        const hasExistingValidSubscription = existingUser.subscriptionPlan === 'Premium' &&
-            (!existingUser.subscriptionEndDate || new Date(existingUser.subscriptionEndDate) > new Date());
+        const hasExistingValidSubscription = isPremiumUser(existingUser);
 
         if (!isPremium && hasExistingValidSubscription) {
             // RevenueCat premium değil AMA veritabanında geçerli bir abonelik var (web'den alınmış olabilir)

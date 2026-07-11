@@ -35,7 +35,7 @@ import {
     restorePurchases,
     openSubscriptionManagement,
 } from '../api/revenueCatService';
-import authService from '../api/authService';
+import authService, { isPremiumUser } from '../api/authService';
 import CustomAlert from '../components/CustomAlert';
 import ScreenContainer from '../components/ScreenContainer';
 
@@ -86,7 +86,7 @@ export default function SubscriptionScreen({ navigation, route }) {
             setUserData(user);
 
             // Backend is the PRIMARY source of truth for premium status
-            const hasBackendPremium = user?.subscriptionPlan === 'Premium' && (user?.subscriptionEndDate ? new Date(user.subscriptionEndDate) > new Date() : true);
+            const hasBackendPremium = isPremiumUser(user);
 
             // Check RevenueCat as secondary - only to sync NEW purchases TO backend
             const status = await getSubscriptionStatus();
@@ -101,7 +101,7 @@ export default function SubscriptionScreen({ navigation, route }) {
             }
 
             // Final premium check — always from backend
-            const finalBackendPremium = user?.subscriptionPlan === 'Premium' && (user?.subscriptionEndDate ? new Date(user.subscriptionEndDate) > new Date() : true);
+            const finalBackendPremium = isPremiumUser(user);
             
             setIsPremium(finalBackendPremium);
             setExpirationDate(user?.subscriptionEndDate ? new Date(user.subscriptionEndDate) : status.expirationDate);

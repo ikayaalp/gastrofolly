@@ -4,7 +4,7 @@ import { Image } from 'expo-image';
 import { useFocusEffect, CommonActions } from '@react-navigation/native';
 import { ChefHat, Star, BookOpen, User, Clock } from 'lucide-react-native';
 import courseService from '../api/courseService';
-import authService from '../api/authService';
+import authService, { isPremiumUser } from '../api/authService';
 import favoritesService from '../services/favoritesService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ScreenContainer from '../components/ScreenContainer';
@@ -34,7 +34,7 @@ export default function CoursesScreen({ navigation }) {
             // Always refresh from backend to get latest subscription status
             let user = await authService.refreshUserData();
             if (!user) user = await authService.getCurrentUser();
-            if (!user || !user.subscriptionPlan || user.subscriptionPlan === 'FREE') {
+            if (!isPremiumUser(user)) {
                 setCourses([]); // Clear courses if no active subscription
                 setLoading(false);
                 setRefreshing(false);

@@ -7,6 +7,7 @@ import bcrypt from "bcryptjs"
 import { randomUUID } from "crypto"
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rateLimit"
 import { generateUniqueUsername } from "@/lib/generateUsername"
+import { isPremiumUser, lazyCleanupExpiredSubscription } from "@/lib/subscription"
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -140,14 +141,7 @@ export const authOptions: NextAuthOptions = {
           }
 
           // Lazy cleanup
-          if (user.subscriptionPlan === 'Premium' && user.subscriptionEndDate && new Date(user.subscriptionEndDate) < new Date()) {
-              await prisma.user.update({
-                  where: { id: user.id },
-                  data: { subscriptionPlan: null, subscriptionStartDate: null, subscriptionEndDate: null }
-              });
-              user.subscriptionPlan = null;
-              user.subscriptionEndDate = null;
-          }
+          await lazyCleanupExpiredSubscription(prisma, user);
 
           (session.user as any).subscriptionPlan = user.subscriptionPlan;
           (session.user as any).subscriptionEndDate = user.subscriptionEndDate;

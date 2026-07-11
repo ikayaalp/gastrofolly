@@ -7,6 +7,7 @@ import {
     IyzicoSubscriptionNon3DRequest
 } from "@/lib/iyzico"
 import { sendSubscriptionStartedEmail } from "@/lib/emailService"
+import { isPremiumUser } from "@/lib/subscription"
 
 /**
  * Iyzico NON3D Abonelik Başlatma
@@ -54,9 +55,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Zaten aktif abonelik kontrolü
-        const isSubActive =
-            user.subscriptionPlan === "Premium" &&
-            (!user.subscriptionEndDate || new Date(user.subscriptionEndDate) > new Date())
+        const isSubActive = isPremiumUser(user)
         if (isSubActive) {
             return NextResponse.json(
                 { success: false, error: "Zaten aktif bir Premium üyeliğiniz bulunuyor." },
@@ -222,7 +221,8 @@ export async function POST(request: NextRequest) {
             const updatedUser = await prisma.user.update({
                 where: { id: user.id },
                 data: {
-                    subscriptionPlan: planName || "Premium",
+                    subscriptionPlan: "Premium",
+                    subscriptionBillingPeriod: billingPeriod === "yearly" ? "YEARLY" : billingPeriod === "6monthly" ? "SIXMONTHLY" : "MONTHLY",
                     subscriptionStartDate: now,
                     subscriptionEndDate: endDate,
                     subscriptionReferenceCode: referenceCode,
@@ -237,7 +237,7 @@ export async function POST(request: NextRequest) {
                     await sendSubscriptionStartedEmail(
                         updatedUser.email,
                         updatedUser.name || "Chef",
-                        planName || "Premium",
+                        "Premium",
                         endDate
                     )
                 } catch (emailErr) {
