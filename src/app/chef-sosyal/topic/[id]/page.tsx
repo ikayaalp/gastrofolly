@@ -42,6 +42,7 @@ export default async function TopicDetailPage({ params }: TopicDetailPageProps) 
         select: {
           id: true,
           name: true,
+          username: true,
           image: true
         }
       },
@@ -59,6 +60,7 @@ export default async function TopicDetailPage({ params }: TopicDetailPageProps) 
             select: {
               id: true,
               name: true,
+              username: true,
               image: true
             }
           }

@@ -18,6 +18,7 @@ import { getOptimizedMediaUrl } from "@/lib/utils"
 interface Author {
   id: string
   name: string | null
+  username: string | null
   image: string | null
 }
 
@@ -502,7 +503,7 @@ export default function TopicDetailClient({ session, topic: initialTopic, catego
                         }}
                       />
                       <div className={`px-2 pb-2 flex justify-between items-center ${!newComment.trim() ? 'hidden' : 'flex'}`}>
-                        <div className="text-xs text-gray-500 px-2"><span className="text-orange-500">@{session.user.name}</span> olarak</div>
+                        <div className="text-xs text-gray-500 px-2"><span className="text-orange-500">@{(session.user as any).username || session.user.name}</span> olarak</div>
                         <button type="submit" disabled={!newComment.trim() || submitting} className="px-4 py-1.5 bg-white text-black text-xs font-bold rounded-full hover:bg-gray-200 disabled:opacity-50">
                           {replyingTo ? 'Yanıtla' : 'Yorum Yap'}
                         </button>
@@ -557,7 +558,7 @@ export default function TopicDetailClient({ session, topic: initialTopic, catego
                           onClick={() => { if ((comment.likeCount || 0) > 0) setLikersModal({ isOpen: true, type: 'post', targetId: comment.id, likeCount: comment.likeCount || 0 }); }}
                           className={`text-xs font-bold ${likedComments.has(comment.id) ? 'text-orange-500' : 'text-gray-500 hover:text-gray-300'} ${(comment.likeCount || 0) > 0 ? 'hover:underline cursor-pointer' : ''}`}
                         ><span>{comment.likeCount || 0}</span></button>
-                        <button onClick={() => handleReplyTo(comment.id, comment.author.name || 'anonim')} className={`flex items-center space-x-1 text-xs font-bold ${replyingTo === comment.id ? 'text-orange-500' : 'text-gray-500 hover:text-gray-300'}`}><MessageCircle className="h-3 w-3" /><span>Yanıtla</span></button>
+                        <button onClick={() => handleReplyTo(comment.id, comment.author.username || comment.author.name || 'anonim')} className={`flex items-center space-x-1 text-xs font-bold ${replyingTo === comment.id ? 'text-orange-500' : 'text-gray-500 hover:text-gray-300'}`}><MessageCircle className="h-3 w-3" /><span>Yanıtla</span></button>
                         {session?.user && comment.author.id === session.user.id && (
                           <>
                             <button onClick={() => { setEditingCommentId(comment.id); setEditCommentText(comment.content); }} className="text-xs font-bold text-blue-500 hover:text-blue-400">Düzenle</button>
@@ -606,7 +607,7 @@ export default function TopicDetailClient({ session, topic: initialTopic, catego
                                     onClick={() => { if ((reply.likeCount || 0) > 0) setLikersModal({ isOpen: true, type: 'post', targetId: reply.id, likeCount: reply.likeCount || 0 }); }}
                                     className={`text-xs font-bold ${likedComments.has(reply.id) ? 'text-orange-500' : 'text-gray-500 hover:text-gray-300'} ${(reply.likeCount || 0) > 0 ? 'hover:underline cursor-pointer' : ''}`}
                                   ><span>{reply.likeCount || 0}</span></button>
-                                  <button onClick={() => handleReplyTo(comment.id, reply.author.name || 'anonim')} className="flex items-center space-x-1 text-xs font-bold text-gray-500 hover:text-gray-300"><MessageCircle className="h-3 w-3" /><span>Yanıtla</span></button>
+                                  <button onClick={() => handleReplyTo(comment.id, reply.author.username || reply.author.name || 'anonim')} className="flex items-center space-x-1 text-xs font-bold text-gray-500 hover:text-gray-300"><MessageCircle className="h-3 w-3" /><span>Yanıtla</span></button>
                                   {session?.user && reply.author.id === session.user.id && (
                                     <>
                                       <button onClick={() => { setEditingCommentId(reply.id); setEditCommentText(reply.content); }} className="text-xs font-bold text-blue-500 hover:text-blue-400">Düzenle</button>
