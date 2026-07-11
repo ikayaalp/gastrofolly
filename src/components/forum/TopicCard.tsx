@@ -68,6 +68,7 @@ const TopicCard = ({ topic, isLiked, onLike, isSaved, onSave, currentUserId }: T
     const [showMenu, setShowMenu] = useState(false)
     const [deleteModalOpen, setDeleteModalOpen] = useState(false)
     const [reportModalOpen, setReportModalOpen] = useState(false)
+    const [isBlocking, setIsBlocking] = useState(false)
     const router = useRouter()
 
     const isAuthor = currentUserId === topic.author.id
@@ -132,6 +133,8 @@ const TopicCard = ({ topic, isLiked, onLike, isSaved, onSave, currentUserId }: T
     }
 
     const handleBlockUser = async () => {
+        if (isBlocking) return
+        setIsBlocking(true)
         try {
             const response = await fetch('/api/forum/block', {
                 method: 'POST',
@@ -139,14 +142,16 @@ const TopicCard = ({ topic, isLiked, onLike, isSaved, onSave, currentUserId }: T
                 body: JSON.stringify({ blockedId: topic.author.id })
             })
             if (response.ok) {
-                setAlertState({ isOpen: true, message: 'Kullanıcı engellendi.' })
-                window.location.reload()
+                setAlertState({ isOpen: true, message: 'Kullanıcı başarıyla engellendi.' })
+                router.refresh()
             } else {
-                setAlertState({ isOpen: true, message: 'Engelleme işlemi başarısız oldu.' })
+                setAlertState({ isOpen: true, message: 'Kullanıcı engellenirken bir hata oluştu.' })
             }
         } catch (error) {
             console.error(error)
             setAlertState({ isOpen: true, message: 'Engelleme işlemi başarısız oldu.' })
+        } finally {
+            setIsBlocking(false)
         }
     }
 
@@ -236,10 +241,11 @@ const TopicCard = ({ topic, isLiked, onLike, isSaved, onSave, currentUserId }: T
                                                     </button>
                                                     <button 
                                                         onClick={(e) => { e.preventDefault(); setShowMenu(false); handleBlockUser(); }}
-                                                        className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-800 flex items-center space-x-2"
+                                                        disabled={isBlocking}
+                                                        className={`w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-800 flex items-center space-x-2 ${isBlocking ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                     >
                                                         <Ban className="h-4 w-4" />
-                                                        <span>Kullanıcıyı Engelle</span>
+                                                        <span>{isBlocking ? 'Engelleniyor...' : 'Kullanıcıyı Engelle'}</span>
                                                     </button>
                                                 </>
                                             )}
