@@ -103,18 +103,33 @@ export async function POST(request: NextRequest) {
         } else if (eventType === 'subscription.order.failure') {
             console.log(`[Iyzico Webhook] ❌ Failure event for user ${user.id}`);
             
-            // Ödeme başarısız olduysa aboneliği sonlandır veya iptal olarak işaretle
-            await prisma.user.update({
-                where: { id: user.id },
-                data: {
-                    subscriptionPlan: null,
-                    subscriptionStartDate: null,
-                    subscriptionEndDate: null,
-                    subscriptionReferenceCode: null,
-                    subscriptionCancelled: false
-                }
-            });
-            console.log(`[Iyzico Webhook] User ${user.id} subscription removed due to payment failure`);
+            const now = new Date();
+            const isExpired = !user.subscriptionEndDate || user.subscriptionEndDate <= now;
+
+            if (!isExpired) {
+                // Dönem hâlâ geçerliyse, iptal olarak işaretle ama alanları null yapma
+                await prisma.user.update({
+                    where: { id: user.id },
+                    data: {
+                        subscriptionCancelled: true
+                    }
+                });
+                console.log(`[Iyzico Webhook] User ${user.id} payment failed, subscription set to cancelled (period still active)`);
+            } else {
+                // Ödeme başarısız olduysa ve süre gerçekten dolmuşsa aboneliği tamamen sonlandır
+                await prisma.user.update({
+                    where: { id: user.id },
+                    data: {
+                        subscriptionPlan: null,
+                        subscriptionBillingPeriod: null,
+                        subscriptionStartDate: null,
+                        subscriptionEndDate: null,
+                        subscriptionReferenceCode: null,
+                        subscriptionCancelled: false
+                    }
+                });
+                console.log(`[Iyzico Webhook] User ${user.id} subscription removed due to payment failure and expiration`);
+            }
         } else {
             console.log(`[Iyzico Webhook] Unhandled event type: ${eventType}`);
         }

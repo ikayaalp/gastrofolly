@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
 
         const now = new Date()
 
-        // Süresi dolmuş abonelikleri bul (tek seferlik ödeme - otomatik yenileme yok)
+        // Süresi dolmuş abonelikleri bul ve temizle
         const expiredSubscriptions = await prisma.user.findMany({
             where: {
                 subscriptionPlan: { not: null },
@@ -53,31 +53,6 @@ export async function GET(request: NextRequest) {
 
         const userIds = expiredSubscriptions.map(user => user.id)
 
-        // 1. İlgili kullanıcıların Progress kayıtlarını sil
-        const deletedProgress = await prisma.progress.deleteMany({
-            where: {
-                userId: {
-                    in: userIds
-                }
-            }
-        })
-
-        // 1.5. Enrollment kayıtlarını da sil (ücretsiz kurslar hariç)
-        // Önce ücretsiz olmayan kursların enrollment'larını bul ve sil
-        const enrollmentsToDelete = await prisma.enrollment.findMany({
-            where: {
-                userId: { in: userIds },
-                course: { isFree: false }
-            },
-            select: { id: true }
-        })
-
-        const deletedEnrollments = await prisma.enrollment.deleteMany({
-            where: {
-                id: { in: enrollmentsToDelete.map(e => e.id) }
-            }
-        })
-
         // 2. Abonelik bilgilerini temizle
         const updatedUsers = await prisma.user.updateMany({
             where: {
@@ -87,6 +62,7 @@ export async function GET(request: NextRequest) {
             },
             data: {
                 subscriptionPlan: null,
+                subscriptionBillingPeriod: null,
                 subscriptionStartDate: null,
                 subscriptionEndDate: null,
                 subscriptionCancelled: false,
@@ -94,19 +70,12 @@ export async function GET(request: NextRequest) {
             }
         })
 
-        console.log(`[Cron] ${updatedUsers.count} abonelik temizlendi, ${deletedProgress.count} progress kaydı silindi, ${deletedEnrollments.count} enrollment kaydı silindi`)
+        console.log(`[Cron] ${updatedUsers.count} abonelik temizlendi`)
 
         return NextResponse.json({
             success: true,
-            message: `${updatedUsers.count} abonelik başarıyla temizlendi`,
-            cleanedCount: updatedUsers.count,
-            deletedProgressCount: deletedProgress.count,
-            deletedEnrollmentCount: deletedEnrollments.count,
-            cleanedUsers: expiredSubscriptions.map(u => ({
-                email: u.email,
-                plan: u.subscriptionPlan,
-                endDate: u.subscriptionEndDate
-            }))
+            message: "Abonelik temizliği tamamlandı",
+            cleanedSubscriptionCount: updatedUsers.count
         })
 
     } catch (error) {
