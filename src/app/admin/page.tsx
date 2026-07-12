@@ -7,6 +7,8 @@ import { REVENUE_TRACKING_START, HISTORICAL_REVENUE_OFFSET } from "@/lib/revenue
 import Link from "next/link"
 import { BookOpen, Users, Wallet, TrendingUp, CreditCard, ArrowUpRight, Activity, BarChart3 } from "lucide-react"
 
+const TURKISH_MONTHS_LONG = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık']
+
 async function getAdminData() {
   const [users, coursesCount, enrollments, payments, recentRegistrations] = await Promise.all([
     prisma.user.findMany({
@@ -51,7 +53,11 @@ async function getAdminData() {
   return { users, coursesCount, enrollments, payments, recentRegistrations }
 }
 
-export default async function AdminPage() {
+export default async function AdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ month?: string; year?: string }>
+}) {
   const session = await getServerSession(authOptions)
 
   if (!session?.user?.id) {
@@ -70,6 +76,27 @@ export default async function AdminPage() {
 
   const { users, coursesCount, enrollments, payments, recentRegistrations } = await getAdminData()
 
+  const { month: monthParam, year: yearParam } = await searchParams
+  const now = new Date()
+  const parsedMonth = monthParam !== undefined ? parseInt(monthParam, 10) : undefined
+  const parsedYear = yearParam !== undefined ? parseInt(yearParam, 10) : undefined
+  const selectedMonth = parsedMonth !== undefined && parsedMonth >= 0 && parsedMonth <= 11 ? parsedMonth : now.getUTCMonth()
+  const selectedYear = parsedYear && parsedYear >= 2020 ? parsedYear : now.getUTCFullYear()
+  const isCurrentMonth = selectedMonth === now.getUTCMonth() && selectedYear === now.getUTCFullYear()
+
+  const startOfSelectedMonth = new Date(Date.UTC(selectedYear, selectedMonth, 1))
+  const endOfSelectedMonth = new Date(Date.UTC(selectedYear, selectedMonth + 1, 1))
+
+  const selectedMonthPayments = await prisma.payment.aggregate({
+    where: {
+      status: 'COMPLETED',
+      subscriptionPlan: { not: null },
+      createdAt: { gte: startOfSelectedMonth, lt: endOfSelectedMonth },
+    },
+    _sum: { amount: true },
+  })
+  const selectedMonthRevenue = selectedMonthPayments._sum.amount || 0
+
   return (
     <div className="space-y-8">
       {/* Welcome Section */}
@@ -87,7 +114,7 @@ export default async function AdminPage() {
       </div>
 
       {/* İstatistik Kartları */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6">
         <div className="bg-black border border-gray-800 rounded-xl p-6 group hover:border-blue-500/30 transition-colors">
           <div className="flex justify-between items-start mb-4">
             <div className="bg-blue-500/20 p-3 rounded-xl group-hover:scale-110 transition-transform">
@@ -128,6 +155,47 @@ export default async function AdminPage() {
           <p className="text-gray-400 text-sm font-medium">Toplam Gelir</p>
           <p className="text-3xl font-bold text-white mt-1">₺{(HISTORICAL_REVENUE_OFFSET + (payments._sum.amount || 0)).toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</p>
           <p className="text-xs text-gray-500 mt-2">Tüm zamanlar, abonelik ödemeleri</p>
+        </div>
+
+        <div className="bg-black border border-gray-800 rounded-xl p-6 group hover:border-green-500/30 transition-colors">
+          <div className="flex items-start justify-between mb-4">
+            <div className="bg-green-500/20 p-3 rounded-xl group-hover:scale-110 transition-transform">
+              <Wallet className="h-6 w-6 text-green-400" />
+            </div>
+          </div>
+          <form method="GET" className="flex items-center gap-2 mb-3">
+            <select
+              name="month"
+              defaultValue={selectedMonth}
+              className="bg-neutral-900 border border-neutral-800 rounded-xl px-2 py-1.5 text-white text-xs focus:outline-none focus:border-orange-500 cursor-pointer appearance-none"
+              style={{ backgroundImage: 'none' }}
+            >
+              {TURKISH_MONTHS_LONG.map((name, i) => (
+                <option key={i} value={i}>{name}</option>
+              ))}
+            </select>
+            <select
+              name="year"
+              defaultValue={selectedYear}
+              className="bg-neutral-900 border border-neutral-800 rounded-xl px-2 py-1.5 text-white text-xs focus:outline-none focus:border-orange-500 cursor-pointer appearance-none"
+              style={{ backgroundImage: 'none' }}
+            >
+              {Array.from({ length: 7 }, (_, i) => now.getUTCFullYear() - 3 + i).map(y => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
+            <button
+              type="submit"
+              className="bg-orange-600 hover:bg-orange-500 text-white text-xs font-medium px-2.5 py-1.5 rounded-lg transition-colors"
+            >
+              Göster
+            </button>
+          </form>
+          <p className="text-gray-400 text-sm font-medium">
+            {isCurrentMonth ? 'Bu Ay Geliri' : `${TURKISH_MONTHS_LONG[selectedMonth]} ${selectedYear} Geliri`}
+          </p>
+          <p className="text-3xl font-bold text-white mt-1">₺{selectedMonthRevenue.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</p>
+          <p className="text-xs text-gray-500 mt-2">Seçili ay, abonelik ödemeleri</p>
         </div>
       </div>
 

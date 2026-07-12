@@ -8,6 +8,7 @@ import EnrollmentChart from "@/components/admin/analytics/EnrollmentChart"
 import DropoffFunnelChart from "@/components/admin/analytics/DropoffFunnelChart"
 
 const TURKISH_MONTHS = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara']
+const TURKISH_MONTHS_LONG = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık']
 
 function buildMonthlySeries(rows: { month: Date; total: number }[]) {
     const totalsByKey = new Map<string, number>()
@@ -30,8 +31,12 @@ function buildMonthlySeries(rows: { month: Date; total: number }[]) {
     return series
 }
 
-async function getAnalyticsData(selectedCourseId?: string) {
-    const startOfMonth = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 1))
+async function getAnalyticsData(selectedCourseId?: string, selectedMonth?: number, selectedYear?: number) {
+    const now = new Date()
+    const targetYear = selectedYear ?? now.getUTCFullYear()
+    const targetMonth = selectedMonth !== undefined ? selectedMonth : now.getUTCMonth()
+    const startOfMonth = new Date(Date.UTC(targetYear, targetMonth, 1))
+    const endOfMonth = new Date(Date.UTC(targetYear, targetMonth + 1, 1))
 
     const [
         revenueRows,
@@ -54,7 +59,7 @@ async function getAnalyticsData(selectedCourseId?: string) {
             GROUP BY month ORDER BY month ASC
         `,
         prisma.payment.aggregate({
-            where: { status: 'COMPLETED', createdAt: { gte: startOfMonth } },
+            where: { status: 'COMPLETED', createdAt: { gte: startOfMonth, lt: endOfMonth } },
             _sum: { amount: true },
         }),
         prisma.enrollment.count({ where: { createdAt: { gte: startOfMonth } } }),
@@ -148,7 +153,7 @@ async function getAnalyticsData(selectedCourseId?: string) {
 export default async function AdminAnalyticsPage({
     searchParams,
 }: {
-    searchParams: Promise<{ courseId?: string }>
+    searchParams: Promise<{ courseId?: string; month?: string; year?: string }>
 }) {
     const session = await getServerSession(authOptions)
 
@@ -165,7 +170,15 @@ export default async function AdminAnalyticsPage({
         redirect("/dashboard")
     }
 
-    const { courseId } = await searchParams
+    const { courseId, month: monthParam, year: yearParam } = await searchParams
+
+    const now = new Date()
+    const parsedMonth = monthParam !== undefined ? parseInt(monthParam, 10) : undefined
+    const parsedYear = yearParam !== undefined ? parseInt(yearParam, 10) : undefined
+    const selectedMonth = parsedMonth !== undefined && parsedMonth >= 0 && parsedMonth <= 11 ? parsedMonth : now.getUTCMonth()
+    const selectedYear = parsedYear && parsedYear >= 2020 ? parsedYear : now.getUTCFullYear()
+    const isCurrentMonth = selectedMonth === now.getUTCMonth() && selectedYear === now.getUTCFullYear()
+
     const {
         revenueSeries,
         enrollmentSeries,
@@ -175,7 +188,7 @@ export default async function AdminAnalyticsPage({
         topCoursesWithCompletion,
         dropoffData,
         activeCourse,
-    } = await getAnalyticsData(courseId)
+    } = await getAnalyticsData(courseId, selectedMonth, selectedYear)
 
     return (
         <div className="space-y-8">
@@ -189,14 +202,47 @@ export default async function AdminAnalyticsPage({
             {/* Stat Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="bg-black border border-gray-800 rounded-xl p-6 group hover:border-green-500/30 transition-colors">
-                    <div className="bg-green-500/20 p-3 rounded-xl w-fit mb-4 group-hover:scale-110 transition-transform">
-                        <Wallet className="h-6 w-6 text-green-400" />
+                    <div className="flex items-start justify-between mb-4">
+                        <div className="bg-green-500/20 p-3 rounded-xl group-hover:scale-110 transition-transform">
+                            <Wallet className="h-6 w-6 text-green-400" />
+                        </div>
+                        <form method="GET" className="flex items-center gap-2">
+                            {courseId && <input type="hidden" name="courseId" value={courseId} />}
+                            <select
+                                name="month"
+                                defaultValue={selectedMonth}
+                                className="bg-neutral-900 border border-neutral-800 rounded-xl px-2 py-1.5 text-white text-xs focus:outline-none focus:border-orange-500 cursor-pointer appearance-none"
+                                style={{ backgroundImage: 'none' }}
+                            >
+                                {TURKISH_MONTHS_LONG.map((name, i) => (
+                                    <option key={i} value={i}>{name}</option>
+                                ))}
+                            </select>
+                            <select
+                                name="year"
+                                defaultValue={selectedYear}
+                                className="bg-neutral-900 border border-neutral-800 rounded-xl px-2 py-1.5 text-white text-xs focus:outline-none focus:border-orange-500 cursor-pointer appearance-none"
+                                style={{ backgroundImage: 'none' }}
+                            >
+                                {Array.from({ length: 7 }, (_, i) => now.getUTCFullYear() - 3 + i).map(y => (
+                                    <option key={y} value={y}>{y}</option>
+                                ))}
+                            </select>
+                            <button
+                                type="submit"
+                                className="bg-orange-600 hover:bg-orange-500 text-white text-xs font-medium px-2.5 py-1.5 rounded-lg transition-colors"
+                            >
+                                Göster
+                            </button>
+                        </form>
                     </div>
-                    <p className="text-gray-400 text-sm font-medium">Bu Ay Gelir</p>
+                    <p className="text-gray-400 text-sm font-medium">
+                        {isCurrentMonth ? 'Bu Ay Gelir' : `${TURKISH_MONTHS_LONG[selectedMonth]} ${selectedYear} Geliri`}
+                    </p>
                     <p className="text-3xl font-bold text-white mt-1">
                         ₺{thisMonthRevenue.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}
                     </p>
-                    <p className="text-xs text-gray-500 mt-2">Bu ay, tüm tamamlanmış ödemeler</p>
+                    <p className="text-xs text-gray-500 mt-2">Seçili ay, tüm tamamlanmış ödemeler</p>
                 </div>
 
                 <div className="bg-black border border-gray-800 rounded-xl p-6 group hover:border-orange-500/30 transition-colors">
