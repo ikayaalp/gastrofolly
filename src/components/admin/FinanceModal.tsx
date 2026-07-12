@@ -1,19 +1,31 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Upload, CheckCircle2 } from "lucide-react"
 import { toast } from "react-hot-toast"
 import Modal from "@/components/ui/Modal"
 import Input from "@/components/ui/Input"
 import Button from "@/components/ui/Button"
 
+interface FinanceRecord {
+  id: string
+  type: "INCOME" | "EXPENSE"
+  amount: number
+  title: string
+  description?: string
+  category?: string
+  documentUrl?: string
+  date: string
+}
+
 interface FinanceModalProps {
   isOpen: boolean
   onClose: () => void
   onSuccess: () => void
+  editingRecord?: FinanceRecord | null
 }
 
-export default function FinanceModal({ isOpen, onClose, onSuccess }: FinanceModalProps) {
+export default function FinanceModal({ isOpen, onClose, onSuccess, editingRecord }: FinanceModalProps) {
   const [type, setType] = useState<"INCOME" | "EXPENSE">("INCOME")
   const [amount, setAmount] = useState("")
   const [title, setTitle] = useState("")
@@ -25,6 +37,30 @@ export default function FinanceModal({ isOpen, onClose, onSuccess }: FinanceModa
   const [isUploading, setIsUploading] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const isEditing = !!editingRecord
+
+  useEffect(() => {
+    if (isOpen) {
+      if (editingRecord) {
+        setType(editingRecord.type)
+        setAmount(editingRecord.amount.toString())
+        setTitle(editingRecord.title)
+        setDescription(editingRecord.description || "")
+        setCategory(editingRecord.category || "")
+        setDate(new Date(editingRecord.date).toISOString().split('T')[0])
+        setDocumentUrl(editingRecord.documentUrl || "")
+      } else {
+        setType("INCOME")
+        setAmount("")
+        setTitle("")
+        setDescription("")
+        setCategory("")
+        setDate(new Date().toISOString().split('T')[0])
+        setDocumentUrl("")
+      }
+    }
+  }, [isOpen, editingRecord])
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -79,9 +115,10 @@ export default function FinanceModal({ isOpen, onClose, onSuccess }: FinanceModa
     try {
       setIsSubmitting(true)
       const res = await fetch("/api/admin/finance", {
-        method: "POST",
+        method: isEditing ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          ...(isEditing ? { id: editingRecord.id } : {}),
           type,
           amount,
           title,
@@ -93,10 +130,10 @@ export default function FinanceModal({ isOpen, onClose, onSuccess }: FinanceModa
       })
 
       if (!res.ok) {
-        throw new Error("Kayıt oluşturulamadı")
+        throw new Error(isEditing ? "Kayıt güncellenemedi" : "Kayıt oluşturulamadı")
       }
 
-      toast.success("Kayıt başarıyla oluşturuldu")
+      toast.success(isEditing ? "Kayıt başarıyla güncellendi" : "Kayıt başarıyla oluşturuldu")
       onSuccess()
       
       // Formu temizle
@@ -119,7 +156,7 @@ export default function FinanceModal({ isOpen, onClose, onSuccess }: FinanceModa
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Yeni Finans Kaydı"
+      title={isEditing ? "Kaydı Düzenle" : "Yeni Finans Kaydı"}
       size="lg"
     >
       <form onSubmit={handleSubmit} className="space-y-6 max-h-[70vh] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-zinc-700 flex flex-col">

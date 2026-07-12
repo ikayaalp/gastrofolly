@@ -42,7 +42,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Kategori adı zorunludur" }, { status: 400 })
         }
 
-        const baseSlug = generateForumSlug(name)
+        const baseSlug = generateSlug(name)
         let slug = baseSlug
         let counter = 1
 
