@@ -204,3 +204,42 @@ export async function PATCH(request: NextRequest) {
         return NextResponse.json({ error: "Bir hata oluştu" }, { status: 500 })
     }
 }
+
+// DELETE: Fenomeni öğrenciye düşür (Demote)
+export async function DELETE(request: NextRequest) {
+    try {
+        const session = await getServerSession(authOptions)
+        if (!session?.user?.id) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+        }
+
+        const admin = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { role: true }
+        })
+
+        if (admin?.role !== "ADMIN") {
+            return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+        }
+
+        const { searchParams } = new URL(request.url)
+        const userId = searchParams.get("userId")
+
+        if (!userId) {
+            return NextResponse.json({ error: "Kullanıcı ID gerekli" }, { status: 400 })
+        }
+
+        await prisma.user.update({
+            where: { id: userId },
+            data: { 
+                role: "STUDENT" as any, 
+                referralCode: null 
+            }
+        })
+
+        return NextResponse.json({ success: true })
+    } catch (error) {
+        console.error("Admin influencers DELETE error:", error)
+        return NextResponse.json({ error: "Bir hata oluştu" }, { status: 500 })
+    }
+}

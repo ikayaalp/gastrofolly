@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Users, Plus, Copy, TrendingUp, DollarSign, Search, Loader2, Star, X, Pencil, Check } from "lucide-react"
+import { Users, Plus, Copy, TrendingUp, DollarSign, Search, Loader2, Star, X, Pencil, Check, UserMinus } from "lucide-react"
 import { toast } from "react-hot-toast"
 
 interface Influencer {
@@ -120,6 +120,27 @@ export default function AdminInfluencersPage() {
             toast.error("Bir hata oluştu")
         } finally {
             setSaving(false)
+        }
+    }
+
+    const handleDemote = async (influencer: Influencer) => {
+        if (!window.confirm(`${influencer.name || influencer.email} kullanıcısını fenomenlikten çıkarmak istediğinize emin misiniz? (Geçmiş komisyonları korunacaktır)`)) {
+            return
+        }
+        
+        try {
+            const res = await fetch(`/api/admin/influencers?userId=${influencer.id}`, {
+                method: "DELETE"
+            })
+            const data = await res.json()
+            if (data.success) {
+                toast.success("Kullanıcı fenomenlikten çıkarıldı")
+                fetchInfluencers()
+            } else {
+                toast.error(data.error || "Bir hata oluştu")
+            }
+        } catch {
+            toast.error("Bir hata oluştu")
         }
     }
 
@@ -247,6 +268,9 @@ export default function AdminInfluencersPage() {
                                             </button>
                                             <button onClick={() => { setEditingInfluencer(inf); setEditCode(inf.referralCode); setEditDiscount(String(inf.discountPercent || 10)); }} className="text-gray-500 hover:text-purple-400 transition-colors" title="Düzenle">
                                                 <Pencil className="h-4 w-4" />
+                                            </button>
+                                            <button onClick={() => handleDemote(inf)} className="text-gray-500 hover:text-red-400 transition-colors" title="Fenomenlikten Çıkar">
+                                                <UserMinus className="h-4 w-4" />
                                             </button>
                                         </div>
                                     </td>
