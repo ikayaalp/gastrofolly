@@ -31,7 +31,9 @@ export async function GET() {
                 courseCount: cat._count?.courses || 0
             }));
 
-        return NextResponse.json({ categories: formattedCategories });
+        return NextResponse.json({ categories: formattedCategories }, {
+            headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' }
+        });
     } catch (error: any) {
         console.error("API Error detailed:", error);
         return NextResponse.json({

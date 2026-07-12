@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
   try {
     // Rate limiting
     const ip = getClientIp(request)
-    const rateLimitResult = checkRateLimit(`verify:${ip}`, RATE_LIMITS.VERIFY)
+    const rateLimitResult = await checkRateLimit(`verify:${ip}`, RATE_LIMITS.VERIFY)
     if (!rateLimitResult.success) {
       return NextResponse.json(
         { error: 'Çok fazla deneme. Lütfen biraz bekleyin.' },

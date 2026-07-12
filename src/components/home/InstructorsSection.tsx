@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 interface Instructor {
     id: string;
@@ -72,10 +73,12 @@ export default function InstructorsSection({ instructors, speed = 1, intervalMs 
                         className="min-w-[260px] w-[260px] md:min-w-[320px] md:w-[320px] group relative flex-shrink-0"
                     >
                         <div className="aspect-[4/5] relative overflow-hidden rounded-2xl bg-gray-900 border border-gray-800 group-hover:border-orange-500/50 transition-all duration-500 shadow-xl group-hover:shadow-orange-900/10">
-                            <img
+                            <Image
                                 src={instructor.image || "/default-avatar.png"}
                                 alt={instructor.name}
-                                className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-110"
+                                fill
+                                className="object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-110"
+                                sizes="(max-width: 768px) 260px, 320px"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-80 group-hover:opacity-40 transition-opacity" />
 

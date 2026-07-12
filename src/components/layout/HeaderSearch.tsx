@@ -5,6 +5,7 @@ import { Search, X, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { getOptimizedMediaUrl } from "@/lib/utils";
+import Image from "next/image";
 
 interface SearchResult {
     id: string;
@@ -108,11 +109,15 @@ export default function HeaderSearch() {
                                     className="flex items-center gap-3 px-4 py-3 hover:bg-[#2a2a2a] transition-colors group"
                                 >
                                     <div className="w-10 h-10 rounded-md bg-gray-800 overflow-hidden flex-shrink-0">
-                                        <img
-                                            src={getOptimizedMediaUrl(course.thumbnailImageUrl || course.imageUrl || 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=200&q=80')}
-                                            alt=""
-                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform"
-                                        />
+                                        <div className="relative w-full h-full">
+                                            <Image
+                                                src={getOptimizedMediaUrl(course.thumbnailImageUrl || course.imageUrl || 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=200&q=80')}
+                                                alt=""
+                                                fill
+                                                className="object-cover group-hover:scale-110 transition-transform"
+                                                sizes="40px"
+                                            />
+                                        </div>
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <h4 className="text-white text-sm font-medium truncate group-hover:text-orange-500 transition-colors">{course.title}</h4>

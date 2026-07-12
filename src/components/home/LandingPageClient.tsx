@@ -241,20 +241,24 @@ export default function LandingPageClient({
                     {/* Course Images Grid */}
                     <div className="grid grid-cols-3 md:grid-cols-6 gap-1 md:gap-2 h-full">
                         {initialFeatured.length > 0 && initialFeatured.slice(0, 12).map((course, index) => (
-                            <div key={index} className="aspect-square overflow-hidden">
-                                <img
+                            <div key={index} className="aspect-square overflow-hidden relative">
+                                <Image
                                     src={course.imageUrl || 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&q=80'}
                                     alt=""
-                                    className="w-full h-full object-cover"
+                                    fill
+                                    className="object-cover"
+                                    sizes="(max-width: 768px) 33vw, 16vw"
                                 />
                             </div>
                         ))}
                         {initialFeatured.length < 12 && Array.from({ length: 12 - initialFeatured.length }).map((_, index) => (
-                            <div key={`placeholder-${index}`} className="aspect-square overflow-hidden bg-gray-900">
-                                <img
+                            <div key={`placeholder-${index}`} className="aspect-square overflow-hidden bg-gray-900 relative">
+                                <Image
                                     src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&q=80"
                                     alt=""
-                                    className="w-full h-full object-cover"
+                                    fill
+                                    className="object-cover"
+                                    sizes="(max-width: 768px) 33vw, 16vw"
                                 />
                             </div>
                         ))}
@@ -366,10 +370,12 @@ export default function LandingPageClient({
                                     <div className="w-[280px] md:w-[320px] relative rounded-xl overflow-hidden bg-gray-900 border border-gray-800 group-hover:border-orange-500/30 transition-all duration-300">
                                         {/* Image */}
                                         <div className="aspect-video relative overflow-hidden">
-                                            <img
+                                            <Image
                                                 src={course.imageUrl || 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&q=80'}
                                                 alt={course.title}
-                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                fill
+                                                className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                                sizes="(max-width: 768px) 100vw, 33vw"
                                             />
                                             <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors" />
 

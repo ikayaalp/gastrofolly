@@ -22,6 +22,7 @@ import ConfirmationModal from '@/components/ui/ConfirmationModal'
 import PollCreationModal from '@/components/admin/PollCreationModal'
 import ForumCategoryModal from '@/components/admin/ForumCategoryModal'
 import Link from 'next/link'
+import Image from 'next/image'
 
 interface Author {
     id: string
@@ -496,7 +497,7 @@ export default function SocialAdminPage() {
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         <div className="flex items-center">
                                                             {report.reporter?.image ? (
-                                                                <img src={report.reporter.image} alt="" className="w-6 h-6 rounded-full mr-2" />
+                                                                <Image width={24} height={24} src={report.reporter.image} alt="" className="rounded-full mr-2 object-cover" />
                                                             ) : (
                                                                 <div className="w-6 h-6 rounded-full bg-gray-700 mr-2 flex items-center justify-center">
                                                                     <Users className="w-3 h-3 text-gray-400" />
@@ -540,7 +541,7 @@ export default function SocialAdminPage() {
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         <div className="flex items-center">
                                                             {topic.author.image ? (
-                                                                <img src={topic.author.image} alt="" className="w-6 h-6 rounded-full mr-2" />
+                                                                <Image width={24} height={24} src={topic.author.image} alt="" className="rounded-full mr-2 object-cover" />
                                                             ) : (
                                                                 <div className="w-6 h-6 rounded-full bg-gray-700 mr-2 flex items-center justify-center">
                                                                     <Users className="w-3 h-3 text-gray-400" />
@@ -582,7 +583,7 @@ export default function SocialAdminPage() {
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         <div className="flex items-center">
                                                             {post.author.image ? (
-                                                                <img src={post.author.image} alt="" className="w-6 h-6 rounded-full mr-2" />
+                                                                <Image width={24} height={24} src={post.author.image} alt="" className="rounded-full mr-2 object-cover" />
                                                             ) : (
                                                                 <div className="w-6 h-6 rounded-full bg-gray-700 mr-2 flex items-center justify-center">
                                                                     <Users className="w-3 h-3 text-gray-400" />

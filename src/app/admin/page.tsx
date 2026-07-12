@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma"
 import { REVENUE_TRACKING_START, HISTORICAL_REVENUE_OFFSET } from "@/lib/revenueConfig"
 import { TURKISH_MONTHS_LONG, buildMonthlySeries, parseMonthYearParams } from "@/lib/monthlyRevenue"
 import Link from "next/link"
+import Image from "next/image"
 import RevenueChart from "@/components/admin/analytics/RevenueChart"
 import { BookOpen, Users, Wallet, TrendingUp, CreditCard, ArrowUpRight, Activity, BarChart3, AlertCircle, XCircle } from "lucide-react"
 
@@ -401,7 +402,7 @@ export default async function AdminPage({
                         <div className="flex items-center">
                           <div className="flex-shrink-0 h-8 w-8">
                             {u.image ? (
-                              <img className="h-8 w-8 rounded-full" src={u.image} alt="" />
+                              <Image width={32} height={32} className="rounded-full object-cover" src={u.image} alt="" />
                             ) : (
                               <div className="h-8 w-8 rounded-full bg-gray-800 flex items-center justify-center text-xs font-bold text-gray-400">
                                 {u.name?.charAt(0) || 'U'}

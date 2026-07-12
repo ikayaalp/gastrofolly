@@ -23,6 +23,7 @@ import {
   ChevronRight,
   Loader2
 } from "lucide-react"
+import Image from "next/image"
 
 
 interface User {
@@ -308,8 +309,10 @@ export default function UserManagement({ initialFilter }: UserManagementProps) {
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10">
                         {user.image ? (
-                          <img
-                            className="h-10 w-10 rounded-full object-cover ring-2 ring-gray-800"
+                          <Image
+                            width={40}
+                            height={40}
+                            className="rounded-full object-cover ring-2 ring-gray-800"
                             src={user.image}
                             alt={user.name || 'User'}
                           />

@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (!checkRateLimit(`forum-follow:${user.id}`, RATE_LIMITS.GENERAL).success) {
+    if (!(await checkRateLimit(`forum-follow:${user.id}`, RATE_LIMITS.GENERAL)).success) {
       return NextResponse.json({ error: 'Çok fazla istek. Lütfen biraz bekleyin.' }, { status: 429 })
     }
 

@@ -261,7 +261,7 @@ export default function InfluencerDashboardPage() {
                                     <div key={r.id} className="flex items-center justify-between px-6 py-4 hover:bg-white/5 transition-colors">
                                         <div className="flex items-center gap-3">
                                             {r.referredUser.image ? (
-                                                <img className="h-10 w-10 rounded-full" src={r.referredUser.image} alt="" />
+                                                <Image width={40} height={40} className="rounded-full" src={r.referredUser.image} alt="" />
                                             ) : (
                                                 <div className="h-10 w-10 rounded-full bg-gray-800 flex items-center justify-center text-sm font-bold text-gray-400">
                                                     {r.referredUser.name?.charAt(0) || "U"}

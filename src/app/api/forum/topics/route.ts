@@ -198,7 +198,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const rateLimitResult = checkRateLimit(`forum-topic:${user.id}`, RATE_LIMITS.FORUM_POST)
+    const rateLimitResult = await checkRateLimit(`forum-topic:${user.id}`, RATE_LIMITS.FORUM_POST)
     if (!rateLimitResult.success) {
       return NextResponse.json(
         { error: 'Çok fazla paylaşım yapıyorsunuz. Lütfen biraz bekleyin.' },

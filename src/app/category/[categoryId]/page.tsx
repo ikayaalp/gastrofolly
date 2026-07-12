@@ -2,6 +2,8 @@ import { Metadata } from "next"
 import { prisma } from "@/lib/prisma"
 import CategoryPageClient from "./CategoryPageClient"
 
+export const revalidate = 300
+
 interface CategoryPageProps {
     params: Promise<{
         categoryId: string

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { User, Loader2 } from 'lucide-react'
 import Modal from '@/components/ui/Modal'
+import Image from 'next/image'
 
 interface FollowUser {
     id: string
@@ -71,10 +72,12 @@ export default function FollowListModal({ isOpen, onClose, userId, type, title }
                                 className="flex items-center gap-3 py-3 hover:bg-white/5 transition-colors -mx-4 px-4 rounded-xl"
                             >
                                 {user.image ? (
-                                    <img
+                                    <Image
+                                        width={44}
+                                        height={44}
                                         src={user.image}
                                         alt={user.name || ''}
-                                        className="w-11 h-11 rounded-full object-cover border border-zinc-700"
+                                        className="rounded-full object-cover border border-zinc-700"
                                     />
                                 ) : (
                                     <div className="w-11 h-11 rounded-full bg-gradient-to-br from-orange-600 to-orange-800 flex items-center justify-center flex-shrink-0">

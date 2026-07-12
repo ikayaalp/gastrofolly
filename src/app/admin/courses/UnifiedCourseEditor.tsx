@@ -6,6 +6,7 @@ import ImageUpload from "@/components/admin/ImageUpload"
 import VideoUpload from "@/components/admin/VideoUpload"
 import DocumentUpload from "@/components/admin/DocumentUpload"
 import ConfirmationModal from '@/components/ui/ConfirmationModal'
+import Image from "next/image"
 
 interface Course {
     id: string
@@ -634,8 +635,8 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
                                                 {formData.imageUrl && (
                                                     <div className="mt-4 pt-4 border-t border-gray-800">
                                                         <label className="block text-xs font-medium text-gray-500 mb-2">Kart Önizleme (1.45:1)</label>
-                                                        <div className="aspect-[1.45/1] max-w-[200px] rounded-lg overflow-hidden border border-gray-700 bg-zinc-900">
-                                                            <img src={formData.imageUrl} className="w-full h-full object-cover" />
+                                                        <div className="relative aspect-[1.45/1] max-w-[200px] rounded-lg overflow-hidden border border-gray-700 bg-zinc-900">
+                                                            <Image src={formData.imageUrl} alt="Kapak Görseli" fill className="object-cover" sizes="200px" />
                                                         </div>
                                                     </div>
                                                 )}
@@ -648,8 +649,8 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
                                                 {formData.thumbnailImageUrl && (
                                                     <div className="mt-4 pt-4 border-t border-gray-800">
                                                         <label className="block text-xs font-medium text-gray-500 mb-2">Thumbnail Önizleme (1:1)</label>
-                                                        <div className="aspect-square max-w-[100px] rounded-lg overflow-hidden border border-gray-700 bg-zinc-900">
-                                                            <img src={formData.thumbnailImageUrl} className="w-full h-full object-cover" />
+                                                        <div className="relative aspect-square max-w-[100px] rounded-lg overflow-hidden border border-gray-700 bg-zinc-900">
+                                                            <Image src={formData.thumbnailImageUrl} alt="Thumbnail Görseli" fill className="object-cover" sizes="100px" />
                                                         </div>
                                                     </div>
                                                 )}
@@ -662,8 +663,8 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
                                                 {formData.posterImageUrl && (
                                                     <div className="mt-4 pt-4 border-t border-gray-800">
                                                         <label className="block text-xs font-medium text-gray-500 mb-2">Poster Önizleme (2:3)</label>
-                                                        <div className="aspect-[2/3] max-w-[140px] rounded-lg overflow-hidden border border-gray-700 bg-zinc-900">
-                                                            <img src={formData.posterImageUrl} className="w-full h-full object-cover" />
+                                                        <div className="relative aspect-[2/3] max-w-[140px] rounded-lg overflow-hidden border border-gray-700 bg-zinc-900">
+                                                            <Image src={formData.posterImageUrl} alt="Poster Görseli" fill className="object-cover" sizes="140px" />
                                                         </div>
                                                     </div>
                                                 )}

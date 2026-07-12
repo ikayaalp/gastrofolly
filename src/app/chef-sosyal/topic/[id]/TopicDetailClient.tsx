@@ -12,6 +12,7 @@ import LikersModal from "@/components/forum/LikersModal"
 import ConfirmationModal from "@/components/ui/ConfirmationModal"
 import EditTopicModal from "@/components/forum/EditTopicModal"
 import { getOptimizedMediaUrl } from "@/lib/utils"
+import Image from "next/image"
 
 // Using HashtagText for rendering content instead of renderCommentContent
 
@@ -404,7 +405,7 @@ export default function TopicDetailClient({ session, topic: initialTopic, catego
             {/* Left: Avatar Column */}
             <div className="flex-shrink-0 mr-3">
               <Link href={`/chef-sosyal/profil/${topic.author.id}`}>
-                {topic.author.image ? <img src={getOptimizedMediaUrl(topic.author.image, 'IMAGE')} className="w-10 h-10 rounded-full object-cover hover:opacity-80 transition-opacity" /> : <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-gray-600 transition-colors"><User className="w-6 h-6 text-gray-400" /></div>}
+                {topic.author.image ? <Image width={40} height={40} src={getOptimizedMediaUrl(topic.author.image, 'IMAGE')} alt="" className="rounded-full object-cover hover:opacity-80 transition-opacity" /> : <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-gray-600 transition-colors"><User className="w-6 h-6 text-gray-400" /></div>}
               </Link>
             </div>
 
@@ -443,6 +444,7 @@ export default function TopicDetailClient({ session, topic: initialTopic, catego
                       </video>
                     </div>
                   ) : (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img src={getOptimizedMediaUrl(topic.mediaUrl, 'IMAGE')} alt={topic.title} className="max-w-full max-h-[700px] object-contain" />
                   )}
                 </div>
@@ -481,7 +483,7 @@ export default function TopicDetailClient({ session, topic: initialTopic, catego
               {session?.user ? (
                 <div className="mt-6 mb-8 flex gap-3" id="comment-form">
                   <div className="flex-shrink-0">
-                    {session.user.image ? <img src={getOptimizedMediaUrl(session.user.image, 'IMAGE')} className="w-8 h-8 rounded-full object-cover" alt={session.user.name || ''} /> : <div className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center"><User className="w-4 h-4 text-gray-400" /></div>}
+                    {session.user.image ? <Image width={32} height={32} src={getOptimizedMediaUrl(session.user.image, 'IMAGE')} className="rounded-full object-cover" alt={session.user.name || ''} /> : <div className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center"><User className="w-4 h-4 text-gray-400" /></div>}
                   </div>
                   <form onSubmit={handleAddComment} className="flex-1 relative group">
                     {replyingTo && (
@@ -525,7 +527,7 @@ export default function TopicDetailClient({ session, topic: initialTopic, catego
                   <div key={comment.id} className="flex space-x-2">
                     <div className="flex-shrink-0">
                       <Link href={`/chef-sosyal/profil/${comment.author.id}`}>
-                        {comment.author.image ? <img src={getOptimizedMediaUrl(comment.author.image, 'IMAGE')} className="w-8 h-8 rounded-full object-cover hover:opacity-80 transition-opacity" /> : <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center hover:bg-gray-600 transition-colors"><User className="h-4 w-4 text-gray-400" /></div>}
+                        {comment.author.image ? <Image width={32} height={32} src={getOptimizedMediaUrl(comment.author.image, 'IMAGE')} alt="" className="rounded-full object-cover hover:opacity-80 transition-opacity" /> : <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center hover:bg-gray-600 transition-colors"><User className="h-4 w-4 text-gray-400" /></div>}
                       </Link>
                     </div>
                     <div className="flex-1">
@@ -572,7 +574,7 @@ export default function TopicDetailClient({ session, topic: initialTopic, catego
                             <div key={reply.id} className="flex space-x-2 relative">
                               <div className="flex-shrink-0">
                                 <Link href={`/chef-sosyal/profil/${reply.author.id}`}>
-                                  {reply.author.image ? <img src={getOptimizedMediaUrl(reply.author.image, 'IMAGE')} className="w-8 h-8 rounded-full object-cover hover:opacity-80 transition-opacity" /> : <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center hover:bg-gray-600 transition-colors"><User className="h-4 w-4 text-gray-400" /></div>}
+                                  {reply.author.image ? <Image width={32} height={32} src={getOptimizedMediaUrl(reply.author.image, 'IMAGE')} alt="" className="rounded-full object-cover hover:opacity-80 transition-opacity" /> : <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center hover:bg-gray-600 transition-colors"><User className="h-4 w-4 text-gray-400" /></div>}
                                 </Link>
                               </div>
                               <div className="flex-1">
@@ -637,6 +639,7 @@ export default function TopicDetailClient({ session, topic: initialTopic, catego
           onClick={() => setIsLightboxOpen(false)}
         >
           <div className="relative max-w-7xl max-h-screen w-full h-full flex items-center justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={getOptimizedMediaUrl(topic.mediaUrl, 'IMAGE')}
               alt={topic.title}

@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
   try {
     // Rate limiting
     const ip = getClientIp(request)
-    const rateLimitResult = checkRateLimit(`reset-pw:${ip}`, RATE_LIMITS.AUTH)
+    const rateLimitResult = await checkRateLimit(`reset-pw:${ip}`, RATE_LIMITS.AUTH)
     if (!rateLimitResult.success) {
       return NextResponse.json(
         { message: 'Çok fazla istek gönderildi. Lütfen biraz bekleyin.' },

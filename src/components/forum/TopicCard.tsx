@@ -10,6 +10,7 @@ import LikersModal from './LikersModal'
 import ConfirmationModal from '@/components/ui/ConfirmationModal'
 import ReportModal from '@/components/forum/ReportModal'
 import { getOptimizedMediaUrl } from '@/lib/utils'
+import Image from 'next/image'
 
 interface TopicCardProps {
     topic: {
@@ -169,7 +170,7 @@ const TopicCard = ({ topic, isLiked, onLike, isSaved, onSave, currentUserId }: T
                         ) : (
                             <Link href={`/chef-sosyal/profil/${topic.author.id}`}>
                                 {topic.author.image ? (
-                                    <img src={getOptimizedMediaUrl(topic.author.image, 'IMAGE')} alt={topic.author.name || ''} className="w-10 h-10 rounded-full object-cover hover:opacity-80 transition-opacity" loading="lazy" />
+                                    <Image width={40} height={40} src={getOptimizedMediaUrl(topic.author.image, 'IMAGE')} alt={topic.author.name || ''} className="rounded-full object-cover hover:opacity-80 transition-opacity" />
                                 ) : (
                                     <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-gray-600 transition-colors">
                                         <User className="w-6 h-6 text-gray-400" />
@@ -282,6 +283,7 @@ const TopicCard = ({ topic, isLiked, onLike, isSaved, onSave, currentUserId }: T
                                         />
                                     </div>
                                 ) : (
+                                    // eslint-disable-next-line @next/next/no-img-element
                                     <img
                                         src={getOptimizedMediaUrl(topic.mediaUrl, 'IMAGE')}
                                         alt={topic.title}
@@ -469,6 +471,7 @@ const TopicCard = ({ topic, isLiked, onLike, isSaved, onSave, currentUserId }: T
                         onClick={() => setIsLightboxOpen(false)}
                     >
                         <div className="relative max-w-7xl max-h-screen w-full h-full flex items-center justify-center">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                                 src={topic.mediaUrl}
                                 alt={topic.title}

@@ -38,7 +38,7 @@ export const authOptions: NextAuthOptions = {
         // callback'i request nesnesine guvenilir sekilde erismiyor; bir
         // hesabin sifresini hizli denemekle bombalama en pratik senaryo.
         const rateLimitKey = `login:${credentials.email.trim().toLowerCase()}`
-        if (!checkRateLimit(rateLimitKey, RATE_LIMITS.AUTH).success) {
+        if (!(await checkRateLimit(rateLimitKey, RATE_LIMITS.AUTH)).success) {
           throw new Error("Çok fazla başarısız deneme. Lütfen birkaç dakika sonra tekrar deneyin.")
         }
 

@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        if (!checkRateLimit(`upload-media:${userId}`, RATE_LIMITS.GENERAL).success) {
+        if (!(await checkRateLimit(`upload-media:${userId}`, RATE_LIMITS.GENERAL)).success) {
             return NextResponse.json({ error: 'Çok fazla yükleme denemesi yaptınız, lütfen biraz bekleyin.' }, { status: 429 })
         }
 

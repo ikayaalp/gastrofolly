@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    if (!checkRateLimit(`forum-like:${user.id}`, RATE_LIMITS.GENERAL).success) {
+    if (!(await checkRateLimit(`forum-like:${user.id}`, RATE_LIMITS.GENERAL)).success) {
       return NextResponse.json({ error: "Çok fazla istek. Lütfen biraz bekleyin." }, { status: 429 })
     }
 

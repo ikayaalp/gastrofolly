@@ -265,10 +265,12 @@ export default async function DashboardPage() {
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-4">
                             {enrollment.course.imageUrl ? (
-                              <img
+                              <Image
+                                width={64}
+                                height={64}
                                 src={getOptimizedMediaUrl(enrollment.course.imageUrl)}
                                 alt={enrollment.course.title}
-                                className="w-16 h-16 rounded-lg object-cover"
+                                className="rounded-lg object-cover"
                               />
                             ) : (
                               <div className="w-16 h-16 bg-gradient-to-br from-orange-400 to-red-500 rounded-lg flex items-center justify-center">

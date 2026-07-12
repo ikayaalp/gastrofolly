@@ -127,7 +127,7 @@ export async function POST(
       )
     }
 
-    const rateLimitResult = checkRateLimit(`forum-post:${user.id}`, RATE_LIMITS.FORUM_POST)
+    const rateLimitResult = await checkRateLimit(`forum-post:${user.id}`, RATE_LIMITS.FORUM_POST)
     if (!rateLimitResult.success) {
       return NextResponse.json(
         { error: 'Çok fazla yorum yapıyorsunuz. Lütfen biraz bekleyin.' },

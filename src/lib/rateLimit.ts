@@ -1,6 +1,9 @@
+import { Redis } from '@upstash/redis'
+import { Ratelimit } from '@upstash/ratelimit'
+
 /**
  * Simple in-memory rate limiter for API routes
- * No external dependencies required
+ * Fallback when Upstash Redis is not configured
  */
 
 interface RateLimitEntry {
@@ -27,24 +30,51 @@ interface RateLimitOptions {
     windowSeconds: number
 }
 
-interface RateLimitResult {
+export interface RateLimitResult {
     success: boolean
     remaining: number
     resetIn: number // seconds until reset
 }
 
-/**
- * Check rate limit for a given identifier (IP or user ID)
- */
-export function checkRateLimit(
-    identifier: string,
-    options: RateLimitOptions
-): RateLimitResult {
+const redisUrl = process.env.UPSTASH_REDIS_REST_URL
+const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN
+
+const isUpstashConfigured = Boolean(redisUrl && redisToken)
+
+if (!isUpstashConfigured) {
+    console.warn("UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are not set. Using in-memory rate limiter fallback.")
+}
+
+// Module-level cache for ratelimit instances
+const ratelimiters = new Map<string, Ratelimit>()
+
+let redis: Redis | null = null
+if (isUpstashConfigured) {
+    redis = new Redis({
+        url: redisUrl!,
+        token: redisToken!,
+    })
+}
+
+function getOrCreateRatelimiter(options: RateLimitOptions): Ratelimit {
+    const key = `${options.maxRequests}:${options.windowSeconds}`
+    let limiter = ratelimiters.get(key)
+    if (!limiter) {
+        limiter = new Ratelimit({
+            redis: redis!,
+            limiter: Ratelimit.slidingWindow(options.maxRequests, `${options.windowSeconds} s`),
+            analytics: true,
+        })
+        ratelimiters.set(key, limiter)
+    }
+    return limiter
+}
+
+function fallbackCheckRateLimit(identifier: string, options: RateLimitOptions): RateLimitResult {
     const now = Date.now()
     const key = `${identifier}`
     const entry = rateLimitStore.get(key)
 
-    // If no entry or expired, create new
     if (!entry || now > entry.resetTime) {
         rateLimitStore.set(key, {
             count: 1,
@@ -57,7 +87,6 @@ export function checkRateLimit(
         }
     }
 
-    // Increment count
     entry.count++
 
     if (entry.count > options.maxRequests) {
@@ -72,6 +101,37 @@ export function checkRateLimit(
         success: true,
         remaining: options.maxRequests - entry.count,
         resetIn: Math.ceil((entry.resetTime - now) / 1000),
+    }
+}
+
+/**
+ * Check rate limit for a given identifier (IP or user ID)
+ */
+export async function checkRateLimit(
+    identifier: string,
+    options: RateLimitOptions
+): Promise<RateLimitResult> {
+    if (!isUpstashConfigured || !redis) {
+        return fallbackCheckRateLimit(identifier, options)
+    }
+
+    try {
+        const limiter = getOrCreateRatelimiter(options)
+        const { success, remaining, reset } = await limiter.limit(identifier)
+        
+        return {
+            success,
+            remaining,
+            resetIn: Math.ceil((reset - Date.now()) / 1000),
+        }
+    } catch (error) {
+        // Fail-open: if Redis is down, allow the request and log
+        console.error("Rate limiter Redis error:", error)
+        return {
+            success: true,
+            remaining: 1,
+            resetIn: 0,
+        }
     }
 }
 

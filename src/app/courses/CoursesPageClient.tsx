@@ -250,10 +250,12 @@ export default function CoursesPageClient() {
                                                 className="group block"
                                             >
                                                 <div className="relative aspect-[1.45/1] rounded-xl overflow-hidden mb-4 bg-gray-900 border border-gray-800 shadow-xl">
-                                                    <img
+                                                    <Image
                                                         src={getOptimizedMediaUrl(course.imageUrl || 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&q=80', 'IMAGE')}
                                                         alt={course.title}
-                                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
+                                                        fill
+                                                        className="object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
+                                                        sizes="(max-width: 768px) 100vw, 33vw"
                                                     />
                                                     {course.duration && (
                                                         <div className="absolute bottom-3 right-3 bg-black/80 backdrop-blur-md px-2 py-1 rounded text-[10px] font-bold text-white flex items-center gap-1">

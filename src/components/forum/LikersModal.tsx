@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { User, ThumbsUp, Loader2 } from 'lucide-react'
 import { getOptimizedMediaUrl } from '@/lib/utils'
 import Modal from '@/components/ui/Modal'
+import Image from 'next/image'
 
 interface Liker {
   id: string
@@ -110,11 +111,12 @@ export default function LikersModal({ isOpen, onClose, type, targetId, likeCount
                 <div className="flex-shrink-0">
                   <Link href={`/chef-sosyal/profil/${liker.id}`} onClick={onClose}>
                     {liker.image ? (
-                      <img
+                      <Image
+                        width={40}
+                        height={40}
                         src={getOptimizedMediaUrl(liker.image, 'IMAGE')}
                         alt={liker.name || ''}
-                        className="w-10 h-10 rounded-full object-cover border border-zinc-800 hover:opacity-80 transition-opacity"
-                        loading="lazy"
+                        className="rounded-full object-cover border border-zinc-800 hover:opacity-80 transition-opacity"
                       />
                     ) : (
                       <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center border border-zinc-700 hover:bg-zinc-700 transition-colors">

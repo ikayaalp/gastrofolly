@@ -1,4 +1,5 @@
 "use client"
+import Image from "next/image"
 
 export default function AuthBackground() {
   // Sabit resimler - yüklendikten sonra yer değiştirmeyecek
@@ -19,13 +20,15 @@ export default function AuthBackground() {
     <div className="pointer-events-none fixed inset-0 -z-10">
       <div className="w-full h-full grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 p-4 auto-rows-[7rem] sm:auto-rows-[8rem] md:auto-rows-[9rem] lg:auto-rows-[10rem] bg-black">
         {tiles.map((src, i) => (
-          <img
-            key={i}
-            src={src}
-            alt="course"
-            className="w-full h-full object-cover rounded-lg opacity-75"
-            loading="lazy"
-          />
+          <div key={i} className="relative w-full h-full">
+            <Image
+              src={src}
+              alt="course"
+              fill
+              className="object-cover rounded-lg opacity-75"
+              sizes="(max-width: 768px) 33vw, 16vw"
+            />
+          </div>
         ))}
       </div>
       <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/70 to-black/80" />

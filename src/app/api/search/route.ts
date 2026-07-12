@@ -13,7 +13,9 @@ export async function GET(request: NextRequest) {
     // En az bir arama kriteri olmalı
     const hasQuery = query && query.trim().length >= 2;
     if (!hasQuery && !level && !categoryId) {
-      return NextResponse.json({ courses: [], message: "En az bir arama kriteri girin" })
+      return NextResponse.json({ courses: [], message: "En az bir arama kriteri girin" }, {
+        headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' }
+      })
     }
 
     const whereClause: any = {
@@ -59,6 +61,8 @@ export async function GET(request: NextRequest) {
       courses,
       total: courses.length,
       query: query?.trim() || ""
+    }, {
+      headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' }
     })
 
   } catch (error) {

@@ -606,7 +606,7 @@ export default function ChefSosyalClient({
             <div className="hidden md:flex bg-[#0a0a0a] border border-gray-800 rounded-md p-4 mb-4 items-start space-x-4">
               <div className="flex-shrink-0">
                 {session.user.image ? (
-                  <img src={session.user.image} alt={session.user.name || ''} className="w-10 h-10 rounded-full object-cover" />
+                  <Image width={40} height={40} src={session.user.image} alt={session.user.name || ''} className="rounded-full object-cover" />
                 ) : (
                   <div className="w-10 h-10 rounded-full bg-orange-600 flex items-center justify-center">
                     <User className="h-6 w-6 text-white" />
@@ -775,7 +775,7 @@ export default function ChefSosyalClient({
               {/* User Info Row */}
               <div className="flex items-center space-x-3 mb-6">
                 {session?.user?.image ? (
-                  <img src={session.user.image} alt={session.user.name || 'User'} className="w-10 h-10 rounded-full object-cover border border-gray-800" />
+                  <Image width={40} height={40} src={session.user.image} alt={session.user.name || 'User'} className="rounded-full object-cover border border-gray-800" />
                 ) : (
                   <div className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center border border-gray-700">
                     <User className="w-5 h-5 text-gray-400" />

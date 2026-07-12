@@ -32,7 +32,7 @@ export async function POST(req: Request) {
       return new NextResponse('Invalid target type', { status: 400 })
     }
 
-    const rateLimitResult = checkRateLimit(`forum-report:${session.user.id}`, RATE_LIMITS.FORUM_POST)
+    const rateLimitResult = await checkRateLimit(`forum-report:${session.user.id}`, RATE_LIMITS.FORUM_POST)
     if (!rateLimitResult.success) {
       return NextResponse.json(
         { error: 'Çok fazla şikayet gönderiyorsunuz. Lütfen biraz bekleyin.' },

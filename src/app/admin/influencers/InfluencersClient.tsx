@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { Users, Plus, Copy, TrendingUp, DollarSign, Search, Loader2, Star, X, Pencil, Check, UserMinus } from "lucide-react"
 import { toast } from "react-hot-toast"
+import Image from "next/image"
 
 interface Influencer {
     id: string
@@ -247,7 +248,7 @@ export default function AdminInfluencersPage() {
                                         <div className="flex items-center">
                                             <div className="flex-shrink-0 h-10 w-10">
                                                 {inf.image ? (
-                                                    <img className="h-10 w-10 rounded-full" src={inf.image} alt="" />
+                                                    <Image width={40} height={40} className="rounded-full object-cover" src={inf.image} alt="" />
                                                 ) : (
                                                     <div className="h-10 w-10 rounded-full bg-purple-500/20 flex items-center justify-center text-sm font-bold text-purple-400">
                                                         {inf.name?.charAt(0) || "F"}

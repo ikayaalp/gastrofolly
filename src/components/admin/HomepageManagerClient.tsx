@@ -15,6 +15,7 @@ import {
   Loader2,
 } from "lucide-react"
 import ImageUpload from "@/components/admin/ImageUpload"
+import Image from "next/image"
 
 // ---- Tipler ----
 interface Cover {
@@ -392,10 +393,12 @@ function InstructorsTab({ initial }: { initial: HInstructor[] }) {
               {/* Sol: Kompakt portre fotoğraf */}
               <div className="shrink-0 flex flex-col items-center gap-2">
                 {item.imageUrl ? (
-                  <img
+                  <Image
+                    width={80}
+                    height={112}
                     src={item.imageUrl}
                     alt={item.name || "Eğitmen"}
-                    className="w-20 h-28 object-cover rounded-xl border border-gray-700"
+                    className="object-cover rounded-xl border border-gray-700"
                   />
                 ) : (
                   <div className="w-20 h-28 rounded-xl bg-neutral-800 border border-dashed border-gray-700 flex items-center justify-center">
@@ -730,7 +733,9 @@ function SectionsTab({ initial }: { initial: Section[] }) {
                             }`}
                           >
                             {course.imageUrl ? (
-                              <img src={course.imageUrl} className="w-full h-20 object-cover rounded-md border border-gray-800/50" alt="" />
+                              <div className="relative w-full h-20">
+                                <Image fill src={course.imageUrl} className="object-cover rounded-md border border-gray-800/50" alt="" sizes="160px" />
+                              </div>
                             ) : (
                               <div className="w-full h-20 bg-neutral-800 rounded-md border border-gray-800/50"></div>
                             )}

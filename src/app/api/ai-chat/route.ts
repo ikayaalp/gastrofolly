@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        if (!checkRateLimit(`ai-chat:${user.id}`, RATE_LIMITS.AI_CHAT).success) {
+        if (!(await checkRateLimit(`ai-chat:${user.id}`, RATE_LIMITS.AI_CHAT)).success) {
             return NextResponse.json({ error: 'Çok fazla istek gönderdiniz. Lütfen biraz bekleyin.' }, { status: 429 })
         }
 

@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { notFound, redirect } from "next/navigation"
 import Link from "next/link"
+import Image from "next/image"
 import { ArrowLeft, User, Mail, Calendar, CheckCircle, XCircle, Clock, Star } from "lucide-react"
 import { isPremiumUser } from "@/lib/subscription"
 
@@ -46,7 +47,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ use
                     <div className="flex items-center gap-4">
                         <div className="bg-gray-800 rounded-full w-16 h-16 flex items-center justify-center flex-shrink-0">
                             {user.image ? (
-                                <img src={user.image} alt={user.name || "User"} className="w-16 h-16 rounded-full object-cover" />
+                                <Image width={64} height={64} src={user.image} alt={user.name || "User"} className="rounded-full object-cover" />
                             ) : (
                                 <User className="w-8 h-8 text-gray-400" />
                             )}

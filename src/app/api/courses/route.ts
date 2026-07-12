@@ -76,10 +76,14 @@ export async function GET(request: NextRequest) {
                 courses,
                 total,
                 hasMore: take ? (skip || 0) + take < total : false
+            }, {
+                headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' }
             });
         }
 
-        return NextResponse.json(courses);
+        return NextResponse.json(courses, {
+            headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' }
+        });
     } catch (error) {
         console.error('Courses fetch error:', error);
         return NextResponse.json(

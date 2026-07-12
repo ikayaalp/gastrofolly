@@ -376,10 +376,12 @@ export default function ChefProfilClient({
                         <div className="relative">
                             <div className="w-24 h-24 rounded-full border-4 border-black overflow-hidden bg-gray-900">
                                 {profile.image ? (
-                                    <img
+                                    <Image
+                                        width={96}
+                                        height={96}
                                         src={profile.image}
                                         alt={profile.name || 'User'}
-                                        className="w-full h-full object-cover"
+                                        className="object-cover"
                                     />
                                 ) : (
                                     <div className="w-full h-full bg-gradient-to-br from-orange-600 to-orange-800 flex items-center justify-center">

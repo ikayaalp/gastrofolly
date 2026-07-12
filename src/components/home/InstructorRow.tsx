@@ -3,6 +3,7 @@
 import { ChevronLeft, ChevronRight, User } from "lucide-react"
 import { useRef, useState, useEffect } from "react"
 import Link from "next/link"
+import Image from "next/image"
 
 export interface Instructor {
   id: string;
@@ -112,10 +113,12 @@ export default function InstructorRow({ title, instructors }: InstructorRowProps
               <>
                 <div className="relative mb-3 w-full aspect-[3/4]">
                   {instructor.image ? (
-                    <img
+                    <Image
                       src={instructor.image}
                       alt={instructor.name}
-                      className="w-full h-full rounded-xl object-contain border-2 border-transparent group-hover:border-orange-500 transition-colors bg-neutral-900"
+                      fill
+                      className="rounded-xl object-contain border-2 border-transparent group-hover:border-orange-500 transition-colors bg-neutral-900"
+                      sizes="(max-width: 768px) 140px, 160px"
                     />
                   ) : (
                     <div className="w-full h-full rounded-xl bg-gradient-to-br from-orange-600 to-orange-800 flex items-center justify-center border-2 border-transparent group-hover:border-orange-500 transition-colors">

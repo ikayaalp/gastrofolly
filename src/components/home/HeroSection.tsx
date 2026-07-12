@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Play, ChevronLeft, ChevronRight } from "lucide-react"
+import Image from "next/image"
 
 interface Course {
   id: string
@@ -126,12 +127,15 @@ export default function HeroSection({ courses, covers }: HeroSectionProps) {
     <div className="relative h-[55vh] md:h-[70vh] min-h-[400px] md:min-h-[500px] overflow-hidden group">
       {/* Background Image */}
       <div className="absolute inset-0">
-        <div className={`w-full h-full transition-all duration-500 ease-in-out ${isTransitioning ? 'opacity-0 scale-105' : 'opacity-100 scale-100'}`}>
+        <div className={`w-full h-full transition-all duration-500 ease-in-out ${isTransitioning ? 'opacity-0 scale-105' : 'opacity-100 scale-100'} relative`}>
           {course.imageUrl ? (
-            <img
+            <Image
               src={course.imageUrl}
               alt={course.title}
-              className="w-full h-full object-cover"
+              fill
+              priority
+              className="object-cover"
+              sizes="100vw"
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-orange-400 via-red-500 to-red-600" />

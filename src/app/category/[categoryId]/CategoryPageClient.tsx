@@ -185,10 +185,12 @@ export default function CategoryPageClient() {
                                         >
                                             {/* Image Container */}
                                             <div className="relative aspect-[1.45/1] rounded-xl overflow-hidden mb-4 bg-gray-900 border border-gray-800 shadow-xl">
-                                                <img
+                                                <Image
                                                     src={course.imageUrl || 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&q=80'}
                                                     alt={course.title}
-                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
+                                                    fill
+                                                    className="object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
+                                                    sizes="(max-width: 768px) 100vw, 33vw"
                                                 />
                                                 {/* Duration Badge */}
                                                 {course.duration && (

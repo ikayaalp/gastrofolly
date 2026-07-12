@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { useEffect, useRef, useState } from "react"
 import { Play } from "lucide-react"
+import Image from "next/image"
 
 interface Course {
   id: string
@@ -74,10 +75,12 @@ export default function AutoScrollCourses({ courses, speed = 1, intervalMs = 16 
                   Yakında
                 </div>
                 {course.imageUrl ? (
-                  <img
+                  <Image
                     src={course.imageUrl}
                     alt={course.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                    fill
+                    className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                    sizes="(max-width: 768px) 310px, 460px"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-gray-800">

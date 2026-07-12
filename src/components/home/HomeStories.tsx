@@ -4,6 +4,7 @@ import { X, ChevronUp, ChevronLeft, ChevronRight, Plus, Video } from 'lucide-rea
 import { useRouter } from 'next/navigation';
 import { getOptimizedMediaUrl } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
 
 interface Story {
     id: string;
@@ -162,10 +163,12 @@ const StoryViewer = ({ stories, initialIndex, onClose }: StoryViewerProps) => {
                         {/* Placeholder (blur-up or spinner) */}
                         {!mediaReady && (
                             currentStory.coverImage ? (
-                                <img
+                                <Image
                                     src={getOptimizedMediaUrl(currentStory.coverImage, 'IMAGE')}
-                                    className="absolute inset-0 w-full h-full object-cover blur-md scale-105"
+                                    className="object-cover blur-md scale-105"
                                     alt="Loading placeholder"
+                                    fill
+                                    sizes="(max-width: 768px) 100vw, 50vw"
                                 />
                             ) : (
                                 <div className="absolute inset-0 flex items-center justify-center z-10">
@@ -184,10 +187,12 @@ const StoryViewer = ({ stories, initialIndex, onClose }: StoryViewerProps) => {
                                 onLoadedData={() => handleMediaReady(currentStory.id)}
                             />
                         ) : (
-                            <img
+                            <Image
                                 src={getOptimizedMediaUrl(currentStory.mediaUrl, 'IMAGE')}
-                                className={`w-full h-full object-cover transition-opacity duration-300 ${mediaReady ? 'opacity-100' : 'opacity-0'}`}
+                                className={`object-cover transition-opacity duration-300 ${mediaReady ? 'opacity-100' : 'opacity-0'}`}
                                 alt="Story"
+                                fill
+                                sizes="(max-width: 768px) 100vw, 50vw"
                                 onLoad={() => handleMediaReady(currentStory.id)}
                             />
                         )}
@@ -214,10 +219,12 @@ const StoryViewer = ({ stories, initialIndex, onClose }: StoryViewerProps) => {
 
                     {/* User Info */}
                     <div className="flex items-center">
-                        <img
+                        <Image
+                            width={32}
+                            height={32}
                             src={getOptimizedMediaUrl(currentGroup.user.avatar, 'IMAGE')}
                             alt={currentGroup.user.name}
-                            className="w-8 h-8 rounded-full border border-white/20 mr-3"
+                            className="rounded-full border border-white/20 mr-3"
                         />
                         <span className="text-white font-bold text-sm mr-3">{currentGroup.user.name}</span>
                         <span className="text-white/70 text-xs">
@@ -384,11 +391,13 @@ export default function HomeStories() {
                         className="flex flex-col items-center space-y-2 min-w-[104px] md:min-w-[128px] cursor-pointer"
                         onClick={() => openStory(index)}
                     >
-                        <div className="w-[104px] h-[104px] md:w-[128px] md:h-[128px] rounded-full p-[3px] bg-gradient-to-tr from-orange-400 to-orange-600">
-                            <img
+                        <div className="w-[104px] h-[104px] md:w-[128px] md:h-[128px] rounded-full p-[3px] bg-gradient-to-tr from-orange-400 to-orange-600 relative overflow-hidden">
+                            <Image
                                 src={getOptimizedMediaUrl(group.user.avatar, 'IMAGE')}
                                 alt={group.user.name}
-                                className="w-full h-full rounded-full object-cover"
+                                className="rounded-full object-cover"
+                                fill
+                                sizes="128px"
                             />
                         </div>
                         <span className="text-xs md:text-sm text-center text-gray-300 truncate w-full">

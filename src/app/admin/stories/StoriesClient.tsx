@@ -435,6 +435,7 @@ export default function AdminStoriesPage() {
                                             mediaType === "VIDEO" ? (
                                                 <video src={previewUrl} className="h-28 w-full object-contain" controls={!editingStoryId} muted />
                                             ) : (
+                                                // eslint-disable-next-line @next/next/no-img-element
                                                 <img src={previewUrl} alt="Preview" className="h-28 w-full object-contain" />
                                             )
                                         ) : (
@@ -463,6 +464,7 @@ export default function AdminStoriesPage() {
                                 <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-gray-700 border-dashed rounded-lg cursor-pointer bg-gray-800 hover:bg-gray-700 hover:border-orange-500 transition-all">
                                     <div className="flex flex-col items-center justify-center pt-2 pb-2">
                                         {coverPreviewUrl ? (
+                                            // eslint-disable-next-line @next/next/no-img-element
                                             <img src={coverPreviewUrl} alt="Cover Preview" className="h-20 w-full object-contain" />
                                         ) : (
                                             <>
@@ -549,7 +551,7 @@ export default function AdminStoriesPage() {
                                         {story.mediaType === "VIDEO" ? (
                                             <video src={story.mediaUrl} className="w-full h-full object-cover opacity-80" />
                                         ) : (
-                                            <img src={story.mediaUrl} alt="Story" className="w-full h-full object-cover opacity-80" />
+                                            <Image src={story.mediaUrl} alt="Story" fill className="object-cover opacity-80" sizes="300px" />
                                         )}
 
                                         {/* Type Icon */}

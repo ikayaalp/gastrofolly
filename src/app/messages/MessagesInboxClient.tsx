@@ -7,6 +7,7 @@ import { ArrowLeft, Loader2, MessageCircle, Home, BookOpen, Users, ChefHat, Tras
 import { getPusherClient } from '@/lib/pusherClient'
 import toast from 'react-hot-toast'
 import ConfirmationModal from '@/components/ui/ConfirmationModal'
+import Image from 'next/image'
 
 interface Conversation {
     id: string
@@ -131,10 +132,12 @@ function ConversationRow({
                 {/* Avatar */}
                 <div className="flex-shrink-0">
                     {item.otherUser?.image ? (
-                        <img
+                        <Image
+                            width={48}
+                            height={48}
                             src={item.otherUser.image}
                             alt={item.otherUser.name || 'User'}
-                            className="w-12 h-12 rounded-full object-cover"
+                            className="rounded-full object-cover"
                         />
                     ) : (
                         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-600 to-orange-800 flex items-center justify-center">

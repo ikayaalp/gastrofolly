@@ -18,8 +18,8 @@ export async function POST(request: NextRequest) {
 
         // Brute-force koruması: hem IP hem e-posta bazında sınırla.
         const ip = getClientIp(request);
-        if (!checkRateLimit(`mobile-login-ip:${ip}`, RATE_LIMITS.AUTH).success ||
-            !checkRateLimit(`mobile-login-email:${email.trim().toLowerCase()}`, RATE_LIMITS.AUTH).success) {
+        if (!(await checkRateLimit(`mobile-login-ip:${ip}`, RATE_LIMITS.AUTH)).success ||
+            !(await checkRateLimit(`mobile-login-email:${email.trim().toLowerCase()}`, RATE_LIMITS.AUTH)).success) {
             return NextResponse.json(
                 { message: 'Çok fazla başarısız deneme. Lütfen birkaç dakika sonra tekrar deneyin.' },
                 { status: 429 }

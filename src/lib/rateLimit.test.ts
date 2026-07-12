@@ -8,45 +8,45 @@ function uniqueId(prefix: string) {
 }
 
 describe("checkRateLimit", () => {
-  it("izin verilen sayıya kadar isteklere success döner", () => {
+  it("izin verilen sayıya kadar isteklere success döner", async () => {
     const id = uniqueId("allow")
     const opts = { maxRequests: 3, windowSeconds: 60 }
 
-    expect(checkRateLimit(id, opts).success).toBe(true)
-    expect(checkRateLimit(id, opts).success).toBe(true)
-    expect(checkRateLimit(id, opts).success).toBe(true)
+    expect((await checkRateLimit(id, opts)).success).toBe(true)
+    expect((await checkRateLimit(id, opts)).success).toBe(true)
+    expect((await checkRateLimit(id, opts)).success).toBe(true)
   })
 
-  it("limit aşıldığında success:false döner (login brute-force koruması)", () => {
+  it("limit aşıldığında success:false döner (login brute-force koruması)", async () => {
     const id = uniqueId("login-bruteforce")
     const opts = { maxRequests: 5, windowSeconds: 60 }
 
     for (let i = 0; i < 5; i++) {
-      expect(checkRateLimit(id, opts).success).toBe(true)
+      expect((await checkRateLimit(id, opts)).success).toBe(true)
     }
     // 6. istek: limit aşıldı
-    const result = checkRateLimit(id, opts)
+    const result = await checkRateLimit(id, opts)
     expect(result.success).toBe(false)
     expect(result.remaining).toBe(0)
   })
 
-  it("farklı identifier'lar birbirinden bağımsızdır (bir kullanıcının denemesi başkasını etkilemez)", () => {
+  it("farklı identifier'lar birbirinden bağımsızdır (bir kullanıcının denemesi başkasını etkilemez)", async () => {
     const idA = uniqueId("user-a")
     const idB = uniqueId("user-b")
     const opts = { maxRequests: 1, windowSeconds: 60 }
 
-    expect(checkRateLimit(idA, opts).success).toBe(true)
-    expect(checkRateLimit(idA, opts).success).toBe(false) // A limitine takıldı
-    expect(checkRateLimit(idB, opts).success).toBe(true) // B hâlâ serbest
+    expect((await checkRateLimit(idA, opts)).success).toBe(true)
+    expect((await checkRateLimit(idA, opts)).success).toBe(false) // A limitine takıldı
+    expect((await checkRateLimit(idB, opts)).success).toBe(true) // B hâlâ serbest
   })
 
-  it("remaining sayacı doğru azalır", () => {
+  it("remaining sayacı doğru azalır", async () => {
     const id = uniqueId("remaining")
     const opts = { maxRequests: 3, windowSeconds: 60 }
 
-    expect(checkRateLimit(id, opts).remaining).toBe(2)
-    expect(checkRateLimit(id, opts).remaining).toBe(1)
-    expect(checkRateLimit(id, opts).remaining).toBe(0)
+    expect((await checkRateLimit(id, opts)).remaining).toBe(2)
+    expect((await checkRateLimit(id, opts)).remaining).toBe(1)
+    expect((await checkRateLimit(id, opts)).remaining).toBe(0)
   })
 })
 
