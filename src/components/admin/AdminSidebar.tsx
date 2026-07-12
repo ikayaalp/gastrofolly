@@ -20,7 +20,8 @@ import {
     Mail,
     Home,
     BarChart3,
-    Tags
+    Tags,
+    Bot
 } from "lucide-react"
 
 const sidebarItems = [
@@ -49,6 +50,11 @@ const sidebarItems = [
         title: "Chef Sosyal",
         href: "/admin/social",
         icon: MessageCircle
+    },
+    {
+        title: "Culi Geçmişi",
+        href: "/admin/ai-conversations",
+        icon: Bot
     },
 
     {
@@ -127,7 +133,6 @@ export default function AdminSidebar({ className, onClose }: AdminSidebarProps) 
             </div>
 
             <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-                <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
                     {sidebarItems.filter(item => {
                         // @ts-ignore - session type extension might be missing in some setups, safe to ignore for now
                         if (session?.user?.role === 'INSTRUCTOR') {
@@ -156,7 +161,6 @@ export default function AdminSidebar({ className, onClose }: AdminSidebarProps) 
                             </Link>
                         )
                     })}
-                </nav>
             </nav>
 
             <div className="p-4 border-t border-gray-800">
