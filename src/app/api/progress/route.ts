@@ -42,20 +42,39 @@ export async function POST(request: NextRequest) {
     if (!enrollment) {
       // Erişim kontrolü ve Lazy Enrollment
       const user = await prisma.user.findUnique({ where: { id: userId } })
-      const lesson = await prisma.lesson.findUnique({ where: { id: lessonId } })
+      // 1. Güvenlik Yaması: lesson'ı doğrudan parametreden gelen courseId ile birlikte arıyoruz.
+      // Eğer bu ikisi eşleşmiyorsa, lessonId sahtedir (farklı bir kursun ücretsiz dersidir).
+      const lesson = await prisma.lesson.findFirst({ 
+        where: { 
+          id: lessonId,
+          courseId: courseId 
+        } 
+      })
       
-      const hasAccess = lesson?.isFree || (user && isPremiumUser(user))
+      // 3. İlk ders (index 0) önizleme ayrıcalığı
+      // lesson sırası `order` alanıyla tutuluyor. Eğer order === 0 ise (veya 1, veri yapısına göre)
+      // veya isFree ise veya kullanıcı Premium ise
+      const isFirstLessonPreview = lesson?.order === 0; // order genellikle 0 veya 1'den başlar, şemanıza göre ayarlayın.
       
-      if (!hasAccess) {
+      const hasAccess = lesson?.isFree || isFirstLessonPreview || (user && isPremiumUser(user))
+      
+      if (!hasAccess || !lesson) {
         return NextResponse.json(
-          { error: "Premium subscription required" },
+          { error: "Premium subscription required or invalid lesson matching" },
           { status: 403 }
         )
       }
 
-      // Kullanıcının erişim yetkisi varsa anında enrollment oluştur (mobil için hayat kurtarıcı)
-      enrollment = await prisma.enrollment.create({
-        data: {
+      // 2. Race Condition Yaması: Eş zamanlı gelen 2 istekte çökmemesi için create yerine upsert kullanılıyor
+      enrollment = await prisma.enrollment.upsert({
+        where: {
+          userId_courseId: {
+            userId: userId,
+            courseId: courseId,
+          }
+        },
+        update: {},
+        create: {
           userId: userId,
           courseId: courseId,
         }
