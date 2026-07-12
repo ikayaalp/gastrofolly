@@ -422,16 +422,15 @@ export default function FinancePage() {
         )}
       </div>
 
-      <FinanceModal 
-        isOpen={isModalOpen} 
+      <FinanceModal
+        isOpen={isModalOpen}
         onClose={() => {
           setIsModalOpen(false)
-          // setTimeout ensures modal closes before state is cleared avoiding flickering
-          setTimeout(() => setEditingRecord(null), 300)
-        }} 
+          setEditingRecord(null)
+        }}
         onSuccess={() => {
           setIsModalOpen(false)
-          setTimeout(() => setEditingRecord(null), 300)
+          setEditingRecord(null)
           fetchData()
         }}
         editingRecord={editingRecord}

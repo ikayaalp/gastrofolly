@@ -130,7 +130,7 @@ export default function UserManagement({ initialFilter }: UserManagementProps) {
       })
 
       if (response.ok) {
-        router.refresh()
+        loadData(page, searchTerm, roleFilter, subFilter)
         setSelectedUser(null)
       } else {
         alert('Rol değiştirilirken bir hata oluştu.')
