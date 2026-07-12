@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import {
@@ -18,7 +18,10 @@ import {
   Sparkles,
   Star,
   Eye,
-  Crown
+  Crown,
+  ChevronLeft,
+  ChevronRight,
+  Loader2
 } from "lucide-react"
 
 
@@ -44,9 +47,21 @@ interface User {
 }
 
 interface UserManagementProps {
-  users: User[]
-  totalRevenue: number
   initialFilter?: string
+}
+
+interface PaginationState {
+  page: number
+  limit: number
+  total: number
+  pages: number
+}
+
+interface StatsState {
+  totalUsers: number
+  premiumUsers: number
+  activeSubscribers: number
+  totalRevenue: number
 }
 
 const SUBSCRIPTION_LABELS: Record<string, { label: string, color: string }> = {
@@ -55,7 +70,7 @@ const SUBSCRIPTION_LABELS: Record<string, { label: string, color: string }> = {
   'EXECUTIVE': { label: 'Executive', color: 'bg-purple-900/40 text-purple-200 border-purple-700/50' }
 }
 
-export default function UserManagement({ users, totalRevenue, initialFilter }: UserManagementProps) {
+export default function UserManagement({ initialFilter }: UserManagementProps) {
   const router = useRouter()
   const [searchTerm, setSearchTerm] = useState("")
   const [roleFilter, setRoleFilter] = useState("ALL")
@@ -65,23 +80,42 @@ export default function UserManagement({ users, totalRevenue, initialFilter }: U
 
   const now = new Date()
 
-  // İstatistik Hesaplamaları
-  const totalUsers = users.length
-  const premiumUsers = users.filter(u => u.subscriptionPlan).length
-  const activeSubscribers = users.filter(u => u.subscriptionEndDate && new Date(u.subscriptionEndDate) > now).length
-  const premiumRatio = totalUsers > 0 ? (premiumUsers / totalUsers) * 100 : 0
+  const [users, setUsers] = useState<User[]>([])
+  const [loading, setLoading] = useState(true)
+  const [page, setPage] = useState(1)
+  const [pagination, setPagination] = useState<PaginationState>({ page: 1, limit: 20, total: 0, pages: 1 })
+  const [stats, setStats] = useState<StatsState>({ totalUsers: 0, premiumUsers: 0, activeSubscribers: 0, totalRevenue: 0 })
 
-  // Filtreleme
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = (user.name?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesRole = roleFilter === "ALL" || user.role === roleFilter
-    const matchesSub =
-      subFilter === 'ALL' ? true :
-      subFilter === 'ACTIVE' ? (!!user.subscriptionEndDate && new Date(user.subscriptionEndDate) > now) :
-      false
-    return matchesSearch && matchesRole && matchesSub
-  })
+  const loadData = async (currentPage: number, currentSearch: string, currentRole: string, currentSub: string) => {
+    setLoading(true)
+    try {
+      const res = await fetch(`/api/admin/users?page=${currentPage}&limit=20&search=${encodeURIComponent(currentSearch)}&role=${currentRole}&subFilter=${currentSub}`)
+      if (res.ok) {
+        const data = await res.json()
+        setUsers(data.users)
+        setPagination(data.pagination)
+        setStats(data.stats)
+      }
+    } catch (error) {
+      console.error("Kullanıcılar yüklenirken hata oluştu:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Debounced search & filter effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      loadData(page, searchTerm, roleFilter, subFilter)
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [page, searchTerm, roleFilter, subFilter])
+
+  // Reset page to 1 when filters change
+  useEffect(() => {
+    setPage(1)
+  }, [searchTerm, roleFilter, subFilter])
 
   const handleRoleChange = async (userId: string, newRole: string) => {
     setIsUpdating(true)
@@ -160,7 +194,7 @@ export default function UserManagement({ users, totalRevenue, initialFilter }: U
               <Users className="h-6 w-6 text-orange-400" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-white">{users.length}</p>
+              <p className="text-2xl font-bold text-white">{stats.totalUsers}</p>
               <p className="text-gray-400">Toplam Kullanıcı</p>
             </div>
           </div>
@@ -173,8 +207,8 @@ export default function UserManagement({ users, totalRevenue, initialFilter }: U
             </div>
             <div>
               <div className="flex items-baseline space-x-2">
-                <p className="text-2xl font-bold text-white">%{premiumRatio.toFixed(1)}</p>
-                <span className="text-sm text-gray-500">({premiumUsers} üye)</span>
+                <p className="text-2xl font-bold text-white">%{(stats.totalUsers > 0 ? (stats.premiumUsers / stats.totalUsers) * 100 : 0).toFixed(1)}</p>
+                <span className="text-sm text-gray-500">({stats.premiumUsers} üye)</span>
               </div>
               <p className="text-gray-400">Premium Oranı</p>
             </div>
@@ -187,7 +221,7 @@ export default function UserManagement({ users, totalRevenue, initialFilter }: U
               <TrendingUp className="h-6 w-6 text-green-400" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-white">{formatCurrency(totalRevenue)}</p>
+              <p className="text-2xl font-bold text-white">{formatCurrency(stats.totalRevenue)}</p>
               <p className="text-gray-400">Toplam Gelir</p>
             </div>
           </div>
@@ -199,7 +233,7 @@ export default function UserManagement({ users, totalRevenue, initialFilter }: U
               <Crown className="h-6 w-6 text-purple-400" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-white">{activeSubscribers}</p>
+              <p className="text-2xl font-bold text-white">{stats.activeSubscribers}</p>
               <p className="text-gray-400">Aktif Abone</p>
             </div>
           </div>
@@ -243,13 +277,17 @@ export default function UserManagement({ users, totalRevenue, initialFilter }: U
               className="w-full pl-10 pr-4 py-2.5 bg-black border border-gray-800 text-white rounded-xl focus:outline-none focus:ring-1 focus:ring-purple-500 appearance-none min-w-[180px]"
             >
               <option value="ALL">Tüm Abonelikler</option>
-              <option value="ACTIVE">Aktif Aboneler ({activeSubscribers})</option>
+              <option value="ACTIVE">Aktif Aboneler ({stats.activeSubscribers})</option>
             </select>
           </div>
         </div>
       </div>
 
-      {/* Users List */}
+      {loading ? (
+        <div className="flex justify-center items-center h-64 bg-neutral-900/50 border border-white/5 rounded-2xl">
+          <Loader2 className="w-8 h-8 text-orange-500 animate-spin" />
+        </div>
+      ) : (
       <div className="bg-neutral-900/50 border border-white/5 rounded-2xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -264,7 +302,7 @@ export default function UserManagement({ users, totalRevenue, initialFilter }: U
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
-              {filteredUsers.map((user) => (
+              {users.map((user) => (
                 <tr key={user.id} className="hover:bg-white/5 transition-colors group">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
@@ -395,10 +433,41 @@ export default function UserManagement({ users, totalRevenue, initialFilter }: U
             </tbody>
           </table>
         </div>
+        
+        {/* Pagination Controls */}
+        {pagination.pages > 1 && (
+          <div className="px-6 py-4 border-t border-white/5 flex items-center justify-between">
+            <p className="text-sm text-gray-400">
+              Toplam <span className="font-medium text-white">{pagination.total}</span> sonuçtan <span className="font-medium text-white">{(page - 1) * pagination.limit + 1}-{Math.min(page * pagination.limit, pagination.total)}</span> arası gösteriliyor
+            </p>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="p-2 border border-white/10 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <div className="flex items-center space-x-1">
+                <span className="text-sm font-medium text-white px-3 py-1 bg-white/5 rounded-lg border border-white/10">
+                  {page} / {pagination.pages}
+                </span>
+              </div>
+              <button
+                onClick={() => setPage(p => Math.min(pagination.pages, p + 1))}
+                disabled={page >= pagination.pages}
+                className="p-2 border border-white/10 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
+      )}
 
       {/* Empty State */}
-      {filteredUsers.length === 0 && (
+      {!loading && users.length === 0 && (
         <div className="text-center py-20 bg-neutral-900/50 border border-white/5 rounded-2xl">
           <div className="bg-gray-800/50 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
             <Users className="h-8 w-8 text-gray-500" />
