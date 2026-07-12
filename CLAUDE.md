@@ -84,13 +84,13 @@ Kullanıcının tanımladığı iş bölümü şu şekildedir:
 1. **Karar gerektiren konular**: Mimari, kütüphane seçimi, önemli refactor gibi karar gerektiren bir durum ortaya çıkarsa, doğrudan uygulamaya geçmeden önce **derinlemesine araştırma (deep research)** yap ve kararı kullanıcıyla **birlikte** ver. Tek başına büyük kararlar alma.
 2. **Claude'un rolü — karar mekanizması ve review**: Claude bu projede kodu bizzat yazan taraf değil, **karar mekanizması ve code review** rolündedir:
    - Kullanıcıya görev/talimat (prompt) önerir.
-   - Kod, kullanıcı tarafından **Gemini 3.1 High**'a yazdırılır.
+   - Kod, kullanıcı tarafından **Gemini 3.1 High**'a yazdırılır (Antigravity IDE içinde; 2026-07-12 içinde kısa süreliğine Opus 4.6'ya geçilmişti, aynı gün tekrar Gemini 3.1 High'a dönüldü).
    - Claude, Gemini'nin yazdığı kodu **review** eder (doğruluk, güvenlik, sadelik açısından).
 3. **Sohbet uzunluğu**: Ortalama ~10 prompt sonrasında yeni bir sohbete geçilecek. Böyle bir geçiş öncesinde, o ana kadar yapılanların/konuşulanların **özetini** çıkar ki yeni sohbette bağlam kaybı olmasın.
 
 ### Pratikte bu şu anlama gelir:
 - Kod yazma isteği geldiğinde önce net bir plan/prompt taslağı sun (Gemini'ye verilebilecek şekilde).
-- Kullanıcı "Gemini'nin yazdığı kodu review et" dediğinde, review'i normal bir code review gibi ele al: doğruluk hatası, güvenlik açığı, gereksiz karmaşıklık, proje kurallarına uygunluk.
+- Kullanıcı "yazdığı kodu review et" dediğinde, review'i normal bir code review gibi ele al: doğruluk hatası, güvenlik açığı, gereksiz karmaşıklık, proje kurallarına uygunluk.
 - Önemli/belirsiz kararlarda ("bu şekilde mi yapalım?") doğrudan uygulamaya geçmek yerine önce araştır, seçenekleri kısaca sun, kullanıcıyla karara bağla.
 - Sohbet uzadıkça (~10 prompt), kullanıcı özet isteyebilir — istenildiğinde kısa ve eyleme dönük bir özet ver (neler yapıldı, sırada ne var, açık kararlar neler).
 

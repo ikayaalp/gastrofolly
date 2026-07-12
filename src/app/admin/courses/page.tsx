@@ -1,9 +1,18 @@
+import { getServerSession } from "next-auth/next"
+import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { redirect } from "next/navigation"
 import CourseManagement from "./CourseManagement"
 
 export const dynamic = 'force-dynamic'
 
 export default async function CoursesPage() {
+  const session = await getServerSession(authOptions)
+
+  if (!session?.user?.id || session.user.role !== 'ADMIN') {
+    redirect("/dashboard")
+  }
+
   const [categories, instructors] = await Promise.all([
     prisma.category.findMany(),
     prisma.user.findMany({
