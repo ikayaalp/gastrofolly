@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { Plus, Edit2, ListVideo, Trash2, Search, Filter, Play, Users, Eye, EyeOff, Settings } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Plus, Edit2, ListVideo, Trash2, Search, Filter, Play, Users, Eye, EyeOff, Settings, ChevronLeft, ChevronRight, Loader2 } from "lucide-react"
 import Image from "next/image"
 import UnifiedCourseEditor from "./UnifiedCourseEditor"
 import ConfirmationModal from "@/components/ui/ConfirmationModal"
@@ -59,9 +59,15 @@ interface Instructor {
 
 
 interface CourseManagementProps {
-  initialCourses: Course[]
   categories: Category[]
   instructors: Instructor[]
+}
+
+interface PaginationState {
+  page: number
+  limit: number
+  total: number
+  pages: number
 }
 
 const SUBSCRIPTION_PLANS: Record<string, { label: string, color: string }> = {
@@ -70,13 +76,47 @@ const SUBSCRIPTION_PLANS: Record<string, { label: string, color: string }> = {
   'EXECUTIVE': { label: 'Executive', color: 'bg-purple-500/10 text-purple-500 border-purple-500/20' }
 }
 
-export default function CourseManagement({ initialCourses, categories, instructors }: CourseManagementProps) {
-  const [courses, setCourses] = useState<Course[]>(initialCourses)
+export default function CourseManagement({ categories, instructors }: CourseManagementProps) {
+  const [courses, setCourses] = useState<Course[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [filterStatus, setFilterStatus] = useState<"ALL" | "PUBLISHED" | "DRAFT">("ALL")
   const [loading, setLoading] = useState<string | null>(null)
+  
+  const [loadingData, setLoadingData] = useState(true)
+  const [page, setPage] = useState(1)
+  const [pagination, setPagination] = useState<PaginationState>({ page: 1, limit: 20, total: 0, pages: 1 })
 
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
+
+  const loadData = async (currentPage: number, currentSearch: string, currentStatus: string) => {
+    setLoadingData(true)
+    try {
+      const res = await fetch(`/api/admin/courses?page=${currentPage}&limit=20&search=${encodeURIComponent(currentSearch)}&status=${currentStatus}`)
+      if (res.ok) {
+        const data = await res.json()
+        setCourses(data.courses)
+        setPagination(data.pagination)
+      }
+    } catch (error) {
+      console.error("Kurslar yüklenirken hata:", error)
+    } finally {
+      setLoadingData(false)
+    }
+  }
+
+  // Debounced search & filter effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      loadData(page, searchTerm, filterStatus)
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [page, searchTerm, filterStatus])
+
+  // Reset page to 1 when filters change
+  useEffect(() => {
+    setPage(1)
+  }, [searchTerm, filterStatus])
 
   // Sub-components state
   const [showUnifiedEditor, setShowUnifiedEditor] = useState(false)
@@ -84,16 +124,6 @@ export default function CourseManagement({ initialCourses, categories, instructo
   // Delete Modal State
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [courseToDelete, setCourseToDelete] = useState<string | null>(null)
-
-  const filteredCourses = courses.filter(course => {
-    const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      course.instructor.name?.toLowerCase().includes(searchTerm.toLowerCase())
-
-    if (filterStatus === "ALL") return matchesSearch
-    if (filterStatus === "PUBLISHED") return matchesSearch && course.isPublished
-    if (filterStatus === "DRAFT") return matchesSearch && !course.isPublished
-    return matchesSearch
-  })
 
   const togglePublishStatus = async (courseId: string, currentStatus: boolean) => {
     setLoading(courseId)
@@ -109,9 +139,8 @@ export default function CourseManagement({ initialCourses, categories, instructo
       })
 
       if (response.ok) {
-        setCourses(courses.map(c =>
-          c.id === courseId ? { ...c, isPublished: !currentStatus } : c
-        ))
+        // Refresh the list from the server to ensure consistency
+        loadData(page, searchTerm, filterStatus)
       } else {
         alert('Kurs durumu değiştirilemedi')
       }
@@ -138,7 +167,8 @@ export default function CourseManagement({ initialCourses, categories, instructo
       })
 
       if (response.ok) {
-        setCourses(courses.filter(c => c.id !== courseToDelete))
+        // Refresh the list from the server to ensure consistency
+        loadData(page, searchTerm, filterStatus)
       } else {
         alert('Kurs silinemedi')
       }
@@ -197,6 +227,11 @@ export default function CourseManagement({ initialCourses, categories, instructo
       </div>
 
       {/* Course List */}
+      {loadingData ? (
+        <div className="flex justify-center items-center h-64 bg-neutral-900/50 border border-white/5 rounded-2xl">
+          <Loader2 className="w-8 h-8 text-orange-500 animate-spin" />
+        </div>
+      ) : (
       <div className="bg-neutral-900/50 border border-white/5 rounded-2xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -210,7 +245,7 @@ export default function CourseManagement({ initialCourses, categories, instructo
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
-              {filteredCourses.map((course) => {
+              {courses.map((course) => {
                 const videosCount = course.lessons.filter(l => l.videoUrl).length
 
                 return (
@@ -307,7 +342,38 @@ export default function CourseManagement({ initialCourses, categories, instructo
             </tbody>
           </table>
         </div>
+        
+        {/* Pagination Controls */}
+        {pagination.pages > 1 && (
+          <div className="px-6 py-4 border-t border-white/5 flex items-center justify-between">
+            <p className="text-sm text-gray-400">
+              Toplam <span className="font-medium text-white">{pagination.total}</span> sonuçtan <span className="font-medium text-white">{(page - 1) * pagination.limit + 1}-{Math.min(page * pagination.limit, pagination.total)}</span> arası gösteriliyor
+            </p>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="p-2 border border-white/10 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <div className="flex items-center space-x-1">
+                <span className="text-sm font-medium text-white px-3 py-1 bg-white/5 rounded-lg border border-white/10">
+                  {page} / {pagination.pages}
+                </span>
+              </div>
+              <button
+                onClick={() => setPage(p => Math.min(pagination.pages, p + 1))}
+                disabled={page >= pagination.pages}
+                className="p-2 border border-white/10 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
+      )}
 
       {showUnifiedEditor && (
         <UnifiedCourseEditor

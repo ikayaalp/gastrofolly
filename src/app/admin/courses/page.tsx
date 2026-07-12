@@ -4,16 +4,7 @@ import CourseManagement from "./CourseManagement"
 export const dynamic = 'force-dynamic'
 
 export default async function CoursesPage() {
-  const [courses, categories, instructors] = await Promise.all([
-    prisma.course.findMany({
-      include: {
-        instructor: { select: { id: true, name: true, email: true, image: true } },
-        category: { select: { id: true, name: true } },
-        lessons: { select: { id: true, title: true, videoUrl: true, pdfUrl: true, isFree: true, description: true, duration: true, order: true } },
-        _count: { select: { enrollments: true, lessons: true, payments: true } }
-      },
-      orderBy: { createdAt: 'desc' }
-    }),
+  const [categories, instructors] = await Promise.all([
     prisma.category.findMany(),
     prisma.user.findMany({
       where: { role: 'INSTRUCTOR' },
@@ -29,7 +20,6 @@ export default async function CoursesPage() {
       </div>
 
       <CourseManagement
-        initialCourses={courses as any}
         categories={categories}
         instructors={instructors}
       />
