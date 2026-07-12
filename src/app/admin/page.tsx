@@ -258,7 +258,10 @@ export default async function AdminPage({
         </div>
 
         {/* Aktif Abone */}
-        <div className="bg-black border border-gray-800 rounded-xl p-6 group hover:border-purple-500/30 transition-colors">
+        <Link
+          href="/admin/users?filter=subscribers"
+          className="bg-black border border-gray-800 rounded-xl p-6 group hover:border-purple-500/30 transition-colors block"
+        >
           <div className="flex justify-between items-start mb-4">
             <div className="bg-purple-500/20 p-3 rounded-xl group-hover:scale-110 transition-transform">
               <Users className="h-6 w-6 text-purple-400" />
@@ -267,7 +270,8 @@ export default async function AdminPage({
           <p className="text-gray-400 text-sm font-medium">Aktif Abone</p>
           <p className="text-3xl font-bold text-white mt-1">{activeSubscriberCount}</p>
           <p className="text-xs text-gray-500 mt-2">Abonelik süresi henüz dolmamış</p>
-        </div>
+          <p className="text-xs text-purple-400 mt-1 group-hover:underline">Kimlerin abone olduğunu gör →</p>
+        </Link>
 
         {/* Başarısız Ödeme */}
         <div className="bg-black border border-gray-800 rounded-xl p-6 group hover:border-red-500/30 transition-colors">

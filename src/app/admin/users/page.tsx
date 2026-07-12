@@ -5,7 +5,11 @@ import { redirect } from "next/navigation"
 import { REVENUE_TRACKING_START, HISTORICAL_REVENUE_OFFSET } from "@/lib/revenueConfig"
 import UserManagement from "./UserManagement"
 
-export default async function UsersPage() {
+export default async function UsersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ filter?: string }>
+}) {
   const session = await getServerSession(authOptions)
 
   if (!session || session.user.role !== 'ADMIN') {
@@ -50,5 +54,7 @@ export default async function UsersPage() {
   })
   const totalRevenue = HISTORICAL_REVENUE_OFFSET + (iyzicoPayments._sum.amount || 0)
 
-  return <UserManagement users={users} totalRevenue={totalRevenue} />
+  const { filter } = await searchParams
+
+  return <UserManagement users={users} totalRevenue={totalRevenue} initialFilter={filter} />
 }

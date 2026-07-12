@@ -17,7 +17,8 @@ import {
   TrendingUp,
   Sparkles,
   Star,
-  Eye
+  Eye,
+  Crown
 } from "lucide-react"
 
 
@@ -45,6 +46,7 @@ interface User {
 interface UserManagementProps {
   users: User[]
   totalRevenue: number
+  initialFilter?: string
 }
 
 const SUBSCRIPTION_LABELS: Record<string, { label: string, color: string }> = {
@@ -53,25 +55,32 @@ const SUBSCRIPTION_LABELS: Record<string, { label: string, color: string }> = {
   'EXECUTIVE': { label: 'Executive', color: 'bg-purple-900/40 text-purple-200 border-purple-700/50' }
 }
 
-export default function UserManagement({ users, totalRevenue }: UserManagementProps) {
+export default function UserManagement({ users, totalRevenue, initialFilter }: UserManagementProps) {
   const router = useRouter()
   const [searchTerm, setSearchTerm] = useState("")
   const [roleFilter, setRoleFilter] = useState("ALL")
+  const [subFilter, setSubFilter] = useState(initialFilter === 'subscribers' ? 'ACTIVE' : 'ALL')
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [isUpdating, setIsUpdating] = useState(false)
+
+  const now = new Date()
 
   // İstatistik Hesaplamaları
   const totalUsers = users.length
   const premiumUsers = users.filter(u => u.subscriptionPlan).length
+  const activeSubscribers = users.filter(u => u.subscriptionEndDate && new Date(u.subscriptionEndDate) > now).length
   const premiumRatio = totalUsers > 0 ? (premiumUsers / totalUsers) * 100 : 0
-
 
   // Filtreleme
   const filteredUsers = users.filter(user => {
     const matchesSearch = (user.name?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesRole = roleFilter === "ALL" || user.role === roleFilter
-    return matchesSearch && matchesRole
+    const matchesSub =
+      subFilter === 'ALL' ? true :
+      subFilter === 'ACTIVE' ? (!!user.subscriptionEndDate && new Date(user.subscriptionEndDate) > now) :
+      false
+    return matchesSearch && matchesRole && matchesSub
   })
 
   const handleRoleChange = async (userId: string, newRole: string) => {
@@ -186,12 +195,12 @@ export default function UserManagement({ users, totalRevenue }: UserManagementPr
 
         <div className="bg-black border border-gray-800 rounded-xl p-6">
           <div className="flex items-center space-x-3">
-            <div className="bg-blue-500/20 p-3 rounded-lg">
-              <UserCheck className="h-6 w-6 text-blue-400" />
+            <div className="bg-purple-500/20 p-3 rounded-lg">
+              <Crown className="h-6 w-6 text-purple-400" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-white">{users.filter(u => u.role === 'INSTRUCTOR').length}</p>
-              <p className="text-gray-400">Eğitmen</p>
+              <p className="text-2xl font-bold text-white">{activeSubscribers}</p>
+              <p className="text-gray-400">Aktif Abone</p>
             </div>
           </div>
         </div>
@@ -223,6 +232,18 @@ export default function UserManagement({ users, totalRevenue }: UserManagementPr
               <option value="INSTRUCTOR">Eğitmen</option>
               <option value="STUDENT">Öğrenci</option>
               <option value="INFLUENCER">Fenomen</option>
+            </select>
+          </div>
+
+          <div className="relative">
+            <Crown className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+            <select
+              value={subFilter}
+              onChange={(e) => setSubFilter(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 bg-black border border-gray-800 text-white rounded-xl focus:outline-none focus:ring-1 focus:ring-purple-500 appearance-none min-w-[180px]"
+            >
+              <option value="ALL">Tüm Abonelikler</option>
+              <option value="ACTIVE">Aktif Aboneler ({activeSubscribers})</option>
             </select>
           </div>
         </div>
