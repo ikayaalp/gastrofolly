@@ -121,8 +121,8 @@ export default function SubscriptionScreen({ navigation, route }) {
                 });
                 setPackages(uniquePackages);
                 if (uniquePackages.length > 0) {
-                    const yearlyPkg = uniquePackages.find(p => p?.product?.subscriptionPeriod?.includes('P1Y') || p?.identifier?.includes('year') || p?.identifier?.includes('annual'));
-                    setSelectedPkg(yearlyPkg || uniquePackages[0]);
+                    const monthlyPkg = uniquePackages.find(p => p?.product?.subscriptionPeriod?.includes('P1M') || p?.identifier?.includes('month'));
+                    setSelectedPkg(monthlyPkg || uniquePackages[0]);
                 }
             } else if (courseId) {
                 // If they are already premium and land here with a courseId, just send them to Learn
