@@ -183,6 +183,30 @@ async function getCourseWithProgress(courseId: string, userId: string, requested
     }
   })
 
+  if (!course) {
+    return null
+  }
+
+  // Güvenlik: Erişimi olmayan derslerin videoUrl'ini client'a hiç gönderme.
+  // (Mobil API ile aynı mantık; ilk ders + ücretsiz dersler herkese, gerisi
+  // sadece tam erişimi olanlara açık.) Aksi halde ücretsiz bir hesap ile ilk
+  // dersi açan biri, sayfa yükünden tüm ücretli ders linklerini toplayabilir.
+  const hasFullCourseAccess =
+    course.isFree ||
+    (user?.payments && user.payments.length > 0) ||
+    isSubscriptionValid ||
+    user?.role === 'ADMIN' ||
+    course.instructorId === userId
+
+  if (!hasFullCourseAccess) {
+    for (const lesson of course.lessons) {
+      const lessonAccessible = lesson.isFree || lesson.id === firstLessonId
+      if (!lessonAccessible) {
+        lesson.videoUrl = null
+      }
+    }
+  }
+
   // İlk ders için erişim kontrolü bilgisini de döndür
   return { course, progress, isRequestingFirstLesson, hasFullAccess: !!enrollment || isSubscriptionValid }
 }
