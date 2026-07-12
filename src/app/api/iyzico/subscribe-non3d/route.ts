@@ -77,6 +77,11 @@ export async function POST(request: NextRequest) {
 
         let price = activePlan.price
 
+        // Referral bilgileri (ödemeden sonra komisyon kaydı için tutulacak)
+        let appliedInfluencerId: string | null = null
+        let appliedDiscountPercent: number = 0
+        let appliedReferralCode: string | null = null
+
         // Referral indirim
         if (referralCode) {
             try {
@@ -86,9 +91,19 @@ export async function POST(request: NextRequest) {
                         role: "INFLUENCER" as any
                     }
                 })
+                
                 if (influencer) {
-                    const discountPercent = (influencer as any).discountPercent || 10
-                    price = Math.round(price * (1 - discountPercent / 100))
+                    if (influencer.id === user.id) {
+                        console.warn(`Self-referral attempt blocked: ${user.id}`)
+                        // Kendi kodunu kullanmaya çalıştığı için indirim uygulanmaz, komisyon oluşturulmaz.
+                    } else {
+                        const discountPercent = (influencer as any).discountPercent || 10
+                        price = Math.round(price * (1 - discountPercent / 100))
+                        
+                        appliedInfluencerId = influencer.id
+                        appliedDiscountPercent = discountPercent
+                        appliedReferralCode = referralCode.toUpperCase()
+                    }
                 }
             } catch (e) {
                 console.log("Referral lookup error:", e)
@@ -107,7 +122,7 @@ export async function POST(request: NextRequest) {
                 courseId: courseId || null,
                 subscriptionPlan: planName || "Premium",
                 billingPeriod: billingPeriod || "monthly",
-                discountCode: referralCode?.toUpperCase() || null,
+                discountCode: appliedReferralCode, // self-referral ise null kalır
             }
         })
 
@@ -233,6 +248,26 @@ export async function POST(request: NextRequest) {
             })
 
             console.log(`✅ NON3D Subscription aktif: ${user.id} → ${planName} (${now.toISOString()} - ${endDate.toISOString()})`)
+
+            // Referral kaydı oluşturma (Transaction dışında, güvenli bir şekilde)
+            if (appliedInfluencerId) {
+                try {
+                    const commissionAmount = price * (appliedDiscountPercent / 100)
+                    
+                    await prisma.referral.create({
+                        data: {
+                            influencerId: appliedInfluencerId,
+                            referredUserId: user.id,
+                            paymentId: payment.id,
+                            amount: price,
+                            commission: commissionAmount
+                        }
+                    })
+                    console.log(`✅ Referral saved: ${appliedInfluencerId} earned ${commissionAmount} from ${user.id}`)
+                } catch (refErr) {
+                    console.error("Referral creation error:", refErr)
+                }
+            }
 
             // Hoşgeldin e-postası
             if (updatedUser.email) {
