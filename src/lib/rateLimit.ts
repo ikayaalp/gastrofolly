@@ -36,10 +36,15 @@ export interface RateLimitResult {
     resetIn: number // seconds until reset
 }
 
-const redisUrl = process.env.UPSTASH_REDIS_REST_URL
-const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN
+// Env değerleri panellere tırnaklı/boşluklu yapıştırılabiliyor; Redis client
+// bozuk URL'de constructor'da throw ederek build'i çökertiyor — burada temizle.
+const cleanEnv = (value: string | undefined): string | undefined =>
+    value?.trim().replace(/^["']|["']$/g, '') || undefined
 
-const isUpstashConfigured = Boolean(redisUrl && redisToken)
+const redisUrl = cleanEnv(process.env.UPSTASH_REDIS_REST_URL)
+const redisToken = cleanEnv(process.env.UPSTASH_REDIS_REST_TOKEN)
+
+const isUpstashConfigured = Boolean(redisUrl?.startsWith('https://') && redisToken)
 
 if (!isUpstashConfigured) {
     console.warn("UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are not set. Using in-memory rate limiter fallback.")
@@ -49,19 +54,32 @@ if (!isUpstashConfigured) {
 const ratelimiters = new Map<string, Ratelimit>()
 
 let redis: Redis | null = null
-if (isUpstashConfigured) {
-    redis = new Redis({
-        url: redisUrl!,
-        token: redisToken!,
-    })
+
+function getRedisInstance(): Redis | null {
+    if (!isUpstashConfigured) return null;
+    if (!redis) {
+        try {
+            redis = new Redis({
+                url: redisUrl!,
+                token: redisToken!,
+            })
+        } catch (error) {
+            console.error("Failed to initialize Upstash Redis:", error);
+            return null;
+        }
+    }
+    return redis;
 }
 
-function getOrCreateRatelimiter(options: RateLimitOptions): Ratelimit {
+function getOrCreateRatelimiter(options: RateLimitOptions): Ratelimit | null {
+    const redisInstance = getRedisInstance();
+    if (!redisInstance) return null;
+
     const key = `${options.maxRequests}:${options.windowSeconds}`
     let limiter = ratelimiters.get(key)
     if (!limiter) {
         limiter = new Ratelimit({
-            redis: redis!,
+            redis: redisInstance,
             limiter: Ratelimit.slidingWindow(options.maxRequests, `${options.windowSeconds} s`),
             analytics: true,
         })
@@ -111,12 +129,12 @@ export async function checkRateLimit(
     identifier: string,
     options: RateLimitOptions
 ): Promise<RateLimitResult> {
-    if (!isUpstashConfigured || !redis) {
+    const limiter = getOrCreateRatelimiter(options)
+    if (!limiter) {
         return fallbackCheckRateLimit(identifier, options)
     }
 
     try {
-        const limiter = getOrCreateRatelimiter(options)
         const { success, remaining, reset } = await limiter.limit(identifier)
         
         return {
