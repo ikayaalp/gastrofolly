@@ -5,8 +5,9 @@ export async function GET(request: Request) {
     try {
         // Simple auth check - ensure user is logged in (and preferably admin/instructor)
         const user = await getAuthUser(request as any)
-        if (!user) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        
+        if (!user || (user.role !== 'ADMIN' && user.role !== 'INSTRUCTOR')) {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
         }
 
         const cloudName = process.env.CLOUDINARY_CLOUD_NAME
