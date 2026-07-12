@@ -3,15 +3,10 @@ import { prisma } from '@/lib/prisma'
 import jwt from 'jsonwebtoken'
 import { randomUUID } from 'crypto'
 import { generateUniqueUsername } from '@/lib/generateUsername'
+import { jwtVerify, createRemoteJWKSet } from 'jose'
+import { checkRateLimit, getClientIp, RATE_LIMITS } from '@/lib/rateLimit'
 
-interface AppleTokenPayload {
-    iss: string
-    aud: string
-    exp: number
-    sub: string
-    email?: string
-    email_verified?: string
-}
+const APPLE_JWKS = createRemoteJWKSet(new URL('https://appleid.apple.com/auth/keys'))
 
 // Apple Sign-In token verification endpoint for mobile app
 export async function POST(request: NextRequest) {
@@ -21,6 +16,16 @@ export async function POST(request: NextRequest) {
 
         console.log('🍎 Apple Auth Attempt started...');
 
+        // Brute-force koruması: hem IP hem e-posta bazında sınırla.
+        const ip = getClientIp(request);
+        if (!(await checkRateLimit(`apple-mobile-ip:${ip}`, RATE_LIMITS.AUTH)).success ||
+            (email && !(await checkRateLimit(`apple-mobile-email:${email.trim().toLowerCase()}`, RATE_LIMITS.AUTH)).success)) {
+            return NextResponse.json(
+                { message: 'Çok fazla başarısız deneme. Lütfen birkaç dakika sonra tekrar deneyin.' },
+                { status: 429 }
+            );
+        }
+
         if (!identityToken) {
             console.error('❌ Error: identityToken is missing from request body');
             return NextResponse.json(
@@ -29,46 +34,24 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        // Decode Apple identity token (JWT)
-        const decoded = jwt.decode(identityToken) as AppleTokenPayload | null
-
-        if (!decoded) {
-            console.error('❌ Error: Failed to decode identityToken');
+        let decoded: any;
+        try {
+            const { payload } = await jwtVerify(identityToken, APPLE_JWKS, {
+                issuer: 'https://appleid.apple.com',
+                audience: 'com.chef2.app',
+            })
+            decoded = payload;
+        } catch (error) {
+            console.error('❌ Error: Failed to verify identityToken', error);
             return NextResponse.json(
-                { message: 'Hata: Geçersiz Apple token formatı' },
+                { message: 'Hata: Geçersiz Apple token' },
                 { status: 401 }
             )
         }
 
-        console.log('✅ Token decoded successfully');
+        console.log('✅ Token verified successfully');
 
-        // Verify token claims
-        if (decoded.iss !== 'https://appleid.apple.com') {
-            console.error('❌ Error: Invalid issuer:', decoded.iss);
-            return NextResponse.json(
-                { message: `Hata: Geçersiz token issuer: ${decoded.iss}` },
-                { status: 401 }
-            )
-        }
-
-        // Bundle ID check
-        if (decoded.aud !== 'com.chef2.app') {
-            console.error(`❌ Error: Invalid audience. Expected com.chef2.app, got: ${decoded.aud}`);
-            return NextResponse.json(
-                { message: `Hata: Bundle ID uyuşmuyor. Beklenen: com.chef2.app, Gelen: ${decoded.aud}` },
-                { status: 401 }
-            )
-        }
-
-        if (decoded.exp && decoded.exp * 1000 < Date.now()) {
-            console.error('❌ Error: Token expired');
-            return NextResponse.json(
-                { message: 'Hata: Apple token süresi dolmuş' },
-                { status: 401 }
-            )
-        }
-
-        const appleUserId = decoded.sub; // Benzersiz Apple Kullanıcı ID'si
+        const appleUserId = decoded.sub as string; // Benzersiz Apple Kullanıcı ID'si
         const userEmail = decoded.email || email;
 
         // 1. Önce bu Apple ID ile (Account tablosunda) eşleşen bir kullanıcı var mı bak
