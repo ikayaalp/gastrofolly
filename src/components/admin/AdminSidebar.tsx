@@ -20,8 +20,7 @@ import {
     Mail,
     Home,
     BarChart3,
-    Tags,
-    Bot
+    Tags
 } from "lucide-react"
 
 const sidebarItems = [
@@ -51,12 +50,6 @@ const sidebarItems = [
         href: "/admin/social",
         icon: MessageCircle
     },
-    {
-        title: "Culi Geçmişi",
-        href: "/admin/ai-conversations",
-        icon: Bot
-    },
-
     {
         title: "Hikayeler",
         href: "/admin/stories",
