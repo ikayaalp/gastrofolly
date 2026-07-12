@@ -35,8 +35,9 @@ export async function PUT(req: Request, { params }: { params: Promise<{ category
             where: { id: categoryId },
             data: {
                 ...(name && { name: name.trim(), slug }),
-                description: description ?? existing.description,
-                color: color ?? existing.color,
+                // 'in body' kullan: açık null gönderildiğinde (temizlemek için) ?? pas geçmez
+                ...('description' in body && { description: body.description ?? null }),
+                ...('color' in body && { color: body.color ?? null }),
             },
         })
 

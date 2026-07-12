@@ -2,24 +2,10 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { generateSlug } from "@/app/api/admin/categories/route"
 
-export function generateForumSlug(text: string) {
-    return text
-        .toString()
-        .toLowerCase()
-        .trim()
-        .replace(/ğ/g, 'g')
-        .replace(/ü/g, 'u')
-        .replace(/ş/g, 's')
-        .replace(/ı/g, 'i')
-        .replace(/ö/g, 'o')
-        .replace(/ç/g, 'c')
-        .replace(/\s+/g, '-')
-        .replace(/[^\w\-]+/g, '')
-        .replace(/\-\-+/g, '-')
-        .replace(/^-+/, '')
-        .replace(/-+$/, '')
-}
+// Re-export so [categoryId]/route.ts can import it from here
+export { generateSlug as generateForumSlug }
 
 export async function GET() {
     try {
@@ -75,7 +61,10 @@ export async function POST(req: Request) {
         })
 
         return NextResponse.json({ category }, { status: 201 })
-    } catch (error) {
+    } catch (error: any) {
+        if (error?.code === 'P2002') {
+            return NextResponse.json({ error: "Bu isimde bir kategori zaten var" }, { status: 409 })
+        }
         console.error("Error creating forum category:", error)
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }

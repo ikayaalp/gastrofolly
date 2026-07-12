@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { X, Tag } from 'lucide-react'
 
 interface ForumCategory {
@@ -36,6 +36,16 @@ export default function ForumCategoryModal({ isOpen, onClose, onSuccess, editCat
     const [color, setColor] = useState(editCategory?.color || COLOR_OPTIONS[0].value)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
+
+    // Modal mount'ta değil, editCategory/isOpen değiştiğinde senkronize et
+    useEffect(() => {
+        if (isOpen) {
+            setName(editCategory?.name || '')
+            setDescription(editCategory?.description || '')
+            setColor(editCategory?.color || COLOR_OPTIONS[0].value)
+            setError('')
+        }
+    }, [isOpen, editCategory])
 
     if (!isOpen) return null
 
