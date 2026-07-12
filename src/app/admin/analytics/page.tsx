@@ -2,7 +2,8 @@ import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
-import { Wallet, TrendingUp, BookOpen, BarChart3 } from "lucide-react"
+import { REVENUE_TRACKING_START, HISTORICAL_REVENUE_OFFSET } from "@/lib/revenueConfig"
+import { Wallet, TrendingUp, BookOpen, BarChart3, CreditCard } from "lucide-react"
 import RevenueChart from "@/components/admin/analytics/RevenueChart"
 import EnrollmentChart from "@/components/admin/analytics/EnrollmentChart"
 import DropoffFunnelChart from "@/components/admin/analytics/DropoffFunnelChart"
@@ -24,6 +25,7 @@ async function getAnalyticsData(selectedCourseId?: string, selectedMonth?: numbe
         thisMonthEnrollments,
         activeCourseCount,
         topCourses,
+        allTimePayments,
     ] = await Promise.all([
         prisma.$queryRaw<{ month: Date; total: number }[]>`
             SELECT DATE_TRUNC('month', "createdAt") as month, SUM(amount)::float as total
@@ -52,6 +54,14 @@ async function getAnalyticsData(selectedCourseId?: string, selectedMonth?: numbe
                 _count: { select: { enrollments: true } },
                 lessons: { where: { isPublished: true }, select: { id: true } },
             },
+        }),
+        prisma.payment.aggregate({
+            where: {
+                status: 'COMPLETED',
+                subscriptionPlan: { not: null },
+                createdAt: { gte: REVENUE_TRACKING_START },
+            },
+            _sum: { amount: true },
         }),
     ])
 
@@ -126,6 +136,7 @@ async function getAnalyticsData(selectedCourseId?: string, selectedMonth?: numbe
         topCoursesWithCompletion,
         dropoffData,
         activeCourse,
+        totalRevenue: HISTORICAL_REVENUE_OFFSET + (allTimePayments._sum.amount || 0),
     }
 }
 
@@ -162,6 +173,7 @@ export default async function AdminAnalyticsPage({
         topCoursesWithCompletion,
         dropoffData,
         activeCourse,
+        totalRevenue,
     } = await getAnalyticsData(courseId, selectedMonth, selectedYear)
 
     return (
@@ -174,7 +186,20 @@ export default async function AdminAnalyticsPage({
             </div>
 
             {/* Stat Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {/* Toplam Gelir */}
+                <div className="bg-black border border-gray-800 rounded-xl p-6 group hover:border-yellow-500/30 transition-colors">
+                    <div className="bg-yellow-500/20 p-3 rounded-xl w-fit mb-4 group-hover:scale-110 transition-transform">
+                        <CreditCard className="h-6 w-6 text-yellow-400" />
+                    </div>
+                    <p className="text-gray-400 text-sm font-medium">Toplam Gelir</p>
+                    <p className="text-3xl font-bold text-white mt-1">
+                        ₺{totalRevenue.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-2">Tüm zamanlar, abonelik ödemeleri</p>
+                </div>
+
+                {/* Seçili Ay Gelir */}
                 <div className="bg-black border border-gray-800 rounded-xl p-6 group hover:border-green-500/30 transition-colors">
                     <div className="flex items-start justify-between mb-4">
                         <div className="bg-green-500/20 p-3 rounded-xl group-hover:scale-110 transition-transform">
