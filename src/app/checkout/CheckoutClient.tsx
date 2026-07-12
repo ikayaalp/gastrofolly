@@ -318,7 +318,7 @@ function CheckoutContent({ monthlyPrice, yearlyPrice }: CheckoutClientProps) {
                             <span className="text-3xl font-bold text-orange-400">₺{Math.round(total)}</span>
                         </div>
                         {billingPeriod === 'yearly' && (
-                            <span className="text-xs text-green-400 line-through">Normalde ₺{Math.round(basePrice * 12)}</span>
+                            <span className="text-xs text-green-400 line-through">Normalde ₺{Math.round(monthlyPrice * 12)}</span>
                         )}
                         {appliedReferral && (
                             <span className="text-xs text-green-400">%{appliedReferral.discountPercent} kod indirimi uygulandı</span>
