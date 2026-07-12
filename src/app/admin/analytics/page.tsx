@@ -6,30 +6,9 @@ import { Wallet, TrendingUp, BookOpen, BarChart3 } from "lucide-react"
 import RevenueChart from "@/components/admin/analytics/RevenueChart"
 import EnrollmentChart from "@/components/admin/analytics/EnrollmentChart"
 import DropoffFunnelChart from "@/components/admin/analytics/DropoffFunnelChart"
+import { TURKISH_MONTHS_LONG, buildMonthlySeries, parseMonthYearParams } from "@/lib/monthlyRevenue"
 
-const TURKISH_MONTHS = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara']
-const TURKISH_MONTHS_LONG = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık']
 
-function buildMonthlySeries(rows: { month: Date; total: number }[]) {
-    const totalsByKey = new Map<string, number>()
-    for (const row of rows) {
-        const d = new Date(row.month)
-        const key = `${d.getUTCFullYear()}-${d.getUTCMonth()}`
-        totalsByKey.set(key, Number(row.total) || 0)
-    }
-
-    const series: { month: string; total: number }[] = []
-    const now = new Date()
-    for (let i = 11; i >= 0; i--) {
-        const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i, 1))
-        const key = `${d.getUTCFullYear()}-${d.getUTCMonth()}`
-        series.push({
-            month: TURKISH_MONTHS[d.getUTCMonth()],
-            total: totalsByKey.get(key) || 0,
-        })
-    }
-    return series
-}
 
 async function getAnalyticsData(selectedCourseId?: string, selectedMonth?: number, selectedYear?: number) {
     const now = new Date()
@@ -171,13 +150,8 @@ export default async function AdminAnalyticsPage({
     }
 
     const { courseId, month: monthParam, year: yearParam } = await searchParams
-
     const now = new Date()
-    const parsedMonth = monthParam !== undefined ? parseInt(monthParam, 10) : undefined
-    const parsedYear = yearParam !== undefined ? parseInt(yearParam, 10) : undefined
-    const selectedMonth = parsedMonth !== undefined && parsedMonth >= 0 && parsedMonth <= 11 ? parsedMonth : now.getUTCMonth()
-    const selectedYear = parsedYear && parsedYear >= 2020 ? parsedYear : now.getUTCFullYear()
-    const isCurrentMonth = selectedMonth === now.getUTCMonth() && selectedYear === now.getUTCFullYear()
+    const { selectedMonth, selectedYear, isCurrentMonth } = parseMonthYearParams(monthParam, yearParam)
 
     const {
         revenueSeries,

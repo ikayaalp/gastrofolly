@@ -4,21 +4,28 @@ import { authOptions } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { REVENUE_TRACKING_START, HISTORICAL_REVENUE_OFFSET } from "@/lib/revenueConfig"
+import { TURKISH_MONTHS_LONG, buildMonthlySeries, parseMonthYearParams } from "@/lib/monthlyRevenue"
 import Link from "next/link"
-import { BookOpen, Users, Wallet, TrendingUp, CreditCard, ArrowUpRight, Activity, BarChart3 } from "lucide-react"
+import RevenueChart from "@/components/admin/analytics/RevenueChart"
+import { BookOpen, Users, Wallet, TrendingUp, CreditCard, ArrowUpRight, Activity, BarChart3, AlertCircle, XCircle } from "lucide-react"
 
-const TURKISH_MONTHS_LONG = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık']
-
-async function getAdminData() {
-  const [users, coursesCount, enrollments, payments, recentRegistrations] = await Promise.all([
+async function getAdminData(startOfSelectedMonth: Date, endOfSelectedMonth: Date) {
+  const [
+    users,
+    coursesCount,
+    enrollments,
+    payments,
+    recentRegistrations,
+    activeSubscriberCount,
+    failedPaymentCount,
+    cancelledCount,
+    revenueRows,
+    planBreakdown,
+    selectedMonthPayments,
+  ] = await Promise.all([
     prisma.user.findMany({
-      where: {
-        emailVerified: { not: null }
-      },
-      select: {
-        id: true,
-        role: true,
-      }
+      where: { emailVerified: { not: null } },
+      select: { id: true, role: true },
     }),
     prisma.course.count(),
     prisma.enrollment.count(),
@@ -26,15 +33,13 @@ async function getAdminData() {
       where: {
         status: 'COMPLETED',
         subscriptionPlan: { not: null },
-        createdAt: { gte: REVENUE_TRACKING_START }
+        createdAt: { gte: REVENUE_TRACKING_START },
       },
       _sum: { amount: true },
-      _count: true
+      _count: true,
     }),
     prisma.user.findMany({
-      where: {
-        emailVerified: { not: null }
-      },
+      where: { emailVerified: { not: null } },
       take: 5,
       orderBy: { createdAt: 'desc' },
       select: {
@@ -46,11 +51,56 @@ async function getAdminData() {
         image: true,
         subscriptionPlan: true,
         subscriptionEndDate: true,
-      }
-    })
+      },
+    }),
+    prisma.user.count({ where: { subscriptionEndDate: { gt: new Date() } } }),
+    prisma.payment.count({
+      where: {
+        status: 'FAILED',
+        createdAt: { gte: startOfSelectedMonth, lt: endOfSelectedMonth },
+      },
+    }),
+    prisma.user.count({ where: { subscriptionCancelled: true } }),
+    prisma.$queryRaw<{ month: Date; total: number }[]>`
+      SELECT DATE_TRUNC('month', "createdAt") as month, SUM(amount)::float as total
+      FROM "Payment"
+      WHERE status = 'COMPLETED' AND "createdAt" >= NOW() - INTERVAL '12 months'
+      GROUP BY month ORDER BY month ASC
+    `,
+    prisma.payment.groupBy({
+      by: ['subscriptionPlan', 'billingPeriod'],
+      where: {
+        status: 'COMPLETED',
+        subscriptionPlan: { not: null },
+        createdAt: { gte: startOfSelectedMonth, lt: endOfSelectedMonth },
+      },
+      _sum: { amount: true },
+      _count: true,
+    }),
+    prisma.payment.aggregate({
+      where: {
+        status: 'COMPLETED',
+        subscriptionPlan: { not: null },
+        createdAt: { gte: REVENUE_TRACKING_START, lt: endOfSelectedMonth },
+        AND: { createdAt: { gte: startOfSelectedMonth } },
+      },
+      _sum: { amount: true },
+    }),
   ])
 
-  return { users, coursesCount, enrollments, payments, recentRegistrations }
+  return {
+    users,
+    coursesCount,
+    enrollments,
+    payments,
+    recentRegistrations,
+    activeSubscriberCount,
+    failedPaymentCount,
+    cancelledCount,
+    revenueSeries: buildMonthlySeries(revenueRows),
+    planBreakdown,
+    selectedMonthRevenue: selectedMonthPayments._sum.amount || 0,
+  }
 }
 
 export default async function AdminPage({
@@ -67,35 +117,69 @@ export default async function AdminPage({
   // Admin kontrolü
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { role: true }
+    select: { role: true },
   })
 
   if (user?.role !== 'ADMIN') {
     redirect("/dashboard")
   }
 
-  const { users, coursesCount, enrollments, payments, recentRegistrations } = await getAdminData()
-
   const { month: monthParam, year: yearParam } = await searchParams
   const now = new Date()
-  const parsedMonth = monthParam !== undefined ? parseInt(monthParam, 10) : undefined
-  const parsedYear = yearParam !== undefined ? parseInt(yearParam, 10) : undefined
-  const selectedMonth = parsedMonth !== undefined && parsedMonth >= 0 && parsedMonth <= 11 ? parsedMonth : now.getUTCMonth()
-  const selectedYear = parsedYear && parsedYear >= 2020 ? parsedYear : now.getUTCFullYear()
-  const isCurrentMonth = selectedMonth === now.getUTCMonth() && selectedYear === now.getUTCFullYear()
+  const { selectedMonth, selectedYear, isCurrentMonth } = parseMonthYearParams(monthParam, yearParam)
 
   const startOfSelectedMonth = new Date(Date.UTC(selectedYear, selectedMonth, 1))
   const endOfSelectedMonth = new Date(Date.UTC(selectedYear, selectedMonth + 1, 1))
 
-  const selectedMonthPayments = await prisma.payment.aggregate({
-    where: {
-      status: 'COMPLETED',
-      subscriptionPlan: { not: null },
-      createdAt: { gte: startOfSelectedMonth, lt: endOfSelectedMonth },
-    },
-    _sum: { amount: true },
-  })
-  const selectedMonthRevenue = selectedMonthPayments._sum.amount || 0
+  const {
+    users,
+    coursesCount,
+    enrollments,
+    payments,
+    recentRegistrations,
+    activeSubscriberCount,
+    failedPaymentCount,
+    cancelledCount,
+    revenueSeries,
+    planBreakdown,
+    selectedMonthRevenue,
+  } = await getAdminData(startOfSelectedMonth, endOfSelectedMonth)
+
+  const selectedMonthLabel = isCurrentMonth
+    ? 'Bu Ay'
+    : `${TURKISH_MONTHS_LONG[selectedMonth]} ${selectedYear}`
+
+  // Ay/yıl seçici — tekrara düşmemek için değişkene alındı
+  const MonthYearForm = (
+    <form method="GET" className="flex items-center gap-2">
+      <select
+        name="month"
+        defaultValue={selectedMonth}
+        className="bg-neutral-900 border border-neutral-800 rounded-xl px-2 py-1.5 text-white text-xs focus:outline-none focus:border-orange-500 cursor-pointer appearance-none"
+        style={{ backgroundImage: 'none' }}
+      >
+        {TURKISH_MONTHS_LONG.map((name, i) => (
+          <option key={i} value={i}>{name}</option>
+        ))}
+      </select>
+      <select
+        name="year"
+        defaultValue={selectedYear}
+        className="bg-neutral-900 border border-neutral-800 rounded-xl px-2 py-1.5 text-white text-xs focus:outline-none focus:border-orange-500 cursor-pointer appearance-none"
+        style={{ backgroundImage: 'none' }}
+      >
+        {Array.from({ length: 7 }, (_, i) => now.getUTCFullYear() - 3 + i).map(y => (
+          <option key={y} value={y}>{y}</option>
+        ))}
+      </select>
+      <button
+        type="submit"
+        className="bg-orange-600 hover:bg-orange-500 text-white text-xs font-medium px-2.5 py-1.5 rounded-lg transition-colors"
+      >
+        Göster
+      </button>
+    </form>
+  )
 
   return (
     <div className="space-y-8">
@@ -113,8 +197,8 @@ export default async function AdminPage({
         </div>
       </div>
 
-      {/* İstatistik Kartları */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6">
+      {/* Stat Kartları — Tüm Zamanlar */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-black border border-gray-800 rounded-xl p-6 group hover:border-blue-500/30 transition-colors">
           <div className="flex justify-between items-start mb-4">
             <div className="bg-blue-500/20 p-3 rounded-xl group-hover:scale-110 transition-transform">
@@ -156,46 +240,133 @@ export default async function AdminPage({
           <p className="text-3xl font-bold text-white mt-1">₺{(HISTORICAL_REVENUE_OFFSET + (payments._sum.amount || 0)).toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</p>
           <p className="text-xs text-gray-500 mt-2">Tüm zamanlar, abonelik ödemeleri</p>
         </div>
+      </div>
 
+      {/* Stat Kartları — Seçili Ay + Snapshot */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Seçili Ay Geliri */}
         <div className="bg-black border border-gray-800 rounded-xl p-6 group hover:border-green-500/30 transition-colors">
-          <div className="flex items-start justify-between mb-4">
+          <div className="flex items-start justify-between mb-3">
             <div className="bg-green-500/20 p-3 rounded-xl group-hover:scale-110 transition-transform">
               <Wallet className="h-6 w-6 text-green-400" />
             </div>
           </div>
-          <form method="GET" className="flex items-center gap-2 mb-3">
-            <select
-              name="month"
-              defaultValue={selectedMonth}
-              className="bg-neutral-900 border border-neutral-800 rounded-xl px-2 py-1.5 text-white text-xs focus:outline-none focus:border-orange-500 cursor-pointer appearance-none"
-              style={{ backgroundImage: 'none' }}
-            >
-              {TURKISH_MONTHS_LONG.map((name, i) => (
-                <option key={i} value={i}>{name}</option>
-              ))}
-            </select>
-            <select
-              name="year"
-              defaultValue={selectedYear}
-              className="bg-neutral-900 border border-neutral-800 rounded-xl px-2 py-1.5 text-white text-xs focus:outline-none focus:border-orange-500 cursor-pointer appearance-none"
-              style={{ backgroundImage: 'none' }}
-            >
-              {Array.from({ length: 7 }, (_, i) => now.getUTCFullYear() - 3 + i).map(y => (
-                <option key={y} value={y}>{y}</option>
-              ))}
-            </select>
-            <button
-              type="submit"
-              className="bg-orange-600 hover:bg-orange-500 text-white text-xs font-medium px-2.5 py-1.5 rounded-lg transition-colors"
-            >
-              Göster
-            </button>
-          </form>
-          <p className="text-gray-400 text-sm font-medium">
-            {isCurrentMonth ? 'Bu Ay Geliri' : `${TURKISH_MONTHS_LONG[selectedMonth]} ${selectedYear} Geliri`}
-          </p>
+          {MonthYearForm}
+          <p className="text-gray-400 text-sm font-medium mt-3">{selectedMonthLabel} Geliri</p>
           <p className="text-3xl font-bold text-white mt-1">₺{selectedMonthRevenue.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</p>
           <p className="text-xs text-gray-500 mt-2">Seçili ay, abonelik ödemeleri</p>
+        </div>
+
+        {/* Aktif Abone */}
+        <div className="bg-black border border-gray-800 rounded-xl p-6 group hover:border-purple-500/30 transition-colors">
+          <div className="flex justify-between items-start mb-4">
+            <div className="bg-purple-500/20 p-3 rounded-xl group-hover:scale-110 transition-transform">
+              <Users className="h-6 w-6 text-purple-400" />
+            </div>
+          </div>
+          <p className="text-gray-400 text-sm font-medium">Aktif Abone</p>
+          <p className="text-3xl font-bold text-white mt-1">{activeSubscriberCount}</p>
+          <p className="text-xs text-gray-500 mt-2">Abonelik süresi henüz dolmamış</p>
+        </div>
+
+        {/* Başarısız Ödeme */}
+        <div className="bg-black border border-gray-800 rounded-xl p-6 group hover:border-red-500/30 transition-colors">
+          <div className="flex justify-between items-start mb-4">
+            <div className="bg-red-500/20 p-3 rounded-xl group-hover:scale-110 transition-transform">
+              <AlertCircle className="h-6 w-6 text-red-400" />
+            </div>
+          </div>
+          <p className="text-gray-400 text-sm font-medium">Başarısız Ödeme</p>
+          <p className="text-3xl font-bold text-white mt-1">{failedPaymentCount}</p>
+          <p className="text-xs text-gray-500 mt-2">{selectedMonthLabel} içinde</p>
+        </div>
+
+        {/* Aktif İptal */}
+        <div className="bg-black border border-gray-800 rounded-xl p-6 group hover:border-amber-500/30 transition-colors">
+          <div className="flex justify-between items-start mb-4">
+            <div className="bg-amber-500/20 p-3 rounded-xl group-hover:scale-110 transition-transform">
+              <XCircle className="h-6 w-6 text-amber-400" />
+            </div>
+          </div>
+          <p className="text-gray-400 text-sm font-medium">Aktif İptal</p>
+          <p className="text-3xl font-bold text-white mt-1">{cancelledCount}</p>
+          <p className="text-xs text-gray-500 mt-2">Şu an itibarıyla, tarihsiz</p>
+        </div>
+      </div>
+
+      {/* Aylık Gelir Grafiği + Plan Kırılımı */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Grafik + Tablo */}
+        <div className="bg-black border border-gray-800 rounded-xl p-6">
+          <h2 className="text-lg font-bold text-white mb-4">Aylık Gelir Trendi (Son 12 Ay)</h2>
+          <RevenueChart data={revenueSeries} />
+          <div className="mt-6 overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-neutral-900/50">
+                <tr>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Ay</th>
+                  <th className="px-4 py-2 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">Gelir</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-800">
+                {[...revenueSeries].reverse().map((row, idx) => (
+                  <tr key={idx} className="hover:bg-white/5 transition-colors">
+                    <td className="px-4 py-2 text-sm text-gray-300">{row.month}</td>
+                    <td className="px-4 py-2 text-sm font-medium text-white text-right">
+                      ₺{row.total.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Plan Bazlı Kırılım */}
+        <div className="bg-black border border-gray-800 rounded-xl p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="bg-orange-500/20 p-2 rounded-lg">
+              <BarChart3 className="h-5 w-5 text-orange-400" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-white">Plan Bazlı Kırılım</h2>
+              <p className="text-xs text-gray-500">{selectedMonthLabel}</p>
+            </div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-neutral-900/50">
+                <tr>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Plan</th>
+                  <th className="px-4 py-2 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">Periyot</th>
+                  <th className="px-4 py-2 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">Ödeme</th>
+                  <th className="px-4 py-2 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">Toplam</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-800">
+                {planBreakdown.length > 0 ? (
+                  planBreakdown.map((row, idx) => (
+                    <tr key={idx} className="hover:bg-white/5 transition-colors">
+                      <td className="px-4 py-2 text-sm font-medium text-white">{row.subscriptionPlan}</td>
+                      <td className="px-4 py-2 text-center text-sm text-gray-300">
+                        {row.billingPeriod === 'monthly' ? 'Aylık' : row.billingPeriod === 'yearly' ? 'Yıllık' : row.billingPeriod ?? '—'}
+                      </td>
+                      <td className="px-4 py-2 text-center text-sm text-gray-300">{row._count}</td>
+                      <td className="px-4 py-2 text-right text-sm font-bold text-white">
+                        ₺{(row._sum.amount || 0).toLocaleString('tr-TR', { maximumFractionDigits: 0 })}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={4} className="px-4 py-6 text-center text-gray-500 text-sm">
+                      {selectedMonthLabel} için ödeme verisi yok.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -218,35 +389,34 @@ export default async function AdminPage({
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-800">
-                {recentRegistrations.map((user) => {
-                  const isPremium = user.subscriptionEndDate && new Date(user.subscriptionEndDate) > new Date();
-
+                {recentRegistrations.map((u) => {
+                  const isPremium = u.subscriptionEndDate && new Date(u.subscriptionEndDate) > new Date()
                   return (
-                    <tr key={user.id} className="hover:bg-white/5 transition-colors">
+                    <tr key={u.id} className="hover:bg-white/5 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="flex-shrink-0 h-8 w-8">
-                            {user.image ? (
-                              <img className="h-8 w-8 rounded-full" src={user.image} alt="" />
+                            {u.image ? (
+                              <img className="h-8 w-8 rounded-full" src={u.image} alt="" />
                             ) : (
                               <div className="h-8 w-8 rounded-full bg-gray-800 flex items-center justify-center text-xs font-bold text-gray-400">
-                                {user.name?.charAt(0) || 'U'}
+                                {u.name?.charAt(0) || 'U'}
                               </div>
                             )}
                           </div>
                           <div className="ml-3">
-                            <p className="text-sm font-medium text-white">{user.name}</p>
-                            <p className="text-xs text-gray-500">{user.email}</p>
+                            <p className="text-sm font-medium text-white">{u.name}</p>
+                            <p className="text-xs text-gray-500">{u.email}</p>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex flex-col gap-1 items-start">
-                          <span className={`inline-flex px-2 py-1 text-[10px] font-semibold rounded-full ${user.role === 'ADMIN' ? 'bg-red-900/50 text-red-300 border border-red-800' :
-                            user.role === 'INSTRUCTOR' ? 'bg-blue-900/50 text-blue-300 border border-blue-800' :
+                          <span className={`inline-flex px-2 py-1 text-[10px] font-semibold rounded-full ${u.role === 'ADMIN' ? 'bg-red-900/50 text-red-300 border border-red-800' :
+                            u.role === 'INSTRUCTOR' ? 'bg-blue-900/50 text-blue-300 border border-blue-800' :
                               'bg-green-900/50 text-green-300 border border-green-800'
                             }`}>
-                            {user.role}
+                            {u.role}
                           </span>
                           {isPremium && (
                             <span className="inline-flex px-2 py-1 text-[10px] font-semibold rounded-full bg-orange-500/20 text-orange-400 border border-orange-500/30">
@@ -256,7 +426,7 @@ export default async function AdminPage({
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-400">
-                        {new Date(user.createdAt).toLocaleDateString('tr-TR')}
+                        {new Date(u.createdAt).toLocaleDateString('tr-TR')}
                       </td>
                     </tr>
                   )
