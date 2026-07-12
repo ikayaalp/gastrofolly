@@ -197,15 +197,6 @@ export async function POST(request: NextRequest) {
         if (result.status === "success" && subscriptionStatus === "ACTIVE") {
             // ✅ Başarılı abonelik
 
-            // Payment kaydını güncelle
-            await prisma.payment.update({
-                where: { id: payment.id },
-                data: {
-                    status: "COMPLETED",
-                    stripePaymentId: referenceCode || payment.id
-                }
-            })
-
             // Abonelik süresini hesapla
             const now = new Date()
             let endDate = new Date(now)
@@ -217,16 +208,28 @@ export async function POST(request: NextRequest) {
                 endDate.setMonth(endDate.getMonth() + 1)
             }
 
-            // Kullanıcı aboneliğini güncelle
-            const updatedUser = await prisma.user.update({
-                where: { id: user.id },
-                data: {
-                    subscriptionPlan: "Premium",
-                    subscriptionBillingPeriod: billingPeriod === "yearly" ? "YEARLY" : billingPeriod === "6monthly" ? "SIXMONTHLY" : "MONTHLY",
-                    subscriptionStartDate: now,
-                    subscriptionEndDate: endDate,
-                    subscriptionReferenceCode: referenceCode,
-                }
+            // Transaction içinde Payment ve User kayıtlarını GÜVENLİ bir şekilde güncelle
+            const [updatedPayment, updatedUser] = await prisma.$transaction(async (tx) => {
+                const p = await tx.payment.update({
+                    where: { id: payment.id },
+                    data: {
+                        status: "COMPLETED",
+                        stripePaymentId: referenceCode || payment.id
+                    }
+                })
+
+                const u = await tx.user.update({
+                    where: { id: user.id },
+                    data: {
+                        subscriptionPlan: "Premium",
+                        subscriptionBillingPeriod: billingPeriod === "yearly" ? "YEARLY" : billingPeriod === "6monthly" ? "SIXMONTHLY" : "MONTHLY",
+                        subscriptionStartDate: now,
+                        subscriptionEndDate: endDate,
+                        subscriptionReferenceCode: referenceCode,
+                    }
+                })
+
+                return [p, u]
             })
 
             console.log(`✅ NON3D Subscription aktif: ${user.id} → ${planName} (${now.toISOString()} - ${endDate.toISOString()})`)
