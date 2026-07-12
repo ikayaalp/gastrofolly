@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { StyleSheet, Text, View, Dimensions, TouchableOpacity, ScrollView, ActivityIndicator, Platform, RefreshControl, Linking } from 'react-native';
 import { Image } from 'expo-image';
 import Carousel from 'react-native-reanimated-carousel';
@@ -6,6 +6,7 @@ import Carousel from 'react-native-reanimated-carousel';
 import { Ionicons } from '@expo/vector-icons';
 import { ChefHat, BookOpen, Star, Play, Plus, Info } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Logo from '../components/Logo';
 import courseService from '../api/courseService';
 import useTabBarClearance from '../hooks/useTabBarClearance';
@@ -14,147 +15,138 @@ import homeService from '../api/homeService';
 import storyService from '../api/storyService';
 import Stories from '../components/Stories';
 import ScreenContainer from '../components/ScreenContainer';
+import { colors } from '../constants/theme';
 
 const { width } = Dimensions.get('window');
 const cardMargin = 16;
 const cardWidth = width - cardMargin * 2;
 
+// Story gruplama mantığı — select içinde kullanılacak
+function groupStories(rawStories) {
+    if (!rawStories || !rawStories.length) return [];
+
+    const groupedMap = {};
+    rawStories.forEach(story => {
+        const key = story.title ? `title:${story.title}` : `id:${story.id}`;
+        if (!groupedMap[key]) {
+            groupedMap[key] = { id: key, tempStories: [] };
+        }
+        groupedMap[key].tempStories.push(story);
+    });
+
+    const formattedStories = Object.values(groupedMap).map(group => {
+        group.tempStories.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+        const firstStory = group.tempStories[0];
+
+        let avatarUrl = firstStory.coverImage;
+        if (!avatarUrl && firstStory.mediaType === 'VIDEO' && firstStory.mediaUrl?.includes('cloudinary')) {
+            avatarUrl = firstStory.mediaUrl.replace(/\.[^/.]+$/, ".jpg");
+        }
+        if (!avatarUrl) {
+            avatarUrl = firstStory.mediaType === 'IMAGE' ? firstStory.mediaUrl : firstStory.creator.image;
+        }
+
+        return {
+            id: group.id,
+            user: {
+                name: firstStory.title || firstStory.creator.name || "Chef",
+                avatar: avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(firstStory.creator.name)}`
+            },
+            stories: group.tempStories
+        };
+    });
+
+    formattedStories.sort((groupA, groupB) => {
+        const lastStoryA = groupA.stories[groupA.stories.length - 1];
+        const lastStoryB = groupB.stories[groupB.stories.length - 1];
+        return new Date(lastStoryB.createdAt) - new Date(lastStoryA.createdAt);
+    });
+
+    return formattedStories;
+}
+
 export default function HomeScreen({ navigation }) {
-    const [featuredCourses, setFeaturedCourses] = useState([]);
-    const [popularCourses, setPopularCourses] = useState([]);
-    const [recentCourses, setRecentCourses] = useState([]);
-    const [categories, setCategories] = useState([]);
-    const [userCourses, setUserCourses] = useState([]);
-    const [stories, setStories] = useState([]);
-    const [instructors, setInstructors] = useState([]);
-    const [homeSections, setHomeSections] = useState([]);
-    const [homeCovers, setHomeCovers] = useState([]);
-    const [homeInstructors, setHomeInstructors] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [userName, setUserName] = useState('');
-    const [currentUser, setCurrentUser] = useState(null);
-    const [refreshing, setRefreshing] = useState(false);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [selectedCategoryId, setSelectedCategoryId] = useState(null);
     const tabBarClearance = useTabBarClearance();
+    const queryClient = useQueryClient();
 
+    // ── useQuery: Current User ──
+    const { data: currentUser } = useQuery({
+        queryKey: ['currentUser'],
+        queryFn: async () => {
+            let user = await authService.refreshUserData();
+            if (!user) user = await authService.getCurrentUser();
+            return user || null;
+        },
+        staleTime: 0,
+    });
+
+    const userName = currentUser?.name || 'Kullanıcı';
+
+    // ── useQuery: Home Data ──
+    const { data: homeData, isLoading: homeLoading, isError: homeError } = useQuery({
+        queryKey: ['home'],
+        queryFn: async () => {
+            const result = await homeService.getHomeData();
+            if (!result.success) throw new Error(result.error || 'Home data fetch failed');
+            return result.data;
+        },
+    });
+
+    const featuredCourses = homeData?.featuredCourses || [];
+    const popularCourses = homeData?.popularCourses || [];
+    const recentCourses = homeData?.recentCourses || [];
+    const categories = homeData?.categories || [];
+    const instructors = homeData?.instructors || [];
+    const homeSections = homeData?.homeSections || [];
+    const homeCovers = homeData?.homeCovers || [];
+    const homeInstructors = homeData?.homeInstructors || [];
+
+    // ── useQuery: Stories ──
+    const { data: stories = [] } = useQuery({
+        queryKey: ['stories'],
+        queryFn: async () => {
+            const result = await storyService.getActiveStories();
+            if (!result || !result.success) throw new Error('Stories fetch failed');
+            return result.stories || [];
+        },
+        select: groupStories,
+    });
+
+    // ── useQuery: User Courses (only for premium) ──
+    const { data: userCourses = [] } = useQuery({
+        queryKey: ['userCourses'],
+        queryFn: async () => {
+            const result = await courseService.getUserCourses();
+            if (!result.success) throw new Error(result.error || 'User courses fetch failed');
+            return result.data.courses || [];
+        },
+        enabled: !!currentUser && isPremiumUser(currentUser),
+    });
+
+    // ── Pull-to-refresh ──
+    const [refreshing, setRefreshing] = useState(false);
     const onRefresh = React.useCallback(async () => {
         setRefreshing(true);
-        await loadData();
+        await Promise.all([
+            queryClient.refetchQueries({ queryKey: ['currentUser'] }),
+            queryClient.refetchQueries({ queryKey: ['home'] }),
+            queryClient.refetchQueries({ queryKey: ['stories'] }),
+            queryClient.refetchQueries({ queryKey: ['userCourses'] }),
+        ]);
         setRefreshing(false);
-    }, []);
+    }, [queryClient]);
 
-    useEffect(() => {
-        loadData();
-    }, []);
-
-    const loadData = async () => {
-        setLoading(true);
-
-        // Always refresh from backend to get latest subscription status
-        let user = await authService.refreshUserData();
-        if (!user) user = await authService.getCurrentUser();
-        if (user) {
-            setUserName(user.name || 'Kullanıcı');
-            setCurrentUser(user);
-        } else {
-            setCurrentUser(null);
-        }
-
-        const homeResult = await homeService.getHomeData();
-        if (homeResult.success) {
-            const data = homeResult.data;
-            
-            setFeaturedCourses(data.featuredCourses || []);
-            setPopularCourses(data.popularCourses || []);
-            setRecentCourses(data.recentCourses || []);
-            setCategories(data.categories || []);
-            setInstructors(data.instructors || []);
-            setHomeSections(data.homeSections || []);
-            setHomeCovers(data.homeCovers || []);
-            setHomeInstructors(data.homeInstructors || []);
-        }
-
-        // Fetch Stories
-        try {
-            const storyResult = await storyService.getActiveStories();
-            if (storyResult && storyResult.success) {
-                // Group stories by creator logic (similar to web)
-                if (storyResult.stories) {
-                    // 1. Group stories first
-                    const groupedMap = {};
-
-                    storyResult.stories.forEach(story => {
-                        const key = story.title ? `title:${story.title}` : `id:${story.id}`;
-                        if (!groupedMap[key]) {
-                            groupedMap[key] = {
-                                id: key,
-                                tempStories: [] // Temporary array to hold stories before sorting
-                            };
-                        }
-                        groupedMap[key].tempStories.push(story);
-                    });
-
-                    // 2. Process each group: Sort by date ASC, then pick cover from the FIRST (Oldest) story
-                    const formattedStories = Object.values(groupedMap).map(group => {
-                        // Sort Oldest to Newest
-                        group.tempStories.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-
-                        const firstStory = group.tempStories[0]; // The "First" (Oldest) story determines the identity
-
-                        let avatarUrl = firstStory.coverImage;
-
-                        // Thumbnail logic for the first story
-                        if (!avatarUrl && firstStory.mediaType === 'VIDEO' && firstStory.mediaUrl?.includes('cloudinary')) {
-                            avatarUrl = firstStory.mediaUrl.replace(/\.[^/.]+$/, ".jpg");
-                        }
-                        if (!avatarUrl) {
-                            avatarUrl = firstStory.mediaType === 'IMAGE' ? firstStory.mediaUrl : firstStory.creator.image;
-                        }
-
-                        return {
-                            id: group.id,
-                            user: {
-                                name: firstStory.title || firstStory.creator.name || "Chef",
-                                avatar: avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(firstStory.creator.name)}`
-                            },
-                            stories: group.tempStories
-                        };
-                    });
-
-                    // 3. Sort the GROUPS themselves by the *Latest* update? 
-                    // Usually apps show the group with the most recent story first.
-                    formattedStories.sort((groupA, groupB) => {
-                        const lastStoryA = groupA.stories[groupA.stories.length - 1]; // Newest in A
-                        const lastStoryB = groupB.stories[groupB.stories.length - 1]; // Newest in B
-                        return new Date(lastStoryB.createdAt) - new Date(lastStoryA.createdAt);
-                    });
-
-                    setStories(formattedStories);
-                }
-            }
-        } catch (e) {
-            console.error("Story load error", e);
-        }
-
-        if (isPremiumUser(user)) {
-            const userCoursesResult = await courseService.getUserCourses();
-            if (userCoursesResult.success) {
-                setUserCourses(userCoursesResult.data.courses || []);
-            }
-        } else {
-            setUserCourses([]);
-        }
-
-        setLoading(false);
-    };
+    // Loading = ilk yükleme (cache boş)
+    const loading = homeLoading;
 
     const handleEnroll = async (courseId) => {
         try {
             const result = await courseService.enrollCourse(courseId);
             if (result.success) {
                 // Refresh data to show in "My Courses"
-                loadData();
+                queryClient.refetchQueries({ queryKey: ['userCourses'] });
                 showAlert('Başarılı', 'Kurs listenize eklendi!', [{ text: 'Tamam' }], 'success');
             } else {
                 showAlert('Hata', result.error || 'Kursa kayıt olunamadı.', [{ text: 'Tamam' }], 'error');
@@ -383,6 +375,21 @@ export default function HomeScreen({ navigation }) {
             <ScreenContainer style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color="#ea580c" />
                 <Text style={styles.loadingText}>Yükleniyor...</Text>
+            </ScreenContainer>
+        );
+    }
+
+    if (homeError && !homeData) {
+        return (
+            <ScreenContainer style={styles.loadingContainer}>
+                <Text style={{ color: '#fff', fontSize: 18, fontWeight: '700', marginBottom: 8 }}>İçerik yüklenemedi</Text>
+                <Text style={{ color: '#9ca3af', fontSize: 14, marginBottom: 24, textAlign: 'center', paddingHorizontal: 32 }}>Lütfen internet bağlantınızı kontrol edip tekrar deneyin.</Text>
+                <TouchableOpacity
+                    style={{ backgroundColor: colors.primary, paddingHorizontal: 32, paddingVertical: 14, borderRadius: 12 }}
+                    onPress={() => queryClient.refetchQueries({ queryKey: ['home'] })}
+                >
+                    <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Tekrar Dene</Text>
+                </TouchableOpacity>
             </ScreenContainer>
         );
     }

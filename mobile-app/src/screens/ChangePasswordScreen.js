@@ -17,6 +17,8 @@ import axios from 'axios';
 import config from '../api/config';
 import CustomAlert from '../components/CustomAlert';
 import ScreenContainer from '../components/ScreenContainer';
+import { getToken } from '../utils/tokenStorage';
+
 
 const PasswordInput = ({ label, value, onChangeText, show, onToggle, placeholder }) => (
     <View style={styles.inputGroup}>
@@ -82,7 +84,7 @@ export default function ChangePasswordScreen({ navigation }) {
 
         setLoading(true);
         try {
-            const authToken = await AsyncStorage.getItem('authToken');
+            const authToken = await getToken();
             const response = await axios.put(
                 `${config.API_BASE_URL}/api/user/change-password`,
                 { currentPassword, newPassword },

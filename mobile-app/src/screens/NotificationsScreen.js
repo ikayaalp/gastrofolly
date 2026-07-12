@@ -3,43 +3,30 @@ import { StyleSheet, Text, View, FlatList, TouchableOpacity, ActivityIndicator, 
 import { Ionicons } from '@expo/vector-icons';
 import { Bell, ChefHat, MessageCircle, Star, Info } from 'lucide-react-native';
 import notificationService from '../api/notificationService';
-import { useFocusEffect } from '@react-navigation/native';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import ScreenContainer from '../components/ScreenContainer';
 
 export default function NotificationsScreen({ navigation }) {
-    const [loading, setLoading] = useState(true);
-    const [refreshing, setRefreshing] = useState(false);
-    const [notifications, setNotifications] = useState([]);
+    const queryClient = useQueryClient();
 
-    const loadNotifications = async () => {
-        const result = await notificationService.getNotifications();
-        if (result.success) {
-            setNotifications(result.data.notifications || []);
-        } else {
+    const { data: notifications = [], isLoading: loading, isRefetching, refetch } = useQuery({
+        queryKey: ['notifications'],
+        queryFn: async () => {
+            const result = await notificationService.getNotifications();
+            if (!result.success) throw new Error(result.error || 'Failed to fetch notifications');
+            return result.data.notifications || [];
         }
-        setLoading(false);
-        setRefreshing(false);
-    };
+    });
 
-    useFocusEffect(
-        useCallback(() => {
-            loadNotifications();
-        }, [])
-    );
-
-    const onRefresh = () => {
-        setRefreshing(true);
-        loadNotifications();
+    const onRefresh = async () => {
+        await refetch();
     };
 
     const handleNotificationPress = async (notification) => {
 
         if (!notification.read) {
             await notificationService.markAsRead(notification.id);
-            // Update local state to show as read immediately
-            setNotifications(prev =>
-                prev.map(n => n.id === notification.id ? { ...n, read: true } : n)
-            );
+            queryClient.invalidateQueries({ queryKey: ['notifications'] });
         }
 
         // Robustly check for ids in different possible locations
@@ -95,13 +82,11 @@ export default function NotificationsScreen({ navigation }) {
     );
 
     const handleMarkAllRead = async () => {
-        setLoading(true);
         const result = await notificationService.markAllNotificationsAsRead();
         if (result.success) {
-            setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+            queryClient.invalidateQueries({ queryKey: ['notifications'] });
         } else {
         }
-        setLoading(false);
     };
 
     if (loading) {
@@ -132,7 +117,7 @@ export default function NotificationsScreen({ navigation }) {
                     keyExtractor={item => item.id}
                     contentContainerStyle={styles.listContent}
                     refreshControl={
-                        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ea580c" />
+                        <RefreshControl refreshing={isRefetching} onRefresh={onRefresh} tintColor="#ea580c" />
                     }
                 />
             ) : (

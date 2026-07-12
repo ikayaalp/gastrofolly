@@ -5,6 +5,8 @@ import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from './apiClient';
 import config from './config';
+import { getToken } from '../utils/tokenStorage';
+
 
 // Bildirim davranışını ayarla - uygulama açıkken bile bildirim göster
 Notifications.setNotificationHandler({
@@ -82,7 +84,7 @@ class NotificationService {
     // Backend'e token gönder
     async sendTokenToBackend(token) {
         try {
-            const authToken = await AsyncStorage.getItem('authToken');
+            const authToken = await getToken();
             if (!authToken) {
                 return;
             }
@@ -137,7 +139,7 @@ class NotificationService {
     // Bildirimleri getir
     async getNotifications() {
         try {
-            const authToken = await AsyncStorage.getItem('authToken');
+            const authToken = await getToken();
             if (!authToken) {
                 return { success: false, error: 'Oturum açılmamış' };
             }
@@ -164,7 +166,7 @@ class NotificationService {
     // Bildirimi okundu olarak işaretle
     async markAsRead(notificationId) {
         try {
-            const authToken = await AsyncStorage.getItem('authToken');
+            const authToken = await getToken();
             if (!authToken) return { success: false };
 
             await api.put(
@@ -187,7 +189,7 @@ class NotificationService {
     // Tümünü okundu işaretle
     async markAllNotificationsAsRead() {
         try {
-            const authToken = await AsyncStorage.getItem('authToken');
+            const authToken = await getToken();
             if (!authToken) return { success: false };
 
             await api.patch(

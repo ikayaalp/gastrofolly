@@ -1,6 +1,8 @@
 import api from './apiClient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from './config';
+import { getToken } from '../utils/tokenStorage';
+
 
 
 
@@ -182,7 +184,7 @@ const forumService = {
     // Upload media (image or video)
     uploadMedia: async (uri, type, abortController = null) => {
         try {
-            const token = await AsyncStorage.getItem('authToken');
+            const token = await getToken();
             if (!token) {
                 return { success: false, error: 'Giriş yapmalısınız' };
             }

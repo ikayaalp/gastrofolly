@@ -15,6 +15,8 @@ import AuthBackground from '../components/AuthBackground';
 import Logo from '../components/Logo';
 import { LinearGradient } from 'expo-linear-gradient';
 import ChefSocialProfileScreen from './ChefSocialProfileScreen';
+import { getToken } from '../utils/tokenStorage';
+
 
 export default function AccountScreen({ navigation }) {
     const [userData, setUserData] = useState(null);
@@ -30,7 +32,7 @@ export default function AccountScreen({ navigation }) {
     }, [navigation]);
 
     const loadUserData = async () => {
-        const token = await AsyncStorage.getItem('authToken');
+        const token = await getToken();
         setIsLoggedIn(!!token);
         if (token) {
             const user = await authService.getCurrentUser();

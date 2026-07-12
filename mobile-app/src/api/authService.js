@@ -4,6 +4,7 @@ import config from './config';
 import notificationService from './notificationService';
 import { loginRevenueCat, logoutRevenueCat } from './revenueCatService';
 import { Platform } from 'react-native';
+import { getToken, setToken, removeToken } from '../utils/tokenStorage';
 
 const authService = {
     // Register new user
@@ -51,7 +52,7 @@ const authService = {
 
             // Save token if provided
             if (response.data.token) {
-                await AsyncStorage.setItem('authToken', response.data.token);
+                await setToken(response.data.token);
 
                 // Push token'ı backend'e gönder
                 const pushToken = await AsyncStorage.getItem('expoPushToken');
@@ -102,7 +103,7 @@ const authService = {
     // Check if user is authenticated
     isAuthenticated: async () => {
         try {
-            const token = await AsyncStorage.getItem('authToken');
+            const token = await getToken();
             return !!token; // Returns true if token exists, false otherwise
         } catch (error) {
             console.error('Auth check error:', error);
@@ -113,7 +114,7 @@ const authService = {
     // Logout user
     logout: async () => {
         try {
-            await AsyncStorage.removeItem('authToken');
+            await removeToken();
             await AsyncStorage.removeItem('userData');
             await AsyncStorage.removeItem('userId');
             await AsyncStorage.removeItem('onboardingCompleted');
@@ -136,7 +137,7 @@ const authService = {
 
             // Save token if provided
             if (response.data.token) {
-                await AsyncStorage.setItem('authToken', response.data.token);
+                await setToken(response.data.token);
 
                 // Push token'ı backend'e gönder
                 const pushToken = await AsyncStorage.getItem('expoPushToken');
@@ -178,7 +179,7 @@ const authService = {
 
             // Save token if provided
             if (response.data.token) {
-                await AsyncStorage.setItem('authToken', response.data.token);
+                await setToken(response.data.token);
 
                 // Push token'ı backend'e gönder
                 const pushToken = await AsyncStorage.getItem('expoPushToken');
@@ -286,7 +287,8 @@ const authService = {
 
             if (response.data.success) {
                 // Clear all local storage
-                await AsyncStorage.multiRemove(['authToken', 'userData', 'userId', 'expoPushToken', '@favorites']);
+                await removeToken();
+                await AsyncStorage.multiRemove(['userData', 'userId', 'expoPushToken', '@favorites']);
                 await logoutRevenueCat();
                 return { success: true };
             }
@@ -302,7 +304,7 @@ const authService = {
     // Sync RevenueCat subscription status with Backend DB
     syncSubscription: async (isPremium, expirationDate) => {
         try {
-            const token = await AsyncStorage.getItem('authToken');
+            const token = await getToken();
             if (!token) return { success: false, error: 'Token bulunamadı' };
             
             const response = await api.post('/api/user/sync-revenuecat', {

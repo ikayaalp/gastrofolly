@@ -20,7 +20,7 @@ import { Image } from 'expo-image';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import * as WebBrowser from 'expo-web-browser';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Video, ResizeMode } from 'expo-av';
+import { useVideoPlayer, VideoView } from 'expo-video';
 import Slider from '@react-native-community/slider';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
@@ -72,7 +72,7 @@ export default function LearnScreen({ route, navigation }) {
     const { width, height } = useWindowDimensions();
     const insets = useSafeAreaInsets();
     const { courseId, lessonId } = route.params;
-    const videoRef = useRef(null);
+    
     const [course, setCourse] = useState(null);
     const [currentLesson, setCurrentLesson] = useState(null);
     const [progress, setProgress] = useState({});
@@ -99,6 +99,68 @@ export default function LearnScreen({ route, navigation }) {
         buttons: [],
         type: 'info'
     });
+
+    const getVideoUrlInline = (url) => {
+        if (!url) return null;
+        if (url.startsWith('http')) return url;
+        return `http://192.168.1.106:5000${url}`;
+    };
+
+    const videoSource = currentLesson?.videoUrl ? {
+        uri: getVideoUrlInline(currentLesson.videoUrl),
+        headers: authToken ? { Authorization: `Bearer ${authToken}` } : {}
+    } : null;
+
+    const player = useVideoPlayer(videoSource, p => {
+        p.timeUpdateEventInterval = 1;
+        p.loop = false;
+    });
+
+    useEffect(() => {
+        if (!player) return;
+        player.muted = isMuted;
+        player.playbackRate = playbackRate;
+    }, [player, isMuted, playbackRate]);
+
+    useEffect(() => {
+        if (!player) return;
+        const statusSub = player.addListener('statusChange', (event) => {
+            if (event.status === 'readyToPlay') {
+                setIsBuffering(false);
+                const savedSeconds = progress[currentLesson?.id]?.timeWatched;
+                if (savedSeconds > 0 && resumedLessonIdRef.current !== currentLesson?.id) {
+                    resumedLessonIdRef.current = currentLesson?.id;
+                    player.currentTime = savedSeconds;
+                }
+            } else if (event.status === 'error') {
+                console.error('Video Playback Error', event.error);
+                showAlert('Video Hatası', 'Video yüklenirken bir sorun oluştu.', [{ text: 'Tekrar Dene', onPress: () => loadCourseData() }], 'error');
+            }
+        });
+        const timeSub = player.addListener('timeUpdate', () => {
+            if (!isDraggingSlider.current) {
+                setVideoDuration((player.duration || 0) * 1000);
+                setVideoPosition(player.currentTime * 1000);
+            }
+            if (player.duration && player.currentTime / player.duration > 0.9) {
+                markLessonComplete(player.currentTime * 1000);
+            }
+        });
+        const playSub = player.addListener('playingChange', () => {
+            if (!isDraggingSlider.current) {
+                setIsPlaying(player.playing);
+                if (!player.playing && player.currentTime >= player.duration && player.duration > 0 && isNextLessonAccessible()) {
+                    setAutoNextSeconds(AUTO_NEXT_SECONDS);
+                }
+            }
+        });
+        return () => {
+            statusSub.remove();
+            timeSub.remove();
+            playSub.remove();
+        };
+    }, [player, currentLesson?.id, progress]);
+
     const controlsOpacity = useRef(new Animated.Value(1)).current;
     const controlsTimeout = useRef(null);
     const scrollViewRef = useRef(null);
@@ -537,37 +599,11 @@ export default function LearnScreen({ route, navigation }) {
                     isFullscreen && styles.videoContainerFullscreen
                 ]}>
                     {currentLesson.videoUrl ? (
-                        <Video
-                            ref={videoRef}
-                            source={{
-                                uri: getVideoUrl(currentLesson.videoUrl),
-                                headers: authToken ? { Authorization: `Bearer ${authToken}` } : {}
-                            }}
+                        <VideoView
+                            player={player}
                             style={[styles.video, { backgroundColor: '#000' }]}
-                            resizeMode={ResizeMode.CONTAIN}
-                            shouldPlay={isPlaying}
-                            isMuted={isMuted}
-                            rate={playbackRate}
-                            shouldCorrectPitch
-                            onPlaybackStatusUpdate={handleVideoStatusUpdate}
-                            onLoad={async () => {
-                                setIsBuffering(false);
-                                // Kaldığı yerden devam ettir (her ders için sadece bir kere)
-                                const savedSeconds = progress[currentLesson.id]?.timeWatched;
-                                if (
-                                    savedSeconds > 0 &&
-                                    resumedLessonIdRef.current !== currentLesson.id &&
-                                    videoRef.current
-                                ) {
-                                    resumedLessonIdRef.current = currentLesson.id;
-                                    await videoRef.current.setPositionAsync(savedSeconds * 1000);
-                                }
-                            }}
-                            onLoadStart={() => setIsBuffering(true)}
-                            onError={(error) => {
-                                console.error('Video Playback Error:', error);
-                                showAlert('Video Hatası', 'Video yüklenirken bir sorun oluştu. Lütfen bağlantınızı kontrol edin.', [{ text: 'Tekrar Dene', onPress: () => loadCourseData() }], 'error');
-                            }}
+                            contentFit="contain"
+                            nativeControls={false}
                         />
                     ) : (
                         <View style={styles.noVideoContainer}>

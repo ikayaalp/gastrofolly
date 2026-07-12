@@ -41,10 +41,11 @@ import {
     FileText,
     UserCheck,
 } from 'lucide-react-native';
-import { Video, ResizeMode } from 'expo-av';
+import { useVideoPlayer, VideoView } from 'expo-video';
 import * as ImagePicker from 'expo-image-picker';
 import forumService from '../api/forumService';
 import authService from '../api/authService';
+import { useQuery } from '@tanstack/react-query';
 import dmService from '../api/dmService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomAlert from '../components/CustomAlert';
@@ -61,11 +62,14 @@ const formatDuration = (millis) => {
     return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
 };
 
+const PreviewVideoPlayer = ({ sourceUri, style }) => {
+    const player = useVideoPlayer(sourceUri, p => { p.muted = true; });
+    return <VideoView player={player} style={style} contentFit="cover" nativeControls={false} />;
+};
+
 export default function SocialScreen({ navigation }) {
     const insets = useSafeAreaInsets();
-    const [categories, setCategories] = useState([]);
     const [unreadMessageCount, setUnreadMessageCount] = useState(0);
-    const [trendingHashtags, setTrendingHashtags] = useState([]);
     const [topics, setTopics] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -101,6 +105,24 @@ export default function SocialScreen({ navigation }) {
     const [videoProgress, setVideoProgress] = useState({});
     const [searchTerm, setSearchTerm] = useState('');
 
+    const { data: categories = [] } = useQuery({
+        queryKey: ['forumCategories'],
+        queryFn: async () => {
+            const result = await forumService.getCategories();
+            if (!result.success) throw new Error(result.error);
+            return result.data || [];
+        }
+    });
+
+    const { data: trendingHashtags = [] } = useQuery({
+        queryKey: ['trendingHashtags'],
+        queryFn: async () => {
+            const result = await forumService.getTrendingHashtags();
+            if (!result.success) throw new Error(result.error);
+            return result.data?.hashtags || [];
+        }
+    });
+
     // Likers Modal State
     const [likersModal, setLikersModal] = useState({
         visible: false,
@@ -110,8 +132,34 @@ export default function SocialScreen({ navigation }) {
     });
 
     // Custom Video Controls
-    const videoRef = useRef(null);
     const [playbackStatus, setPlaybackStatus] = useState(null); // { positionMillis, durationMillis, isPlaying }
+
+    const fullscreenPlayer = useVideoPlayer(fullscreenVideoUrl, p => {
+        p.timeUpdateEventInterval = 1;
+        p.loop = true;
+        if (fullscreenVideoUrl) p.play();
+    });
+
+    useEffect(() => {
+        if (!fullscreenPlayer) return;
+        const timeSub = fullscreenPlayer.addListener('timeUpdate', () => {
+            setPlaybackStatus({
+                isPlaying: fullscreenPlayer.playing,
+                positionMillis: fullscreenPlayer.currentTime * 1000,
+                durationMillis: fullscreenPlayer.duration * 1000
+            });
+        });
+        const playSub = fullscreenPlayer.addListener('playingChange', () => {
+            setPlaybackStatus(prev => ({
+                ...prev,
+                isPlaying: fullscreenPlayer.playing
+            }));
+        });
+        return () => {
+            timeSub.remove();
+            playSub.remove();
+        };
+    }, [fullscreenPlayer]);
     const [seekOverlay, setSeekOverlay] = useState(null); // 'forward' | 'backward'
     const lastTap = useRef({ time: 0, x: 0 });
     const singleTapTimeout = useRef(null);
@@ -214,19 +262,9 @@ export default function SocialScreen({ navigation }) {
                 setLoadingMore(true);
             }
 
-            const [categoriesResult, topicsResult, trendingResult] = await Promise.all([
-                !isLoadMore ? forumService.getCategories() : Promise.resolve({success: true, data: categories}),
-                forumService.getTopics(selectedCategory, sortBy, 20, searchTerm, targetPage),
-                !isLoadMore ? forumService.getTrendingHashtags() : Promise.resolve({success: true, data: {hashtags: trendingHashtags}}),
+            const [topicsResult] = await Promise.all([
+                forumService.getTopics(selectedCategory, sortBy, 20, searchTerm, targetPage)
             ]);
-
-            if (!isLoadMore && categoriesResult.success) {
-                setCategories(categoriesResult.data || []);
-            }
-
-            if (!isLoadMore && trendingResult.success) {
-                setTrendingHashtags(trendingResult.data?.hashtags || []);
-            }
 
             if (topicsResult.success) {
                 const newTopics = topicsResult.data.topics || [];
@@ -551,19 +589,18 @@ export default function SocialScreen({ navigation }) {
     };
 
     const togglePlayPause = async () => {
-        if (videoRef.current) {
-            if (playbackStatus?.isPlaying) {
-                await videoRef.current.pauseAsync();
+        if (fullscreenPlayer) {
+            if (fullscreenPlayer.playing) {
+                fullscreenPlayer.pause();
             } else {
-                await videoRef.current.playAsync();
+                fullscreenPlayer.play();
             }
         }
     };
 
     const handleSeek = async (amount) => {
-        if (videoRef.current && playbackStatus) {
-            const newPos = playbackStatus.positionMillis + amount;
-            await videoRef.current.setPositionAsync(newPos);
+        if (fullscreenPlayer) {
+            fullscreenPlayer.currentTime += (amount / 1000);
         }
     };
 
@@ -593,12 +630,12 @@ export default function SocialScreen({ navigation }) {
     };
 
     const handleProgressBarTap = async (event) => {
-        if (!playbackStatus?.durationMillis || !progressBarWidth || !videoRef.current) return;
+        if (!playbackStatus?.durationMillis || !progressBarWidth || !fullscreenPlayer) return;
 
         const { locationX } = event.nativeEvent;
         const ratio = Math.max(0, Math.min(1, locationX / progressBarWidth));
         const newPos = ratio * playbackStatus.durationMillis;
-        await videoRef.current.setPositionAsync(newPos);
+        fullscreenPlayer.currentTime = newPos / 1000;
     };
 
     const handleShowLikers = useCallback((targetId, type, likeCount) => {
@@ -865,10 +902,9 @@ export default function SocialScreen({ navigation }) {
                                                 {media.type === 'image' ? (
                                                     <Image source={{ uri: media.uri }} style={styles.modalMediaPreview} resizeMode="cover" />
                                                 ) : (
-                                                    <Video
-                                                        source={{ uri: media.uri }}
+                                                    <PreviewVideoPlayer
+                                                        sourceUri={media.uri}
                                                         style={styles.modalMediaPreview}
-                                                        resizeMode={ResizeMode.COVER}
                                                     />
                                                 )}
                                                 <TouchableOpacity
@@ -951,15 +987,11 @@ export default function SocialScreen({ navigation }) {
                 <View style={{ flex: 1, backgroundColor: '#000', paddingBottom: Platform.OS === 'android' ? 20 : 0 }}>
                     <TouchableWithoutFeedback onPress={handleVideoTap}>
                         <View style={{ flex: 1, justifyContent: 'center' }}>
-                            <Video
-                                ref={videoRef}
-                                source={{ uri: fullscreenVideoUrl }}
-                                style={{ flex: 1, width: '100%' }}
-                                resizeMode={ResizeMode.CONTAIN}
-                                shouldPlay
-                                isLooping
-                                onPlaybackStatusUpdate={status => setPlaybackStatus(status)}
-                            />
+                            <VideoView
+                                                player={fullscreenPlayer}
+                                                style={{ flex: 1, width: '100%' }}
+                                                contentFit="contain"
+                                            />
 
                             {/* Seek Backward Overlay (Minimal) */}
                             {seekOverlay === 'backward' && (

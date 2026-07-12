@@ -17,6 +17,8 @@ import React, { useState, useEffect } from 'react';
 import { Platform, View, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { getToken, setToken } from '../utils/tokenStorage';
+
 
 
 // Screens
@@ -199,7 +201,16 @@ export default function AppNavigator() {
         const checkInitialRoute = async () => {
             try {
                 const onboardingDone = await AsyncStorage.getItem('onboardingCompleted');
-                const token = await AsyncStorage.getItem('authToken');
+                
+                // MIGRATION: Move authToken from AsyncStorage to SecureStore if it exists there
+                let token = await AsyncStorage.getItem('authToken');
+                if (token) {
+                    await setToken(token);
+                    await AsyncStorage.removeItem('authToken');
+                    console.log('Migrated authToken to SecureStore');
+                } else {
+                    token = await getToken();
+                }
 
                 if (onboardingDone !== 'true') {
                     setInitialRoute('Onboarding');

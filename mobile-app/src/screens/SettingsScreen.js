@@ -29,6 +29,7 @@ import {
 } from 'lucide-react-native';
 import authService from '../api/authService';
 import CustomAlert from '../components/CustomAlert';
+import { colors, spacing, radius, typography } from '../constants/theme';
 
 export default function SettingsScreen({ navigation }) {
     const [userData, setUserData] = useState(null);
@@ -140,7 +141,7 @@ export default function SettingsScreen({ navigation }) {
             disabled={type === 'switch'}
         >
             <View style={[styles.iconContainer, danger && styles.iconContainerDanger]}>
-                <Icon size={20} color={danger ? '#ef4444' : '#9ca3af'} />
+                <Icon size={20} color={danger ? colors.danger : colors.textMuted} />
             </View>
             <View style={styles.itemInfo}>
                 <Text style={[styles.itemTitle, danger && styles.itemTextDanger]}>{title}</Text>
@@ -151,11 +152,11 @@ export default function SettingsScreen({ navigation }) {
                 <Switch
                     value={value}
                     onValueChange={onValueChange}
-                    trackColor={{ false: '#374151', true: 'rgba(234, 88, 12, 0.5)' }}
-                    thumbColor={value ? '#ea580c' : '#9ca3af'}
+                    trackColor={{ false: colors.borderLight, true: colors.primaryMuted }}
+                    thumbColor={value ? colors.primary : colors.textMuted}
                 />
             ) : showChevron && (
-                <ChevronRight size={18} color="#4b5563" />
+                <ChevronRight size={18} color={colors.textDisabled} />
             )}
         </TouchableOpacity>
     );
@@ -169,7 +170,7 @@ export default function SettingsScreen({ navigation }) {
                         style={styles.backButton}
                         onPress={() => navigation.goBack()}
                     >
-                        <ArrowLeft size={24} color="#e5e5e5" />
+                        <ArrowLeft size={24} color={colors.textSecondary} />
                     </TouchableOpacity>
                     <Text style={styles.headerTitle}>Ayarlar</Text>
                     <View style={{ width: 24 }} />
@@ -310,14 +311,14 @@ export default function SettingsScreen({ navigation }) {
                             onPress={() => { setCurrentLanguage('tr'); setShowLanguageModal(false); }}
                         >
                             <Text style={[styles.modalOptionText, currentLanguage === 'tr' && styles.modalOptionTextSelected]}>Türkçe (TR)</Text>
-                            {currentLanguage === 'tr' && <Shield size={16} color="#ea580c" />}
+                            {currentLanguage === 'tr' && <Shield size={16} color={colors.primary} />}
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={[styles.modalOption, currentLanguage === 'en' && styles.modalOptionSelected]}
                             onPress={() => { setCurrentLanguage('en'); setShowLanguageModal(false); }}
                         >
                             <Text style={[styles.modalOptionText, currentLanguage === 'en' && styles.modalOptionTextSelected]}>English (EN)</Text>
-                            {currentLanguage === 'en' && <Shield size={16} color="#ea580c" />}
+                            {currentLanguage === 'en' && <Shield size={16} color={colors.primary} />}
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.modalCloseButton} onPress={() => setShowLanguageModal(false)}>
                             <Text style={styles.modalCloseText}>İptal</Text>
@@ -376,101 +377,101 @@ export default function SettingsScreen({ navigation }) {
 const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
-        backgroundColor: '#000',
+        backgroundColor: colors.background,
     },
     container: {
         flex: 1,
-        backgroundColor: '#000',
+        backgroundColor: colors.background,
     },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingHorizontal: 20,
-        paddingTop: 10,
-        paddingBottom: 16,
+        paddingHorizontal: spacing.xl,
+        paddingTop: spacing.md,
+        paddingBottom: spacing.lg,
         borderBottomWidth: 1,
-        borderBottomColor: '#1a1a1a',
+        borderBottomColor: colors.borderSubtle,
     },
     backButton: {
-        padding: 4,
+        padding: spacing.xs,
     },
     headerTitle: {
-        color: 'white',
-        fontSize: 18,
-        fontWeight: 'bold',
+        color: colors.text,
+        fontSize: typography.size['2xl'],
+        fontWeight: typography.weight.bold,
     },
     scrollView: {
         flex: 1,
     },
     content: {
-        padding: 20,
+        padding: spacing.xl,
         paddingBottom: 40,
     },
     section: {
-        marginBottom: 24,
+        marginBottom: spacing.xxl,
     },
     sectionTitle: {
-        color: '#6b7280',
-        fontSize: 13,
-        fontWeight: '600',
-        marginBottom: 12,
-        marginLeft: 4,
+        color: colors.textSubtle,
+        fontSize: typography.size.md,
+        fontWeight: typography.weight.semibold,
+        marginBottom: spacing.md,
+        marginLeft: spacing.xs,
         textTransform: 'uppercase',
         letterSpacing: 1,
     },
     sectionContent: {
-        backgroundColor: '#111',
-        borderRadius: 16,
+        backgroundColor: colors.surface,
+        borderRadius: radius.xl,
         overflow: 'hidden',
         borderWidth: 1,
-        borderColor: '#1f2937',
+        borderColor: colors.border,
     },
     item: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 16,
-        paddingHorizontal: 16,
+        paddingVertical: spacing.lg,
+        paddingHorizontal: spacing.lg,
         borderBottomWidth: 1,
-        borderBottomColor: '#1f2937',
-        backgroundColor: '#111',
+        borderBottomColor: colors.border,
+        backgroundColor: colors.surface,
     },
     iconContainer: {
         width: 36,
         height: 36,
         borderRadius: 18,
-        backgroundColor: '#1f2937',
+        backgroundColor: colors.border,
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: 16,
+        marginRight: spacing.lg,
     },
     iconContainerDanger: {
-        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+        backgroundColor: colors.dangerSubtle,
     },
     itemInfo: {
         flex: 1,
     },
     itemTitle: {
-        color: 'white',
-        fontSize: 15,
-        fontWeight: '500',
+        color: colors.text,
+        fontSize: typography.size.lg,
+        fontWeight: typography.weight.medium,
     },
     itemTextDanger: {
-        color: '#ef4444',
+        color: colors.danger,
     },
     itemSubtitle: {
-        color: '#6b7280',
-        fontSize: 12,
+        color: colors.textSubtle,
+        fontSize: typography.size.sm,
         marginTop: 2,
     },
     dangerSection: {
-        marginTop: 12,
+        marginTop: spacing.md,
     },
     versionText: {
-        color: '#4b5563',
+        color: colors.textDisabled,
         textAlign: 'center',
-        fontSize: 12,
-        marginBottom: 20,
+        fontSize: typography.size.sm,
+        marginBottom: spacing.xl,
     },
     // Modal Styles
     modalOverlay: {
@@ -479,15 +480,15 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(0,0,0,0.7)',
+        backgroundColor: colors.overlay,
         justifyContent: 'center',
         alignItems: 'center',
-        padding: 20,
+        padding: spacing.xl,
     },
     modalContent: {
-        backgroundColor: '#1f2937',
-        borderRadius: 20,
-        padding: 20,
+        backgroundColor: colors.border,
+        borderRadius: radius.xxl,
+        padding: spacing.xl,
         width: '100%',
         maxHeight: '80%',
     },
@@ -495,60 +496,60 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 20,
-        paddingBottom: 16,
+        marginBottom: spacing.xl,
+        paddingBottom: spacing.lg,
         borderBottomWidth: 1,
-        borderBottomColor: '#374151',
+        borderBottomColor: colors.borderLight,
     },
     modalTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: 'white',
-        marginBottom: 20,
+        fontSize: typography.size['3xl'],
+        fontWeight: typography.weight.bold,
+        color: colors.text,
+        marginBottom: spacing.xl,
     },
     modalOption: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingVertical: 16,
+        paddingVertical: spacing.lg,
         borderBottomWidth: 1,
-        borderBottomColor: '#374151',
+        borderBottomColor: colors.borderLight,
     },
     modalOptionSelected: {
-        backgroundColor: 'rgba(234, 88, 12, 0.1)',
-        paddingHorizontal: 12,
-        borderRadius: 8,
+        backgroundColor: colors.primarySubtle,
+        paddingHorizontal: spacing.md,
+        borderRadius: radius.md,
         borderBottomWidth: 0,
     },
     modalOptionText: {
-        fontSize: 16,
-        color: '#d1d5db',
+        fontSize: typography.size.xl,
+        color: colors.textTertiary,
     },
     modalOptionTextSelected: {
-        color: '#ea580c',
-        fontWeight: 'bold',
+        color: colors.primary,
+        fontWeight: typography.weight.bold,
     },
     modalCloseButton: {
-        marginTop: 20,
-        padding: 12,
+        marginTop: spacing.xl,
+        padding: spacing.md,
         alignItems: 'center',
-        backgroundColor: '#374151',
-        borderRadius: 12,
+        backgroundColor: colors.borderLight,
+        borderRadius: radius.lg,
     },
     modalCloseText: {
-        color: 'white',
-        fontWeight: '600',
-        fontSize: 16,
+        color: colors.text,
+        fontWeight: typography.weight.semibold,
+        fontSize: typography.size.xl,
     },
     policyText: {
-        color: '#d1d5db',
+        color: colors.textTertiary,
         lineHeight: 24,
-        fontSize: 14,
+        fontSize: typography.size.base,
     },
     policyHeader: {
-        color: 'white',
-        fontWeight: 'bold',
-        fontSize: 16,
-        marginBottom: 8,
+        color: colors.text,
+        fontWeight: typography.weight.bold,
+        fontSize: typography.size.xl,
+        marginBottom: spacing.sm,
     },
 });

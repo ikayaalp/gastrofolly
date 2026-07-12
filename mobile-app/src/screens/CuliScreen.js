@@ -28,6 +28,8 @@ import Markdown from 'react-native-markdown-display';
 import LoginRequiredModal from '../components/LoginRequiredModal';
 import useTabBarClearance from '../hooks/useTabBarClearance';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { getToken } from '../utils/tokenStorage';
+
 
 const SUGGESTIONS = [
     { id: 1, text: "🍝 İtalyan Makarnası Tarifi", icon: "🍝" },
@@ -93,7 +95,7 @@ export default function CuliScreen() {
         useCallback(() => {
             // Screen focused - check auth
             const checkAuth = async () => {
-                const token = await AsyncStorage.getItem('authToken');
+                const token = await getToken();
                 const loggedIn = !!token;
                 setIsLoggedIn(loggedIn);
                 if (!loggedIn) {

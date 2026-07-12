@@ -4,7 +4,7 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 
-import { Video, ResizeMode } from 'expo-av';
+import { useVideoPlayer, VideoView } from 'expo-video';
 
 const { width, height } = Dimensions.get('window');
 
@@ -13,7 +13,6 @@ const StoryViewer = ({ stories, initialIndex, onClose, navigation }) => {
     const [currentStoryIndex, setCurrentStoryIndex] = useState(0);  // Index of the STORY within the group
     const [progress, setProgress] = useState(0);
     const progressInterval = useRef(null);
-    const videoRef = useRef(null);
     const [isVideoReady, setIsVideoReady] = useState(false);
     const [nextStoryMedia, setNextStoryMedia] = useState(null);
 
@@ -23,6 +22,36 @@ const StoryViewer = ({ stories, initialIndex, onClose, navigation }) => {
     const currentStoryItem = currentStoryGroup?.stories?.[currentStoryIndex];
 
     const isVideo = currentStoryItem?.mediaType === 'VIDEO' || currentStoryItem?.mediaUrl?.endsWith('.mp4') || currentStoryItem?.mediaUrl?.includes('/video/');
+
+    const videoSource = isVideo ? currentStoryItem.mediaUrl : null;
+    const player = useVideoPlayer(videoSource, p => {
+        p.loop = false;
+    });
+
+    const nextVideoSource = (nextStoryMedia && (nextStoryMedia.mediaType === 'VIDEO' || nextStoryMedia.mediaUrl?.endsWith('.mp4') || nextStoryMedia.mediaUrl?.includes('/video/'))) ? nextStoryMedia.mediaUrl : null;
+    const nextPlayer = useVideoPlayer(nextVideoSource, p => {
+        p.muted = true;
+    });
+
+    useEffect(() => {
+        if (!player) return;
+        const statusSub = player.addListener('statusChange', (event) => {
+            if (event.status === 'readyToPlay') {
+                setIsVideoReady(true);
+                player.play();
+                startProgress();
+            }
+        });
+        const playSub = player.addListener('playingChange', (event) => {
+            if (!event.isPlaying && player.currentTime >= player.duration && player.duration > 0) {
+                 handleNext();
+            }
+        });
+        return () => {
+            statusSub.remove();
+            playSub.remove();
+        };
+    }, [player]);
 
     // When switching GROUP, reset story index to 0
     useEffect(() => {
@@ -91,7 +120,7 @@ const StoryViewer = ({ stories, initialIndex, onClose, navigation }) => {
         }
     };
 
-    const handleVideoLoad = (status) => {
+    const handleVideoLoad = () => {
         setIsVideoReady(true);
         startProgress();
     };
@@ -125,8 +154,9 @@ const StoryViewer = ({ stories, initialIndex, onClose, navigation }) => {
         // 3. Start of all stories
         else {
             setProgress(0);
-            if (videoRef.current) {
-                videoRef.current.replayAsync();
+            if (player) {
+                player.currentTime = 0;
+                player.play();
             }
         }
     };
@@ -158,11 +188,9 @@ const StoryViewer = ({ stories, initialIndex, onClose, navigation }) => {
                 <StatusBar hidden />
 
                 {/* Hidden Next Video for Preload */}
-                {nextStoryMedia && (nextStoryMedia.mediaType === 'VIDEO' || nextStoryMedia.mediaUrl?.endsWith('.mp4') || nextStoryMedia.mediaUrl?.includes('/video/')) && (
-                    <Video
-                        source={{ uri: nextStoryMedia.mediaUrl }}
-                        shouldPlay={false}
-                        isMuted={true}
+                {nextVideoSource && (
+                    <VideoView
+                        player={nextPlayer}
                         style={{ position: 'absolute', width: 1, height: 1, opacity: 0 }}
                     />
                 )}
@@ -179,20 +207,11 @@ const StoryViewer = ({ stories, initialIndex, onClose, navigation }) => {
                                 cachePolicy="memory-disk"
                             />
                         )}
-                        <Video
-                            ref={videoRef}
+                        <VideoView
+                            player={player}
                             style={viewerStyles.backgroundImage}
-                            source={{ uri: currentStoryItem.mediaUrl }}
-                            useNativeControls={false}
-                            resizeMode={ResizeMode.COVER}
-                            isLooping={false}
-                            shouldPlay={true}
-                            onPlaybackStatusUpdate={status => {
-                                if (status.didJustFinish) {
-                                    handleNext();
-                                }
-                            }}
-                            onLoad={handleVideoLoad}
+                            contentFit="cover"
+                            nativeControls={false}
                         />
                     </>
                 ) : (

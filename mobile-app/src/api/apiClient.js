@@ -4,6 +4,7 @@ import config from './config';
 import { navigationRef } from '../navigation/AppNavigator';
 import { Alert } from 'react-native';
 import { logoutRevenueCat } from './revenueCatService';
+import { getToken, removeToken } from '../utils/tokenStorage';
 
 const api = axios.create({
     baseURL: config.API_BASE_URL,
@@ -16,7 +17,7 @@ const api = axios.create({
 // Request interceptor to add auth token
 api.interceptors.request.use(
     async (config) => {
-        const token = await AsyncStorage.getItem('authToken');
+        const token = await getToken();
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
@@ -41,7 +42,7 @@ api.interceptors.response.use(
                     
                     // Clear user data silently (inline to avoid a circular import with authService.js,
                     // which itself imports this client)
-                    await AsyncStorage.removeItem('authToken');
+                    await removeToken();
                     await AsyncStorage.removeItem('userData');
                     await AsyncStorage.removeItem('userId');
                     await AsyncStorage.removeItem('onboardingCompleted');

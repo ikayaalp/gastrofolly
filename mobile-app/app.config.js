@@ -105,7 +105,9 @@ export default {
                         "enforceNavigationBarContrast": false
                     }
                 }
-            ]
+            ],
+            "expo-secure-store",
+            "expo-video"
         ],
         "owner": "ismailkayaalp",
         "extra": {

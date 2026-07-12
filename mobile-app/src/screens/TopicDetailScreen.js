@@ -31,7 +31,7 @@ import {
     Bookmark,
     MoreVertical
 } from 'lucide-react-native';
-import { Video } from 'expo-av';
+import { useVideoPlayer, VideoView } from 'expo-video';
 import forumService from '../api/forumService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CommonActions } from '@react-navigation/native';
@@ -44,6 +44,12 @@ export default function TopicDetailScreen({ route, navigation }) {
     const tabBarHeight = useTabBarClearance();
     const { topicId } = route.params;
     const [topic, setTopic] = useState(null);
+
+    const videoSource = topic?.mediaUrl && (topic.mediaType === 'video' || topic.mediaType === 'VIDEO') ? topic.mediaUrl : null;
+    const player = useVideoPlayer(videoSource, p => {
+        p.loop = false;
+        p.pause();
+    });
     const [comments, setComments] = useState([]);
 
     const [loading, setLoading] = useState(true);
@@ -557,12 +563,12 @@ export default function TopicDetailScreen({ route, navigation }) {
             )}
             {topic.mediaUrl && (topic.mediaType === 'video' || topic.mediaType === 'VIDEO') && (
                 <View style={styles.mediaContainer}>
-                    <Video
-                        source={{ uri: topic.mediaUrl }}
+                    <VideoView
+                        player={player}
                         style={styles.topicMediaVideo}
-                        resizeMode="contain"
-                        useNativeControls
-                        shouldPlay={false}
+                        contentFit="contain"
+                        allowsFullscreen
+                        allowsPictureInPicture
                     />
                 </View>
             )}

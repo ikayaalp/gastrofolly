@@ -5,12 +5,25 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Asset } from 'expo-asset';
 import { View, ActivityIndicator } from 'react-native';
 import { SystemBars } from 'react-native-edge-to-edge';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import AppNavigator from './src/navigation/AppNavigator';
 import notificationService from './src/api/notificationService';
 import { initRevenueCat } from './src/api/revenueCatService';
 
 import { navigationRef } from './src/navigation/AppNavigator';
 import OfflineBanner from './src/components/OfflineBanner';
+import ErrorBoundary from './src/components/ErrorBoundary';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60_000,
+      gcTime: 300_000,
+      retry: 2,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 export default function App() {
   const [appIsReady, setAppIsReady] = useState(false);
@@ -88,13 +101,17 @@ export default function App() {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#000' }}>
-      <SafeAreaProvider>
-        <SystemBars style="light" />
-        <StatusBar style="light" />
-        <AppNavigator />
-        <OfflineBanner />
-      </SafeAreaProvider>
-    </GestureHandlerRootView>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#000' }}>
+          <SafeAreaProvider>
+            <SystemBars style="light" />
+            <StatusBar style="light" />
+            <AppNavigator />
+            <OfflineBanner />
+          </SafeAreaProvider>
+        </GestureHandlerRootView>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }

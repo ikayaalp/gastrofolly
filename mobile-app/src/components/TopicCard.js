@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, Dimensions, Modal, TouchableWithoutFeedback } from 'react-native';
 import { Image } from 'expo-image';
 import { ThumbsUp, MessageCircle, Clock, Film, Image as ImageIcon, User, Bookmark, MoreVertical } from 'lucide-react-native';
-import { Video, ResizeMode } from 'expo-av';
+import { useVideoPlayer, VideoView } from 'expo-video';
 
 const { width } = Dimensions.get('window');
 
@@ -12,6 +12,43 @@ const formatDuration = (millis) => {
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
     return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+};
+
+const InlineVideoPlayer = ({ source, itemId, setVideoDurations, setVideoProgress }) => {
+    const player = useVideoPlayer(source, p => {
+        p.timeUpdateEventInterval = 1;
+        p.loop = true;
+        p.muted = true;
+        p.play();
+    });
+
+    React.useEffect(() => {
+        if (!player) return;
+        const statusSub = player.addListener('statusChange', (event) => {
+            if (event.status === 'readyToPlay' && player.duration) {
+                if (setVideoDurations) setVideoDurations(prev => ({ ...prev, [itemId]: player.duration * 1000 }));
+            }
+        });
+        const timeSub = player.addListener('timeUpdate', (event) => {
+            if (player.playing && player.duration && setVideoProgress) {
+                const remaining = Math.max(0, (player.duration - player.currentTime) * 1000);
+                setVideoProgress(prev => ({ ...prev, [itemId]: remaining }));
+            }
+        });
+        return () => {
+            statusSub.remove();
+            timeSub.remove();
+        };
+    }, [player, itemId, setVideoDurations, setVideoProgress]);
+
+    return (
+        <VideoView
+            player={player}
+            style={[styles.topicMediaImage, { width: width, height: width }]}
+            contentFit="cover"
+            nativeControls={false}
+        />
+    );
 };
 
 export default function TopicCard({
@@ -298,25 +335,11 @@ export default function TopicCard({
                     activeOpacity={0.9}
                 >
                     {playingVideoId === item.id ? (
-                        <Video
-                            source={{ uri: item.mediaUrl }}
-                            style={[styles.topicMediaImage, { width: width, height: width }]}
-                            resizeMode={ResizeMode.COVER}
-                            shouldPlay
-                            isLooping
-                            isMuted
-                            progressUpdateIntervalMillis={1000}
-                            onPlaybackStatusUpdate={(status) => {
-                                if (status.isLoaded) {
-                                    if (status.durationMillis && !videoDurations?.[item.id] && setVideoDurations) {
-                                        setVideoDurations(prev => ({ ...prev, [item.id]: status.durationMillis }));
-                                    }
-                                    if (status.isPlaying && status.durationMillis && setVideoProgress) {
-                                        const remaining = Math.max(0, status.durationMillis - status.positionMillis);
-                                        setVideoProgress(prev => ({ ...prev, [item.id]: remaining }));
-                                    }
-                                }
-                            }}
+                        <InlineVideoPlayer
+                            source={item.mediaUrl}
+                            itemId={item.id}
+                            setVideoDurations={setVideoDurations}
+                            setVideoProgress={setVideoProgress}
                         />
                     ) : (
                         <Image

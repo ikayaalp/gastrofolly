@@ -41,6 +41,8 @@ import TopicCard from '../components/TopicCard';
 import ImageViewerModal from '../components/ImageViewerModal';
 import CustomAlert from '../components/CustomAlert';
 import ScreenContainer from '../components/ScreenContainer';
+import { getToken } from '../utils/tokenStorage';
+
 
 const { width } = Dimensions.get('window');
 const COVER_HEIGHT = 160;
@@ -220,7 +222,7 @@ export default function ChefSocialProfileScreen({ navigation, route }) {
         if (!bioText.trim() && !profile?.bio) { setBioEditing(false); return; }
         setBioSaving(true);
         try {
-            const token = await AsyncStorage.getItem('authToken');
+            const token = await getToken();
             const response = await fetch(`${require('../api/config').default.API_BASE_URL}/api/user/update-profile`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },

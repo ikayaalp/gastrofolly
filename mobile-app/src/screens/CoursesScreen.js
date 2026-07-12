@@ -1,75 +1,65 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { StyleSheet, Text, View, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl, Platform, ScrollView } from 'react-native';
 import { Image } from 'expo-image';
-import { useFocusEffect, CommonActions } from '@react-navigation/native';
+import { CommonActions } from '@react-navigation/native';
 import { ChefHat, Star, BookOpen, User, Clock } from 'lucide-react-native';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import courseService from '../api/courseService';
 import authService, { isPremiumUser } from '../api/authService';
 import favoritesService from '../services/favoritesService';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import ScreenContainer from '../components/ScreenContainer';
+import { getToken } from '../utils/tokenStorage';
+
 
 export default function CoursesScreen({ navigation }) {
-    const [courses, setCourses] = useState([]);
-    const [favorites, setFavorites] = useState([]);
     const [activeFilter, setActiveFilter] = useState('all');
-    const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const queryClient = useQueryClient();
 
-    const checkLoginStatus = async () => {
-        const token = await AsyncStorage.getItem('authToken');
-        setIsLoggedIn(!!token);
-        return !!token;
-    };
+    // ── useQuery: Login Status ──
+    const { data: isLoggedIn = false } = useQuery({
+        queryKey: ['coursesLoginStatus'],
+        queryFn: async () => {
+            const token = await getToken();
+            return !!token;
+        },
+    });
 
-    const loadCourses = async () => {
-        try {
-            const loggedIn = await checkLoginStatus();
-            if (!loggedIn) {
-                setLoading(false);
-                return;
-            }
-
-            // Always refresh from backend to get latest subscription status
+    // ── useQuery: Courses ──
+    const { data: courses = [], isLoading: coursesLoading } = useQuery({
+        queryKey: ['courses'],
+        queryFn: async () => {
             let user = await authService.refreshUserData();
             if (!user) user = await authService.getCurrentUser();
-            if (!isPremiumUser(user)) {
-                setCourses([]); // Clear courses if no active subscription
-                setLoading(false);
-                setRefreshing(false);
-                return;
-            }
+            if (!isPremiumUser(user)) return [];
 
             const result = await courseService.getUserCourses();
-            if (result.success) {
-                setCourses(result.data.courses || []);
-            }
-        } catch (error) {
-            console.error('Error loading courses:', error);
-        } finally {
-            setLoading(false);
-            setRefreshing(false);
-        }
-    };
+            if (!result.success) throw new Error(result.error || 'Courses fetch failed');
+            return result.data.courses || [];
+        },
+        enabled: isLoggedIn,
+    });
 
-    useFocusEffect(
-        useCallback(() => {
-            loadCourses();
-            loadFavorites();
-        }, [])
-    );
+    // ── useQuery: Favorites ──
+    const { data: favorites = [] } = useQuery({
+        queryKey: ['favorites'],
+        queryFn: async () => {
+            return await favoritesService.getFavorites();
+        },
+        enabled: isLoggedIn,
+    });
 
-    const loadFavorites = async () => {
-        const favs = await favoritesService.getFavorites();
-        setFavorites(favs);
-    };
+    const loading = coursesLoading;
 
-    const onRefresh = () => {
+    const onRefresh = useCallback(async () => {
         setRefreshing(true);
-        loadCourses();
-        loadFavorites();
-    };
+        await Promise.all([
+            queryClient.refetchQueries({ queryKey: ['coursesLoginStatus'] }),
+            queryClient.refetchQueries({ queryKey: ['courses'] }),
+            queryClient.refetchQueries({ queryKey: ['favorites'] }),
+        ]);
+        setRefreshing(false);
+    }, [queryClient]);
 
     const renderCourseItem = ({ item }) => {
         const courseData = item.course || item;

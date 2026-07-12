@@ -12,11 +12,11 @@ import ScreenContainer from '../components/ScreenContainer';
 import { Image } from 'expo-image';
 import { ArrowLeft, Heart, Trash2, BookOpen } from 'lucide-react-native';
 import favoriteService from '../services/favoritesService';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import CustomAlert from '../components/CustomAlert';
 
 export default function FavoritesScreen({ navigation }) {
-    const [favorites, setFavorites] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const queryClient = useQueryClient();
     const [alertVisible, setAlertVisible] = useState(false);
     const [alertConfig, setAlertConfig] = useState({
         title: '',
@@ -25,24 +25,21 @@ export default function FavoritesScreen({ navigation }) {
         type: 'info'
     });
 
+    const { data: favorites = [], isLoading } = useQuery({
+        queryKey: ['favorites'],
+        queryFn: async () => {
+            const result = await favoriteService.getFavorites();
+            if (result && result.success === false) {
+                throw new Error(result.message || 'Error fetching favorites');
+            }
+            return result.data || result || [];
+        }
+    });
+
     const showAlert = (title, message, buttons = [{ text: 'Tamam' }], type = 'info') => {
         setAlertConfig({ title, message, buttons, type });
         setAlertVisible(true);
     };
-
-    const loadFavorites = useCallback(async () => {
-        setLoading(true);
-        const favs = await favoriteService.getFavorites();
-        setFavorites(favs);
-        setLoading(false);
-    }, []);
-
-    useEffect(() => {
-        const unsubscribe = navigation.addListener('focus', () => {
-            loadFavorites();
-        });
-        return unsubscribe;
-    }, [navigation, loadFavorites]);
 
     const handleRemoveFavorite = (courseId, courseTitle) => {
         showAlert(
@@ -56,8 +53,7 @@ export default function FavoritesScreen({ navigation }) {
                     onPress: async () => {
                         const result = await favoriteService.removeFavorite(courseId);
                         if (result) {
-                            // Reload favorites after successful removal
-                            loadFavorites();
+                            queryClient.invalidateQueries({ queryKey: ['favorites'] });
                         }
                     }
                 }
@@ -110,7 +106,7 @@ export default function FavoritesScreen({ navigation }) {
         </View>
     );
 
-    if (loading) {
+    if (isLoading) {
         return (
             <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color="#ea580c" />

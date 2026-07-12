@@ -1,9 +1,11 @@
 import config from './config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getToken } from '../utils/tokenStorage';
+
 
 export const sendMessageToAI = async (messages) => {
     try {
-        const token = await AsyncStorage.getItem('authToken');
+        const token = await getToken();
         const headers = {
             'Content-Type': 'application/json',
         };

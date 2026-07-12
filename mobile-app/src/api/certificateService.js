@@ -1,12 +1,14 @@
 import api from './apiClient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from './config';
+import { getToken } from '../utils/tokenStorage';
+
 
 const certificateService = {
     // Get user certificates
     getCertificates: async () => {
         try {
-            const authToken = await AsyncStorage.getItem('authToken');
+            const authToken = await getToken();
             if (!authToken) {
                 return { success: false, error: 'Oturum açılmamış' };
             }

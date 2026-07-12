@@ -33,6 +33,8 @@ import favoritesService from '../services/favoritesService';
 import LoginRequiredModal from '../components/LoginRequiredModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ScreenContainer from '../components/ScreenContainer';
+import { getToken } from '../utils/tokenStorage';
+
 
 const { width } = Dimensions.get('window');
 
@@ -66,7 +68,7 @@ export default function CourseDetailScreen({ route, navigation }) {
         React.useCallback(() => {
             // Force refresh user data from server to check for new subscription
             const refreshData = async () => {
-                const token = await AsyncStorage.getItem('authToken');
+                const token = await getToken();
                 if (!token) return; // Don't try to refresh if not logged in
 
                 try {
@@ -87,7 +89,7 @@ export default function CourseDetailScreen({ route, navigation }) {
             // We let initial load handle the very first course load and auth check.
             // But if user navigates back to this screen while logged in, we should reload course
             const checkAndLoadCourse = async () => {
-                const token = await AsyncStorage.getItem('authToken');
+                const token = await getToken();
                 if (token) loadCourseDetails();
             };
             checkAndLoadCourse();
@@ -101,7 +103,7 @@ export default function CourseDetailScreen({ route, navigation }) {
     // Initial load + auth check
     useEffect(() => {
         const checkAuthAndLoad = async () => {
-            const token = await AsyncStorage.getItem('authToken');
+            const token = await getToken();
             const loggedIn = !!token;
             setIsLoggedIn(loggedIn);
 
