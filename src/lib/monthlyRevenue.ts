@@ -1,5 +1,8 @@
 // Server-only utility — no "use client"
 
+/** Grafiklerde gösterilen en erken ay: Nisan 2026 */
+export const CHART_DATA_START = Date.UTC(2026, 3, 1) // 1 Nisan 2026
+
 export const TURKISH_MONTHS = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara']
 export const TURKISH_MONTHS_LONG = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık']
 
@@ -20,9 +23,10 @@ export function buildMonthlySeries(rows: { month: Date; total: number }[]) {
     for (let i = 11; i >= 0; i--) {
         const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i, 1))
         const key = `${d.getUTCFullYear()}-${d.getUTCMonth()}`
+        const isBeforeStart = d.getTime() < CHART_DATA_START
         series.push({
             month: TURKISH_MONTHS[d.getUTCMonth()],
-            total: totalsByKey.get(key) || 0,
+            total: isBeforeStart ? 0 : (totalsByKey.get(key) || 0),
         })
     }
     return series
