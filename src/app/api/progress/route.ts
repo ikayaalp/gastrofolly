@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getAuthUser } from "@/lib/mobileAuth"
+import { isPremiumUser } from "@/lib/subscription"
 
 // Helper to get userId from session or JWT token
 async function getUserId(request: NextRequest): Promise<string | null> {
@@ -29,7 +30,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Kullanıcının kursa kayıtlı olup olmadığını kontrol et
-    const enrollment = await prisma.enrollment.findUnique({
+    let enrollment = await prisma.enrollment.findUnique({
       where: {
         userId_courseId: {
           userId: userId,
@@ -39,10 +40,26 @@ export async function POST(request: NextRequest) {
     })
 
     if (!enrollment) {
-      return NextResponse.json(
-        { error: "Not enrolled in this course" },
-        { status: 403 }
-      )
+      // Erişim kontrolü ve Lazy Enrollment
+      const user = await prisma.user.findUnique({ where: { id: userId } })
+      const lesson = await prisma.lesson.findUnique({ where: { id: lessonId } })
+      
+      const hasAccess = lesson?.isFree || (user && isPremiumUser(user))
+      
+      if (!hasAccess) {
+        return NextResponse.json(
+          { error: "Premium subscription required" },
+          { status: 403 }
+        )
+      }
+
+      // Kullanıcının erişim yetkisi varsa anında enrollment oluştur (mobil için hayat kurtarıcı)
+      enrollment = await prisma.enrollment.create({
+        data: {
+          userId: userId,
+          courseId: courseId,
+        }
+      })
     }
 
     // İlerleme kaydını oluştur veya güncelle
