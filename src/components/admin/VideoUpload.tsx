@@ -79,18 +79,21 @@ export default function VideoUpload({ onVideoUploaded, lessonId }: VideoUploadPr
           }
 
           xhr.onload = () => {
-            if (xhr.status === 200 || xhr.status === 201) {
-              // Yükleme tamamlandı
-              const data = JSON.parse(xhr.responseText)
-              setSuccess(`Video başarıyla yüklendi: ${file.name}`)
-              setUploadProgress(100)
-              onVideoUploaded(data.secure_url)
-              resolve()
-            } else if (xhr.status === 206) {
-              // Kısmi yükleme başarılı, sonraki parçaya geç
-              start = end
-              end = Math.min(start + chunkSize, file.size)
-              uploadNextChunk()
+            if (xhr.status === 200 || xhr.status === 201 || xhr.status === 206) {
+              // Cloudinary intermediate chunks return 200 OK instead of 206 Partial Content.
+              // So we check if there are more chunks left to upload based on file size.
+              if (end < file.size) {
+                start = end
+                end = Math.min(start + chunkSize, file.size)
+                uploadNextChunk()
+              } else {
+                // Upload finished
+                const data = JSON.parse(xhr.responseText)
+                setSuccess(`Video başarıyla yüklendi: ${file.name}`)
+                setUploadProgress(100)
+                onVideoUploaded(data.secure_url)
+                resolve()
+              }
             } else {
               let errorMsg = `Upload başarısız (${xhr.status})`
               try {

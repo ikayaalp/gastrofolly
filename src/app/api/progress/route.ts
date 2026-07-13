@@ -41,7 +41,16 @@ export async function POST(request: NextRequest) {
 
     if (!enrollment) {
       // Erişim kontrolü ve Lazy Enrollment
-      const user = await prisma.user.findUnique({ where: { id: userId } })
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          id: true,
+          role: true,
+          subscriptionPlan: true,
+          subscriptionEndDate: true,
+        }
+      })
+
       // 1. Güvenlik Yaması: lesson'ı doğrudan parametreden gelen courseId ile birlikte arıyoruz.
       // Eğer bu ikisi eşleşmiyorsa, lessonId sahtedir (farklı bir kursun ücretsiz dersidir).
       const lesson = await prisma.lesson.findFirst({ 
@@ -51,21 +60,60 @@ export async function POST(request: NextRequest) {
         } 
       })
       
-      // 3. İlk ders (index 0) önizleme ayrıcalığı
-      // lesson sırası `order` alanıyla tutuluyor. Eğer order === 0 ise (veya 1, veri yapısına göre)
-      // veya isFree ise veya kullanıcı Premium ise
-      const isFirstLessonPreview = lesson?.order === 0; // order genellikle 0 veya 1'den başlar, şemanıza göre ayarlayın.
-      
-      const hasAccess = lesson?.isFree || isFirstLessonPreview || (user && isPremiumUser(user))
-      
-      if (!hasAccess || !lesson) {
+      if (!lesson) {
         return NextResponse.json(
           { error: "Premium subscription required or invalid lesson matching" },
           { status: 403 }
         )
       }
 
-      // 2. Race Condition Yaması: Eş zamanlı gelen 2 istekte çökmemesi için create yerine upsert kullanılıyor
+      // 2. Kurs bilgilerini ve ilk dersini çekiyoruz
+      const course = await prisma.course.findUnique({
+        where: { id: courseId },
+        select: {
+          instructorId: true,
+          isFree: true,
+          lessons: {
+            orderBy: { order: 'asc' },
+            take: 1,
+            select: { id: true }
+          }
+        }
+      })
+
+      // İlk ders önizleme ayrıcalığı (sıralamada ilk dersin id'si)
+      const isFirstLessonPreview = course?.lessons?.[0]?.id === lessonId;
+      const isAdmin = user?.role === 'ADMIN';
+      const isInstructor = course?.instructorId === userId;
+
+      // Kurs satın alınmış mı kontrol et
+      const payment = await prisma.payment.findFirst({
+        where: {
+          userId: userId,
+          courseId: courseId,
+          status: 'COMPLETED',
+          amount: { gt: 0 }
+        }
+      })
+      const hasPaid = !!payment;
+
+      const hasAccess = 
+        lesson.isFree || 
+        isFirstLessonPreview || 
+        (user && isPremiumUser(user)) || 
+        isAdmin || 
+        isInstructor || 
+        hasPaid ||
+        course?.isFree;
+      
+      if (!hasAccess) {
+        return NextResponse.json(
+          { error: "Premium subscription required or invalid access" },
+          { status: 403 }
+        )
+      }
+
+      // 3. Race Condition Yaması: Eş zamanlı gelen 2 istekte çökmemesi için create yerine upsert kullanılıyor
       enrollment = await prisma.enrollment.upsert({
         where: {
           userId_courseId: {
