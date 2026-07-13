@@ -154,42 +154,49 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
     if (!video || !lesson.videoUrl || isYouTubeUrl(lesson.videoUrl)) return;
 
     const url = getCloudinaryHlsUrl(lesson.videoUrl) || lesson.videoUrl;
+    const isHls = url.includes('.m3u8');
 
-    if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      // Safari natively supports HLS
-      video.src = url;
-    } else if (Hls.isSupported()) {
-      const hls = new Hls({
-        debug: false,
-        enableWorker: true
-      });
-      hls.loadSource(url);
-      hls.attachMedia(video);
-      hlsRef.current = hls;
+    if (isHls) {
+      if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        // Safari natively supports HLS
+        video.src = url;
+      } else if (Hls.isSupported()) {
+        const hls = new Hls({
+          debug: false,
+          enableWorker: false // Disable worker to prevent CSP/execution issues
+        });
+        hls.loadSource(url);
+        hls.attachMedia(video);
+        hlsRef.current = hls;
 
-      hls.on(Hls.Events.MANIFEST_PARSED, function() {
-        // manifest parsed
-      });
+        hls.on(Hls.Events.MANIFEST_PARSED, function() {
+          // manifest parsed
+        });
 
-      hls.on(Hls.Events.ERROR, function (event, data) {
-        if (data.fatal) {
-          console.error('HLS error:', data);
-          switch(data.type) {
-            case Hls.ErrorTypes.NETWORK_ERROR:
-              hls.startLoad();
-              break;
-            case Hls.ErrorTypes.MEDIA_ERROR:
-              hls.recoverMediaError();
-              break;
-            default:
-              hls.destroy();
-              break;
+        hls.on(Hls.Events.ERROR, function (event, data) {
+          if (data.fatal) {
+            console.error('HLS error:', data);
+            switch(data.type) {
+              case Hls.ErrorTypes.NETWORK_ERROR:
+                hls.startLoad();
+                break;
+              case Hls.ErrorTypes.MEDIA_ERROR:
+                hls.recoverMediaError();
+                break;
+              default:
+                hls.destroy();
+                setHasError(true);
+                setIsLoading(false);
+                break;
+            }
           }
-        }
-      });
+        });
+      } else {
+        video.src = url;
+      }
     } else {
-      // Fallback
-      video.src = lesson.videoUrl;
+      // Normal MP4 or other video formats
+      video.src = url;
     }
 
     return () => {
