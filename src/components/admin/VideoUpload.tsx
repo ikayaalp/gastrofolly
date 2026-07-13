@@ -69,7 +69,6 @@ export default function VideoUpload({ onVideoUploaded, lessonId }: VideoUploadPr
           formData.append('file', chunk)
           formData.append('upload_preset', uploadPreset)
           formData.append('folder', folder)
-          formData.append('transformation', 'c_limit,w_1280,h_720')
 
           xhr.upload.onprogress = (e) => {
             if (e.lengthComputable) {

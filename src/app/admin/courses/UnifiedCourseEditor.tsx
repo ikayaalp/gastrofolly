@@ -356,7 +356,6 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
                     formData.append('file', chunk)
                     formData.append('upload_preset', uploadPreset)
                     formData.append('folder', 'chef-courses/lessons')
-                    formData.append('transformation', 'c_limit,w_1280,h_720')
 
                     xhr.upload.onprogress = (e) => {
                         if (e.lengthComputable) {
