@@ -338,42 +338,65 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
             formData.append('upload_preset', uploadPreset)
             formData.append('folder', 'chef-courses/lessons') // Organize in folders
 
-            // 3. Upload with XHR for progress
+            // 3. Upload with XHR (Chunked Upload to support >100MB)
             await new Promise<void>((resolve, reject) => {
-                const xhr = new XMLHttpRequest()
-                xhr.open('POST', url)
+                const chunkSize = 20 * 1024 * 1024 // 20MB chunks
+                const XUniqueUploadId = `upload_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
+                let start = 0
+                let end = Math.min(chunkSize, file.size)
 
-                xhr.upload.onprogress = (e) => {
-                    if (e.lengthComputable) {
-                        // Optional: update progress state if we want to show percentage
-                        // const percentComplete = (e.loaded / e.total) * 100
+                const uploadNextChunk = () => {
+                    const xhr = new XMLHttpRequest()
+                    xhr.open('POST', url)
+                    xhr.setRequestHeader('X-Unique-Upload-Id', XUniqueUploadId)
+                    xhr.setRequestHeader('Content-Range', `bytes ${start}-${end - 1}/${file.size}`)
 
+                    const chunk = file.slice(start, end)
+                    const formData = new FormData()
+                    formData.append('file', chunk)
+                    formData.append('upload_preset', uploadPreset)
+                    formData.append('folder', 'chef-courses/lessons')
+                    formData.append('transformation', 'c_limit,w_1280,h_720')
+
+                    xhr.upload.onprogress = (e) => {
+                        if (e.lengthComputable) {
+                            // Optional: update progress state if we want to show percentage
+                            // const loadedBytes = start + e.loaded
+                            // const percentComplete = Math.round((loadedBytes / file.size) * 100)
+                        }
                     }
+
+                    xhr.onload = () => {
+                        if (xhr.status === 200 || xhr.status === 201) {
+                            const data = JSON.parse(xhr.responseText)
+                            setLessonForm(prev => ({
+                                ...prev,
+                                videoUrl: data.secure_url,
+                                duration: data.duration ? Math.ceil(data.duration / 60) : prev.duration
+                            }))
+                            resolve()
+                        } else if (xhr.status === 206) {
+                            // Kısmi yükleme başarılı, sonraki parçaya geç
+                            start = end
+                            end = Math.min(start + chunkSize, file.size)
+                            uploadNextChunk()
+                        } else {
+                            let errorMsg = `Upload başarısız (${xhr.status})`
+                            try {
+                                const errData = JSON.parse(xhr.responseText)
+                                if (errData?.error?.message) {
+                                    errorMsg = errData.error.message
+                                }
+                            } catch {}
+                            reject(new Error(errorMsg))
+                        }
+                    }
+
+                    xhr.onerror = () => reject(new Error('Ağ hatası: İnternet bağlantınızı kontrol edin veya dosya boyutunu küçültmeyi deneyin'))
+                    xhr.send(formData)
                 }
 
-                xhr.onload = () => {
-                    if (xhr.status === 200) {
-                        const data = JSON.parse(xhr.responseText)
-                        setLessonForm(prev => ({
-                            ...prev,
-                            videoUrl: data.secure_url,
-                            duration: data.duration ? Math.ceil(data.duration / 60) : prev.duration // Cloudinary returns seconds
-                        }))
-                        resolve()
-                    } else {
-                        let errorMsg = `Upload başarısız (${xhr.status})`
-                        try {
-                            const errData = JSON.parse(xhr.responseText)
-                            if (errData?.error?.message) {
-                                errorMsg = errData.error.message
-                            }
-                        } catch {}
-                        reject(new Error(errorMsg))
-                    }
-                }
-
-                xhr.onerror = () => reject(new Error('Ağ hatası: İnternet bağlantınızı kontrol edin veya dosya boyutunu küçültmeyi deneyin'))
-                xhr.send(formData)
+                uploadNextChunk()
             })
 
         } catch (error) {
