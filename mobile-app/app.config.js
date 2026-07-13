@@ -47,7 +47,7 @@ export default {
         "name": "Culinora",
         "slug": "chef-2-0",
 
-        "scheme": "chef2",
+        "scheme": ["chef2", "com.chef2.app"],
         "version": "1.1.5",
         "orientation": "portrait",
         "icon": "./assets/icon_blackBg.png",
