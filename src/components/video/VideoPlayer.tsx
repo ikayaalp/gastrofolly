@@ -57,6 +57,7 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
   const [playbackRate, setPlaybackRate] = useState(1);
   const [showSpeedMenu, setShowSpeedMenu] = useState(false);
   const [autoNextSeconds, setAutoNextSeconds] = useState<number | null>(null);
+  const [retryKey, setRetryKey] = useState(0);
   const wasPlayingRef = useRef(false);
   const isSeekingRef = useRef(false);
   const seekTimeRef = useRef<number>(0);
@@ -170,7 +171,10 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
         hlsRef.current = hls;
 
         hls.on(Hls.Events.MANIFEST_PARSED, function() {
-          // manifest parsed
+          // Retry sonrası yeniden kurulan oynatıcı otomatik devam etsin
+          if (retryKey > 0) {
+            video.play().catch(() => {});
+          }
         });
 
         hls.on(Hls.Events.ERROR, function (event, data) {
@@ -185,6 +189,7 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
                 break;
               default:
                 hls.destroy();
+                hlsRef.current = null;
                 setHasError(true);
                 setIsLoading(false);
                 break;
@@ -199,13 +204,19 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
       video.src = url;
     }
 
+    // Safari native HLS ve düz MP4 kaynaklarında retry sonrası otomatik devam et
+    // (hls.js dalında bu, MANIFEST_PARSED callback'i içinde ayrıca yapılıyor)
+    if (retryKey > 0 && (!isHls || video.canPlayType('application/vnd.apple.mpegurl') || !Hls.isSupported())) {
+      video.play().catch(() => {});
+    }
+
     return () => {
       if (hlsRef.current) {
         hlsRef.current.destroy();
         hlsRef.current = null;
       }
     };
-  }, [lesson.videoUrl]);
+  }, [lesson.videoUrl, retryKey]);
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -496,7 +507,7 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
       video.pause();
       setShowCenterPlay(true);
     } else {
-      video.play();
+      video.play().catch(() => {});
       setShowCenterPlay(false);
     }
   };
@@ -505,7 +516,7 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
     e.stopPropagation(); // Üst div'e tıklamayı tetiklemesin
     const video = videoRef.current;
     if (!video) return;
-    video.play();
+    video.play().catch(() => {});
     setShowCenterPlay(false);
   };
 
@@ -560,12 +571,12 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
                   <button
                     onClick={(e) => {
                       e.stopPropagation()
-                      const video = videoRef.current
-                      if (!video) return
                       setHasError(false)
                       setIsLoading(true)
-                      video.load()
-                      video.play().catch(() => { })
+                      // HLS.js kaynakları video.src ile değil hls.attachMedia ile bağlı
+                      // olduğundan video.load() yeterli değil; oynatıcıyı tamamen
+                      // yeniden kurmak için HLS setup effect'ini retryKey ile tetikle.
+                      setRetryKey((k) => k + 1)
                     }}
                     className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
                   >
