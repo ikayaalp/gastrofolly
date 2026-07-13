@@ -58,6 +58,8 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
   const [showSpeedMenu, setShowSpeedMenu] = useState(false);
   const [autoNextSeconds, setAutoNextSeconds] = useState<number | null>(null);
   const wasPlayingRef = useRef(false);
+  const isSeekingRef = useRef(false);
+  const seekTimeRef = useRef<number>(0);
 
   // Kontrol barı için auto-hide id
   const hideControlsTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -89,7 +91,11 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
     const video = videoRef.current
     if (!video) return
 
-    const updateTime = () => setCurrentTime(video.currentTime)
+    const updateTime = () => {
+      if (!isSeekingRef.current) {
+        setCurrentTime(video.currentTime)
+      }
+    }
     const updateDuration = () => setDuration(video.duration)
     const handlePlay = () => setIsPlaying(true)
     const handlePause = () => setIsPlaying(false)
@@ -117,6 +123,7 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
 
     video.addEventListener('timeupdate', updateTime)
     video.addEventListener('loadedmetadata', updateDuration)
+    video.addEventListener('durationchange', updateDuration)
     video.addEventListener('play', handlePlay)
     video.addEventListener('pause', handlePause)
     video.addEventListener('canplay', handleCanPlay)
@@ -129,6 +136,7 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
     return () => {
       video.removeEventListener('timeupdate', updateTime)
       video.removeEventListener('loadedmetadata', updateDuration)
+      video.removeEventListener('durationchange', updateDuration)
       video.removeEventListener('play', handlePlay)
       video.removeEventListener('pause', handlePause)
       video.removeEventListener('canplay', handleCanPlay)
@@ -301,24 +309,28 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
     if (video) {
       wasPlayingRef.current = !video.paused;
       video.pause();
+      isSeekingRef.current = true;
+      seekTimeRef.current = video.currentTime;
       setIsSeeking(true);
     }
   };
 
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const video = videoRef.current;
-    if (!video) return;
     const newTime = parseFloat(e.target.value);
-    video.currentTime = newTime;
+    seekTimeRef.current = newTime;
     setCurrentTime(newTime);
   };
 
   const handleSeekEnd = () => {
     const video = videoRef.current;
+    isSeekingRef.current = false;
     setIsSeeking(false);
-    if (video && wasPlayingRef.current) {
-      video.play();
-      setShowCenterPlay(false);
+    if (video) {
+      video.currentTime = seekTimeRef.current;
+      if (wasPlayingRef.current) {
+        video.play().catch(() => {});
+        setShowCenterPlay(false);
+      }
     }
   };
 
@@ -384,6 +396,7 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
   };
 
   const formatTime = (time: number) => {
+    if (isNaN(time) || !isFinite(time)) return "0:00"
     const minutes = Math.floor(time / 60)
     const seconds = Math.floor(time % 60)
     return `${minutes}:${seconds.toString().padStart(2, '0')}`
@@ -492,7 +505,7 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
   return (
     <div
       ref={playerContainerRef}
-      className={`relative w-full aspect-video max-h-[85vh] bg-black group flex-shrink-0 select-none ${isFullscreen ? 'w-screen h-screen max-w-none max-h-none !aspect-auto !rounded-none fullscreen-active z-[10000]' : ''}`}
+      className={`relative w-full aspect-video max-h-[85dvh] bg-black group flex-shrink-0 select-none ${isFullscreen ? 'w-screen h-screen max-w-none max-h-none !aspect-auto !rounded-none fullscreen-active z-[10000]' : ''}`}
       style={isFullscreen ? { minHeight: '100vh', minWidth: '100vw' } : {}}
       onClick={handleVideoAreaClick}
       onContextMenu={(e) => e.preventDefault()} // Sağ tık kapat (Anti-Download)
@@ -596,7 +609,7 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
 
                   {/* 10sn geri sar */}
                   <button
-                    onClick={() => skip(-10)}
+                    onClick={(e) => { e.stopPropagation(); skip(-10); }}
                     className="text-white hover:text-orange-400 transition-colors rounded-full p-2"
                     title="10 saniye geri"
                   >
@@ -605,7 +618,7 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
 
                   {/* Play/Pause */}
                   <button
-                    onClick={togglePlay}
+                    onClick={(e) => { e.stopPropagation(); togglePlay(); }}
                     className="bg-orange-600 hover:bg-orange-700 text-white p-2 md:p-3 rounded-full transition-colors mx-1 md:mx-2"
                     title={isPlaying ? "Duraklat" : "Oynat"}
                   >
@@ -618,7 +631,7 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
 
                   {/* 10sn ileri sar */}
                   <button
-                    onClick={() => skip(10)}
+                    onClick={(e) => { e.stopPropagation(); skip(10); }}
                     className="text-white hover:text-orange-400 transition-colors rounded-full p-2"
                     title="10 saniye ileri"
                   >
@@ -639,7 +652,7 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
 
                   {/* Ses kontrolü */}
                   <button
-                    onClick={toggleMute}
+                    onClick={(e) => { e.stopPropagation(); toggleMute(); }}
                     className="text-white hover:text-orange-400 transition-colors ml-2 md:ml-4"
                     title={isMuted ? "Sesi Aç" : "Sesi Kapat"}
                   >
@@ -692,7 +705,7 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
                     )}
                   </div>
                   <button
-                    onClick={toggleFullscreen}
+                    onClick={(e) => { e.stopPropagation(); toggleFullscreen(); }}
                     className="text-white hover:text-orange-400 transition-colors"
                     title={isFullscreen ? "Tam ekrandan çık" : "Tam ekran"}
                   >
