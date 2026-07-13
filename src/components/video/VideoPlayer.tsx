@@ -157,6 +157,32 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
     const url = getCloudinaryHlsUrl(lesson.videoUrl) || lesson.videoUrl;
     const isHls = url.includes('.m3u8');
 
+    // HLS başarısız olursa evrensel desteklenen ham MP4'e düşmek için watchdog.
+    let hlsWatchdog: ReturnType<typeof setTimeout> | null = null;
+    let didFallback = false;
+    const clearHlsWatchdog = () => {
+      if (hlsWatchdog) { clearTimeout(hlsWatchdog); hlsWatchdog = null; }
+    };
+    // hls.js/MSE bazı tarayıcılarda (özellikle bazı masaüstü Chrome
+    // sürümlerinde) fMP4 HLS akışını oynatamıyor. Böyle bir durumda hata
+    // ekranı göstermek yerine ham MP4'e (native, evrensel destekli) düş.
+    const fallbackToNativeMp4 = () => {
+      if (didFallback) return;
+      didFallback = true;
+      clearHlsWatchdog();
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
+      }
+      setHasError(false);
+      setIsLoading(true);
+      // lesson.videoUrl orijinal .mp4 URL'ini tutar (getCloudinaryHlsUrl onu
+      // .m3u8'e çeviriyordu); native oynatma için ham MP4'ü kullan.
+      video.src = lesson.videoUrl as string;
+      video.load();
+      video.play().catch(() => {});
+    };
+
     if (isHls) {
       if (video.canPlayType('application/vnd.apple.mpegurl')) {
         // Safari natively supports HLS
@@ -169,6 +195,13 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
         hls.loadSource(url);
         hls.attachMedia(video);
         hlsRef.current = hls;
+
+        // HLS 10sn içinde oynatılabilir veri üretemezse ham MP4'e düş.
+        // (Manifest hatası, sessiz MSE takılması, worker sorunu vb. hepsini yakalar.)
+        hlsWatchdog = setTimeout(() => {
+          if (video.readyState < 1) fallbackToNativeMp4();
+        }, 10000);
+        video.addEventListener('loadeddata', clearHlsWatchdog, { once: true });
 
         hls.on(Hls.Events.MANIFEST_PARSED, function() {
           // Retry sonrası yeniden kurulan oynatıcı otomatik devam etsin
@@ -188,10 +221,8 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
                 hls.recoverMediaError();
                 break;
               default:
-                hls.destroy();
-                hlsRef.current = null;
-                setHasError(true);
-                setIsLoading(false);
+                // Kurtarılamayan fatal hata → hemen ham MP4'e düş
+                fallbackToNativeMp4();
                 break;
             }
           }
@@ -211,6 +242,8 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
     }
 
     return () => {
+      clearHlsWatchdog();
+      video.removeEventListener('loadeddata', clearHlsWatchdog);
       if (hlsRef.current) {
         hlsRef.current.destroy();
         hlsRef.current = null;
