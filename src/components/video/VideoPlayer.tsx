@@ -4,8 +4,6 @@ import React, { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, RotateCcw, RotateCw, SkipBack, SkipForward, Loader2, AlertTriangle, Gauge, X } from "lucide-react"
 import YouTubePlayer from "./YouTubePlayer"
-import Hls from "hls.js"
-import { getCloudinaryHlsUrl } from "@/lib/cloudinaryVideo"
 
 const PLAYBACK_RATES = [0.5, 0.75, 1, 1.25, 1.5, 2] as const
 const AUTO_NEXT_SECONDS = 5
@@ -84,10 +82,6 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
     };
   }, []);
 
-
-
-  const hlsRef = useRef<Hls | null>(null);
-
   useEffect(() => {
     const video = videoRef.current
     if (!video) return
@@ -149,106 +143,23 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
     }
   }, [nextLesson, hasFullAccess])
 
-  // HLS Setup Effect
+  // Video Kaynak Kurulumu
+  // Ham .mp4'ü doğrudan native oynatıcıya veriyoruz — HLS'e (sp_auto) çevirmiyoruz.
+  // Cloudinary free planda sp_auto HLS varyantları ilk istekte (on-demand) üretiliyor,
+  // bu da yeni yüklenen videolarda "soğuk başlama" hatalarına yol açıyordu. Ham MP4
+  // yükler yüklemez hazır; tüm tarayıcılarda native oynar, range-request ile sadece
+  // izlenen kısmı indirir, seek ve oynatma hızı native çalışır. (YouTube ayrı bileşende.)
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !lesson.videoUrl || isYouTubeUrl(lesson.videoUrl)) return;
 
-    const url = getCloudinaryHlsUrl(lesson.videoUrl) || lesson.videoUrl;
-    const isHls = url.includes('.m3u8');
+    video.src = lesson.videoUrl;
+    video.load();
 
-    // HLS başarısız olursa evrensel desteklenen ham MP4'e düşmek için watchdog.
-    let hlsWatchdog: ReturnType<typeof setTimeout> | null = null;
-    let didFallback = false;
-    const clearHlsWatchdog = () => {
-      if (hlsWatchdog) { clearTimeout(hlsWatchdog); hlsWatchdog = null; }
-    };
-    // hls.js/MSE bazı tarayıcılarda (özellikle bazı masaüstü Chrome
-    // sürümlerinde) fMP4 HLS akışını oynatamıyor. Böyle bir durumda hata
-    // ekranı göstermek yerine ham MP4'e (native, evrensel destekli) düş.
-    const fallbackToNativeMp4 = () => {
-      if (didFallback) return;
-      didFallback = true;
-      clearHlsWatchdog();
-      if (hlsRef.current) {
-        hlsRef.current.destroy();
-        hlsRef.current = null;
-      }
-      setHasError(false);
-      setIsLoading(true);
-      // lesson.videoUrl orijinal .mp4 URL'ini tutar (getCloudinaryHlsUrl onu
-      // .m3u8'e çeviriyordu); native oynatma için ham MP4'ü kullan.
-      video.src = lesson.videoUrl as string;
-      video.load();
-      video.play().catch(() => {});
-    };
-
-    if (isHls) {
-      if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        // Safari natively supports HLS
-        video.src = url;
-      } else if (Hls.isSupported()) {
-        const hls = new Hls({
-          debug: false,
-          enableWorker: false // Disable worker to prevent CSP/execution issues
-        });
-        hls.loadSource(url);
-        hls.attachMedia(video);
-        hlsRef.current = hls;
-
-        // HLS 10sn içinde oynatılabilir veri üretemezse ham MP4'e düş.
-        // (Manifest hatası, sessiz MSE takılması, worker sorunu vb. hepsini yakalar.)
-        hlsWatchdog = setTimeout(() => {
-          if (video.readyState < 1) fallbackToNativeMp4();
-        }, 10000);
-        video.addEventListener('loadeddata', clearHlsWatchdog, { once: true });
-
-        hls.on(Hls.Events.MANIFEST_PARSED, function() {
-          // Retry sonrası yeniden kurulan oynatıcı otomatik devam etsin
-          if (retryKey > 0) {
-            video.play().catch(() => {});
-          }
-        });
-
-        hls.on(Hls.Events.ERROR, function (event, data) {
-          if (data.fatal) {
-            console.error('HLS error:', data);
-            switch(data.type) {
-              case Hls.ErrorTypes.NETWORK_ERROR:
-                hls.startLoad();
-                break;
-              case Hls.ErrorTypes.MEDIA_ERROR:
-                hls.recoverMediaError();
-                break;
-              default:
-                // Kurtarılamayan fatal hata → hemen ham MP4'e düş
-                fallbackToNativeMp4();
-                break;
-            }
-          }
-        });
-      } else {
-        video.src = url;
-      }
-    } else {
-      // Normal MP4 or other video formats
-      video.src = url;
-    }
-
-    // Safari native HLS ve düz MP4 kaynaklarında retry sonrası otomatik devam et
-    // (hls.js dalında bu, MANIFEST_PARSED callback'i içinde ayrıca yapılıyor)
-    if (retryKey > 0 && (!isHls || video.canPlayType('application/vnd.apple.mpegurl') || !Hls.isSupported())) {
+    // "Tekrar Dene" (retryKey artışı) sonrası oynatmaya devam et.
+    if (retryKey > 0) {
       video.play().catch(() => {});
     }
-
-    return () => {
-      clearHlsWatchdog();
-      video.removeEventListener('loadeddata', clearHlsWatchdog);
-      if (hlsRef.current) {
-        hlsRef.current.destroy();
-        hlsRef.current = null;
-      }
-    };
   }, [lesson.videoUrl, retryKey]);
 
   useEffect(() => {
