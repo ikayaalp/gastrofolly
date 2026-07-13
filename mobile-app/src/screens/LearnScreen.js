@@ -26,7 +26,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import {
     Play,
     Pause,
-    SkipBack,
     SkipForward,
     ChevronDown,
     ChevronUp,
@@ -36,8 +35,6 @@ import {
     Clock,
     ArrowLeft,
     Maximize2,
-    Volume2,
-    VolumeX,
     RotateCcw,
     RotateCw,
     Settings,
@@ -46,6 +43,7 @@ import {
     Trash2,
     GraduationCap,
     X,
+    Check,
     BookOpen,
     Lock,
     Gauge,
@@ -63,6 +61,7 @@ import config from '../api/config';
 import { TextInput } from 'react-native';
 import CustomAlert from '../components/CustomAlert';
 import { usePreventScreenCapture } from 'expo-screen-capture';
+import { getToken } from '../utils/tokenStorage';
 
 // Removed static dimensions to use useWindowDimensions hook
 // const { width, height } = Dimensions.get('window');
@@ -78,7 +77,6 @@ export default function LearnScreen({ route, navigation }) {
     const [progress, setProgress] = useState({});
     const [loading, setLoading] = useState(true);
     const [isPlaying, setIsPlaying] = useState(false);
-    const [isMuted, setIsMuted] = useState(false);
     const [showControls, setShowControls] = useState(true);
     const [showLessonList, setShowLessonList] = useState(false);
     const [videoDuration, setVideoDuration] = useState(0);
@@ -87,6 +85,9 @@ export default function LearnScreen({ route, navigation }) {
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [playbackRate, setPlaybackRate] = useState(1);
     const [showSpeedMenu, setShowSpeedMenu] = useState(false);
+    // Slider sürüklenirken parmağın altındaki zamanı tutar (ms); null ise sürükleme yok
+    const [seekPreview, setSeekPreview] = useState(null);
+    const [doubleTapSide, setDoubleTapSide] = useState(null);
     const [autoNextSeconds, setAutoNextSeconds] = useState(null);
     const [descriptionExpanded, setDescriptionExpanded] = useState(false);
     const [keyboardVisible, setKeyboardVisible] = useState(false);
@@ -103,7 +104,8 @@ export default function LearnScreen({ route, navigation }) {
     const getVideoUrlInline = (url) => {
         if (!url) return null;
         if (url.startsWith('http')) return url;
-        return `http://192.168.1.106:5000${url}`;
+        const cleanUrl = url.startsWith('/') ? url : `/${url}`;
+        return `${config.API_BASE_URL}${cleanUrl}`;
     };
 
     const videoSource = currentLesson?.videoUrl ? {
@@ -118,9 +120,8 @@ export default function LearnScreen({ route, navigation }) {
 
     useEffect(() => {
         if (!player) return;
-        player.muted = isMuted;
         player.playbackRate = playbackRate;
-    }, [player, isMuted, playbackRate]);
+    }, [player, playbackRate]);
 
     useEffect(() => {
         if (!player) return;
@@ -166,6 +167,8 @@ export default function LearnScreen({ route, navigation }) {
     const scrollViewRef = useRef(null);
     const videoPositionRef = useRef(0);
     const resumedLessonIdRef = useRef(null);
+    const lastTapRef = useRef({ time: 0, side: null });
+    const doubleTapTimeout = useRef(null);
 
     const showAlert = (title, message, buttons = [{ text: 'Tamam' }], type = 'info') => {
         setAlertConfig({ title, message, buttons, type });
@@ -187,6 +190,8 @@ export default function LearnScreen({ route, navigation }) {
         return () => {
             keyboardDidShowListener.remove();
             keyboardDidHideListener.remove();
+            if (controlsTimeout.current) clearTimeout(controlsTimeout.current);
+            if (doubleTapTimeout.current) clearTimeout(doubleTapTimeout.current);
             ScreenOrientation.unlockAsync();
         };
     }, []);
@@ -242,7 +247,7 @@ export default function LearnScreen({ route, navigation }) {
     const loadCourseData = async () => {
         try {
             setLoading(true);
-            const token = await AsyncStorage.getItem('authToken');
+            const token = await getToken();
             const userDataStr = await AsyncStorage.getItem('userData');
             if (userDataStr) {
                 const userData = JSON.parse(userDataStr);
@@ -303,9 +308,11 @@ export default function LearnScreen({ route, navigation }) {
                     toValue: 0,
                     duration: 300,
                     useNativeDriver: true,
-                }).start(() => setShowControls(false));
+                }).start(() => {
+                    setShowControls(false);
+                });
             }
-        }, 2000); // Reduced from 3000 to 2000
+        }, 3000);
     }, [isPlaying, controlsOpacity]);
 
     const showControlsTemporarily = useCallback(() => {
@@ -325,42 +332,68 @@ export default function LearnScreen({ route, navigation }) {
         }
     }, [isPlaying, hideControlsWithDelay]);
 
-    // Video playback handlers
-    const handlePlayPause = async () => {
-        if (!videoRef.current) return;
+    // Video playback handlers (expo-video player API — senkron)
+    const handlePlayPause = () => {
+        if (!player) return;
         if (isPlaying) {
-            await videoRef.current.pauseAsync();
+            player.pause();
             saveProgress(videoPosition / 1000);
         } else {
-            await videoRef.current.playAsync();
+            player.play();
+            setAutoNextSeconds(null);
         }
         hideControlsWithDelay(); // Reset timer on interaction
     };
 
-    const handleSeek = async (direction) => {
-        if (!videoRef.current) return;
-        const status = await videoRef.current.getStatusAsync();
-        const newPosition = status.positionMillis + (direction * 10000);
-        await videoRef.current.setPositionAsync(Math.max(0, Math.min(newPosition, status.durationMillis)));
+    const seekBy = (seconds) => {
+        if (!player) return;
+        const duration = player.duration || 0;
+        const target = Math.max(0, Math.min(player.currentTime + seconds, duration));
+        player.currentTime = target;
+        setVideoPosition(target * 1000);
+        setAutoNextSeconds(null);
     };
 
-    const handleVideoStatusUpdate = (status) => {
-        if (status.isLoaded) {
-            // Only update if not currently seeking/dragging
-            if (!isDraggingSlider.current) {
-                setIsPlaying(status.isPlaying);
-                setVideoDuration(status.durationMillis || 0);
-                setVideoPosition(status.positionMillis || 0);
-                setIsBuffering(status.isBuffering);
-            }
-            // Auto mark as completed when 90% watched
-            if (status.durationMillis && status.positionMillis / status.durationMillis > 0.9) {
-                markLessonComplete(status.positionMillis);
-            }
-            // Video bittiğinde, sonraki ders erişilebilirse otomatik geçiş geri sayımını başlat
-            if (status.didJustFinish && isNextLessonAccessible()) {
-                setAutoNextSeconds(AUTO_NEXT_SECONDS);
-            }
+    const handleSeek = (direction) => {
+        seekBy(direction * 10);
+        hideControlsWithDelay();
+    };
+
+    const toggleFullscreen = async () => {
+        if (isFullscreen) {
+            await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
+            setIsFullscreen(false);
+        } else {
+            await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
+            setIsFullscreen(true);
+        }
+        showControlsTemporarily();
+    };
+
+    // Tek dokunuş kontrolleri açar/kapatır; aynı yarıya 300ms içinde ikinci dokunuş 10 sn atlar
+    const handleOverlayTap = (event) => {
+        const x = event?.nativeEvent?.locationX ?? 0;
+        const side = x < width / 2 ? 'left' : 'right';
+        const now = Date.now();
+        if (now - lastTapRef.current.time < 300 && lastTapRef.current.side === side) {
+            lastTapRef.current = { time: 0, side: null };
+            seekBy(side === 'left' ? -10 : 10);
+            setDoubleTapSide(side);
+            if (doubleTapTimeout.current) clearTimeout(doubleTapTimeout.current);
+            doubleTapTimeout.current = setTimeout(() => setDoubleTapSide(null), 500);
+            return;
+        }
+        lastTapRef.current = { time: now, side };
+        if (showControls && isPlaying) {
+            Animated.timing(controlsOpacity, {
+                toValue: 0,
+                duration: 200,
+                useNativeDriver: true,
+            }).start(() => {
+                setShowControls(false);
+            });
+        } else {
+            showControlsTemporarily();
         }
     };
 
@@ -370,18 +403,27 @@ export default function LearnScreen({ route, navigation }) {
     const handleSliderStart = () => {
         isDraggingSlider.current = true;
         wasPlayingBeforeDrag.current = isPlaying;
+        if (controlsTimeout.current) clearTimeout(controlsTimeout.current);
         // Sürüklerken oynatmayı durdur, yoksa video sesi arka planda akmaya devam eder
         // ve pozisyon güncellemeleri sürükleme ile yarışır.
-        videoRef.current?.pauseAsync();
+        player?.pause();
     };
 
-    const handleSliderComplete = async (value) => {
-        if (videoRef.current) {
-            await videoRef.current.setPositionAsync(value);
+    const handleSliderChange = (value) => {
+        if (!isDraggingSlider.current) return;
+        setSeekPreview(value);
+    };
+
+    const handleSliderComplete = (value) => {
+        if (player) {
+            player.currentTime = value / 1000;
             if (wasPlayingBeforeDrag.current) {
-                await videoRef.current.playAsync();
+                player.play();
             }
         }
+        setVideoPosition(value);
+        setSeekPreview(null);
+        setAutoNextSeconds(null);
         isDraggingSlider.current = false;
         // Small delay to prevent position jumping back
         setTimeout(() => {
@@ -394,7 +436,7 @@ export default function LearnScreen({ route, navigation }) {
         if (!currentLesson || !timeWatchedSeconds || timeWatchedSeconds <= 0) return;
 
         try {
-            const token = await AsyncStorage.getItem('authToken');
+            const token = await getToken();
             if (!token) return;
 
             await axios.post(
@@ -629,8 +671,25 @@ export default function LearnScreen({ route, navigation }) {
                         <TouchableOpacity
                             style={StyleSheet.absoluteFill}
                             activeOpacity={1}
-                            onPress={showControlsTemporarily}
+                            onPress={handleOverlayTap}
                         />
+                        {/* Çift dokunuşla ±10sn göstergesi */}
+                        {doubleTapSide && (
+                            <View
+                                style={[
+                                    styles.doubleTapIndicator,
+                                    doubleTapSide === 'left' ? styles.doubleTapLeft : styles.doubleTapRight,
+                                ]}
+                                pointerEvents="none"
+                            >
+                                {doubleTapSide === 'left' ? (
+                                    <RotateCcw size={22} color="white" />
+                                ) : (
+                                    <RotateCw size={22} color="white" />
+                                )}
+                                <Text style={styles.doubleTapText}>10 sn</Text>
+                            </View>
+                        )}
                         {(showControls || !isPlaying) && (
                             <Animated.View
                                 style={[styles.controlsOverlay, { opacity: controlsOpacity }]}
@@ -658,38 +717,33 @@ export default function LearnScreen({ route, navigation }) {
                                     </View>
                                 </LinearGradient>
 
-                                {/* Center Controls - Only show if video is available */}
+                                {/* Center Controls (Netflix tarzı: düz ikonlar) - Only show if video is available */}
                                 {currentLesson.videoUrl && (
                                     <View style={styles.centerControls} pointerEvents="box-none">
                                         <TouchableOpacity
-                                            style={styles.glassSeekButton}
+                                            style={styles.centerButton}
                                             onPress={() => handleSeek(-1)}
-                                            disabled={!currentLesson.videoUrl}
                                         >
-                                            <RotateCcw size={28} color="white" />
+                                            <RotateCcw size={30} color="white" />
                                             <Text style={styles.seekText}>10</Text>
                                         </TouchableOpacity>
 
                                         <TouchableOpacity
-                                            style={styles.mainPlayButton}
+                                            style={styles.centerButton}
                                             onPress={handlePlayPause}
-                                            disabled={!currentLesson.videoUrl}
                                         >
-                                            <View style={styles.playButtonInner}>
-                                                {isPlaying ? (
-                                                    <Pause size={34} color="white" fill="white" />
-                                                ) : (
-                                                    <Play size={34} color="white" fill="white" style={{ marginLeft: 3 }} />
-                                                )}
-                                            </View>
+                                            {isPlaying ? (
+                                                <Pause size={44} color="white" fill="white" />
+                                            ) : (
+                                                <Play size={44} color="white" fill="white" style={{ marginLeft: 4 }} />
+                                            )}
                                         </TouchableOpacity>
 
                                         <TouchableOpacity
-                                            style={styles.glassSeekButton}
+                                            style={styles.centerButton}
                                             onPress={() => handleSeek(1)}
-                                            disabled={!currentLesson.videoUrl}
                                         >
-                                            <RotateCw size={28} color="white" />
+                                            <RotateCw size={30} color="white" />
                                             <Text style={styles.seekText}>10</Text>
                                         </TouchableOpacity>
                                     </View>
@@ -699,97 +753,72 @@ export default function LearnScreen({ route, navigation }) {
                                 {currentLesson.videoUrl && (
                                     <LinearGradient
                                         colors={['transparent', 'rgba(0,0,0,0.9)']}
-                                        style={[styles.bottomGradient, { paddingBottom: isFullscreen ? Math.max(insets.bottom, 20) : 0 }]}
+                                        style={[
+                                            styles.bottomGradient,
+                                            {
+                                                paddingBottom: isFullscreen ? Math.max(insets.bottom, 16) : 8,
+                                                paddingHorizontal: isFullscreen ? Math.max(insets.left, insets.right, 24) : 12,
+                                            },
+                                        ]}
                                         pointerEvents="box-none"
                                     >
-                                        {/* Progress Bar Container */}
-                                        <View style={styles.progressSection} pointerEvents="box-none">
-                                            <Slider
-                                                style={{ width: '100%', height: 40 }}
-                                                minimumValue={0}
-                                                maximumValue={videoDuration}
-                                                value={videoPosition}
-                                                minimumTrackTintColor="#ea580c"
-                                                maximumTrackTintColor="rgba(255, 255, 255, 0.3)"
-                                                thumbTintColor="#ea580c"
-                                                onSlidingStart={handleSliderStart}
-                                                onSlidingComplete={handleSliderComplete}
-                                            />
-                                            <View style={styles.timeRow} pointerEvents="none">
-                                                <Text style={styles.modernTimeText}>{formatTime(videoPosition)}</Text>
-                                                <Text style={styles.modernTimeText}>{formatTime(videoDuration)}</Text>
-                                            </View>
-                                        </View>
-
-                                        {/* Bottom Icons Row */}
-                                        <View style={styles.bottomIconsRow} pointerEvents="box-none">
-                                            <TouchableOpacity
-                                                style={styles.iconControl}
-                                                onPress={() => setIsMuted(!isMuted)}
-                                            >
-                                                {isMuted ? (
-                                                    <VolumeX size={22} color="white" />
-                                                ) : (
-                                                    <Volume2 size={22} color="white" />
-                                                )}
-                                            </TouchableOpacity>
-
-                                            <View style={styles.centerNavRow} pointerEvents="box-none">
-                                                <TouchableOpacity
-                                                    style={[styles.navIcon, !hasPrev && styles.navIconDisabled]}
-                                                    onPress={goToPrevLesson}
-                                                    disabled={!hasPrev}
-                                                >
-                                                    <SkipBack size={20} color={hasPrev ? "white" : "#444"} />
-                                                </TouchableOpacity>
-                                                <TouchableOpacity
-                                                    style={[styles.navIcon, !hasNext && styles.navIconDisabled]}
-                                                    onPress={goToNextLesson}
-                                                    disabled={!hasNext}
-                                                >
-                                                    <SkipForward size={20} color={hasNext ? "white" : "#444"} />
-                                                </TouchableOpacity>
-                                            </View>
-
-                                            <View>
-                                                <TouchableOpacity
-                                                    style={[styles.iconControl, styles.speedControl]}
-                                                    onPress={() => setShowSpeedMenu(v => !v)}
-                                                >
-                                                    <Gauge size={20} color="white" />
-                                                    <Text style={styles.speedControlText}>{playbackRate}x</Text>
-                                                </TouchableOpacity>
-                                                {showSpeedMenu && (
-                                                    <View style={styles.speedMenu}>
-                                                        {PLAYBACK_RATES.map((rate) => (
-                                                            <TouchableOpacity
-                                                                key={rate}
-                                                                style={[styles.speedMenuItem, rate === playbackRate && styles.speedMenuItemActive]}
-                                                                onPress={() => {
-                                                                    setPlaybackRate(rate);
-                                                                    setShowSpeedMenu(false);
-                                                                }}
-                                                            >
-                                                                <Text style={[styles.speedMenuItemText, rate === playbackRate && styles.speedMenuItemTextActive]}>{rate}x</Text>
-                                                            </TouchableOpacity>
-                                                        ))}
+                                        {/* Seek bar + kalan süre (Netflix tarzı) */}
+                                        <View style={styles.seekRow} pointerEvents="box-none">
+                                            <View style={styles.seekBarContainer} pointerEvents="box-none">
+                                                {seekPreview !== null && videoDuration > 0 && (
+                                                    <View
+                                                        style={[
+                                                            styles.seekBubbleAnchor,
+                                                            { left: `${Math.min(100, Math.max(0, (seekPreview / videoDuration) * 100))}%` },
+                                                        ]}
+                                                        pointerEvents="none"
+                                                    >
+                                                        <View style={styles.seekBubble}>
+                                                            <Text style={styles.seekBubbleText}>{formatTime(seekPreview)}</Text>
+                                                        </View>
                                                     </View>
                                                 )}
+                                                <Slider
+                                                    style={styles.seekSlider}
+                                                    minimumValue={0}
+                                                    maximumValue={videoDuration > 0 ? videoDuration : 1}
+                                                    value={Math.min(videoPosition, videoDuration || 0)}
+                                                    minimumTrackTintColor="#ea580c"
+                                                    maximumTrackTintColor="rgba(255, 255, 255, 0.3)"
+                                                    thumbTintColor="#ea580c"
+                                                    onSlidingStart={handleSliderStart}
+                                                    onValueChange={handleSliderChange}
+                                                    onSlidingComplete={handleSliderComplete}
+                                                />
                                             </View>
+                                            <Text style={styles.remainingTime} pointerEvents="none">
+                                                {formatTime(Math.max(0, videoDuration - (seekPreview ?? videoPosition)))}
+                                            </Text>
+                                        </View>
 
+                                        {/* Alt aksiyon butonları (Netflix tarzı) */}
+                                        <View style={styles.bottomActionsRow} pointerEvents="box-none">
                                             <TouchableOpacity
-                                                style={styles.iconControl}
-                                                onPress={async () => {
-                                                    if (isFullscreen) {
-                                                        await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
-                                                        setIsFullscreen(false);
-                                                    } else {
-                                                        await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
-                                                        setIsFullscreen(true);
-                                                    }
+                                                style={styles.bottomAction}
+                                                onPress={() => {
+                                                    setShowSpeedMenu(true);
+                                                    showControlsTemporarily();
                                                 }}
                                             >
-                                                <Maximize2 size={22} color="white" />
+                                                <Gauge size={16} color="white" />
+                                                <Text style={styles.bottomActionText}>Hız ({playbackRate}x)</Text>
+                                            </TouchableOpacity>
+
+                                            {isNextLessonAccessible() && (
+                                                <TouchableOpacity style={styles.bottomAction} onPress={goToNextLesson}>
+                                                    <SkipForward size={16} color="white" fill="white" />
+                                                    <Text style={styles.bottomActionText}>Sonraki Ders</Text>
+                                                </TouchableOpacity>
+                                            )}
+
+                                            <TouchableOpacity style={styles.bottomAction} onPress={toggleFullscreen}>
+                                                <Maximize2 size={16} color="white" />
+                                                <Text style={styles.bottomActionText}>{isFullscreen ? 'Küçült' : 'Tam Ekran'}</Text>
                                             </TouchableOpacity>
                                         </View>
                                     </LinearGradient>
@@ -973,6 +1002,49 @@ export default function LearnScreen({ route, navigation }) {
                 </>
             )}
 
+            {/* Oynatma hızı seçimi (bottom sheet) */}
+            <Modal
+                visible={showSpeedMenu}
+                transparent
+                animationType="slide"
+                onRequestClose={() => setShowSpeedMenu(false)}
+                supportedOrientations={['portrait', 'landscape']}
+            >
+                <TouchableOpacity
+                    style={styles.sheetOverlay}
+                    activeOpacity={1}
+                    onPress={() => setShowSpeedMenu(false)}
+                >
+                    <TouchableOpacity
+                        activeOpacity={1}
+                        onPress={() => {}}
+                        style={[styles.speedSheet, { paddingBottom: Math.max(insets.bottom, 16) }]}
+                    >
+                        <Text style={styles.speedSheetTitle}>Oynatma Hızı</Text>
+                        {PLAYBACK_RATES.map((rate) => (
+                            <TouchableOpacity
+                                key={rate}
+                                style={styles.speedSheetItem}
+                                onPress={() => {
+                                    setPlaybackRate(rate);
+                                    setShowSpeedMenu(false);
+                                }}
+                            >
+                                <Text
+                                    style={[
+                                        styles.speedSheetItemText,
+                                        rate === playbackRate && styles.speedSheetItemTextActive,
+                                    ]}
+                                >
+                                    {rate === 1 ? '1x (Normal)' : `${rate}x`}
+                                </Text>
+                                {rate === playbackRate && <Check size={20} color="#ea580c" />}
+                            </TouchableOpacity>
+                        ))}
+                    </TouchableOpacity>
+                </TouchableOpacity>
+            </Modal>
+
             {/* Custom Alert */}
             <CustomAlert
                 visible={alertVisible}
@@ -1055,6 +1127,7 @@ const styles = StyleSheet.create({
     controlsOverlay: {
         flex: 1,
         justifyContent: 'space-between',
+        backgroundColor: 'rgba(0, 0, 0, 0.35)',
     },
 
     // Top Gradient
@@ -1083,55 +1156,156 @@ const styles = StyleSheet.create({
         marginTop: 2,
     },
 
-    // Center Controls
+    // Center Controls (Netflix tarzı: arka plansız düz ikonlar)
     centerControls: {
         flex: 1,
         flexDirection: 'row',
-        justifyContent: 'center',
+        justifyContent: 'space-evenly',
         alignItems: 'center',
-        gap: 48,
+        paddingHorizontal: 24,
     },
-    playButton: {
-        width: 72,
-        height: 72,
-        borderRadius: 36,
-        backgroundColor: 'rgba(234, 88, 12, 0.9)',
+    centerButton: {
+        width: 64,
+        height: 64,
         justifyContent: 'center',
         alignItems: 'center',
-        shadowColor: '#ea580c',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.5,
-        shadowRadius: 12,
-        elevation: 8,
-    },
-    seekButton: {
-        width: 60,
-        height: 60,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.4)',
-        borderRadius: 30,
-    },
-    seekButtonInner: {
-        alignItems: 'center',
-        justifyContent: 'center',
     },
     seekText: {
         color: 'white',
-        fontSize: 11,
+        fontSize: 10,
         fontWeight: '700',
-        marginTop: -2,
+        marginTop: -1,
     },
 
-    // Bottom Gradient
+    // Bottom Gradient (paddingBottom/paddingHorizontal fullscreen durumuna göre inline)
     bottomGradient: {
         position: 'absolute',
         bottom: 0,
         left: 0,
         right: 0,
+        paddingTop: 32,
+    },
+    seekRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+        paddingHorizontal: 4,
+    },
+    seekBarContainer: {
+        flex: 1,
+    },
+    remainingTime: {
+        color: 'white',
+        fontSize: 12,
+        fontWeight: '600',
+        fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+        minWidth: 44,
+        textAlign: 'right',
+    },
+    bottomActionsRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingTop: 2,
+        paddingHorizontal: 4,
+    },
+    bottomAction: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        paddingVertical: 10,
+        paddingHorizontal: 12,
+    },
+    bottomActionText: {
+        color: 'white',
+        fontSize: 13,
+        fontWeight: '600',
+    },
+    seekSlider: {
+        width: '100%',
+        height: 40,
+    },
+    seekBubbleAnchor: {
+        position: 'absolute',
+        top: -30,
+        zIndex: 5,
+    },
+    seekBubble: {
+        backgroundColor: 'rgba(20, 20, 20, 0.95)',
+        borderRadius: 8,
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.15)',
+        transform: [{ translateX: -28 }],
+        minWidth: 56,
+        alignItems: 'center',
+    },
+    seekBubbleText: {
+        color: 'white',
+        fontSize: 12,
+        fontWeight: '700',
+        fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    },
+    doubleTapIndicator: {
+        position: 'absolute',
+        top: '50%',
+        marginTop: -28,
+        width: 76,
+        height: 56,
+        borderRadius: 28,
+        backgroundColor: 'rgba(0, 0, 0, 0.55)',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    doubleTapLeft: {
+        left: 24,
+    },
+    doubleTapRight: {
+        right: 24,
+    },
+    doubleTapText: {
+        color: 'white',
+        fontSize: 11,
+        fontWeight: '700',
+        marginTop: 2,
+    },
+    sheetOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'flex-end',
+    },
+    speedSheet: {
+        backgroundColor: '#141414',
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        paddingTop: 8,
+        paddingHorizontal: 8,
+    },
+    speedSheetTitle: {
+        color: '#9ca3af',
+        fontSize: 13,
+        fontWeight: '700',
+        textAlign: 'center',
+        paddingVertical: 12,
+        textTransform: 'uppercase',
+        letterSpacing: 1,
+    },
+    speedSheetItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingVertical: 14,
         paddingHorizontal: 16,
-        paddingBottom: 16,
-        paddingTop: 40,
+    },
+    speedSheetItemText: {
+        color: '#e5e5e5',
+        fontSize: 16,
+        fontWeight: '500',
+    },
+    speedSheetItemTextActive: {
+        color: '#ea580c',
+        fontWeight: '700',
     },
     progressContainer: {
         flexDirection: 'row',
@@ -1372,127 +1546,6 @@ const styles = StyleSheet.create({
         zIndex: 10,
     },
 
-    // Glass Buttons
-    glassSeekButton: {
-        width: 54,
-        height: 54,
-        borderRadius: 27,
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.15)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        backdropFilter: 'blur(10px)', // For platforms that support it
-    },
-    mainPlayButton: {
-        width: 70,
-        height: 70,
-        borderRadius: 35,
-        backgroundColor: 'rgba(234, 88, 12, 0.95)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        shadowColor: '#ea580c',
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.6,
-        shadowRadius: 15,
-        elevation: 12,
-    },
-    playButtonInner: {
-        width: '100%',
-        height: '100%',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-
-    // Modern Progress Section
-    progressSection: {
-        width: '100%',
-        paddingHorizontal: 8,
-        marginBottom: 20,
-    },
-    progressBarWrapper: {
-        height: 20,
-        justifyContent: 'center',
-    },
-    modernProgressBarBackground: {
-        height: 6,
-        width: '100%',
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        borderRadius: 3,
-        overflow: 'hidden',
-    },
-    modernProgressFill: {
-        height: '100%',
-        backgroundColor: '#ea580c',
-        borderRadius: 3,
-    },
-    timeRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginTop: 4,
-    },
-    modernTimeText: {
-        color: 'rgba(255, 255, 255, 0.7)',
-        fontSize: 11,
-        fontWeight: '600',
-        fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-    },
-
-    // Bottom Icons
-    bottomIconsRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: 4,
-    },
-    iconControl: {
-        padding: 10,
-        borderRadius: 20,
-        backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    },
-    centerNavRow: {
-        flexDirection: 'row',
-        gap: 32,
-    },
-    speedControl: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
-        paddingHorizontal: 12,
-    },
-    speedControlText: {
-        color: 'white',
-        fontSize: 12,
-        fontWeight: '700',
-    },
-    speedMenu: {
-        position: 'absolute',
-        bottom: '100%',
-        right: 0,
-        marginBottom: 8,
-        backgroundColor: '#1a1a1a',
-        borderRadius: 10,
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.1)',
-        overflow: 'hidden',
-        minWidth: 64,
-    },
-    speedMenuItem: {
-        paddingVertical: 10,
-        paddingHorizontal: 14,
-        alignItems: 'center',
-    },
-    speedMenuItemActive: {
-        backgroundColor: '#ea580c',
-    },
-    speedMenuItemText: {
-        color: '#d1d5db',
-        fontSize: 13,
-        fontWeight: '600',
-    },
-    speedMenuItemTextActive: {
-        color: 'white',
-    },
     autoNextCard: {
         position: 'absolute',
         right: 16,
@@ -1533,13 +1586,6 @@ const styles = StyleSheet.create({
         fontSize: 13,
         fontWeight: '700',
     },
-    navIcon: {
-        padding: 8,
-    },
-    navIconDisabled: {
-        opacity: 0.3,
-    },
-
     // Modern Lesson Cards
     modernLessonCard: {
         flexDirection: 'row',

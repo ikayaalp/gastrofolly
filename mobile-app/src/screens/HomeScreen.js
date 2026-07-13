@@ -67,7 +67,18 @@ function groupStories(rawStories) {
 
 export default function HomeScreen({ navigation }) {
     const [currentIndex, setCurrentIndex] = useState(0);
+    const currentIndexRef = useRef(0);
     const [selectedCategoryId, setSelectedCategoryId] = useState(null);
+
+    // Noktaları görselle senkron tutar: kaydırma sırasında kart yarıyı geçtiği anda günceller.
+    // (onSnapToItem 700ms'lik animasyon bitene kadar beklediği için noktalar geriden geliyordu)
+    const syncPaginationDot = (length) => (_, absoluteProgress) => {
+        const idx = Math.round(absoluteProgress) % length;
+        if (idx !== currentIndexRef.current) {
+            currentIndexRef.current = idx;
+            setCurrentIndex(idx);
+        }
+    };
     const tabBarClearance = useTabBarClearance();
     const queryClient = useQueryClient();
 
@@ -508,7 +519,7 @@ export default function HomeScreen({ navigation }) {
                                 parallaxScrollingOffset: 60,
                             }}
                             scrollAnimationDuration={700}
-                            onSnapToItem={(index) => setCurrentIndex(index)}
+                            onProgressChange={syncPaginationDot(homeCovers.length)}
                             renderItem={({ item: cover, index }) => (
                                 <TouchableOpacity
                                     style={[styles.carouselCard, { width: cardWidth }]}
@@ -580,7 +591,7 @@ export default function HomeScreen({ navigation }) {
                                     parallaxScrollingOffset: 60,
                                 }}
                                 scrollAnimationDuration={700}
-                                onSnapToItem={(index) => setCurrentIndex(index)}
+                                onProgressChange={syncPaginationDot(Math.min(featuredCourses.length, 5))}
                                 renderItem={({ item: course, index }) => (
                                     <TouchableOpacity
                                         style={[styles.carouselCard, { width: cardWidth }]}

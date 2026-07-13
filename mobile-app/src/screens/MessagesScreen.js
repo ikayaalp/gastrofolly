@@ -185,13 +185,20 @@ export default function MessagesScreen({ navigation }) {
         const setupPusher = async () => {
             try {
                 pusherClient = await getPusherClient();
+                if (!pusherClient) return;
                 const channelName = `private-user-${currentUser.id}`;
                 channel = await pusherClient.subscribe({
                     channelName,
                     onEvent: (event) => {
                         if (event.eventName === 'inbox-update') {
-                            const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
-                            
+                            let data;
+                            try {
+                                data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+                            } catch (e) {
+                                return;
+                            }
+                            if (!data?.conversationId) return;
+
                             // Reorder and update conversation list
                             setConversations(prev => {
                                 const index = prev.findIndex(c => c.id === data.conversationId);

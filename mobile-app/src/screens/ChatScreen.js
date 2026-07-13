@@ -36,6 +36,7 @@ export default function ChatScreen({ route, navigation }) {
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(false);
     const [inputText, setInputText] = useState('');
+    const [inputHeight, setInputHeight] = useState(44);
     const [sending, setSending] = useState(false);
     const [currentUser, setCurrentUser] = useState(null);
 
@@ -146,14 +147,21 @@ export default function ChatScreen({ route, navigation }) {
         const setupPusher = async () => {
             try {
                 pusherClient = await getPusherClient();
+                if (!pusherClient) return;
                 const channelName = `private-conversation-${conversationId}`;
-                
+
                 channel = await pusherClient.subscribe({
                     channelName,
                     onEvent: (event) => {
                         if (event.eventName === 'new-message') {
-                            const messageData = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
-                            
+                            let messageData;
+                            try {
+                                messageData = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+                            } catch (e) {
+                                return;
+                            }
+                            if (!messageData?.id) return;
+
                             // Only append if it's from the other user (we optimistic add our own)
                             if (messageData.senderId !== currentUser.id) {
                                 setMessages(prev => [messageData, ...prev]);
@@ -192,6 +200,7 @@ export default function ChatScreen({ route, navigation }) {
 
         const content = inputText.trim();
         setInputText('');
+        setInputHeight(44);
         setSending(true);
 
         const tempId = `temp-${Date.now()}`;
@@ -328,9 +337,17 @@ export default function ChatScreen({ route, navigation }) {
                         ]}
                     >
                         <TextInput
-                            style={styles.input}
+                            style={[styles.input, { height: inputHeight }]}
                             value={inputText}
-                            onChangeText={setInputText}
+                            onChangeText={(text) => {
+                                setInputText(text);
+                                if (!text) setInputHeight(44);
+                            }}
+                            onContentSizeChange={(e) => {
+                                // WhatsApp gibi: içerik büyüdükçe kutu yukarı doğru büyür (max 120)
+                                const h = Math.ceil(e.nativeEvent.contentSize.height) + 24; // dikey padding
+                                setInputHeight(Math.min(120, Math.max(44, h)));
+                            }}
                             placeholder="Bir mesaj yazın..."
                             placeholderTextColor="#6b7280"
                             multiline
@@ -473,8 +490,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingTop: 12,
         paddingBottom: 12,
-        minHeight: 40,
-        maxHeight: 120,
         fontSize: 15,
         marginRight: 8,
         borderWidth: 1,
