@@ -53,6 +53,7 @@ import ImageViewerModal from '../components/ImageViewerModal';
 import TopicCard from '../components/TopicCard';
 import LoginRequiredModal from '../components/LoginRequiredModal';
 import LikersModal from '../components/LikersModal';
+import { getToken } from '../utils/tokenStorage';
 
 const formatDuration = (millis) => {
     if (!millis) return 'Video';
@@ -239,7 +240,7 @@ export default function SocialScreen({ navigation }) {
     };
 
     const checkLoginStatus = async () => {
-        const token = await AsyncStorage.getItem('authToken');
+        const token = await getToken();
         const loggedIn = !!token;
         setIsLoggedIn(loggedIn);
         if (!loggedIn) {
@@ -255,7 +256,7 @@ export default function SocialScreen({ navigation }) {
         if (isLoadMore && (!hasMore || loadingMore || loading)) return;
 
         try {
-            const token = await AsyncStorage.getItem('authToken');
+            const token = await getToken();
             const targetPage = isLoadMore ? page + 1 : 1;
 
             if (isLoadMore) {
@@ -304,7 +305,7 @@ export default function SocialScreen({ navigation }) {
     };
 
     const checkUnreadMessages = async () => {
-        const token = await AsyncStorage.getItem('authToken');
+        const token = await getToken();
         if (token) {
             const result = await dmService.getConversations();
             if (result.success && result.data) {

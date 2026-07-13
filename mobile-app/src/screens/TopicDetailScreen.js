@@ -38,6 +38,7 @@ import { CommonActions } from '@react-navigation/native';
 import CustomAlert from '../components/CustomAlert';
 import ImageViewerModal from '../components/ImageViewerModal';
 import LikersModal from '../components/LikersModal';
+import { getToken } from '../utils/tokenStorage';
 
 export default function TopicDetailScreen({ route, navigation }) {
     const insets = useSafeAreaInsets();
@@ -97,7 +98,7 @@ export default function TopicDetailScreen({ route, navigation }) {
     };
 
     const checkLoginStatus = async () => {
-        const token = await AsyncStorage.getItem('authToken');
+        const token = await getToken();
         const userId = await AsyncStorage.getItem('userId');
         setIsLoggedIn(!!token);
         setCurrentUserId(userId);
