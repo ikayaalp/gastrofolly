@@ -324,6 +324,12 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
 
     // Video upload handler for inline form (CLOUDINARY)
     const handleVideoUploadInForm = async (file: File) => {
+        // Dosya boyutu kontrolü (Cloudinary Free tier limiti: 100MB)
+        if (file.size > 100 * 1024 * 1024) {
+            alert("Video dosyası 100MB'dan küçük olmalıdır (Cloudinary Ücretsiz Plan limiti)")
+            return
+        }
+
         setUploadingVideo(true)
         try {
             // 1. Get Cloudinary Config
