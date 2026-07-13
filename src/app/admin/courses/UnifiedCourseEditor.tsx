@@ -361,11 +361,18 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
                         }))
                         resolve()
                     } else {
-                        reject(new Error('Upload failed'))
+                        let errorMsg = `Upload başarısız (${xhr.status})`
+                        try {
+                            const errData = JSON.parse(xhr.responseText)
+                            if (errData?.error?.message) {
+                                errorMsg = errData.error.message
+                            }
+                        } catch {}
+                        reject(new Error(errorMsg))
                     }
                 }
 
-                xhr.onerror = () => reject(new Error('Network error'))
+                xhr.onerror = () => reject(new Error('Ağ hatası: İnternet bağlantınızı kontrol edin veya dosya boyutunu küçültmeyi deneyin'))
                 xhr.send(formData)
             })
 

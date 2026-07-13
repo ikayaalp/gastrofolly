@@ -25,8 +25,8 @@ export default function VideoUpload({ onVideoUploaded, lessonId }: VideoUploadPr
     }
 
     // Dosya boyutu kontrolü (500MB limit)
-    if (file.size > 1000 * 1024 * 1024) {
-      setError("Video dosyası 1MB'dan küçük olmalıdır")
+    if (file.size > 500 * 1024 * 1024) {
+      setError("Video dosyası 500MB'dan küçük olmalıdır")
       return
     }
 
@@ -71,11 +71,18 @@ export default function VideoUpload({ onVideoUploaded, lessonId }: VideoUploadPr
             onVideoUploaded(data.secure_url)
             resolve()
           } else {
-            reject(new Error('Cloudinary upload failed'))
+            let errorMsg = `Upload başarısız (${xhr.status})`
+            try {
+              const errData = JSON.parse(xhr.responseText)
+              if (errData?.error?.message) {
+                errorMsg = errData.error.message
+              }
+            } catch {}
+            reject(new Error(errorMsg))
           }
         }
 
-        xhr.onerror = () => reject(new Error('Network error during upload'))
+        xhr.onerror = () => reject(new Error('Ağ hatası: İnternet bağlantınızı kontrol edin veya dosya boyutunu küçültmeyi deneyin'))
         xhr.send(formData)
       })
 

@@ -1,12 +1,30 @@
-import { NextResponse } from "next/server"
-import { getAuthUser } from "@/lib/mobileAuth" // Using the same auth check as other routes
+import { NextRequest, NextResponse } from "next/server"
+import { getServerSession } from "next-auth/next"
+import { authOptions } from "@/lib/auth"
+import { getAuthUser } from "@/lib/mobileAuth"
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
     try {
-        // Simple auth check - ensure user is logged in (and preferably admin/instructor)
-        const user = await getAuthUser(request as any)
-        
-        if (!user || (user.role !== 'ADMIN' && user.role !== 'INSTRUCTOR')) {
+        let isAuthorized = false
+
+        // 1. Try web session first (NextAuth) - consistent with other admin routes
+        const session = await getServerSession(authOptions)
+        if (session?.user) {
+            const role = (session.user as any).role
+            if (role === 'ADMIN' || role === 'INSTRUCTOR') {
+                isAuthorized = true
+            }
+        }
+
+        // 2. Fallback to mobile auth (JWT token)
+        if (!isAuthorized) {
+            const user = await getAuthUser(request)
+            if (user && (user.role === 'ADMIN' || user.role === 'INSTRUCTOR')) {
+                isAuthorized = true
+            }
+        }
+
+        if (!isAuthorized) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
         }
 
@@ -14,6 +32,7 @@ export async function GET(request: Request) {
         const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET || 'chef-courses-unsigned'
 
         if (!cloudName) {
+            console.error("CLOUDINARY_CLOUD_NAME is not set in environment variables")
             return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
         }
 
