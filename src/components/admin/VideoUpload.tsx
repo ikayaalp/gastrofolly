@@ -24,9 +24,9 @@ export default function VideoUpload({ onVideoUploaded, lessonId }: VideoUploadPr
       return
     }
 
-    // Dosya boyutu kontrolü (500MB limit)
-    if (file.size > 500 * 1024 * 1024) {
-      setError("Video dosyası 500MB'dan küçük olmalıdır")
+    // Dosya boyutu kontrolü (Cloudinary Free tier limiti: 100MB)
+    if (file.size > 100 * 1024 * 1024) {
+      setError("Video dosyası 100MB'dan küçük olmalıdır (Cloudinary Ücretsiz Plan limiti)")
       return
     }
 
@@ -211,7 +211,7 @@ export default function VideoUpload({ onVideoUploaded, lessonId }: VideoUploadPr
             <Upload className="h-12 w-12 text-gray-400 mx-auto" />
             <div>
               <p className="text-white font-medium">Video dosyası seçin veya sürükleyip bırakın</p>
-              <p className="text-gray-400 text-sm mt-1">MP4, MOV, AVI formatları desteklenir (Max: 500MB)</p>
+              <p className="text-gray-400 text-sm mt-1">MP4, MOV, AVI formatları desteklenir (Max: 100MB)</p>
             </div>
             <button
               type="button"
