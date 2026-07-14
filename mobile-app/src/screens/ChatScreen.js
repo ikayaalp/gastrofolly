@@ -80,6 +80,8 @@ export default function ChatScreen({ route, navigation }) {
         initChat();
     }, [initChat]);
 
+
+
     useEffect(() => {
         const showEvent = Platform.OS === 'android' ? 'keyboardDidShow' : 'keyboardWillShow';
         const hideEvent = Platform.OS === 'android' ? 'keyboardDidHide' : 'keyboardWillHide';
@@ -300,9 +302,7 @@ export default function ChatScreen({ route, navigation }) {
             <KeyboardAvoidingView
                 style={[
                     styles.container,
-                    Platform.OS === 'android'
-                        ? { paddingBottom: androidPaddingBottom }
-                        : { paddingBottom: keyboardVisible ? 0 : tabBarClearance },
+                    Platform.OS === 'android' && { paddingBottom: androidPaddingBottom },
                 ]}
                 behavior={Platform.OS === 'ios' ? 'padding' : undefined}
                 keyboardVerticalOffset={0}
@@ -333,6 +333,7 @@ export default function ChatScreen({ route, navigation }) {
                             styles.inputContainer,
                             {
                                 paddingBottom: Platform.OS === 'ios' && keyboardVisible ? Math.max(insets.bottom, 12) : 12,
+                                marginBottom: Platform.OS === 'ios' && !keyboardVisible ? tabBarClearance : 0,
                             },
                         ]}
                     >

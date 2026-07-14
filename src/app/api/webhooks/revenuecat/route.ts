@@ -92,17 +92,18 @@ export async function POST(request: NextRequest) {
 
         // 4. Event türüne göre işlem yap
 
-        // Apple kesintisi sonrası fiyat hesaplama
-        // Apple %30 komisyon alır, bize %70 kalır
-        const APPLE_COMMISSION_RATE = 0.30;
+        // Store komisyon oranları: Apple %30, Google Play %15
+        const store = event.store; // 'APP_STORE' | 'PLAY_STORE' | 'STRIPE' vb.
+        const isApple = store === 'APP_STORE';
+        const COMMISSION_RATE = isApple ? 0.30 : 0.15;
 
-        // Aylık ve yıllık App Store fiyatları (TL)
-        const APP_STORE_MONTHLY_PRICE = 399;  // App Store'daki aylık fiyat
-        const APP_STORE_YEARLY_PRICE = 3999;   // App Store'daki yıllık fiyat
+        // Aylık ve yıllık fiyatlar (TL) — her iki store'da da aynı
+        const STORE_MONTHLY_PRICE = 249.99;
+        const STORE_YEARLY_PRICE = 2499.99;
 
-        // Apple kesintisinden sonra bize kalan tutarlar
-        const NET_MONTHLY_PRICE = Math.round(APP_STORE_MONTHLY_PRICE * (1 - APPLE_COMMISSION_RATE) * 100) / 100; // 279.30 TL
-        const NET_YEARLY_PRICE = Math.round(APP_STORE_YEARLY_PRICE * (1 - APPLE_COMMISSION_RATE) * 100) / 100;   // 2799.30 TL
+        // Komisyon kesintisinden sonra bize kalan net tutarlar
+        const NET_MONTHLY_PRICE = Math.round(STORE_MONTHLY_PRICE * (1 - COMMISSION_RATE) * 100) / 100;
+        const NET_YEARLY_PRICE = Math.round(STORE_YEARLY_PRICE * (1 - COMMISSION_RATE) * 100) / 100;
 
         if (PREMIUM_EVENTS.includes(eventType)) {
             // ✅ Premium erişim ver
@@ -137,7 +138,7 @@ export async function POST(request: NextRequest) {
 
                     const billingPeriod = isYearly ? 'yearly' : 'monthly';
                     const netAmount = isYearly ? NET_YEARLY_PRICE : NET_MONTHLY_PRICE;
-                    const appStorePrice = isYearly ? APP_STORE_YEARLY_PRICE : APP_STORE_MONTHLY_PRICE;
+                    const storePrice = isYearly ? STORE_YEARLY_PRICE : STORE_MONTHLY_PRICE;
 
                     // Mükerrer kayıt koruması artık yukarıdaki claimWebhookEvent ile
                     // sağlanıyor (bu event ilk kez işleniyorsa buraya kadar gelinir).
@@ -153,7 +154,7 @@ export async function POST(request: NextRequest) {
                         }
                     });
 
-                    console.log(`[RC Webhook] 💰 Payment kaydı oluşturuldu: ${billingPeriod} | App Store: ₺${appStorePrice} → Apple sonrası: ₺${netAmount}`);
+                    console.log(`[RC Webhook] 💰 Payment kaydı oluşturuldu: ${billingPeriod} | ${isApple ? 'Apple' : 'Google Play'}: ₺${storePrice} → Komisyon sonrası: ₺${netAmount}`);
                 }
             });
 

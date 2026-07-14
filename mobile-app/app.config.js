@@ -52,13 +52,17 @@ export default {
         "orientation": "portrait",
         "icon": "./assets/icon_blackBg.png",
         "userInterfaceStyle": "dark",
+        // Kök pencere arka planı (android:windowBackground). expo-system-ui bunu uygular.
+        // Edge-to-edge modunda nav bar şeffaf; bu ayar olmadan varsayılan beyaz arka plan
+        // alttan şerit olarak sızıyordu.
+        "backgroundColor": "#000000",
         "splash": {
             "image": "./assets/icon_blackBg.png",
             "resizeMode": "contain",
             "backgroundColor": "#000000"
         },
         "ios": {
-            "buildNumber": "39",
+            "buildNumber": "40",
             "supportsTablet": true,
             "bundleIdentifier": "com.chef2.app",
             "infoPlist": {
@@ -68,7 +72,7 @@ export default {
         },
         "android": {
             "package": "com.chef2.app",
-            "versionCode": 10,
+            "versionCode": 11,
             "adaptiveIcon": {
                 "foregroundImage": "./assets/adaptive-icon.png",
                 "backgroundColor": "#000000"

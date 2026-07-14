@@ -114,6 +114,16 @@ const authService = {
     // Logout user
     logout: async () => {
         try {
+            // Backend'deki push token ilişkisini kaldır. Bu, auth token silinmeden
+            // ÖNCE çağrılmalı çünkü DELETE endpoint'i yetkilendirme gerektiriyor.
+            // Aksi halde çıkış yapılan telefona bu kullanıcı adına bildirim gitmeye
+            // devam ediyor. Ağ hatası olsa bile çıkışı engelleme.
+            try {
+                await api.delete('/api/user/push-token');
+            } catch (e) {
+                console.warn('Push token silinemedi (çıkış devam ediyor):', e?.message);
+            }
+
             await removeToken();
             await AsyncStorage.removeItem('userData');
             await AsyncStorage.removeItem('userId');

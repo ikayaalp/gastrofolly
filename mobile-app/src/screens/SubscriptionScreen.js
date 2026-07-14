@@ -350,7 +350,7 @@ export default function SubscriptionScreen({ navigation, route }) {
                             <Text style={styles.subscriptionInfoText}>• Abonelik Adı: Culinora Premium</Text>
                             <Text style={styles.subscriptionInfoText}>• Süre: {getPackageInfo(selectedPkg).duration}</Text>
                             <Text style={styles.subscriptionInfoText}>• Faturalanan Tutar: {getPackageInfo(selectedPkg).billedAmount}</Text>
-                            <Text style={styles.subscriptionInfoText}>• Ödeme Apple ID hesabınızdan tahsil edilir.</Text>
+                            <Text style={styles.subscriptionInfoText}>• Ödeme {Platform.OS === 'ios' ? 'Apple ID' : 'Google Play'} hesabınızdan tahsil edilir.</Text>
                             <Text style={styles.subscriptionInfoText}>• Abonelik, mevcut dönemin bitiminden en az 24 saat önce iptal edilmezse otomatik yenilenir.</Text>
                         </View>
                     )}
@@ -368,7 +368,7 @@ export default function SubscriptionScreen({ navigation, route }) {
                         <TouchableOpacity onPress={handleRestore} disabled={restoring} style={{ marginTop: 12 }}>
                             <Text style={styles.restoreLink}>{restoring ? 'Yükleniyor...' : 'Satın Alımları Geri Yükle'}</Text>
                         </TouchableOpacity>
-                        <Text style={styles.legalNote}>Abonelik Apple ID hesabınızdan tahsil edilir ve mevcut dönemin bitiminden en az 24 saat önce iptal edilmezse otomatik yenilenir. Aboneliği Ayarlar {'>'} Apple ID {'>'} Abonelikler bölümünden yönetebilirsiniz.</Text>
+                        <Text style={styles.legalNote}>{Platform.OS === 'ios' ? 'Abonelik Apple ID hesabınızdan tahsil edilir ve mevcut dönemin bitiminden en az 24 saat önce iptal edilmezse otomatik yenilenir. Aboneliği Ayarlar > Apple ID > Abonelikler bölümünden yönetebilirsiniz.' : 'Abonelik Google Play hesabınızdan tahsil edilir ve mevcut dönemin bitiminden en az 24 saat önce iptal edilmezse otomatik yenilenir. Aboneliği Google Play Store > Abonelikler bölümünden yönetebilirsiniz.'}</Text>
                     </View>
                 </Animated.View>
             </ScrollView>

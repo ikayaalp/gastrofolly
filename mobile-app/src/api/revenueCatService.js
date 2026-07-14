@@ -5,7 +5,7 @@ import { Platform } from 'react-native';
 // ⚠️  Bu değerleri App Store Connect'ten aldıktan sonra güncelleyin
 // ─────────────────────────────────────────────────────────────────
 const RC_API_KEY_IOS = 'appl_rtYbSMPByqvGYvIPxvwnwZiCNKW';
-const RC_API_KEY_ANDROID = ''; // Android için RevenueCat key eklenecek
+const RC_API_KEY_ANDROID = 'goog_PwHmQygmxTkzbkMpLrKXBVLHzdU';
 
 // App Store Connect → Apps → Culinora → Subscriptions'dan alınan Product ID'ler
 export const PRODUCT_IDS = {

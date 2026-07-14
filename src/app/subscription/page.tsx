@@ -9,8 +9,8 @@ export default async function SubscriptionPage() {
     const monthlyPlan = plans.find(p => p.interval === 'monthly')
     const yearlyPlan = plans.find(p => p.interval === 'yearly')
 
-    const monthlyPrice = monthlyPlan?.price || 399
-    const yearlyPrice = yearlyPlan?.price || 3830 // 399 * 12 * 0.8 is approx 3830
+    const monthlyPrice = monthlyPlan?.price || 249.99
+    const yearlyPrice = yearlyPlan?.price || 2499.99
 
     return <SubscriptionClient monthlyPrice={monthlyPrice} yearlyPrice={yearlyPrice} />
 }

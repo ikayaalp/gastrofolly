@@ -107,6 +107,13 @@ export default function ChefSocialProfileScreen({ navigation, route }) {
         setAlertVisible(true);
     };
 
+    // isOwnProfile'ı backend değerine ek olarak local ID karşılaştırmasıyla da doğrula.
+    // Backend auth round-trip'i bazı durumlarda (session/timing) kendi profilinde bile
+    // false dönebiliyor; Hesabım'dan gelen userId === currentUserId karşılaştırması
+    // (ikisi de local userData.id) güvenilir sonuç verir. Böylece kendi profilinde
+    // yanlışlıkla "Takip Et" yerine doğru şekilde "Profili Düzenle" gösterilir.
+    const ownProfile = isOwnProfile || (!!currentUserId && String(currentUserId) === String(userId));
+
     // Load saved topics from AsyncStorage
     const loadSavedTopics = useCallback(async () => {
         try {
@@ -344,7 +351,7 @@ export default function ChefSocialProfileScreen({ navigation, route }) {
                     </TouchableOpacity>
 
                     {/* Follow / Edit button */}
-                    {isOwnProfile ? (
+                    {ownProfile ? (
                         <TouchableOpacity
                             style={styles.editButton}
                             onPress={() => navigation.navigate('EditProfile')}
@@ -417,7 +424,7 @@ export default function ChefSocialProfileScreen({ navigation, route }) {
                     </View>
 
                     {/* Bio */}
-                    {isOwnProfile ? (
+                    {ownProfile ? (
                         bioEditing ? (
                             <View style={styles.bioEditContainer}>
                                 <TextInput
@@ -527,7 +534,7 @@ export default function ChefSocialProfileScreen({ navigation, route }) {
                     <Text style={styles.navTitle} numberOfLines={1}>{profile.name}</Text>
                     <Text style={styles.navSubtitle}>{profile.topicsCount ?? 0} gönderi</Text>
                 </View>
-                {isOwnProfile ? (
+                {ownProfile ? (
                     <TouchableOpacity onPress={() => navigation.navigate('Settings')} style={styles.navSettings}>
                         <Settings size={22} color="#fff" />
                     </TouchableOpacity>
