@@ -7,6 +7,13 @@ import { signIn } from "next-auth/react"
 import { Eye, EyeOff, Mail, CheckCircle, Check, X } from "lucide-react"
 import Image from "next/image"
 import { validatePassword, getStrengthColor, getStrengthText } from "@/lib/passwordValidator"
+import * as yup from "yup"
+
+const signUpSchema = yup.object().shape({
+  firstName: yup.string().required('Ad alanı zorunludur.'),
+  lastName: yup.string().required('Soyad alanı zorunludur.'),
+  email: yup.string().email('Geçerli bir e-posta adresi giriniz.').required('E-posta alanı zorunludur.')
+});
 
 export default function SignUp() {
   const [formData, setFormData] = useState({
@@ -32,6 +39,18 @@ export default function SignUp() {
     setIsLoading(true)
     setError("")
     setSuccess(false)
+
+    try {
+      await signUpSchema.validate({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email
+      })
+    } catch (validationError: any) {
+      setError(validationError.message)
+      setIsLoading(false)
+      return
+    }
 
 
 

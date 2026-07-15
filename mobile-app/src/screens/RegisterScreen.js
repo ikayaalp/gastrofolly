@@ -10,6 +10,16 @@ import GoogleIcon from '../components/GoogleIcon';
 import useAppleAuth from '../hooks/useAppleAuth';
 import Svg, { Path } from 'react-native-svg';
 import ScreenContainer from '../components/ScreenContainer';
+import * as yup from 'yup';
+
+const registerSchema = yup.object().shape({
+  name: yup.string().required('Ad Soyad alanı zorunludur.'),
+  email: yup.string().email('Geçerli bir e-posta adresi giriniz.').required('E-posta alanı zorunludur.'),
+  password: yup.string().min(6, 'Şifre en az 6 karakter olmalıdır.').required('Şifre alanı zorunludur.'),
+  confirmPassword: yup.string()
+    .oneOf([yup.ref('password'), null], 'Şifreler eşleşmiyor!')
+    .required('Şifre tekrar alanı zorunludur.')
+});
 
 export default function RegisterScreen({ navigation }) {
     const [name, setName] = useState('');
@@ -46,15 +56,10 @@ export default function RegisterScreen({ navigation }) {
 
 
     const handleRegister = async () => {
-        if (!name || !email || !password || !confirmPassword) {
-            showAlert('Hata', 'Lütfen gerekli alanları doldurun', [{ text: 'Tamam' }], 'error');
-            return;
-        }
-
-
-
-        if (password !== confirmPassword) {
-            showAlert('Hata', 'Şifreler eşleşmiyor!', [{ text: 'Tamam' }], 'error');
+        try {
+            await registerSchema.validate({ name, email, password, confirmPassword });
+        } catch (error) {
+            showAlert('Hata', error.message, [{ text: 'Tamam' }], 'error');
             return;
         }
 

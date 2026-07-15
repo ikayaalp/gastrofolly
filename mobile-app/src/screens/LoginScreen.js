@@ -11,6 +11,12 @@ import GoogleIcon from '../components/GoogleIcon';
 import useAppleAuth from '../hooks/useAppleAuth';
 import Svg, { Path } from 'react-native-svg';
 import ScreenContainer from '../components/ScreenContainer';
+import * as yup from 'yup';
+
+const loginSchema = yup.object().shape({
+  email: yup.string().email('Geçerli bir e-posta adresi giriniz.').required('E-posta alanı zorunludur.'),
+  password: yup.string().min(6, 'Şifre en az 6 karakter olmalıdır.').required('Şifre alanı zorunludur.'),
+});
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -43,8 +49,10 @@ export default function LoginScreen({ navigation }) {
     });
 
     const handleLogin = async () => {
-        if (!email || !password) {
-            showAlert('Hata', 'Lütfen tüm alanları doldurun', [{ text: 'Tamam' }], 'error');
+        try {
+            await loginSchema.validate({ email, password });
+        } catch (error) {
+            showAlert('Hata', error.message, [{ text: 'Tamam' }], 'error');
             return;
         }
 

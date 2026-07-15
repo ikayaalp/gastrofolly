@@ -6,6 +6,12 @@ import { signIn } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Eye, EyeOff } from "lucide-react"
 import Image from "next/image"
+import * as yup from "yup"
+
+const signInSchema = yup.object().shape({
+  email: yup.string().email('Geçerli bir e-posta adresi giriniz.').required('E-posta alanı zorunludur.'),
+  password: yup.string().required('Şifre alanı zorunludur.')
+});
 
 function SignInForm() {
     const [email, setEmail] = useState("")
@@ -28,6 +34,14 @@ function SignInForm() {
         e.preventDefault()
         setIsLoading(true)
         setError("")
+
+        try {
+            await signInSchema.validate({ email, password })
+        } catch (validationError: any) {
+            setError(validationError.message)
+            setIsLoading(false)
+            return
+        }
 
         try {
             const result = await signIn("credentials", {
