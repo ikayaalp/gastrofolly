@@ -9,6 +9,7 @@ import {
     Switch,
     ScrollView
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import ScreenContainer from '../components/ScreenContainer';
 import {
     ArrowLeft,
@@ -28,6 +29,9 @@ import {
     Play
 } from 'lucide-react-native';
 import authService from '../api/authService';
+import notificationService from '../api/notificationService';
+import api from '../api/apiClient';
+import { getToken } from '../utils/tokenStorage';
 import CustomAlert from '../components/CustomAlert';
 import { colors, spacing, radius, typography } from '../constants/theme';
 
@@ -47,6 +51,42 @@ export default function SettingsScreen({ navigation }) {
     const loadUserData = async () => {
         const user = await authService.getCurrentUser();
         setUserData(user);
+
+        try {
+            const savedNotificationState = await AsyncStorage.getItem('@notifications_enabled');
+            if (savedNotificationState !== null) {
+                setNotificationsEnabled(savedNotificationState === 'true');
+            }
+        } catch (error) {
+            console.log('Error loading notification setting:', error);
+        }
+    };
+
+    const handleNotificationToggle = async (value) => {
+        setNotificationsEnabled(value);
+        try {
+            await AsyncStorage.setItem('@notifications_enabled', String(value));
+            
+            if (value) {
+                // Bildirimleri aç: Expo token'ı alıp veritabanına kaydeder
+                await notificationService.registerForPushNotifications();
+            } else {
+                // Bildirimleri kapat: Backend'deki token'ı silerek bildirim gelmesini engeller
+                const authToken = await getToken();
+                if (authToken) {
+                    await api.delete('/api/user/push-token', {
+                        headers: {
+                            'Authorization': `Bearer ${authToken}`
+                        }
+                    });
+                }
+            }
+        } catch (error) {
+            console.log('Error saving notification setting:', error);
+            // Revert state if failed
+            setNotificationsEnabled(!value);
+            showAlert('Hata', 'Bildirim ayarı güncellenemedi.', [{ text: 'Tamam' }], 'error');
+        }
     };
 
     // Modals
@@ -212,7 +252,7 @@ export default function SettingsScreen({ navigation }) {
                             title="Bildirimler"
                             type="switch"
                             value={notificationsEnabled}
-                            onValueChange={setNotificationsEnabled}
+                            onValueChange={handleNotificationToggle}
                         />
                         <SettingItem
                             icon={Globe}

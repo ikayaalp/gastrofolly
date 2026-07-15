@@ -332,8 +332,9 @@ export default function ChatScreen({ route, navigation }) {
                         style={[
                             styles.inputContainer,
                             {
-                                paddingBottom: Platform.OS === 'ios' && keyboardVisible ? Math.max(insets.bottom, 12) : 12,
-                                marginBottom: Platform.OS === 'ios' && !keyboardVisible ? tabBarClearance : 0,
+                                paddingBottom: Platform.OS === 'ios' 
+                                    ? (keyboardVisible ? Math.max(insets.bottom, 12) : tabBarClearance + 12) 
+                                    : 12,
                             },
                         ]}
                     >

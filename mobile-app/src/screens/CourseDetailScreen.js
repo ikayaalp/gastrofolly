@@ -90,7 +90,8 @@ export default function CourseDetailScreen({ route, navigation }) {
             // But if user navigates back to this screen while logged in, we should reload course
             const checkAndLoadCourse = async () => {
                 const token = await getToken();
-                if (token) loadCourseDetails();
+                // If returning to this screen, fetch in background without showing full loading screen
+                if (token) loadCourseDetails(true, false);
             };
             checkAndLoadCourse();
 
@@ -113,7 +114,7 @@ export default function CourseDetailScreen({ route, navigation }) {
                 loadUserData();
             }
             // Always try to load course details to show in background
-            loadCourseDetails(loggedIn);
+            loadCourseDetails(loggedIn, true);
         };
         checkAuthAndLoad();
     }, []);
@@ -126,9 +127,9 @@ export default function CourseDetailScreen({ route, navigation }) {
         }
     };
 
-    const loadCourseDetails = async (isUserLoggedIn = isLoggedIn) => {
+    const loadCourseDetails = async (isUserLoggedIn = isLoggedIn, showLoading = true) => {
         try {
-            setLoading(true);
+            if (showLoading) setLoading(true);
             setError(null);
 
             // Fetch course details using service

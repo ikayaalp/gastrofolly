@@ -181,21 +181,53 @@ export async function POST(request: NextRequest) {
             }
 
         } else if (CANCELLATION_EVENTS.includes(eventType)) {
-            // ⚠️ İptal edildi ama mevcut dönem sonuna kadar erişim devam eder
-            // subscriptionPlan'ı Premium olarak bırak, subscriptionEndDate ile kontrol et
-            const expirationDate = expirationAtMs 
-                ? new Date(expirationAtMs) 
-                : user.subscriptionEndDate;
+            // İptal sebebi CUSTOMER_SUPPORT (Müşteri Hizmetleri İadesi - Apple/Google Refund) ise
+            if (event.cancel_reason === 'CUSTOMER_SUPPORT') {
+                console.log(`[RC Webhook] ⚠️ User ${appUserId} refunded via CUSTOMER_SUPPORT.`);
+                
+                await prisma.$transaction(async (tx) => {
+                    // 1. Erişimi anında kes (Çünkü parası iade oldu)
+                    await tx.user.update({
+                        where: { id: appUserId },
+                        data: {
+                            subscriptionPlan: null,
+                            subscriptionEndDate: null,
+                            subscriptionStartDate: null,
+                        },
+                    });
 
-            await prisma.user.update({
-                where: { id: appUserId },
-                data: {
-                    subscriptionEndDate: expirationDate,
-                    // Plan hâlâ Premium — süre dolunca checkAccess() false dönecek
-                },
-            });
+                    // 2. Son başarılı ödemeyi REFUNDED olarak işaretle (Böylece toplam gelirden otomatik düşer)
+                    const lastPayment = await tx.payment.findFirst({
+                        where: { userId: appUserId, status: 'COMPLETED', subscriptionPlan: 'Premium' },
+                        orderBy: { createdAt: 'desc' }
+                    });
 
-            console.log(`[RC Webhook] ⚠️ User ${appUserId} cancelled, access until: ${expirationDate?.toISOString()}`);
+                    if (lastPayment) {
+                        await tx.payment.update({
+                            where: { id: lastPayment.id },
+                            data: { status: 'REFUNDED' }
+                        });
+                        console.log(`[RC Webhook] 💸 Refund işlendi. Payment ${lastPayment.id} REFUNDED yapıldı.`);
+                    }
+                });
+            } else {
+                // Sadece otomatik yenilemeyi iptal ettiyse (parası iade OLMADIYSA)
+                // ⚠️ İptal edildi ama mevcut dönem sonuna kadar erişim devam eder
+                // subscriptionPlan'ı Premium olarak bırak, subscriptionEndDate ile kontrol et
+                const expirationDate = expirationAtMs 
+                    ? new Date(expirationAtMs) 
+                    : user.subscriptionEndDate;
+
+                await prisma.user.update({
+                    where: { id: appUserId },
+                    data: {
+                        subscriptionEndDate: expirationDate,
+                        // Plan hâlâ Premium — süre dolunca checkAccess() false dönecek
+                    },
+                });
+
+                console.log(`[RC Webhook] ⚠️ User ${appUserId} cancelled, access until: ${expirationDate?.toISOString()}`);
+            }
 
         } else {
             console.log(`[RC Webhook] Unhandled event type: ${eventType}`);

@@ -20,6 +20,7 @@ import { Image } from 'expo-image';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import * as WebBrowser from 'expo-web-browser';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import useTabBarClearance from '../hooks/useTabBarClearance';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import Slider from '@react-native-community/slider';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -27,6 +28,7 @@ import {
     Play,
     Pause,
     SkipForward,
+    SkipBack,
     ChevronDown,
     ChevronUp,
     ChevronRight,
@@ -70,6 +72,7 @@ export default function LearnScreen({ route, navigation }) {
     usePreventScreenCapture();
     const { width, height } = useWindowDimensions();
     const insets = useSafeAreaInsets();
+    const tabBarClearance = useTabBarClearance();
     const { courseId, lessonId } = route.params;
     
     const [course, setCourse] = useState(null);
@@ -303,7 +306,7 @@ export default function LearnScreen({ route, navigation }) {
             clearTimeout(controlsTimeout.current);
         }
         controlsTimeout.current = setTimeout(() => {
-            if (isPlaying) {
+            if (player?.playing) {
                 Animated.timing(controlsOpacity, {
                     toValue: 0,
                     duration: 300,
@@ -313,7 +316,7 @@ export default function LearnScreen({ route, navigation }) {
                 });
             }
         }, 3000);
-    }, [isPlaying, controlsOpacity]);
+    }, [player, controlsOpacity]);
 
     const showControlsTemporarily = useCallback(() => {
         setShowControls(true);
@@ -809,16 +812,24 @@ export default function LearnScreen({ route, navigation }) {
                                                 <Text style={styles.bottomActionText}>Hız ({playbackRate}x)</Text>
                                             </TouchableOpacity>
 
+                                            {hasPrev && (
+                                                <TouchableOpacity style={styles.bottomAction} onPress={goToPrevLesson}>
+                                                    <SkipBack size={18} color="white" fill="white" />
+                                                </TouchableOpacity>
+                                            )}
+
                                             {isNextLessonAccessible() && (
                                                 <TouchableOpacity style={styles.bottomAction} onPress={goToNextLesson}>
-                                                    <SkipForward size={16} color="white" fill="white" />
-                                                    <Text style={styles.bottomActionText}>Sonraki Ders</Text>
+                                                    <SkipForward size={18} color="white" fill="white" />
                                                 </TouchableOpacity>
                                             )}
 
                                             <TouchableOpacity style={styles.bottomAction} onPress={toggleFullscreen}>
-                                                <Maximize2 size={16} color="white" />
-                                                <Text style={styles.bottomActionText}>{isFullscreen ? 'Küçült' : 'Tam Ekran'}</Text>
+                                                {isFullscreen ? (
+                                                    <Maximize2 size={18} color="white" />
+                                                ) : (
+                                                    <Maximize2 size={18} color="white" />
+                                                )}
                                             </TouchableOpacity>
                                         </View>
                                     </LinearGradient>
@@ -853,7 +864,7 @@ export default function LearnScreen({ route, navigation }) {
                     <ScrollView
                         ref={scrollViewRef}
                         style={styles.tabContent}
-                        contentContainerStyle={styles.tabContentContainer}
+                        contentContainerStyle={[styles.tabContentContainer, { paddingBottom: tabBarClearance + 20 }]}
                         keyboardShouldPersistTaps="handled"
                     >
                         {/* Course Title + Meta Badges */}
@@ -1126,12 +1137,16 @@ const styles = StyleSheet.create({
     },
     controlsOverlay: {
         flex: 1,
-        justifyContent: 'space-between',
+        justifyContent: 'center',
         backgroundColor: 'rgba(0, 0, 0, 0.35)',
     },
 
     // Top Gradient
     topGradient: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
         flexDirection: 'row',
         alignItems: 'center',
         // paddingTop artık gerçek güvenli alan (safe area) üstünden dinamik olarak inline set ediliyor
