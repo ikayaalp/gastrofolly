@@ -5,7 +5,11 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Asset } from 'expo-asset';
 import { View, ActivityIndicator } from 'react-native';
 import { SystemBars } from 'react-native-edge-to-edge';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient } from '@tanstack/react-query';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SplashScreen from 'expo-splash-screen';
 import AppNavigator from './src/navigation/AppNavigator';
 import notificationService from './src/api/notificationService';
 import { initRevenueCat } from './src/api/revenueCatService';
@@ -14,15 +18,21 @@ import { navigationRef } from './src/navigation/AppNavigator';
 import OfflineBanner from './src/components/OfflineBanner';
 import ErrorBoundary from './src/components/ErrorBoundary';
 
+SplashScreen.preventAutoHideAsync();
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 60_000,
-      gcTime: 300_000,
+      gcTime: 1000 * 60 * 60 * 24, // 24 hours
       retry: 2,
       refetchOnWindowFocus: false,
     },
   },
+});
+
+const asyncStoragePersister = createAsyncStoragePersister({
+  storage: AsyncStorage,
 });
 
 export default function App() {
@@ -92,18 +102,20 @@ export default function App() {
     };
   }, []);
 
+  const onLayoutRootView = React.useCallback(async () => {
+    if (appIsReady) {
+      await SplashScreen.hideAsync();
+    }
+  }, [appIsReady]);
+
   if (!appIsReady) {
-    return (
-      <View style={{ flex: 1, backgroundColor: '#000000', justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="#ea580c" />
-      </View>
-    );
+    return null;
   }
 
   return (
     <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#000' }}>
+      <PersistQueryClientProvider client={queryClient} persistOptions={{ persister: asyncStoragePersister }}>
+        <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#000' }} onLayout={onLayoutRootView}>
           <SafeAreaProvider>
             <SystemBars style="light" />
             <StatusBar style="light" />
@@ -111,7 +123,7 @@ export default function App() {
             <OfflineBanner />
           </SafeAreaProvider>
         </GestureHandlerRootView>
-      </QueryClientProvider>
+      </PersistQueryClientProvider>
     </ErrorBoundary>
   );
 }

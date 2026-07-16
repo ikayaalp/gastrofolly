@@ -8,8 +8,8 @@ import courseService from '../api/courseService';
 import authService, { isPremiumUser } from '../api/authService';
 import favoritesService from '../services/favoritesService';
 import ScreenContainer from '../components/ScreenContainer';
+import Skeleton from '../components/Skeleton';
 import { getToken } from '../utils/tokenStorage';
-
 
 export default function CoursesScreen({ navigation }) {
     const [activeFilter, setActiveFilter] = useState('all');
@@ -123,8 +123,27 @@ export default function CoursesScreen({ navigation }) {
 
     if (loading) {
         return (
-            <ScreenContainer style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#ea580c" />
+            <ScreenContainer style={styles.container} edges={['top']}>
+                <View style={styles.header}>
+                    <Text style={styles.headerTitle}>Kurslarım</Text>
+                </View>
+                <ScrollView scrollEnabled={false} contentContainerStyle={styles.listContent}>
+                    {[1, 2, 3].map((key) => (
+                        <View key={key} style={styles.courseCard}>
+                            <View style={styles.imageContainer}>
+                                <Skeleton width="100%" height="100%" borderRadius={0} />
+                            </View>
+                            <View style={styles.courseContent}>
+                                <Skeleton width={60} height={16} borderRadius={4} style={{ marginBottom: 12 }} />
+                                <Skeleton width="80%" height={20} borderRadius={4} style={{ marginBottom: 16 }} />
+                                <View style={styles.courseMeta}>
+                                    <Skeleton width={60} height={12} borderRadius={4} />
+                                    <Skeleton width={60} height={12} borderRadius={4} />
+                                </View>
+                            </View>
+                        </View>
+                    ))}
+                </ScrollView>
             </ScreenContainer>
         );
     }

@@ -48,7 +48,7 @@ export default {
         "slug": "chef-2-0",
 
         "scheme": ["chef2", "com.chef2.app"],
-        "version": "1.1.5",
+        "version": "1.1.6",
         "orientation": "portrait",
         "icon": "./assets/icon_blackBg.png",
         "userInterfaceStyle": "dark",
@@ -57,12 +57,12 @@ export default {
         // alttan şerit olarak sızıyordu.
         "backgroundColor": "#000000",
         "splash": {
-            "image": "./assets/icon_blackBg.png",
+            "image": "./assets/splash.png",
             "resizeMode": "contain",
             "backgroundColor": "#000000"
         },
         "ios": {
-            "buildNumber": "40",
+            "buildNumber": "41",
             "supportsTablet": true,
             "bundleIdentifier": "com.chef2.app",
             "infoPlist": {
@@ -72,7 +72,7 @@ export default {
         },
         "android": {
             "package": "com.chef2.app",
-            "versionCode": 11,
+            "versionCode": 12,
             "adaptiveIcon": {
                 "foregroundImage": "./assets/adaptive-icon.png",
                 "backgroundColor": "#000000"

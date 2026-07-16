@@ -20,6 +20,7 @@ import config from '../api/config';
 import authService from '../api/authService';
 import CustomAlert from '../components/CustomAlert';
 import ScreenContainer from '../components/ScreenContainer';
+import Skeleton from '../components/Skeleton';
 
 const { width } = Dimensions.get('window');
 
@@ -106,9 +107,30 @@ export default function InstructorProfileScreen({ navigation, route }) {
 
     if (loading) {
         return (
-            <ScreenContainer style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#ea580c" />
-                <Text style={styles.loadingText}>Yükleniyor...</Text>
+            <ScreenContainer style={styles.container}>
+                <View style={styles.header}>
+                    <TouchableOpacity style={styles.backButton} disabled>
+                        <ArrowLeft size={24} color="white" />
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.shareButton} disabled>
+                        <Share2 size={24} color="white" />
+                    </TouchableOpacity>
+                </View>
+                <ScrollView style={styles.content} scrollEnabled={false} showsVerticalScrollIndicator={false}>
+                    <View style={styles.profileCard}>
+                        <Skeleton width={120} height={120} borderRadius={60} style={{ marginBottom: 16 }} />
+                        <Skeleton width={150} height={28} borderRadius={4} style={{ marginBottom: 8 }} />
+                        <Skeleton width={100} height={16} borderRadius={4} style={{ marginBottom: 24 }} />
+                        <Skeleton width="100%" height={60} borderRadius={12} style={{ marginBottom: 20 }} />
+                        <Skeleton width="100%" height={48} borderRadius={12} />
+                    </View>
+                    <View style={styles.aboutCard}>
+                        <Skeleton width={120} height={20} borderRadius={4} style={{ marginBottom: 16 }} />
+                        <Skeleton width="100%" height={14} borderRadius={4} style={{ marginBottom: 8 }} />
+                        <Skeleton width="100%" height={14} borderRadius={4} style={{ marginBottom: 8 }} />
+                        <Skeleton width="80%" height={14} borderRadius={4} />
+                    </View>
+                </ScrollView>
             </ScreenContainer>
         );
     }

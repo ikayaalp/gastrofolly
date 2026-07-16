@@ -10,6 +10,7 @@ import GoogleIcon from '../components/GoogleIcon';
 import useAppleAuth from '../hooks/useAppleAuth';
 import Svg, { Path } from 'react-native-svg';
 import ScreenContainer from '../components/ScreenContainer';
+import * as Haptics from 'expo-haptics';
 import * as yup from 'yup';
 
 const registerSchema = yup.object().shape({
@@ -68,6 +69,7 @@ export default function RegisterScreen({ navigation }) {
         setLoading(false);
 
         if (result.success) {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
             if (result.data.requiresVerification) {
                 showAlert(
                     'Başarılı',

@@ -122,6 +122,8 @@ function AccountStackNavigator() {
     );
 }
 
+import * as Haptics from 'expo-haptics';
+
 function TabNavigator() {
     const insets = useSafeAreaInsets();
     const bottomPadding = Platform.OS === 'android' ? Math.max(insets.bottom, 36) : insets.bottom;
@@ -129,6 +131,11 @@ function TabNavigator() {
     return (
         <Tab.Navigator
             tabBar={(props) => <FloatingTabBar {...props} />}
+            screenListeners={{
+                tabPress: () => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                },
+            }}
             screenOptions={{
                 headerShown: false,
             }}

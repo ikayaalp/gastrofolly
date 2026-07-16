@@ -36,6 +36,7 @@ import {
     openSubscriptionManagement,
 } from '../api/revenueCatService';
 import authService, { isPremiumUser } from '../api/authService';
+import * as Haptics from 'expo-haptics';
 import CustomAlert from '../components/CustomAlert';
 import ScreenContainer from '../components/ScreenContainer';
 
@@ -153,6 +154,7 @@ export default function SubscriptionScreen({ navigation, route }) {
         if (result.userCancelled) return;
 
         if (result.success) {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
             const exp = result.customerInfo?.entitlements?.active?.['Culinora Pro']?.expirationDate;
             // SYNC with backend - IMPORTANT: We use 'Premium' (case sensitive match for backend)
             await authService.syncSubscription(true, exp ? new Date(exp) : null);

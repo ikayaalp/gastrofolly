@@ -15,6 +15,7 @@ import homeService from '../api/homeService';
 import storyService from '../api/storyService';
 import Stories from '../components/Stories';
 import ScreenContainer from '../components/ScreenContainer';
+import Skeleton from '../components/Skeleton';
 import { colors } from '../constants/theme';
 
 const { width } = Dimensions.get('window');
@@ -381,11 +382,40 @@ export default function HomeScreen({ navigation }) {
         );
     };
 
-    if (loading) {
+    if (loading && !homeData) {
         return (
-            <ScreenContainer style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#ea580c" />
-                <Text style={styles.loadingText}>Yükleniyor...</Text>
+            <ScreenContainer style={styles.container} edges={['top']}>
+                <View style={styles.header}>
+                    <View style={styles.headerContent}>
+                        <View style={styles.logoContainer}>
+                            <Logo size="md" />
+                        </View>
+                    </View>
+                </View>
+                <ScrollView style={styles.scrollView} scrollEnabled={false} contentContainerStyle={styles.scrollContent}>
+                    {/* Skeleton Banner */}
+                    <View style={styles.carouselSection}>
+                        <View style={{ width: width - 32, height: cardWidth, borderRadius: 24, alignSelf: 'center', marginTop: 16, backgroundColor: '#1f2937', overflow: 'hidden' }}>
+                           <Skeleton width="100%" height="100%" />
+                        </View>
+                    </View>
+                    {/* Skeleton Section 1 */}
+                    <View style={styles.section}>
+                        <Skeleton width={150} height={24} borderRadius={4} style={{ marginBottom: 16, marginLeft: 16 }} />
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
+                            <Skeleton width={260} height={280} borderRadius={16} style={{ marginLeft: 16 }} />
+                            <Skeleton width={260} height={280} borderRadius={16} style={{ marginLeft: 16 }} />
+                        </ScrollView>
+                    </View>
+                    {/* Skeleton Section 2 */}
+                    <View style={styles.section}>
+                        <Skeleton width={180} height={24} borderRadius={4} style={{ marginBottom: 16, marginLeft: 16 }} />
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
+                            <Skeleton width={160} height={200} borderRadius={16} style={{ marginLeft: 16 }} />
+                            <Skeleton width={160} height={200} borderRadius={16} style={{ marginLeft: 16 }} />
+                        </ScrollView>
+                    </View>
+                </ScrollView>
             </ScreenContainer>
         );
     }

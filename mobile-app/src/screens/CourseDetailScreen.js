@@ -33,6 +33,7 @@ import favoritesService from '../services/favoritesService';
 import LoginRequiredModal from '../components/LoginRequiredModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ScreenContainer from '../components/ScreenContainer';
+import Skeleton from '../components/Skeleton';
 import { getToken } from '../utils/tokenStorage';
 
 
@@ -202,9 +203,41 @@ export default function CourseDetailScreen({ route, navigation }) {
 
     if (loading) {
         return (
-            <ScreenContainer style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#ea580c" />
-                <Text style={styles.loadingText}>Yükleniyor...</Text>
+            <ScreenContainer style={styles.container} edges={['top']}>
+                <View style={styles.header}>
+                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                        <ArrowLeft size={24} color="white" />
+                    </TouchableOpacity>
+                    <View style={styles.logoContainer}>
+                        <Logo size="md" />
+                    </View>
+                    <View style={{ width: 32 }} />
+                </View>
+
+                <ScrollView style={styles.scrollView} scrollEnabled={false} contentContainerStyle={styles.scrollContent}>
+                    <Skeleton width={width} height={250} borderRadius={0} style={{ marginBottom: 16 }} />
+                    <View style={styles.contentContainer}>
+                        <Skeleton width={200} height={28} borderRadius={4} style={{ marginBottom: 16 }} />
+                        <Skeleton width="100%" height={16} borderRadius={4} style={{ marginBottom: 8 }} />
+                        <Skeleton width="90%" height={16} borderRadius={4} style={{ marginBottom: 8 }} />
+                        <Skeleton width="95%" height={16} borderRadius={4} style={{ marginBottom: 24 }} />
+                        
+                        <Skeleton width="100%" height={56} borderRadius={12} style={{ marginBottom: 24 }} />
+
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 24 }}>
+                            <Skeleton width={40} height={40} borderRadius={20} style={{ marginRight: 12 }} />
+                            <View>
+                                <Skeleton width={120} height={16} borderRadius={4} style={{ marginBottom: 6 }} />
+                                <Skeleton width={80} height={12} borderRadius={4} />
+                            </View>
+                        </View>
+
+                        <Skeleton width={120} height={20} borderRadius={4} style={{ marginBottom: 16 }} />
+                        {[1, 2, 3].map((key) => (
+                            <Skeleton key={key} width="100%" height={70} borderRadius={12} style={{ marginBottom: 8 }} />
+                        ))}
+                    </View>
+                </ScrollView>
             </ScreenContainer>
         );
     }

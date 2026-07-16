@@ -53,6 +53,8 @@ import ImageViewerModal from '../components/ImageViewerModal';
 import TopicCard from '../components/TopicCard';
 import LoginRequiredModal from '../components/LoginRequiredModal';
 import LikersModal from '../components/LikersModal';
+import Skeleton from '../components/Skeleton';
+import * as Haptics from 'expo-haptics';
 import { getToken } from '../utils/tokenStorage';
 
 const formatDuration = (millis) => {
@@ -578,6 +580,7 @@ export default function SocialScreen({ navigation }) {
     );
 
     const handleSave = (topicId) => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
         setSavedTopics(prev => {
             const newSet = new Set(prev);
             if (newSet.has(topicId)) {
@@ -699,9 +702,33 @@ export default function SocialScreen({ navigation }) {
 
     if (loading) {
         return (
-            <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#ea580c" />
-            </View>
+            <ScreenContainer style={styles.container} edges={['top', 'left', 'right']}>
+                <View style={[styles.header, { paddingTop: 8 }]}>
+                    <View>
+                        <Text style={styles.headerTitle}>Chef Sosyal</Text>
+                        <Text style={styles.headerSubtitle}>Gastronomi tutkunlarının buluşma noktası</Text>
+                    </View>
+                </View>
+                <ScrollView scrollEnabled={false} contentContainerStyle={{ padding: 16 }}>
+                    {[1, 2].map((key) => (
+                        <View key={key} style={{ backgroundColor: '#0a0a0a', borderRadius: 16, marginBottom: 16, padding: 16, borderWidth: 1, borderColor: '#1f2937' }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+                                <Skeleton width={40} height={40} borderRadius={20} />
+                                <View style={{ marginLeft: 12 }}>
+                                    <Skeleton width={120} height={16} borderRadius={4} style={{ marginBottom: 8 }} />
+                                    <Skeleton width={80} height={12} borderRadius={4} />
+                                </View>
+                            </View>
+                            <Skeleton width="100%" height={60} borderRadius={8} style={{ marginBottom: 16 }} />
+                            <Skeleton width="100%" height={250} borderRadius={12} style={{ marginBottom: 16 }} />
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                                <Skeleton width={60} height={32} borderRadius={16} />
+                                <Skeleton width={60} height={32} borderRadius={16} />
+                            </View>
+                        </View>
+                    ))}
+                </ScrollView>
+            </ScreenContainer>
         );
     }
 
