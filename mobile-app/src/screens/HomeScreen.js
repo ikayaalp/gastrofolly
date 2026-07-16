@@ -2,6 +2,7 @@ import React, { useState, useMemo, useRef } from 'react';
 import { StyleSheet, Text, View, Dimensions, TouchableOpacity, ScrollView, ActivityIndicator, Platform, RefreshControl, Linking } from 'react-native';
 import { Image } from 'expo-image';
 import Carousel from 'react-native-reanimated-carousel';
+import { TouchableOpacity as RNGHTouchableOpacity } from 'react-native-gesture-handler';
 
 import { Ionicons } from '@expo/vector-icons';
 import { ChefHat, BookOpen, Star, Play, Plus, Info } from 'lucide-react-native';
@@ -551,7 +552,7 @@ export default function HomeScreen({ navigation }) {
                             scrollAnimationDuration={700}
                             onProgressChange={syncPaginationDot(homeCovers.length)}
                             renderItem={({ item: cover, index }) => (
-                                <TouchableOpacity
+                                <RNGHTouchableOpacity
                                     style={[styles.carouselCard, { width: cardWidth }]}
                                     activeOpacity={0.9}
                                     onPress={() => {
@@ -590,7 +591,7 @@ export default function HomeScreen({ navigation }) {
                                             ) : null}
                                         </View>
                                     </LinearGradient>
-                                </TouchableOpacity>
+                                </RNGHTouchableOpacity>
                             )}
                         />
                         <View style={styles.paginationContainer}>
@@ -623,7 +624,7 @@ export default function HomeScreen({ navigation }) {
                                 scrollAnimationDuration={700}
                                 onProgressChange={syncPaginationDot(Math.min(featuredCourses.length, 5))}
                                 renderItem={({ item: course, index }) => (
-                                    <TouchableOpacity
+                                    <RNGHTouchableOpacity
                                         style={[styles.carouselCard, { width: cardWidth }]}
                                         activeOpacity={0.9}
                                         onPress={() => navigation.navigate('CourseDetail', { courseId: course.id, initialCourse: course })}
@@ -656,7 +657,7 @@ export default function HomeScreen({ navigation }) {
                                                 </View>
                                             </View>
                                         </LinearGradient>
-                                    </TouchableOpacity>
+                                    </RNGHTouchableOpacity>
                                 )}
                             />
                             <View style={styles.paginationContainer}>
