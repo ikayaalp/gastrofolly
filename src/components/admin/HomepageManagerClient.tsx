@@ -26,6 +26,7 @@ interface Cover {
   linkUrl: string | null
   courseId?: string | null
   course?: { id: string; title: string } | null
+  webImageUrl?: string | null
   order: number
   isActive: boolean
 }
