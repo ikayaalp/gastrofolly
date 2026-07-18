@@ -30,6 +30,46 @@ interface ChatMessage {
     content: string
 }
 
+async function generateCompletionWithFallback(systemPrompt: string, formattedMessages: any[]) {
+    const geminiKey = process.env.GEMINI_API_KEY;
+    const groqKey = process.env.GROQ_API_KEY;
+
+    if (!geminiKey && !groqKey) {
+        throw new Error('API keys are not configured');
+    }
+
+    const runGroq = async () => {
+        if (!groqKey) throw new Error('API keys are not configured');
+        const openai = new OpenAI({ apiKey: groqKey, baseURL: 'https://api.groq.com/openai/v1' });
+        return await openai.chat.completions.create({
+            model: 'llama-3.3-70b-versatile',
+            messages: [{ role: 'system', content: systemPrompt }, ...formattedMessages],
+            max_tokens: 1000,
+            temperature: 0.7,
+        });
+    };
+
+    if (geminiKey) {
+        try {
+            const openai = new OpenAI({ apiKey: geminiKey, baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/' });
+            return await openai.chat.completions.create({
+                model: 'gemini-3.5-flash',
+                messages: [{ role: 'system', content: systemPrompt }, ...formattedMessages],
+                max_tokens: 1000,
+                temperature: 0.7,
+            });
+        } catch (error: any) {
+            if (error?.status === 429 && groqKey) {
+                console.warn('Gemini API rate limited (429), falling back to Groq...');
+                return await runGroq();
+            }
+            throw error;
+        }
+    }
+
+    return await runGroq();
+}
+
 export async function POST(request: NextRequest) {
     try {
         const session = await getServerSession(authOptions)
@@ -96,25 +136,17 @@ export async function POST(request: NextRequest) {
         }))
         aiMessages.push({ role: 'user', content: message })
 
-        const apiKey = process.env.GEMINI_API_KEY
-        if (!apiKey) {
-            return NextResponse.json({ error: 'AI not configured' }, { status: 500 })
+
+
+        let completion;
+        try {
+            completion = await generateCompletionWithFallback(dynamicSystemPrompt, aiMessages);
+        } catch (error: any) {
+            if (error.message === 'API keys are not configured') {
+                return NextResponse.json({ error: 'AI API key is not configured' }, { status: 500 });
+            }
+            throw error;
         }
-
-        const openai = new OpenAI({
-            apiKey,
-            baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/',
-        })
-
-        const completion = await openai.chat.completions.create({
-            model: 'gemini-3.5-flash',
-            messages: [
-                { role: 'system', content: dynamicSystemPrompt },
-                ...aiMessages,
-            ],
-            max_tokens: 1000,
-            temperature: 0.7,
-        })
 
         const reply = completion.choices[0]?.message?.content || 'Üzgünüm, şu an yanıt veremiyorum.'
 

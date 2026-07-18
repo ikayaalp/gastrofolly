@@ -29,6 +29,46 @@ interface Message {
     content: string
 }
 
+async function generateCompletionWithFallback(systemPrompt: string, formattedMessages: any[]) {
+    const geminiKey = process.env.GEMINI_API_KEY;
+    const groqKey = process.env.GROQ_API_KEY;
+
+    if (!geminiKey && !groqKey) {
+        throw new Error('API keys are not configured');
+    }
+
+    const runGroq = async () => {
+        if (!groqKey) throw new Error('API keys are not configured');
+        const openai = new OpenAI({ apiKey: groqKey, baseURL: 'https://api.groq.com/openai/v1' });
+        return await openai.chat.completions.create({
+            model: 'llama-3.3-70b-versatile',
+            messages: [{ role: 'system', content: systemPrompt }, ...formattedMessages],
+            max_tokens: 1000,
+            temperature: 0.7,
+        });
+    };
+
+    if (geminiKey) {
+        try {
+            const openai = new OpenAI({ apiKey: geminiKey, baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/' });
+            return await openai.chat.completions.create({
+                model: 'gemini-3.5-flash',
+                messages: [{ role: 'system', content: systemPrompt }, ...formattedMessages],
+                max_tokens: 1000,
+                temperature: 0.7,
+            });
+        } catch (error: any) {
+            if (error?.status === 429 && groqKey) {
+                console.warn('Gemini API rate limited (429), falling back to Groq...');
+                return await runGroq();
+            }
+            throw error;
+        }
+    }
+
+    return await runGroq();
+}
+
 export async function POST(request: NextRequest) {
     try {
         const user = await getAuthUser(request)
@@ -52,13 +92,7 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        const apiKey = process.env.GEMINI_API_KEY
-        if (!apiKey) {
-            return NextResponse.json(
-                { error: 'Gemini API key is not configured' },
-                { status: 500 }
-            )
-        }
+
 
         // Fetch courses context
         const courses = await prisma.course.findMany({
@@ -88,23 +122,20 @@ Aşağıdaki kurslar şu an platformda mevcuttur. Kullanıcının ihiyacına uyg
 ${coursesContext}
 `;
 
-        const openai = new OpenAI({
-            apiKey: apiKey,
-            baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/', // Using Gemini OpenAI wrapper
-        })
+        const formattedMessages = messages.map(m => ({
+            role: m.role as 'user' | 'assistant',
+            content: m.content
+        }));
 
-        const completion = await openai.chat.completions.create({
-            model: 'gemini-3.5-flash',
-            messages: [
-                { role: 'system', content: dynamicSystemPrompt },
-                ...messages.map(m => ({
-                    role: m.role as 'user' | 'assistant',
-                    content: m.content
-                }))
-            ],
-            max_tokens: 1000,
-            temperature: 0.7,
-        })
+        let completion;
+        try {
+            completion = await generateCompletionWithFallback(dynamicSystemPrompt, formattedMessages);
+        } catch (error: any) {
+            if (error.message === 'API keys are not configured') {
+                return NextResponse.json({ error: 'AI API key is not configured' }, { status: 500 });
+            }
+            throw error;
+        }
 
         const reply = completion.choices[0]?.message?.content || 'Üzgünüm, şu an yanıt veremiyorum.'
 
