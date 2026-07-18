@@ -307,7 +307,7 @@ function CoversTab({ initial }: { initial: Cover[] }) {
                   <input
                     type="radio"
                     name={`linkType-${cover.id}`}
-                    checked={!!cover.courseId}
+                    checked={cover.courseId !== null && cover.courseId !== undefined}
                     onChange={() => {
                       update(cover.id, "courseId", availableCourses[0]?.id || "")
                       update(cover.id, "linkUrl", null)
@@ -320,7 +320,7 @@ function CoversTab({ initial }: { initial: Cover[] }) {
                   <input
                     type="radio"
                     name={`linkType-${cover.id}`}
-                    checked={!cover.courseId}
+                    checked={cover.courseId === null || cover.courseId === undefined}
                     onChange={() => {
                       update(cover.id, "courseId", null)
                     }}
