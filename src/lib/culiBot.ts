@@ -65,7 +65,7 @@ async function generateCuliReply(postContent: string | null, userQuestion: strin
 
     try {
         const completion = await openai.chat.completions.create({
-            model: 'gemini-1.5-flash',
+            model: 'gemini-3.5-flash',
             messages: [
                 { role: 'system', content: SYSTEM_PROMPT },
                 { role: 'user', content: promptContext }

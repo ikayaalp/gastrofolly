@@ -94,7 +94,7 @@ ${coursesContext}
         })
 
         const completion = await openai.chat.completions.create({
-            model: 'gemini-1.5-flash',
+            model: 'gemini-3.5-flash',
             messages: [
                 { role: 'system', content: dynamicSystemPrompt },
                 ...messages.map(m => ({
