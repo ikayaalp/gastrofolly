@@ -24,6 +24,8 @@ interface Cover {
   title: string | null
   subtitle: string | null
   linkUrl: string | null
+  courseId?: string | null
+  course?: { id: string; title: string } | null
   order: number
   isActive: boolean
 }
@@ -40,6 +42,13 @@ interface HInstructor {
   userId?: string | null
   // Sadece formda kullanılan geçici alan (sunucudan gelmez)
   password?: string
+}
+
+interface SimpleCourse {
+  id: string
+  title: string
+  imageUrl: string | null
+  instructor: { name: string | null } | null
 }
 
 interface Section {
@@ -127,6 +136,15 @@ function TabButton({
 function CoversTab({ initial }: { initial: Cover[] }) {
   const [covers, setCovers] = useState<Cover[]>(initial)
   const [savingId, setSavingId] = useState<string | null>(null)
+  const [availableCourses, setAvailableCourses] = useState<SimpleCourse[]>([])
+
+  useEffect(() => {
+    fetch("/api/admin/courses/simple")
+      .then(r => r.json())
+      .then(data => {
+        if(Array.isArray(data)) setAvailableCourses(data)
+      })
+  }, [])
 
   const addNew = () => {
     setCovers((prev) => [
@@ -134,9 +152,11 @@ function CoversTab({ initial }: { initial: Cover[] }) {
       {
         id: `new-${Date.now()}`,
         imageUrl: "",
+        webImageUrl: "",
         title: "",
         subtitle: "",
         linkUrl: "",
+        courseId: null,
         order: prev.length,
         isActive: true,
       },
@@ -211,11 +231,56 @@ function CoversTab({ initial }: { initial: Cover[] }) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {covers.map((cover) => (
           <div key={cover.id} className="bg-neutral-900/40 border border-gray-800 rounded-xl p-4 space-y-3">
-            <ImageUpload
-              currentImageUrl={cover.imageUrl || undefined}
-              type="home-cover"
-              onImageUploaded={(url) => update(cover.id, "imageUrl", url)}
-            />
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <ImageUpload
+                  currentImageUrl={cover.imageUrl || undefined}
+                  type="home-cover"
+                  onImageUploaded={(url) => update(cover.id, "imageUrl", url)}
+                />
+                <p className="text-xs text-gray-400 mt-2">
+                  Mobil Görsel — Kare (1:1), önerilen min 1200×1200px. Uygulama ana sayfasında kare kart olarak gösterilir.
+                </p>
+              </div>
+              {cover.imageUrl && (
+                <div className="shrink-0">
+                  <p className="text-xs text-gray-500 mb-1">Mobil Önizleme</p>
+                  <div className="w-24 h-24 rounded-xl border border-gray-700 overflow-hidden relative">
+                    <Image
+                      fill
+                      src={cover.imageUrl}
+                      alt="Önizleme"
+                      className="object-cover"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="flex gap-4 mt-2 border-t border-gray-800 pt-4">
+              <div className="flex-1">
+                <ImageUpload
+                  currentImageUrl={cover.webImageUrl || undefined}
+                  type="home-cover-web"
+                  onImageUploaded={(url) => update(cover.id, "webImageUrl", url)}
+                />
+                <p className="text-xs text-gray-400 mt-2">
+                  Web Görsel (opsiyonel) — Geniş banner, önerilen min 1920×800px (~2.4:1 oran). Boş bırakılırsa mobil görsel web'de de kullanılır. Web sitesinin ana sayfasında (culinora.net/home) üst banner olarak gösterilir.
+                </p>
+              </div>
+              {cover.webImageUrl && (
+                <div className="shrink-0">
+                  <p className="text-xs text-gray-500 mb-1">Web Önizleme</p>
+                  <div className="w-48 h-20 rounded-xl border border-gray-700 overflow-hidden relative bg-black">
+                    <Image
+                      fill
+                      src={cover.webImageUrl}
+                      alt="Web Önizleme"
+                      className="object-cover"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
             <div>
               <label className={labelCls}>Başlık</label>
               <input
@@ -235,13 +300,60 @@ function CoversTab({ initial }: { initial: Cover[] }) {
               />
             </div>
             <div>
-              <label className={labelCls}>Bağlantı (buton hedefi)</label>
-              <input
-                className={inputCls}
-                value={cover.linkUrl || ""}
-                onChange={(e) => update(cover.id, "linkUrl", e.target.value)}
-                placeholder="/course/... veya /subscription (opsiyonel)"
-              />
+              <label className={labelCls}>Bağlantı Türü</label>
+              <div className="flex gap-4 mt-1 mb-3">
+                <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
+                  <input
+                    type="radio"
+                    name={`linkType-${cover.id}`}
+                    checked={!!cover.courseId}
+                    onChange={() => {
+                      update(cover.id, "courseId", availableCourses[0]?.id || "")
+                      update(cover.id, "linkUrl", null)
+                    }}
+                    className="w-4 h-4 accent-orange-600"
+                  />
+                  Kurs Seç
+                </label>
+                <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
+                  <input
+                    type="radio"
+                    name={`linkType-${cover.id}`}
+                    checked={!cover.courseId}
+                    onChange={() => {
+                      update(cover.id, "courseId", null)
+                    }}
+                    className="w-4 h-4 accent-orange-600"
+                  />
+                  Özel Link
+                </label>
+              </div>
+
+              {cover.courseId !== null && cover.courseId !== undefined ? (
+                <div>
+                  <label className={labelCls}>Kurs Seç</label>
+                  <select
+                    className={inputCls}
+                    value={cover.courseId || ""}
+                    onChange={(e) => update(cover.id, "courseId", e.target.value)}
+                  >
+                    <option value="" disabled>Kurs Seçin...</option>
+                    {availableCourses.map(c => (
+                      <option key={c.id} value={c.id}>{c.title}</option>
+                    ))}
+                  </select>
+                </div>
+              ) : (
+                <div>
+                  <label className={labelCls}>Bağlantı (buton hedefi)</label>
+                  <input
+                    className={inputCls}
+                    value={cover.linkUrl || ""}
+                    onChange={(e) => update(cover.id, "linkUrl", e.target.value)}
+                    placeholder="/course/... veya /subscription vb. (opsiyonel)"
+                  />
+                </div>
+              )}
             </div>
             <div className="flex items-center gap-4">
               <div className="w-24">
@@ -535,13 +647,6 @@ function InstructorsTab({ initial }: { initial: HInstructor[] }) {
 }
 
 // ========================= BÖLÜM SIRASI =========================
-
-interface SimpleCourse {
-  id: string
-  title: string
-  imageUrl: string | null
-  instructor: { name: string | null } | null
-}
 
 function SectionsTab({ initial }: { initial: Section[] }) {
   const [sections, setSections] = useState<Section[]>(

@@ -167,6 +167,7 @@ model Course {
   stories      Story[]
 
   homeSectionCourses HomeSectionCourse[]
+  homeCovers         HomeCover[]
 }
 
 enum CourseLevel {
@@ -642,10 +643,13 @@ enum FinanceType {
 // Hero (kapak) slaytları. Kayıt yoksa /home öne çıkan kurs görsellerine düşer.
 model HomeCover {
   id        String   @id @default(cuid())
-  imageUrl  String
+  imageUrl  String // Mobil kare görsel
+  webImageUrl String? // Web geniş banner görseli
   title     String? // Slayt üzerindeki başlık (opsiyonel)
   subtitle  String? // Alt başlık (opsiyonel)
   linkUrl   String? // "Kursa Başla" butonunun gideceği yer (opsiyonel)
+  courseId  String? // Direkt uygulama içi native kurs yönlendirmesi için (opsiyonel)
+  course    Course? @relation(fields: [courseId], references: [id], onDelete: SetNull)
   order     Int      @default(0)
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())

@@ -29,6 +29,7 @@ interface Course {
 export interface HeroCover {
   id: string
   imageUrl: string
+  webImageUrl?: string | null
   title?: string | null
   subtitle?: string | null
   linkUrl?: string | null
@@ -58,7 +59,7 @@ export default function HeroSection({ courses, covers }: HeroSectionProps) {
     covers && covers.length > 0
       ? covers.map((c) => ({
           id: c.id,
-          imageUrl: c.imageUrl,
+          imageUrl: c.webImageUrl || c.imageUrl,
           title: c.title || "",
           subtitle: c.subtitle || "",
           linkUrl: c.linkUrl || null,

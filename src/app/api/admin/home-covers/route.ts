@@ -13,6 +13,7 @@ export async function GET() {
 
     const covers = await prisma.homeCover.findMany({
       orderBy: [{ order: "asc" }, { createdAt: "asc" }],
+      include: { course: { select: { id: true, title: true } } },
     })
 
     return NextResponse.json(covers)
@@ -30,7 +31,7 @@ export async function POST(req: Request) {
       return new NextResponse("Unauthorized", { status: 401 })
     }
 
-    const { imageUrl, title, subtitle, linkUrl, order, isActive } = await req.json()
+    const { imageUrl, webImageUrl, title, subtitle, linkUrl, courseId, order, isActive } = await req.json()
 
     if (!imageUrl) {
       return new NextResponse("imageUrl zorunludur", { status: 400 })
@@ -39,9 +40,11 @@ export async function POST(req: Request) {
     const cover = await prisma.homeCover.create({
       data: {
         imageUrl,
+        webImageUrl: webImageUrl || null,
         title: title || null,
         subtitle: subtitle || null,
         linkUrl: linkUrl || null,
+        courseId: courseId || null,
         order: typeof order === "number" ? order : 0,
         isActive: isActive ?? true,
       },
@@ -62,7 +65,7 @@ export async function PUT(req: Request) {
       return new NextResponse("Unauthorized", { status: 401 })
     }
 
-    const { id, imageUrl, title, subtitle, linkUrl, order, isActive } = await req.json()
+    const { id, imageUrl, webImageUrl, title, subtitle, linkUrl, courseId, order, isActive } = await req.json()
 
     if (!id) {
       return new NextResponse("id zorunludur", { status: 400 })
@@ -72,9 +75,11 @@ export async function PUT(req: Request) {
       where: { id },
       data: {
         ...(imageUrl !== undefined ? { imageUrl } : {}),
+        ...(webImageUrl !== undefined ? { webImageUrl: webImageUrl || null } : {}),
         ...(title !== undefined ? { title: title || null } : {}),
         ...(subtitle !== undefined ? { subtitle: subtitle || null } : {}),
         ...(linkUrl !== undefined ? { linkUrl: linkUrl || null } : {}),
+        ...(courseId !== undefined ? { courseId: courseId || null } : {}),
         ...(order !== undefined ? { order } : {}),
         ...(isActive !== undefined ? { isActive } : {}),
       },

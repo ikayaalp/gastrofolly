@@ -556,8 +556,10 @@ export default function HomeScreen({ navigation }) {
                                     style={[styles.carouselCard, { width: cardWidth }]}
                                     activeOpacity={0.9}
                                     onPress={() => {
-                                        if (cover.linkUrl) {
-                                            // Optional: handle linking. For now, it's just a cover
+                                        if (cover.courseId) {
+                                            navigation.navigate('CourseDetail', { courseId: cover.courseId });
+                                        } else if (cover.linkUrl) {
+                                            Linking.openURL(cover.linkUrl);
                                         }
                                     }}
                                 >
@@ -579,11 +581,17 @@ export default function HomeScreen({ navigation }) {
                                             <View style={styles.metaContainer}>
                                                 <Text style={styles.metaText}>{cover.subtitle || ''}</Text>
                                             </View>
-                                            {cover.linkUrl ? (
+                                            {(cover.courseId || cover.linkUrl) ? (
                                                 <View style={styles.actionButtons}>
                                                     <TouchableOpacity
                                                         style={styles.heroButton}
-                                                        onPress={() => Linking.openURL(cover.linkUrl)}
+                                                        onPress={() => {
+                                                            if (cover.courseId) {
+                                                                navigation.navigate('CourseDetail', { courseId: cover.courseId });
+                                                            } else if (cover.linkUrl) {
+                                                                Linking.openURL(cover.linkUrl);
+                                                            }
+                                                        }}
                                                     >
                                                         <Text style={styles.heroButtonText}>İncele</Text>
                                                     </TouchableOpacity>
