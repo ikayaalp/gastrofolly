@@ -46,15 +46,15 @@ export async function getCuliUser() {
  * Generates an AI response using Groq API
  */
 async function generateCuliReply(postContent: string | null, userQuestion: string) {
-    const apiKey = process.env.GROQ_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-        console.error('Groq API key is not configured for Culi Bot');
+        console.error('Gemini API key is not configured for Culi Bot');
         return "Üzgünüm, şu an mutfakta biraz meşgulüm. Lütfen daha sonra tekrar sor! 👨‍🍳";
     }
 
     const openai = new OpenAI({
         apiKey: apiKey,
-        baseURL: 'https://api.groq.com/openai/v1',
+        baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/',
     });
 
     let promptContext = `KULLANICININ SORUSU VEYA YORUMU:\n"${userQuestion}"\n`;
@@ -65,7 +65,7 @@ async function generateCuliReply(postContent: string | null, userQuestion: strin
 
     try {
         const completion = await openai.chat.completions.create({
-            model: 'llama-3.3-70b-versatile',
+            model: 'gemini-1.5-flash',
             messages: [
                 { role: 'system', content: SYSTEM_PROMPT },
                 { role: 'user', content: promptContext }

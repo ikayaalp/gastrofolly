@@ -52,10 +52,10 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        const apiKey = process.env.GROQ_API_KEY
+        const apiKey = process.env.GEMINI_API_KEY
         if (!apiKey) {
             return NextResponse.json(
-                { error: 'Groq API key is not configured' },
+                { error: 'Gemini API key is not configured' },
                 { status: 500 }
             )
         }
@@ -90,11 +90,11 @@ ${coursesContext}
 
         const openai = new OpenAI({
             apiKey: apiKey,
-            baseURL: 'https://api.groq.com/openai/v1', // Using Groq API
+            baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/', // Using Gemini OpenAI wrapper
         })
 
         const completion = await openai.chat.completions.create({
-            model: 'llama-3.3-70b-versatile',
+            model: 'gemini-1.5-flash',
             messages: [
                 { role: 'system', content: dynamicSystemPrompt },
                 ...messages.map(m => ({

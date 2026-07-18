@@ -96,18 +96,18 @@ export async function POST(request: NextRequest) {
         }))
         aiMessages.push({ role: 'user', content: message })
 
-        const apiKey = process.env.GROQ_API_KEY
+        const apiKey = process.env.GEMINI_API_KEY
         if (!apiKey) {
             return NextResponse.json({ error: 'AI not configured' }, { status: 500 })
         }
 
         const openai = new OpenAI({
             apiKey,
-            baseURL: 'https://api.groq.com/openai/v1',
+            baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/',
         })
 
         const completion = await openai.chat.completions.create({
-            model: 'llama-3.3-70b-versatile',
+            model: 'gemini-1.5-flash',
             messages: [
                 { role: 'system', content: dynamicSystemPrompt },
                 ...aiMessages,
