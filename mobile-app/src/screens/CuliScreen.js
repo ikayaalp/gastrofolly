@@ -19,8 +19,9 @@ import {
     Image
 } from 'react-native';
 import ScreenContainer from '../components/ScreenContainer';
-import { Send, Bot, User, ChefHat, History, X, Clock, Trash2, AlertTriangle, Sparkles } from 'lucide-react-native';
+import { Send, Bot, User, ChefHat, History, X, Clock, Trash2, AlertTriangle, Sparkles, UtensilsCrossed, MessageCircle } from 'lucide-react-native';
 import { sendMessageToAI } from '../api/aiService';
+import authService from '../api/authService';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect, useNavigation, useIsFocused } from '@react-navigation/native';
@@ -30,13 +31,6 @@ import useTabBarClearance from '../hooks/useTabBarClearance';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getToken } from '../utils/tokenStorage';
 
-
-const SUGGESTIONS = [
-    { id: 1, text: "🍝 İtalyan Makarnası Tarifi", icon: "🍝" },
-    { id: 2, text: "🥩 Et Nasıl Mühürlenir?", icon: "🥩" },
-    { id: 3, text: "🍰 Kolay Tatlı Önerisi", icon: "🍰" },
-    { id: 4, text: "🥗 Sağlıklı Akşam Yemeği", icon: "🥗" },
-];
 
 const MAX_HISTORY_ITEMS = 10;
 
@@ -54,6 +48,7 @@ export default function CuliScreen() {
     const [chatHistory, setChatHistory] = useState([]);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [showLoginModal, setShowLoginModal] = useState(false);
+    const [userName, setUserName] = useState('');
     const flatListRef = useRef(null);
     const tabBarClearance = useTabBarClearance();
 
@@ -102,6 +97,14 @@ export default function CuliScreen() {
                     setShowLoginModal(true);
                 } else {
                     setShowLoginModal(false);
+                    try {
+                        const userData = await authService.getCurrentUser();
+                        if (userData?.name) {
+                            setUserName(userData.name.split(' ')[0]);
+                        }
+                    } catch (error) {
+                        console.error('Error fetching user for Culi:', error);
+                    }
                 }
             };
             checkAuth();
@@ -209,7 +212,6 @@ export default function CuliScreen() {
     };
 
     const handleSend = () => sendMessage(input);
-    const handleSuggestionPress = (text) => sendMessage(text);
 
     const renderItem = ({ item }) => {
         const isUser = item.role === 'user';
@@ -302,29 +304,19 @@ export default function CuliScreen() {
                             >
                                 <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
                                     <View style={styles.emptyState}>
-                                        <View style={styles.emptyStateIconContainer}>
-                                            <ChefHat size={40} color="#ea580c" />
-                                            <Sparkles size={16} color="#ea580c" style={{ position: 'absolute', top: 16, right: 16 }} />
-                                        </View>
-                                        <Text style={styles.emptyStateTitle}>Merhaba Şef! 👋</Text>
-                                        <Text style={styles.emptyStateSubtitle}>
-                                            Bugün mutfakta sana nasıl yardımcı olabilirim?
+                                        <LinearGradient
+                                            colors={['#ea580c', '#f97316']}
+                                            style={styles.emptyStateIconContainer}
+                                        >
+                                            <UtensilsCrossed size={40} color="#fff" />
+                                            <Sparkles size={16} color="#fff" style={{ position: 'absolute', top: 12, right: 12 }} />
+                                        </LinearGradient>
+                                        <Text style={styles.emptyStateTitle}>
+                                            Merhaba {userName || 'Şef'}! 👋
                                         </Text>
-                                        <View style={styles.suggestionsContainer}>
-                                            <Text style={styles.suggestionsTitle}>Örnek Sorular</Text>
-                                            <View style={styles.suggestionsGrid}>
-                                                {SUGGESTIONS.map((suggestion) => (
-                                                    <TouchableOpacity
-                                                        key={suggestion.id}
-                                                        style={styles.suggestionChip}
-                                                        onPress={() => handleSuggestionPress(suggestion.text)}
-                                                    >
-                                                        <Text style={styles.suggestionIcon}>{suggestion.icon}</Text>
-                                                        <Text style={styles.suggestionText}>{suggestion.text}</Text>
-                                                    </TouchableOpacity>
-                                                ))}
-                                            </View>
-                                        </View>
+                                        <Text style={styles.emptyStateSubtitle}>
+                                            Bugün ne pişiriyoruz?
+                                        </Text>
                                     </View>
                                 </TouchableWithoutFeedback>
                             </ScrollView>
@@ -383,6 +375,7 @@ export default function CuliScreen() {
                                 </LinearGradient>
                             </TouchableOpacity>
                         </View>
+                        <Text style={styles.premiumLabel}>CULI AI PREMIUM ASİSTAN</Text>
                     </View>
                 </KeyboardAvoidingView>
             </ScreenContainer>
@@ -408,13 +401,13 @@ export default function CuliScreen() {
                                 <FlatList
                                     data={chatHistory}
                                     keyExtractor={item => item.id}
-                                    renderItem={({ item }) => (
+                                    renderItem={({ item, index }) => (
                                         <TouchableOpacity
                                             style={styles.historyItem}
                                             onPress={() => loadHistoryItem(item)}
                                         >
-                                            <View style={styles.historyIcon}>
-                                                <Clock size={20} color="#a1a1aa" />
+                                            <View style={[styles.historyIcon, index === 0 ? { backgroundColor: '#ea580c' } : {}]}>
+                                                {index === 0 ? <UtensilsCrossed size={20} color="#fff" /> : <MessageCircle size={20} color="#a1a1aa" />}
                                             </View>
                                             <View style={{ flex: 1 }}>
                                                 <Text style={styles.historyDate}>{formatDate(item.date)}</Text>
@@ -427,7 +420,7 @@ export default function CuliScreen() {
                                     contentContainerStyle={styles.historyList}
                                 />
                                 <TouchableOpacity
-                                    style={styles.clearHistoryButton}
+                                    style={styles.clearHistoryButtonPill}
                                     onPress={() => {
                                         setIsMenuVisible(false);
                                         setTimeout(() => setShowClearConfirm(true), 300);
@@ -572,13 +565,15 @@ const styles = StyleSheet.create({
     emptyStateIconContainer: {
         width: 80,
         height: 80,
-        borderRadius: 40,
-        backgroundColor: '#27272a',
+        borderRadius: 24,
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: 24,
-        borderWidth: 1,
-        borderColor: '#3f3f46',
+        shadowColor: '#ea580c',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.4,
+        shadowRadius: 12,
+        elevation: 8,
     },
     emptyStateTitle: {
         fontSize: 28,
@@ -593,42 +588,13 @@ const styles = StyleSheet.create({
         lineHeight: 24,
         marginBottom: 40,
     },
-    suggestionsContainer: {
-        width: '100%',
-    },
-    suggestionsTitle: {
-        fontSize: 14,
-        fontWeight: '600',
+    premiumLabel: {
         color: '#71717a',
-        marginBottom: 16,
-        textTransform: 'uppercase',
-        letterSpacing: 1,
+        fontSize: 10,
+        fontWeight: 'bold',
         textAlign: 'center',
-    },
-    suggestionsGrid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'center',
-        gap: 12,
-    },
-    suggestionChip: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#18181b',
-        paddingVertical: 12,
-        paddingHorizontal: 16,
-        borderRadius: 20,
-        borderWidth: 1,
-        borderColor: '#3f3f46',
-    },
-    suggestionIcon: {
-        fontSize: 16,
-        marginRight: 8,
-    },
-    suggestionText: {
-        color: '#e4e4e7',
-        fontSize: 14,
-        fontWeight: '500',
+        marginTop: 12,
+        letterSpacing: 1,
     },
     messageContainer: {
         flexDirection: 'row',
@@ -811,14 +777,17 @@ const styles = StyleSheet.create({
         color: '#71717a',
         fontSize: 16,
     },
-    clearHistoryButton: {
+    clearHistoryButtonPill: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: 20,
-        borderTopWidth: 1,
-        borderTopColor: '#27272a',
-        marginBottom: 20 // Adjust for safe area if needed
+        paddingVertical: 14,
+        marginHorizontal: 20,
+        marginBottom: 20,
+        backgroundColor: '#27272a',
+        borderRadius: 24,
+        borderWidth: 1,
+        borderColor: '#3f3f46',
     },
     clearHistoryText: {
         color: '#ef4444',
