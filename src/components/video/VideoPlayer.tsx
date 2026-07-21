@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useRef, useEffect } from "react"
+import React, { useState, useRef, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, RotateCcw, RotateCw, SkipBack, SkipForward, Loader2, AlertTriangle, Gauge, X, Layers } from "lucide-react"
 import YouTubePlayer from "./YouTubePlayer"
@@ -78,6 +78,25 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
   // Kontrol barı için auto-hide id
   const hideControlsTimeout = useRef<NodeJS.Timeout | null>(null);
 
+  // Oynatmayı dener ve sonucu state'e yansıtır. Tarayıcı otomatik oynatmayı
+  // engellerse (sessiz olmayan video + user-activation yoksa) play() reddedilir;
+  // bu durumda isPlaying'i false bırakıp ortadaki play butonunu göstererek
+  // UI'ın gerçeği yansıtmasını sağlarız (aksi halde "oynuyor" ikonu + donuk kare).
+  const attemptPlay = useCallback(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const p = video.play();
+    if (p && typeof p.then === "function") {
+      p.then(() => {
+        setIsPlaying(true);
+        setShowCenterPlay(false);
+      }).catch(() => {
+        setIsPlaying(false);
+        setShowCenterPlay(true);
+      });
+    }
+  }, []);
+
   // Kontrol barını 3sn gösterip sonra gizle (center play açıkken hep açık bırak)
   const triggerControls = () => {
     if (showCenterPlay) return;
@@ -111,10 +130,10 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
     const handlePause = () => setIsPlaying(false)
     const handleCanPlay = () => {
       setIsLoading(false);
-      // Video yüklenince otomatik oynatma bekleniyorsa oynat
-      if (shouldAutoPlayRef.current && videoRef.current) {
-        videoRef.current.play().catch(() => {});
+      // Video hazır; yeni ders açılışında otomatik oynat (tek autoplay noktası)
+      if (shouldAutoPlayRef.current) {
         shouldAutoPlayRef.current = false;
+        attemptPlay();
       }
     }
     const handleLoadStart = () => {
@@ -163,7 +182,7 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
       video.removeEventListener('webkitendfullscreen', handleIOSFullscreenEnd)
       video.removeEventListener('ended', handleEnded)
     }
-  }, [nextLesson, hasFullAccess])
+  }, [nextLesson, hasFullAccess, attemptPlay])
 
   // İmzalı playback URL'ini sunucudan al. lesson.videoUrl artık Bunny GUID'i tutar;
   // oynatılabilir/imzalı URL yalnızca /api/lessons/{id}/video-url üzerinden, erişim
@@ -195,6 +214,10 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
 
     const isHls = playbackUrl.endsWith('.m3u8') || playbackUrl.includes('/bcdn_token=');
 
+    // Yeni/yenilenen kaynak (ders değişimi veya "Tekrar Dene") → autoplay'i yeniden
+    // silahla; oynatmayı canplay handler tek noktadan tetikler.
+    shouldAutoPlayRef.current = true;
+
     // Eski hls instance'ını temizle
     if (hlsRef.current) {
       hlsRef.current.destroy();
@@ -205,34 +228,36 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
 
     if (isHls && Hls.isSupported() && !video.canPlayType('application/vnd.apple.mpegurl')) {
       const hls = new Hls({
-        capLevelToPlayerSize: true,
         maxBufferLength: 30,
         enableWorker: false, // CSP: eval() gerektiren worker'ı devre dışı bırak
+        // Kaliteyi ekran boyutu değil AĞ belirlesin: yüksek başlangıç tahminiyle
+        // 1080p'den başla, bant genişliği yetmezse ABR kademeli olarak düşürür.
+        capLevelToPlayerSize: false,
+        abrEwmaDefaultEstimate: 5_000_000,
       });
       hlsRef.current = hls;
       hls.loadSource(playbackUrl);
       hls.attachMedia(video);
       hls.on(Hls.Events.MANIFEST_PARSED, (_e, data) => {
-        video.play().catch(() => {});
-        // DEBUG — Bunny'den kaç kalite geldiğini görmek için
-        console.warn('[HLS] manifest parsed, levels:', data.levels);
-        // Mevcut kalite seviyelerini state'e aktar
+        // Kalite seviyelerini state'e aktar: Auto + her seviye (yüksekten düşüğe).
+        // index alanı orijinal hls.js level index'ini korur (sort yalnızca görünüm sırası).
         const levels: QualityLevel[] = [
-          { index: -1, label: 'Otomatik', height: 9999 },
-          ...data.levels.map((lvl: { height: number }, i: number) => ({
-            index: i,
-            label: lvl.height ? `${lvl.height}p` : `Seviye ${i + 1}`,
-            height: lvl.height ?? 0,
-          })).sort((a: QualityLevel, b: QualityLevel) => b.height - a.height),
+          { index: -1, label: 'Auto', height: 9999 },
+          ...data.levels
+            .map((lvl: { height: number }, i: number) => ({
+              index: i,
+              label: lvl.height ? `${lvl.height}p` : `Seviye ${i + 1}`,
+              height: lvl.height ?? 0,
+            }))
+            .sort((a: QualityLevel, b: QualityLevel) => b.height - a.height),
         ];
-        console.warn('[HLS] qualityLevels set to:', levels);
         setQualityLevels(levels);
+        // Oynatmayı canplay handler tek noktadan yönetir.
       });
     } else {
-      // Safari native HLS veya legacy MP4 — her zaman oynat
+      // Safari native HLS veya legacy MP4 — oynatmayı canplay handler yönetir
       video.src = playbackUrl;
       video.load();
-      video.play().catch(() => {});
     }
 
     return () => {
@@ -290,22 +315,24 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
           if (data && data.timeWatched > 0 && videoRef.current) {
             videoRef.current.currentTime = data.timeWatched;
           }
-          // Video hazırsa hemen oynat, değilse canplay event'i tetikleyecek
-          if (video.readyState >= 3) {
-            video.play().catch(() => { });
-          }
           setShowCenterPlay(false);
-          setIsPlaying(true);
+          // Kaynak zaten hazırsa canplay geçmiş olabilir; autoplay'i burada tetikle.
+          // Aksi halde canplay handler oynatır. isPlaying gerçek sonuca göre set edilir.
+          if (video.readyState >= 3 && shouldAutoPlayRef.current) {
+            shouldAutoPlayRef.current = false;
+            attemptPlay();
+          }
         })
         .catch(err => {
           console.error("Progress load error", err);
-          if (video.readyState >= 3) {
-            video.play().catch(() => { });
-          }
           setShowCenterPlay(false);
-          setIsPlaying(true);
+          if (video.readyState >= 3 && shouldAutoPlayRef.current) {
+            shouldAutoPlayRef.current = false;
+            attemptPlay();
+          }
         });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lesson.id, lesson.videoUrl]);
 
   useEffect(() => {
@@ -386,8 +413,7 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
     if (video) {
       video.currentTime = seekTimeRef.current;
       // Sürükle-bırak sonrası her zaman oynat (kullanıcı zaten izleme niyetindedir)
-      video.play().catch(() => {});
-      setShowCenterPlay(false);
+      attemptPlay();
     }
   };
 
@@ -548,12 +574,12 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
           </span>
         </button>
         {showQualityMenu && (
-          <div className="absolute bottom-full right-0 mb-2 bg-[#1a1a1a] border border-gray-700 rounded-lg overflow-hidden shadow-lg z-10 min-w-[80px]">
+          <div className="absolute bottom-full right-0 mb-2 bg-[#1a1a1a] border border-gray-700 rounded-lg overflow-hidden shadow-lg z-10 min-w-[88px] max-h-[50vh] overflow-y-auto">
             {qualityLevels.map((q) => (
               <button
                 key={q.index}
                 onClick={(e) => { e.stopPropagation(); changeQuality(q.index); }}
-                className={`block w-full text-center px-3 py-1.5 text-sm transition-colors ${
+                className={`block w-full text-center px-4 py-2.5 text-sm transition-colors ${
                   q.index === selectedQuality ? 'bg-orange-600 text-white' : 'text-gray-300 hover:bg-white/10'
                 }`}
               >
@@ -586,17 +612,13 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
       video.pause();
       setShowCenterPlay(true);
     } else {
-      video.play().catch(() => {});
-      setShowCenterPlay(false);
+      attemptPlay();
     }
   };
 
   const handleCenterPlayClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation(); // Üst div'e tıklamayı tetiklemesin
-    const video = videoRef.current;
-    if (!video) return;
-    video.play().catch(() => {});
-    setShowCenterPlay(false);
+    attemptPlay();
   };
 
   return (
