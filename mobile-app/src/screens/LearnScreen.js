@@ -143,6 +143,14 @@ export default function LearnScreen({ route, navigation }) {
     const player = useVideoPlayer(videoSource, p => {
         p.timeUpdateEventInterval = 1;
         p.loop = false;
+        // Önden yükleme: 60 sn ileri tampon → tampondaki noktaya ileri/geri atlama
+        // anında olur. Web'de 90 sn kullandık; mobilde hücresel veriyi düşünüp 60 sn
+        // (native default 20 sn). Kalite seçimi/seek-anı kalite düşürme expo-video'da
+        // mümkün değil; onu native ABR yönetir.
+        p.bufferOptions = {
+            preferredForwardBufferDuration: 60,
+            prioritizeTimeOverSizeThreshold: true,
+        };
     });
 
     useEffect(() => {
