@@ -74,6 +74,13 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
   const [qualityLevels, setQualityLevels] = useState<QualityLevel[]>([]);
   const [selectedQuality, setSelectedQuality] = useState<number>(-1); // -1 = Auto
   const [showQualityMenu, setShowQualityMenu] = useState(false);
+  // YouTube tarzı hızlı seek: tamponda olmayan noktaya atlayınca anlık açılış için
+  // kısa süre düşülecek ~480p seviyesinin hls.js index'i (MANIFEST_PARSED'da hesaplanır).
+  const seekLevelIndexRef = useRef<number | null>(null);
+  // Düşük kaliteden otomatiğe geri dönüş zamanlayıcısı + kullanıcı manuel kaliteye
+  // geçtiyse bu geri dönüşü iptal eden bayrak.
+  const restoreLevelTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const fastSeekActiveRef = useRef(false);
 
   // Kontrol barı için auto-hide id
   const hideControlsTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -228,12 +235,20 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
 
     if (isHls && Hls.isSupported() && !video.canPlayType('application/vnd.apple.mpegurl')) {
       const hls = new Hls({
-        maxBufferLength: 30,
         enableWorker: false, // CSP: eval() gerektiren worker'ı devre dışı bırak
         // Kaliteyi ekran boyutu değil AĞ belirlesin: yüksek başlangıç tahminiyle
         // 1080p'den başla, bant genişliği yetmezse ABR kademeli olarak düşürür.
+        // 8 Mbps tahmin, 1080p bitrate'inin (~4.5-5 Mbps) rahatça üstünde → ilk
+        // segment 1080p rendition varsa onu seçer.
         capLevelToPlayerSize: false,
-        abrEwmaDefaultEstimate: 5_000_000,
+        abrEwmaDefaultEstimate: 8_000_000,
+        // YouTube gibi önden yükleme: 90 sn ileri tampon → tampondaki noktaya
+        // atlama anında olur (indirme yok). maxBufferSize default 60MB, 90 sn 1080p
+        // ~56MB olduğundan byte limitini de yükseltiyoruz yoksa 90 sn'ye ulaşamaz.
+        maxBufferLength: 90,
+        maxBufferSize: 120 * 1000 * 1000,
+        // Geri sarma için 60 sn geri tampon tut → yakın geri atlamalar da anında.
+        backBufferLength: 60,
       });
       hlsRef.current = hls;
       hls.loadSource(playbackUrl);
@@ -252,6 +267,17 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
             .sort((a: QualityLevel, b: QualityLevel) => b.height - a.height),
         ];
         setQualityLevels(levels);
+
+        // Hızlı seek için düşük kalite seviyesini seç: 480p'ye eşit/altındaki en
+        // yüksek seviye; hiç yoksa en düşük seviye. (data.levels index = hls level index)
+        let belowIdx = -1, belowH = -1;   // <=480 içindeki en yüksek
+        let minIdx = 0, minH = Infinity;  // fallback: en düşük seviye
+        data.levels.forEach((lvl: { height: number }, i: number) => {
+          const h = lvl.height ?? 0;
+          if (h <= 480 && h > belowH) { belowH = h; belowIdx = i; }
+          if (h < minH) { minH = h; minIdx = i; }
+        });
+        seekLevelIndexRef.current = belowIdx !== -1 ? belowIdx : minIdx;
         // Oynatmayı canplay handler tek noktadan yönetir.
       });
     } else {
@@ -265,6 +291,12 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
         hlsRef.current.destroy();
         hlsRef.current = null;
       }
+      if (restoreLevelTimeoutRef.current) {
+        clearTimeout(restoreLevelTimeoutRef.current);
+        restoreLevelTimeoutRef.current = null;
+      }
+      fastSeekActiveRef.current = false;
+      seekLevelIndexRef.current = null;
     };
   }, [playbackUrl, retryKey]);
 
@@ -272,9 +304,48 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
   const changeQuality = (levelIndex: number) => {
     setSelectedQuality(levelIndex);
     setShowQualityMenu(false);
+    // Kullanıcı elle kalite seçti → bekleyen "hızlı seek geri dönüşü"nü iptal et,
+    // yoksa zamanlayıcı kullanıcının seçimini otomatiğe çevirebilir.
+    fastSeekActiveRef.current = false;
+    if (restoreLevelTimeoutRef.current) {
+      clearTimeout(restoreLevelTimeoutRef.current);
+      restoreLevelTimeoutRef.current = null;
+    }
     if (hlsRef.current) {
       hlsRef.current.currentLevel = levelIndex; // -1 = auto
     }
+  };
+
+  // YouTube tarzı hızlı seek: yalnızca Auto modunda ve seek hedefi tamponda değilse
+  // kısa süre ~480p'ye düş (küçük segment anında gelir → oynatma hemen açılır),
+  // oynamaya başlayınca otomatiğe dön → ABR (yüksek ölçülmüş bant genişliğiyle)
+  // hızla eski kaliteye tırmanır. Tampondaki noktaya atlamada dip yaşanmaz.
+  const fastSeekQualityDrop = () => {
+    const hls = hlsRef.current;
+    if (!hls || selectedQuality !== -1) return; // manuel kalitede dokunma
+    const seekIdx = seekLevelIndexRef.current;
+    if (seekIdx == null) return;
+
+    // Hedef zaten tamponluysa oynatma anında açılır → kaliteyi düşürme (gereksiz dip yok)
+    const video = videoRef.current;
+    const t = seekTimeRef.current;
+    if (video) {
+      for (let i = 0; i < video.buffered.length; i++) {
+        if (t >= video.buffered.start(i) && t <= video.buffered.end(i)) return;
+      }
+    }
+
+    fastSeekActiveRef.current = true;
+    hls.currentLevel = seekIdx; // anlık düşük kaliteye zorla
+    if (restoreLevelTimeoutRef.current) clearTimeout(restoreLevelTimeoutRef.current);
+    restoreLevelTimeoutRef.current = setTimeout(() => {
+      // Kullanıcı bu arada manuel kalite seçmediyse otomatiğe dön (kalite tırmanır)
+      if (fastSeekActiveRef.current && hlsRef.current) {
+        hlsRef.current.currentLevel = -1;
+      }
+      fastSeekActiveRef.current = false;
+      restoreLevelTimeoutRef.current = null;
+    }, 1500);
   };
 
   useEffect(() => {
@@ -412,6 +483,8 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
     setIsSeeking(false);
     if (video) {
       video.currentTime = seekTimeRef.current;
+      // YouTube tarzı: tampon dışına atlarken anlık açılış için kısa süre kaliteyi düşür
+      fastSeekQualityDrop();
       // Sürükle-bırak sonrası her zaman oynat (kullanıcı zaten izleme niyetindedir)
       attemptPlay();
     }
