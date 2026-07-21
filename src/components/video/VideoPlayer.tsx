@@ -56,6 +56,7 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
   const [showSpeedMenu, setShowSpeedMenu] = useState(false);
   const [autoNextSeconds, setAutoNextSeconds] = useState<number | null>(null);
   const [retryKey, setRetryKey] = useState(0);
+  const [playbackUrl, setPlaybackUrl] = useState<string | null>(null);
   const wasPlayingRef = useRef(false);
   const isSeekingRef = useRef(false);
   const seekTimeRef = useRef<number>(0);
@@ -143,24 +144,39 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
     }
   }, [nextLesson, hasFullAccess])
 
-  // Video Kaynak Kurulumu
-  // Ham .mp4'ü doğrudan native oynatıcıya veriyoruz — HLS'e (sp_auto) çevirmiyoruz.
-  // Cloudinary free planda sp_auto HLS varyantları ilk istekte (on-demand) üretiliyor,
-  // bu da yeni yüklenen videolarda "soğuk başlama" hatalarına yol açıyordu. Ham MP4
-  // yükler yüklemez hazır; tüm tarayıcılarda native oynar, range-request ile sadece
-  // izlenen kısmı indirir, seek ve oynatma hızı native çalışır. (YouTube ayrı bileşende.)
+  // İmzalı playback URL'ini sunucudan al. lesson.videoUrl artık Bunny GUID'i tutar;
+  // oynatılabilir/imzalı URL yalnızca /api/lessons/{id}/video-url üzerinden, erişim
+  // kontrolünden geçerek gelir. Legacy YouTube dersleri imza gerektirmez.
+  useEffect(() => {
+    let cancelled = false;
+    setPlaybackUrl(null);
+    if (!lesson.videoUrl) return;
+    if (isYouTubeUrl(lesson.videoUrl)) {
+      setPlaybackUrl(lesson.videoUrl);
+      return;
+    }
+    fetch(`/api/lessons/${lesson.id}/video-url`)
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(String(res.status)))))
+      .then((data) => { if (!cancelled && data?.url) setPlaybackUrl(data.url); })
+      .catch((err) => { if (!cancelled) { console.error("video-url error", err); setHasError(true); } });
+    return () => { cancelled = true; };
+  }, [lesson.id, lesson.videoUrl, retryKey]);
+
+  // Video Kaynak Kurulumu — imzalı HLS URL'ini native oynatıcıya ver.
+  // Bunny HLS (.m3u8) tüm tarayıcılarda native/HLS oynar; seek ve oynatma hızı çalışır.
+  // (YouTube ayrı bileşende.) retryKey artışında (süresi dolan imza) URL yenilenir.
   useEffect(() => {
     const video = videoRef.current;
-    if (!video || !lesson.videoUrl || isYouTubeUrl(lesson.videoUrl)) return;
+    if (!video || !playbackUrl || isYouTubeUrl(playbackUrl)) return;
 
-    video.src = lesson.videoUrl;
+    video.src = playbackUrl;
     video.load();
 
     // "Tekrar Dene" (retryKey artışı) sonrası oynatmaya devam et.
     if (retryKey > 0) {
       video.play().catch(() => {});
     }
-  }, [lesson.videoUrl, retryKey]);
+  }, [playbackUrl, retryKey]);
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -372,7 +388,7 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentTime, duration, isCompleted, lesson.id, course.id])
 
-  // Periyodik izleme süresi kaydetme (her 10 saniyede, oynatılırken)
+  // Periyodik izleme süresi kaydetme (her 30 saniyede, oynatılırken)
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
 
@@ -381,7 +397,7 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
         const video = videoRef.current;
         if (!video) return;
         saveProgress(video.currentTime);
-      }, 10000);
+      }, 30000);
     }
 
     return () => {

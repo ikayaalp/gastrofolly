@@ -24,8 +24,9 @@ Erişim kontrolü: `isPremiumUser()` (`src/lib/subscription.ts`) — plan 'Premi
 - Sunucu senkron: `api/user/sync-revenuecat` (client tetikler) + asıl kaynak `api/webhooks/revenuecat`:
   - PREMIUM_EVENTS (INITIAL_PURCHASE, RENEWAL, UNCANCELLATION...) → Premium set; INITIAL_PURCHASE/RENEWAL'da Payment kaydı (store'a göre Apple/Google ayrımı).
   - REVOKE_EVENTS (EXPIRATION, REFUND...) → anında FREE'ye düşür.
-  - CANCELLATION → `cancel_reason === 'CUSTOMER_SUPPORT'` ise iade gibi işlenir (anında düşür), normal iptalse dönem sonuna kadar erişim.
-- İptal yönlendirme: `api/user/subscription/cancel` (kullanıcıyı store abonelik ayarına yönlendirir).
+  - CANCELLATION → `cancel_reason === 'CUSTOMER_SUPPORT'` ise iade gibi işlenir (anında düşür), normal iptalse dönem sonuna kadar erişim + `subscriptionCancelled=true` (UI "iptal edildi, X'e kadar geçerli" gösterebilsin).
+  - BILLING_ISSUE → erişim KESİLMEZ (grace period); `grace_period_expiration_at_ms` varsa endDate ona uzatılır, yoksa dokunulmaz (lapse olursa EXPIRATION keser).
+- İptal (mobil IAP): mağaza ayarlarından iptal edilir (`revenueCatService.openSubscriptionManagement` → App Store/Play abonelik sayfası). `api/user/subscription/cancel` YALNIZCA mobilden başlatılan Iyzico aboneliğini iptal eder; IAP aboneliğinde (referenceCode yok) 400 döner ve kullanıcıyı mağazaya yönlendirir (yanlış "iptal edildi" + tahsilat devam riski engellenir).
 - Test: `api/webhooks/revenuecat/route.test.ts`.
 
 ## Ortak kurallar

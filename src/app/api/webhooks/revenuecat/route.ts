@@ -30,6 +30,12 @@ const PREMIUM_EVENTS = [
 // RevenueCat event types that revoke premium access
 const REVOKE_EVENTS = [
     'EXPIRATION',
+];
+
+// Ödeme sorunu: kullanıcı Apple/Google grace period'unda olabilir (16 güne
+// kadar). Erişimi HEMEN kesme — tekrar tahsilat başarılıysa RENEWAL gelir,
+// değilse süre sonunda EXPIRATION gelir ve o zaman kesilir.
+const BILLING_ISSUE_EVENTS = [
     'BILLING_ISSUE',
 ];
 
@@ -125,6 +131,9 @@ export async function POST(request: NextRequest) {
                         subscriptionPlan: 'Premium',
                         subscriptionEndDate: expirationDate,
                         subscriptionStartDate: startDate,
+                        // Satın alma/yenileme/uncancellation → otomatik yenileme aktif,
+                        // "iptal edildi" durumu geçersiz.
+                        subscriptionCancelled: false,
                     },
                 });
 
@@ -175,9 +184,25 @@ export async function POST(request: NextRequest) {
                         subscriptionPlan: null,
                         subscriptionEndDate: null,
                         subscriptionStartDate: null,
+                        subscriptionCancelled: false,
                     },
                 });
                 console.log(`[RC Webhook] ❌ User ${appUserId} → FREE (${eventType})`);
+            }
+
+        } else if (BILLING_ISSUE_EVENTS.includes(eventType)) {
+            // ⚠️ Ödeme sorunu — erişimi KESME. Kullanıcı grace period'da olabilir;
+            // grace bitiş tarihi biliniyorsa erişimi tam o tarihe kadar uzat, aksi
+            // halde mevcut erişime dokunma (lapse olursa EXPIRATION gelecek).
+            const graceMs = event.grace_period_expiration_at_ms;
+            if (graceMs) {
+                await prisma.user.update({
+                    where: { id: appUserId },
+                    data: { subscriptionEndDate: new Date(graceMs) },
+                });
+                console.log(`[RC Webhook] ⚠️ User ${appUserId} billing issue — grace ${new Date(graceMs).toISOString()} tarihine kadar Premium korunuyor.`);
+            } else {
+                console.log(`[RC Webhook] ⚠️ User ${appUserId} billing issue — grace tarihi yok, mevcut erişim korunuyor (lapse olursa EXPIRATION kesecek).`);
             }
 
         } else if (CANCELLATION_EVENTS.includes(eventType)) {
@@ -193,6 +218,7 @@ export async function POST(request: NextRequest) {
                             subscriptionPlan: null,
                             subscriptionEndDate: null,
                             subscriptionStartDate: null,
+                            subscriptionCancelled: false,
                         },
                     });
 
@@ -222,6 +248,9 @@ export async function POST(request: NextRequest) {
                     where: { id: appUserId },
                     data: {
                         subscriptionEndDate: expirationDate,
+                        // Yenilenmeyecek — UI "iptal edildi, X tarihine kadar geçerli"
+                        // durumunu gösterebilsin (web/Iyzico iptaliyle tutarlı).
+                        subscriptionCancelled: true,
                         // Plan hâlâ Premium — süre dolunca checkAccess() false dönecek
                     },
                 });

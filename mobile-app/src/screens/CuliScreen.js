@@ -304,13 +304,10 @@ export default function CuliScreen() {
                             >
                                 <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
                                     <View style={styles.emptyState}>
-                                        <LinearGradient
-                                            colors={['#ea580c', '#f97316']}
-                                            style={styles.emptyStateIconContainer}
-                                        >
-                                            <UtensilsCrossed size={40} color="#fff" />
-                                            <Sparkles size={16} color="#fff" style={{ position: 'absolute', top: 12, right: 12 }} />
-                                        </LinearGradient>
+                                        <View style={styles.emptyStateIconContainer}>
+                                            <ChefHat size={40} color="#ea580c" />
+                                            <Sparkles size={14} color="#ea580c" style={{ position: 'absolute', top: -2, right: -6 }} />
+                                        </View>
                                         <Text style={styles.emptyStateTitle}>
                                             Merhaba {userName || 'Şef'}! 👋
                                         </Text>
@@ -565,15 +562,9 @@ const styles = StyleSheet.create({
     emptyStateIconContainer: {
         width: 80,
         height: 80,
-        borderRadius: 24,
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: 24,
-        shadowColor: '#ea580c',
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.4,
-        shadowRadius: 12,
-        elevation: 8,
     },
     emptyStateTitle: {
         fontSize: 28,

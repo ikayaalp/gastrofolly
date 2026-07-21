@@ -32,6 +32,21 @@ const courseService = {
         }
     },
 
+    // Get a short-lived SIGNED playback URL for a lesson (Bunny Stream token auth).
+    // Backend erişim kontrolünü (premium/kayıt/ücretsiz) uygular; yetkisizse 403 döner.
+    getLessonVideoUrl: async (lessonId) => {
+        try {
+            const response = await api.get(`/api/lessons/${lessonId}/video-url`);
+            return { success: true, data: response.data };
+        } catch (error) {
+            console.error('Lesson video URL error:', error);
+            return {
+                success: false,
+                error: error.response?.data?.error || 'Video yüklenemedi',
+            };
+        }
+    },
+
     // Get user's enrolled courses
     getUserCourses: async () => {
         try {

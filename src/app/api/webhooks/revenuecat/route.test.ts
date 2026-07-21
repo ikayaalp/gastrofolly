@@ -102,6 +102,7 @@ describe("RevenueCat Webhook Route", () => {
         subscriptionPlan: "Premium",
         subscriptionEndDate: new Date(1718000000000),
         subscriptionStartDate: expect.any(Date),
+        subscriptionCancelled: false,
       },
     });
     expect(createPaymentMock).toHaveBeenCalledWith({
@@ -143,6 +144,7 @@ describe("RevenueCat Webhook Route", () => {
         subscriptionPlan: null,
         subscriptionEndDate: null,
         subscriptionStartDate: null,
+        subscriptionCancelled: false,
       },
     });
   });
@@ -204,7 +206,67 @@ describe("RevenueCat Webhook Route", () => {
       where: { id: "user_3" },
       data: {
         subscriptionEndDate: new Date(1718500000000),
+        subscriptionCancelled: true,
       },
     });
+  });
+
+  it("BILLING_ISSUE: erişim kesilmez; grace tarihi varsa endDate ona uzatılır", async () => {
+    claimWebhookEventMock.mockResolvedValueOnce(true);
+    findUniqueUserMock.mockResolvedValueOnce({
+      id: "user_bi",
+      subscriptionPlan: "Premium",
+      subscriptionEndDate: new Date(1718000000000),
+    });
+
+    const req = createRequest(
+      {
+        event: {
+          id: "evt_billing",
+          type: "BILLING_ISSUE",
+          app_user_id: "user_bi",
+          grace_period_expiration_at_ms: 1719500000000,
+        },
+      },
+      "Bearer test_secret"
+    );
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+
+    // Premium plan asla null yapılmamalı; sadece endDate grace tarihine uzatılmalı.
+    expect(transactionMock).not.toHaveBeenCalled();
+    expect(updateUserMock).toHaveBeenCalledWith({
+      where: { id: "user_bi" },
+      data: {
+        subscriptionEndDate: new Date(1719500000000),
+      },
+    });
+  });
+
+  it("BILLING_ISSUE: grace tarihi yoksa hiçbir güncelleme yapılmaz (erişim korunur)", async () => {
+    claimWebhookEventMock.mockResolvedValueOnce(true);
+    findUniqueUserMock.mockResolvedValueOnce({
+      id: "user_bi2",
+      subscriptionPlan: "Premium",
+      subscriptionEndDate: new Date(1718000000000),
+    });
+
+    const req = createRequest(
+      {
+        event: {
+          id: "evt_billing2",
+          type: "BILLING_ISSUE",
+          app_user_id: "user_bi2",
+        },
+      },
+      "Bearer test_secret"
+    );
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+
+    expect(transactionMock).not.toHaveBeenCalled();
+    expect(updateUserMock).not.toHaveBeenCalled();
   });
 });

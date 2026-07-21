@@ -25,6 +25,17 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ message: 'Aktif aboneliğiniz bulunmuyor' }, { status: 400 });
         }
 
+        // ⚠️ IAP (App Store / Play) aboneliği server-side iptal EDİLEMEZ. Aksi halde
+        // kullanıcı "iptal ettim" sanır ama mağaza tahsilata devam eder. Bu tür
+        // abonelikler (referenceCode yok = Iyzico değil) yalnızca mağaza abonelik
+        // ayarlarından iptal edilir.
+        if (!currentUser.subscriptionReferenceCode) {
+            return NextResponse.json(
+                { message: 'Bu abonelik App Store veya Google Play üzerinden başlatılmış. Lütfen iptal işlemini telefonunuzun abonelik ayarlarından yapın.' },
+                { status: 400 }
+            );
+        }
+
         if (currentUser.subscriptionCancelled) {
             return NextResponse.json({ message: 'Aboneliğiniz zaten iptal edilmiş' }, { status: 400 });
         }

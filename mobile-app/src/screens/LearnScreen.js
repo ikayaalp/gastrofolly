@@ -60,10 +60,12 @@ const AUTO_NEXT_SECONDS = 5;
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import config from '../api/config';
+import courseService from '../api/courseService';
 import { TextInput } from 'react-native';
 import CustomAlert from '../components/CustomAlert';
 import { usePreventScreenCapture } from 'expo-screen-capture';
 import { getToken } from '../utils/tokenStorage';
+import { maybeRequestReview } from '../utils/reviewPrompt';
 
 // Removed static dimensions to use useWindowDimensions hook
 // const { width, height } = Dimensions.get('window');
@@ -104,17 +106,24 @@ export default function LearnScreen({ route, navigation }) {
         type: 'info'
     });
 
-    const getVideoUrlInline = (url) => {
-        if (!url) return null;
-        if (url.startsWith('http')) return url;
-        const cleanUrl = url.startsWith('/') ? url : `/${url}`;
-        return `${config.API_BASE_URL}${cleanUrl}`;
-    };
+    // İmzalı playback URL'i (Bunny token auth). currentLesson.videoUrl artık Bunny
+    // GUID tutar; oynatılabilir URL yalnızca backend'den, erişim kontrolünden geçerek
+    // gelir. Legacy tam URL (http/YouTube) doğrudan kullanılır.
+    const [signedVideoUri, setSignedVideoUri] = useState(null);
 
-    const videoSource = currentLesson?.videoUrl ? {
-        uri: getVideoUrlInline(currentLesson.videoUrl),
-        headers: authToken ? { Authorization: `Bearer ${authToken}` } : {}
-    } : null;
+    useEffect(() => {
+        let cancelled = false;
+        setSignedVideoUri(null);
+        const vid = currentLesson?.videoUrl;
+        if (!vid) return;
+        if (vid.startsWith('http')) { setSignedVideoUri(vid); return; }
+        courseService.getLessonVideoUrl(currentLesson.id).then(res => {
+            if (!cancelled && res.success && res.data?.url) setSignedVideoUri(res.data.url);
+        });
+        return () => { cancelled = true; };
+    }, [currentLesson?.id, currentLesson?.videoUrl]);
+
+    const videoSource = signedVideoUri ? { uri: signedVideoUri } : null;
 
     const player = useVideoPlayer(videoSource, p => {
         p.timeUpdateEventInterval = 1;
@@ -469,6 +478,7 @@ export default function LearnScreen({ route, navigation }) {
     const markLessonComplete = async (positionMillis) => {
         if (!currentLesson || progress[currentLesson.id]?.isCompleted) return;
         await saveProgress((positionMillis ?? videoPosition) / 1000, true);
+        maybeRequestReview();
     };
 
     // En güncel pozisyonu interval/cleanup içinde stale-closure olmadan okuyabilmek için ref'te tut
@@ -476,12 +486,12 @@ export default function LearnScreen({ route, navigation }) {
         videoPositionRef.current = videoPosition;
     }, [videoPosition]);
 
-    // Oynatılırken her 10 saniyede bir izleme süresini kaydet (web ile aynı davranış)
+    // Oynatılırken her 30 saniyede bir izleme süresini kaydet (web ile aynı davranış)
     useEffect(() => {
         if (!isPlaying || !currentLesson) return;
         const intervalId = setInterval(() => {
             saveProgress(videoPositionRef.current / 1000);
-        }, 10000);
+        }, 30000);
         return () => clearInterval(intervalId);
     }, [isPlaying, currentLesson, saveProgress]);
 

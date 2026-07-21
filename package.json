@@ -52,6 +52,7 @@
     "recharts": "^3.9.2",
     "resend": "^6.1.2",
     "stripe": "^18.5.0",
+    "tus-js-client": "^4.3.1",
     "yup": "^1.7.1"
   },
   "devDependencies": {

@@ -62,7 +62,7 @@ export default {
             "backgroundColor": "#000000"
         },
         "ios": {
-            "buildNumber": "44",
+            "buildNumber": "45",
             "supportsTablet": true,
             "bundleIdentifier": "com.chef2.app",
             "infoPlist": {
@@ -72,7 +72,7 @@ export default {
         },
         "android": {
             "package": "com.chef2.app",
-            "versionCode": 15,
+            "versionCode": 16,
             "adaptiveIcon": {
                 "foregroundImage": "./assets/adaptive-icon.png",
                 "backgroundColor": "#000000"

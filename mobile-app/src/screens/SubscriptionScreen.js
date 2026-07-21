@@ -236,6 +236,7 @@ export default function SubscriptionScreen({ navigation, route }) {
     }
 
     if (isPremium) {
+        const isCancelled = !!userData?.subscriptionCancelled;
         return (
             <ScreenContainer style={styles.container} edges={['bottom']}>
                 <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 60 }}>
@@ -246,10 +247,25 @@ export default function SubscriptionScreen({ navigation, route }) {
                             </TouchableOpacity>
                             <View style={styles.activeIconWrap}><Crown size={40} color="#fff" /></View>
                             <Text style={styles.activeTitle}>Culinora Premium</Text>
-                            <Text style={styles.activeSubtitle}>Aktif Üyelik</Text>
+                            <Text style={styles.activeSubtitle}>{isCancelled ? 'İptal Edildi' : 'Aktif Üyelik'}</Text>
                             <View style={styles.activeBadge}><Shield size={14} color="#fff" /><Text style={styles.activeBadgeText}>Premium Üye</Text></View>
+                            {expirationDate && (
+                                <Text style={styles.activeDateText}>
+                                    {isCancelled
+                                        ? `${formatDate(expirationDate)} tarihine kadar geçerli`
+                                        : `${formatDate(expirationDate)} tarihinde yenilenir`}
+                                </Text>
+                            )}
                         </LinearGradient>
                     </View>
+                    {isCancelled && (
+                        <View style={styles.cancelNotice}>
+                            <Calendar size={18} color="#f59e0b" />
+                            <Text style={styles.cancelNoticeText}>
+                                Aboneliğiniz iptal edildi. Premium erişiminiz {formatDate(expirationDate)} tarihine kadar devam edecek. Tekrar abone olmak için "Aboneliği Yönet"i kullanabilirsiniz.
+                            </Text>
+                        </View>
+                    )}
                     <View style={styles.activeFeaturesWrap}>
                         <Text style={styles.activeSectionTitle}>Ayrıcalıklarınız</Text>
                         {FEATURES.map((f, i) => (
@@ -424,6 +440,8 @@ const styles = StyleSheet.create({
     activeBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(0,0,0,0.3)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, marginBottom: 10 },
     activeBadgeText: { color: '#fff', fontSize: 12, fontWeight: '700' },
     activeDateText: { color: 'rgba(255,255,255,0.7)', fontSize: 13 },
+    cancelNotice: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginHorizontal: 20, marginTop: 16, padding: 14, backgroundColor: 'rgba(245,158,11,0.1)', borderRadius: 14, borderWidth: 1, borderColor: 'rgba(245,158,11,0.25)' },
+    cancelNoticeText: { flex: 1, color: '#fbbf24', fontSize: 13, lineHeight: 19 },
     activeFeaturesWrap: { padding: 24 },
     activeSectionTitle: { color: '#fff', fontSize: 18, fontWeight: '800', marginBottom: 20 },
     activeFeatureRow: { flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 16, backgroundColor: 'rgba(255,255,255,0.03)', padding: 16, borderRadius: 16 },

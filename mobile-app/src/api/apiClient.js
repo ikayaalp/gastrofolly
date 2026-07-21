@@ -48,22 +48,19 @@ api.interceptors.response.use(
                     await AsyncStorage.removeItem('onboardingCompleted');
                     await logoutRevenueCat();
 
+                    // Kullanıcı alert'i kapatmasa/onaylamasa bile çıkışı hemen uygula —
+                    // token zaten silindi, ekranda kırık/401 döngüsünde kalmasın.
+                    if (navigationRef.isReady()) {
+                        navigationRef.reset({
+                            index: 0,
+                            routes: [{ name: 'Onboarding' }],
+                        });
+                    }
+
                     Alert.alert(
                         "Oturum Kapatıldı ⚠️",
                         "Hesabınıza başka bir cihazdan giriş yapıldı. Güvenliğiniz için oturumunuz sonlandırılıyor.",
-                        [
-                            { 
-                                text: "Tamam", 
-                                onPress: () => {
-                                    if (navigationRef.isReady()) {
-                                        navigationRef.reset({
-                                            index: 0,
-                                            routes: [{ name: 'Onboarding' }],
-                                        });
-                                    }
-                                }
-                            }
-                        ]
+                        [{ text: "Tamam" }]
                     );
 
                     setTimeout(() => {
