@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { X, Save, Check, Plus, Edit, Trash2, Upload, Play, Clock, Layout, List, Settings, Eye } from "lucide-react"
 import ImageUpload from "@/components/admin/ImageUpload"
 import VideoUpload from "@/components/admin/VideoUpload"
+import * as tus from "tus-js-client"
 import DocumentUpload from "@/components/admin/DocumentUpload"
 import ConfirmationModal from '@/components/ui/ConfirmationModal'
 import Image from "next/image"
@@ -324,88 +325,41 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
 
     // Video upload handler for inline form (CLOUDINARY)
     const handleVideoUploadInForm = async (file: File) => {
-        // Dosya boyutu kontrolü (Cloudinary Free tier limiti: 100MB)
-        if (file.size > 100 * 1024 * 1024) {
-            alert("Video dosyası 100MB'dan küçük olmalıdır (Cloudinary Ücretsiz Plan limiti)")
-            return
-        }
-
         setUploadingVideo(true)
         try {
-            // 1. Get Cloudinary Config
-            const configRes = await fetch('/api/admin/cloudinary-config')
-            if (!configRes.ok) throw new Error('Cloudinary konfigürasyonu alınamadı')
-            const { cloudName, uploadPreset } = await configRes.json()
+            // 1. Sunucuda Bunny video objesi oluştur + presigned tus parametreleri al.
+            const createRes = await fetch('/api/admin/bunny/create-video', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title: file.name }),
+            })
+            if (!createRes.ok) throw new Error('Video oluşturulamadı (sunucu)')
+            const { videoId, endpoint, libraryId, expiration, signature } = await createRes.json()
 
-            // 2. Prepare Upload
-            const url = `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`
-            const formData = new FormData()
-            formData.append('file', file)
-            formData.append('upload_preset', uploadPreset)
-            formData.append('folder', 'chef-courses/lessons') // Organize in folders
-
-            // 3. Upload with XHR (Chunked Upload to support >100MB)
+            // 2. Dosyayı doğrudan Bunny'ye tus (resumable) ile yükle. Boyut limiti yok.
             await new Promise<void>((resolve, reject) => {
-                const chunkSize = 20 * 1024 * 1024 // 20MB chunks
-                const XUniqueUploadId = `upload_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
-                let start = 0
-                let end = Math.min(chunkSize, file.size)
-
-                const uploadNextChunk = () => {
-                    const xhr = new XMLHttpRequest()
-                    xhr.open('POST', url)
-                    xhr.setRequestHeader('X-Unique-Upload-Id', XUniqueUploadId)
-                    xhr.setRequestHeader('Content-Range', `bytes ${start}-${end - 1}/${file.size}`)
-
-                    const chunk = file.slice(start, end)
-                    const formData = new FormData()
-                    formData.append('file', chunk)
-                    formData.append('upload_preset', uploadPreset)
-                    formData.append('folder', 'chef-courses/lessons')
-
-                    xhr.upload.onprogress = (e) => {
-                        if (e.lengthComputable) {
-                            // Optional: update progress state if we want to show percentage
-                            // const loadedBytes = start + e.loaded
-                            // const percentComplete = Math.round((loadedBytes / file.size) * 100)
-                        }
-                    }
-
-                    xhr.onload = () => {
-                        if (xhr.status === 200 || xhr.status === 201 || xhr.status === 206) {
-                            // Cloudinary intermediate chunks return 200 OK instead of 206 Partial Content.
-                            // So we check if there are more chunks left to upload based on file size.
-                            if (end < file.size) {
-                                start = end
-                                end = Math.min(start + chunkSize, file.size)
-                                uploadNextChunk()
-                            } else {
-                                // Upload finished
-                                const data = JSON.parse(xhr.responseText)
-                                setLessonForm(prev => ({
-                                    ...prev,
-                                    videoUrl: data.secure_url,
-                                    duration: data.duration ? Math.ceil(data.duration / 60) : prev.duration
-                                }))
-                                resolve()
-                            }
-                        } else {
-                            let errorMsg = `Upload başarısız (${xhr.status})`
-                            try {
-                                const errData = JSON.parse(xhr.responseText)
-                                if (errData?.error?.message) {
-                                    errorMsg = errData.error.message
-                                }
-                            } catch {}
-                            reject(new Error(errorMsg))
-                        }
-                    }
-
-                    xhr.onerror = () => reject(new Error('Ağ hatası: İnternet bağlantınızı kontrol edin veya dosya boyutunu küçültmeyi deneyin'))
-                    xhr.send(formData)
-                }
-
-                uploadNextChunk()
+                const upload = new tus.Upload(file, {
+                    endpoint,
+                    retryDelays: [0, 3000, 5000, 10000, 20000],
+                    headers: {
+                        AuthorizationSignature: signature,
+                        AuthorizationExpire: String(expiration),
+                        VideoId: videoId,
+                        LibraryId: String(libraryId),
+                    },
+                    metadata: { filetype: file.type, title: file.name },
+                    onError: (err) => reject(err),
+                    onSuccess: () => {
+                        // Bunny GUID kaydedilir (imzalı oynatma bunu kullanır). Süreyi eğitmen
+                        // elle girer; Bunny tus upload anında süre döndürmez.
+                        setLessonForm(prev => ({ ...prev, videoUrl: videoId }))
+                        resolve()
+                    },
+                })
+                upload.findPreviousUploads().then((previous) => {
+                    if (previous.length) upload.resumeFromPreviousUpload(previous[0])
+                    upload.start()
+                })
             })
 
         } catch (error) {

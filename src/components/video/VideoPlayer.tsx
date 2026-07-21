@@ -151,7 +151,9 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
     let cancelled = false;
     setPlaybackUrl(null);
     if (!lesson.videoUrl) return;
-    if (isYouTubeUrl(lesson.videoUrl)) {
+    // Legacy tam URL (Cloudinary/YouTube) imza gerektirmez, doğrudan kullanılır.
+    // Bunny GUID'i "http" ile başlamaz → imzalı URL endpoint'ten alınır.
+    if (lesson.videoUrl.startsWith('http')) {
       setPlaybackUrl(lesson.videoUrl);
       return;
     }

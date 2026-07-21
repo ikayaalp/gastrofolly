@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAuthUser } from '@/lib/mobileAuth'
 import { isPremiumUser } from '@/lib/subscription'
-import { getSignedPlaybackUrl, isYouTubeUrl } from '@/lib/bunnyStream'
+import { getSignedPlaybackUrl } from '@/lib/bunnyStream'
 
 // Bir ders için kısa süreli İMZALI playback URL'i döndürür. Erişim kuralı
 // src/app/api/courses/[id]/route.ts ile birebir aynıdır: premium / admin / eğitmen /
@@ -69,8 +69,9 @@ export async function GET(
             return NextResponse.json({ error: 'Video bulunamadı' }, { status: 404 })
         }
 
-        // Geriye dönük uyumluluk: eski YouTube dersleri doğrudan geçer.
-        if (isYouTubeUrl(lesson.videoUrl)) {
+        // Geriye dönük uyumluluk: eski tam URL'ler (Cloudinary, YouTube) doğrudan geçer.
+        // Bunny GUID'i "http" ile başlamaz; yalnızca o imzalanır.
+        if (lesson.videoUrl.startsWith('http')) {
             return NextResponse.json({ url: lesson.videoUrl, expiresAt: null })
         }
 
