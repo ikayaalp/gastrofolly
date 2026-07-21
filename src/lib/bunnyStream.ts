@@ -70,32 +70,36 @@ export function getPresignedTusParams(videoId: string, ttlSeconds = 3600) {
 }
 
 /**
- * Token-authenticated (imzalı) HLS playback URL üretir.
+ * Token-authenticated (imzalı) HLS playback URL üretir — PATH-EMBEDDED directory token.
  *
- * Bunny CDN Token Authentication (standart / V1), TAM DOSYA YOLU imzalanır:
- *   token = urlsafe_base64( SHA256_RAW(TOKEN_KEY + path + expires) )
- *   URL:   https://host/{guid}/playlist.m3u8?token=...&expires=...
- * Bu algoritma gerçek Bunny endpoint'ine karşı doğrulandı (geçerli token → 404
- * "dosya henüz encode olmadı", geçersiz → 403). HLS segmentleri Bunny Stream tarafından
- * dönen playlist'e otomatik token eklenerek yetkilendirilir (token_path'e gerek yok —
- * bu kütüphanede directory token kabul edilmiyor).
+ * HLS'te master playlist alt-playlist/segmentleri RELATIVE referans eder ve query-string
+ * token'ı miras almaz → query token ile segmentler 403 alır. Çözüm: token'ı PATH'e gömmek.
+ * Böylece player relative URL'i çözerken token prefix'ini korur ve token_path=/{guid}/
+ * tüm dizini (alt-playlistler + .ts segmentleri) yetkilendirir.
+ *
+ *   token = urlsafe_base64( SHA256_RAW(TOKEN_KEY + tokenPath + expires) )
+ *   URL:   https://host/bcdn_token={token}&expires={exp}&token_path=/{guid}/playlist.m3u8
+ *
+ * Gerçek Bunny endpoint'ine karşı uçtan uca doğrulandı: master 200 + relative alt-playlist 200.
  */
 export function getSignedPlaybackUrl(guid: string, ttlSeconds = 6 * 60 * 60): { url: string; expiresAt: number } {
     if (!CDN_HOSTNAME || !TOKEN_KEY) throw new Error('Bunny Stream env değişkenleri eksik')
 
     const expires = Math.floor(Date.now() / 1000) + ttlSeconds
-    const path = `/${guid}/playlist.m3u8`
+    const tokenPath = `/${guid}/`
 
     const token = crypto
         .createHash('sha256')
-        .update(`${TOKEN_KEY}${path}${expires}`)
+        .update(`${TOKEN_KEY}${tokenPath}${expires}`)
         .digest('base64')
         .replace(/\n/g, '')
         .replace(/\+/g, '-')
         .replace(/\//g, '_')
         .replace(/=/g, '')
 
-    const url = `https://${CDN_HOSTNAME}${path}?token=${token}&expires=${expires}`
+    // realpath (playlist.m3u8) token_path'in hemen ardına eklenir; relative alt-URL'ler
+    // bu prefix'e göre çözülür.
+    const url = `https://${CDN_HOSTNAME}/bcdn_token=${token}&expires=${expires}&token_path=${tokenPath}playlist.m3u8`
 
     return { url, expiresAt: expires }
 }

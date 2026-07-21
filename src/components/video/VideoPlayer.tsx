@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, RotateCcw, RotateCw, SkipBack, SkipForward, Loader2, AlertTriangle, Gauge, X } from "lucide-react"
 import YouTubePlayer from "./YouTubePlayer"
+import Hls from "hls.js"
 
 const PLAYBACK_RATES = [0.5, 0.75, 1, 1.25, 1.5, 2] as const
 const AUTO_NEXT_SECONDS = 5
@@ -164,20 +165,30 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
     return () => { cancelled = true; };
   }, [lesson.id, lesson.videoUrl, retryKey]);
 
-  // Video Kaynak Kurulumu — imzalı HLS URL'ini native oynatıcıya ver.
-  // Bunny HLS (.m3u8) tüm tarayıcılarda native/HLS oynar; seek ve oynatma hızı çalışır.
-  // (YouTube ayrı bileşende.) retryKey artışında (süresi dolan imza) URL yenilenir.
+  // Video Kaynak Kurulumu.
+  // Bunny HLS (.m3u8) → Chrome/Firefox native HLS oynatamaz, hls.js gerekir; Safari
+  // native HLS oynatır; eski Cloudinary MP4 native oynatılır. retryKey artışında
+  // (süresi dolan imza) kaynak yenilenir. (YouTube ayrı bileşende.)
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !playbackUrl || isYouTubeUrl(playbackUrl)) return;
 
-    video.src = playbackUrl;
-    video.load();
+    const isHls = playbackUrl.endsWith('.m3u8') || playbackUrl.includes('/bcdn_token=');
+    let hls: Hls | null = null;
 
-    // "Tekrar Dene" (retryKey artışı) sonrası oynatmaya devam et.
-    if (retryKey > 0) {
-      video.play().catch(() => {});
+    if (isHls && Hls.isSupported() && !video.canPlayType('application/vnd.apple.mpegurl')) {
+      hls = new Hls({ capLevelToPlayerSize: true, maxBufferLength: 30 });
+      hls.loadSource(playbackUrl);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, () => { video.play().catch(() => {}); });
+    } else {
+      // Safari native HLS veya legacy MP4
+      video.src = playbackUrl;
+      video.load();
+      if (retryKey > 0) video.play().catch(() => {});
     }
+
+    return () => { if (hls) hls.destroy(); };
   }, [playbackUrl, retryKey]);
 
   useEffect(() => {

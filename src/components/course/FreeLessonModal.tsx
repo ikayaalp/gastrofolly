@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from "react"
 import { Play, ChefHat } from "lucide-react"
 import Hls from "hls.js"
 import Modal from "@/components/ui/Modal"
-import { getCloudinaryHlsUrl } from "@/lib/cloudinaryVideo"
 
 interface FreeLessonModalProps {
     lesson: {
@@ -26,29 +25,32 @@ export default function FreeLessonModal({ lesson, courseTitle, customTrigger }: 
         if (!isOpen || !lesson.videoUrl || !videoRef.current) return;
 
         const video = videoRef.current;
-        const finalUrl = getCloudinaryHlsUrl(lesson.videoUrl) || lesson.videoUrl;
+        let hls: Hls | null = null;
+        let cancelled = false;
 
-        if (Hls.isSupported() && finalUrl.endsWith('.m3u8')) {
-            const hls = new Hls({
-                capLevelToPlayerSize: true,
-                maxBufferLength: 30,
-            });
-            hls.loadSource(finalUrl);
-            hls.attachMedia(video);
-            hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                video.play().catch(e => { if (process.env.NODE_ENV === 'development') { console.log('Autoplay prevented:', e) } });
-            });
+        // İmzalı playback URL'ini sunucudan al (ücretsiz ders → erişim kontrolünden geçer).
+        // Eski Cloudinary/YouTube URL'leri endpoint tarafından doğrudan döndürülür.
+        fetch(`/api/lessons/${lesson.id}/video-url`)
+            .then(res => res.ok ? res.json() : Promise.reject(new Error(String(res.status))))
+            .then(({ url }) => {
+                if (cancelled || !url) return;
+                const isHls = url.endsWith('.m3u8') || url.includes('/bcdn_token=');
+                if (isHls && Hls.isSupported() && !video.canPlayType('application/vnd.apple.mpegurl')) {
+                    hls = new Hls({ capLevelToPlayerSize: true, maxBufferLength: 30 });
+                    hls.loadSource(url);
+                    hls.attachMedia(video);
+                    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                        video.play().catch(e => { if (process.env.NODE_ENV === 'development') { console.log('Autoplay prevented:', e) } });
+                    });
+                } else {
+                    video.src = url;
+                    video.play().catch(e => { if (process.env.NODE_ENV === 'development') { console.log('Autoplay prevented:', e) } });
+                }
+            })
+            .catch(err => { if (process.env.NODE_ENV === 'development') { console.log('video-url error', err) } });
 
-            return () => {
-                hls.destroy();
-            };
-        } else {
-            video.src = finalUrl;
-            video.addEventListener('loadedmetadata', () => {
-                video.play().catch(e => { if (process.env.NODE_ENV === 'development') { console.log('Autoplay prevented:', e) } });
-            });
-        }
-    }, [isOpen, lesson.videoUrl]);
+        return () => { cancelled = true; if (hls) hls.destroy(); };
+    }, [isOpen, lesson.id, lesson.videoUrl]);
 
     const titleContent = (
         <div className="flex items-center space-x-3">
