@@ -48,6 +48,7 @@ import {
     Check,
     BookOpen,
     Lock,
+    AlertTriangle,
     Gauge,
     Users,
     User,
@@ -110,18 +111,32 @@ export default function LearnScreen({ route, navigation }) {
     // GUID tutar; oynatılabilir URL yalnızca backend'den, erişim kontrolünden geçerek
     // gelir. Legacy tam URL (http/YouTube) doğrudan kullanılır.
     const [signedVideoUri, setSignedVideoUri] = useState(null);
+    // İmzalı URL alınamadı/oynatma hatası → inline hata + "Tekrar Dene" için
+    const [videoError, setVideoError] = useState(false);
+    // "Tekrar Dene" bunu artırır → imzalı URL effect'i yeniden çalışır (yeni token)
+    const [videoUrlRetry, setVideoUrlRetry] = useState(0);
 
     useEffect(() => {
         let cancelled = false;
         setSignedVideoUri(null);
+        setVideoError(false);
         const vid = currentLesson?.videoUrl;
         if (!vid) return;
         if (vid.startsWith('http')) { setSignedVideoUri(vid); return; }
+        // GUID → backend'den imzalı URL çekilene kadar spinner göster
+        setIsBuffering(true);
         courseService.getLessonVideoUrl(currentLesson.id).then(res => {
-            if (!cancelled && res.success && res.data?.url) setSignedVideoUri(res.data.url);
+            if (cancelled) return;
+            if (res.success && res.data?.url) {
+                setSignedVideoUri(res.data.url);
+            } else {
+                // Token alınamadı (network/500/403) → sessiz siyah ekran yerine hata göster
+                setIsBuffering(false);
+                setVideoError(true);
+            }
         });
         return () => { cancelled = true; };
-    }, [currentLesson?.id, currentLesson?.videoUrl]);
+    }, [currentLesson?.id, currentLesson?.videoUrl, videoUrlRetry]);
 
     const videoSource = signedVideoUri ? { uri: signedVideoUri } : null;
 
@@ -140,14 +155,18 @@ export default function LearnScreen({ route, navigation }) {
         const statusSub = player.addListener('statusChange', (event) => {
             if (event.status === 'readyToPlay') {
                 setIsBuffering(false);
+                setVideoError(false);
                 const savedSeconds = progress[currentLesson?.id]?.timeWatched;
                 if (savedSeconds > 0 && resumedLessonIdRef.current !== currentLesson?.id) {
                     resumedLessonIdRef.current = currentLesson?.id;
                     player.currentTime = savedSeconds;
                 }
+            } else if (event.status === 'loading') {
+                setIsBuffering(true);
             } else if (event.status === 'error') {
                 console.error('Video Playback Error', event.error);
-                showAlert('Video Hatası', 'Video yüklenirken bir sorun oluştu.', [{ text: 'Tekrar Dene', onPress: () => loadCourseData() }], 'error');
+                setIsBuffering(false);
+                setVideoError(true);
             }
         });
         const timeSub = player.addListener('timeUpdate', () => {
@@ -410,11 +429,9 @@ export default function LearnScreen({ route, navigation }) {
     };
 
     const isDraggingSlider = useRef(false);
-    const wasPlayingBeforeDrag = useRef(false);
 
     const handleSliderStart = () => {
         isDraggingSlider.current = true;
-        wasPlayingBeforeDrag.current = isPlaying;
         if (controlsTimeout.current) clearTimeout(controlsTimeout.current);
         // Sürüklerken oynatmayı durdur, yoksa video sesi arka planda akmaya devam eder
         // ve pozisyon güncellemeleri sürükleme ile yarışır.
@@ -429,9 +446,9 @@ export default function LearnScreen({ route, navigation }) {
     const handleSliderComplete = (value) => {
         if (player) {
             player.currentTime = value / 1000;
-            if (wasPlayingBeforeDrag.current) {
-                player.play();
-            }
+            // Seek sonrası her zaman oynat (YouTube gibi). Önceden duraklamış olsa da,
+            // ya da bara dokunma onSlidingStart'ı tetiklemese de kullanıcı izleme niyetindedir.
+            player.play();
         }
         setVideoPosition(value);
         setSeekPreview(null);
@@ -590,29 +607,6 @@ export default function LearnScreen({ route, navigation }) {
         ADVANCED: 'İleri Seviye',
     };
 
-    // Helper to get full video URL and convert to HLS if Cloudinary
-    const getVideoUrl = (url) => {
-        if (!url) return null;
-        
-        let fullUrl = url;
-        if (!url.startsWith('http')) {
-            const cleanUrl = url.startsWith('/') ? url.substring(1) : url;
-            const baseUrl = config.API_BASE_URL.endsWith('/') ? config.API_BASE_URL : `${config.API_BASE_URL}/`;
-            fullUrl = `${baseUrl}${cleanUrl}`;
-        }
-
-        // Convert Cloudinary MP4 to HLS (m3u8)
-        if (fullUrl.includes('cloudinary.com/')) {
-            let hlsUrl = fullUrl.replace(/\.(mp4|mov|webm)$/i, '.m3u8');
-            if (hlsUrl.includes('/upload/') && !hlsUrl.includes('/upload/sp_auto/')) {
-                hlsUrl = hlsUrl.replace('/upload/', '/upload/sp_auto/');
-            }
-            fullUrl = hlsUrl;
-        }
-
-        return fullUrl;
-    };
-
     if (loading) {
         return (
             <View style={styles.loadingContainer}>
@@ -673,9 +667,29 @@ export default function LearnScreen({ route, navigation }) {
                     )}
 
                     {/* Buffering Indicator */}
-                    {isBuffering && (
+                    {isBuffering && !videoError && (
                         <View style={styles.bufferOverlay}>
                             <ActivityIndicator size="large" color="#ea580c" />
+                        </View>
+                    )}
+
+                    {/* Video hata durumu — imzalı URL alınamadı veya oynatma hatası.
+                        zIndex kontrol overlay'inden yüksek olmalı ki "Tekrar Dene" dokunulabilsin. */}
+                    {videoError && (
+                        <View style={styles.videoErrorOverlay}>
+                            <AlertTriangle size={40} color="#ea580c" />
+                            <Text style={styles.videoErrorText}>Video yüklenirken bir sorun oluştu.</Text>
+                            <TouchableOpacity
+                                style={styles.videoRetryButton}
+                                onPress={() => {
+                                    setVideoError(false);
+                                    // Player yeniden kurulacak; kaydedilen konumdan devam etsin diye guard'ı sıfırla
+                                    resumedLessonIdRef.current = null;
+                                    setVideoUrlRetry((k) => k + 1);
+                                }}
+                            >
+                                <Text style={styles.videoRetryText}>Tekrar Dene</Text>
+                            </TouchableOpacity>
                         </View>
                     )}
 
@@ -1569,6 +1583,33 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         zIndex: 10,
+    },
+
+    videoErrorOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(0,0,0,0.8)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 60,
+    },
+    videoErrorText: {
+        color: '#fff',
+        fontSize: 14,
+        textAlign: 'center',
+        marginTop: 12,
+        marginBottom: 16,
+        paddingHorizontal: 24,
+    },
+    videoRetryButton: {
+        backgroundColor: '#ea580c',
+        paddingHorizontal: 20,
+        paddingVertical: 10,
+        borderRadius: 10,
+    },
+    videoRetryText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: '600',
     },
 
     autoNextCard: {
