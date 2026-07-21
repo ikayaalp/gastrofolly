@@ -67,6 +67,8 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
   const wasPlayingRef = useRef(false);
   const isSeekingRef = useRef(false);
   const seekTimeRef = useRef<number>(0);
+  // Ders değişince video kaynağı hazır olduğunda otomatik oynat
+  const shouldAutoPlayRef = useRef(true);
   // HLS kalite seçimi
   const hlsRef = useRef<Hls | null>(null);
   const [qualityLevels, setQualityLevels] = useState<QualityLevel[]>([]);
@@ -107,7 +109,14 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
     const updateDuration = () => setDuration(video.duration)
     const handlePlay = () => setIsPlaying(true)
     const handlePause = () => setIsPlaying(false)
-    const handleCanPlay = () => setIsLoading(false)
+    const handleCanPlay = () => {
+      setIsLoading(false);
+      // Video yüklenince otomatik oynatma bekleniyorsa oynat
+      if (shouldAutoPlayRef.current && videoRef.current) {
+        videoRef.current.play().catch(() => {});
+        shouldAutoPlayRef.current = false;
+      }
+    }
     const handleLoadStart = () => {
       setIsLoading(true)
       setHasError(false)
@@ -220,10 +229,10 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
         setQualityLevels(levels);
       });
     } else {
-      // Safari native HLS veya legacy MP4
+      // Safari native HLS veya legacy MP4 — her zaman oynat
       video.src = playbackUrl;
       video.load();
-      if (retryKey > 0) video.play().catch(() => {});
+      video.play().catch(() => {});
     }
 
     return () => {
@@ -271,6 +280,7 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
   // lesson değiştiğinde progress'i çek ve otomatik oynat
   useEffect(() => {
     setAutoNextSeconds(null);
+    shouldAutoPlayRef.current = true; // yeni ders → oynatmaya hazır
     const video = videoRef.current;
     if (video && lesson.videoUrl) {
       // Önce süreyi çek
@@ -280,13 +290,18 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
           if (data && data.timeWatched > 0 && videoRef.current) {
             videoRef.current.currentTime = data.timeWatched;
           }
-          video.play().catch(() => { });
+          // Video hazırsa hemen oynat, değilse canplay event'i tetikleyecek
+          if (video.readyState >= 3) {
+            video.play().catch(() => { });
+          }
           setShowCenterPlay(false);
           setIsPlaying(true);
         })
         .catch(err => {
           console.error("Progress load error", err);
-          video.play().catch(() => { });
+          if (video.readyState >= 3) {
+            video.play().catch(() => { });
+          }
           setShowCenterPlay(false);
           setIsPlaying(true);
         });
