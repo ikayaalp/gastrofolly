@@ -101,6 +101,10 @@ export async function POST(request: NextRequest) {
         // Store platform tespiti
         const store = event.store; // 'APP_STORE' | 'PLAY_STORE' | 'STRIPE' vb.
         const isApple = store === 'APP_STORE';
+        // TestFlight/sandbox aboneliği: gerçek para değil. Sandbox aylık abonelik
+        // Apple'da ~5 dk'da bir yenilenir → her yenileme sahte gelir yaratırdı.
+        // Test kullanıcısı premium ERİŞİM alır ama gelir kaydı OLUŞMAZ.
+        const isSandbox = event.environment === 'SANDBOX';
 
         if (PREMIUM_EVENTS.includes(eventType)) {
             // ✅ Premium erişim ver
@@ -129,8 +133,9 @@ export async function POST(request: NextRequest) {
                 });
 
                 // 💰 Mobil abonelik gelirini Payment tablosuna kaydet (Havuz hesaplaması için)
-                // Sadece INITIAL_PURCHASE ve RENEWAL eventlerinde ödeme kaydı oluştur
-                if (eventType === 'INITIAL_PURCHASE' || eventType === 'RENEWAL') {
+                // Sadece PRODUCTION + INITIAL_PURCHASE/RENEWAL eventlerinde ödeme kaydı oluştur.
+                // Sandbox (TestFlight) yenilemeleri gelire GİRMEZ.
+                if (!isSandbox && (eventType === 'INITIAL_PURCHASE' || eventType === 'RENEWAL')) {
                     // Product ID'den aylık/yıllık belirleme
                     const isYearly = productId?.toLowerCase()?.includes('year') ||
                                      productId?.toLowerCase()?.includes('annual') ||
