@@ -1,4 +1,5 @@
 /** @type {import('next').NextConfig} */
+// Just a dummy comment for test push
 const nextConfig = {
   poweredByHeader: false,
   compress: true,
