@@ -206,7 +206,7 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
       hls.on(Hls.Events.MANIFEST_PARSED, (_e, data) => {
         video.play().catch(() => {});
         // DEBUG — Bunny'den kaç kalite geldiğini görmek için
-        console.log('[HLS] manifest parsed, levels:', data.levels);
+        console.warn('[HLS] manifest parsed, levels:', data.levels);
         // Mevcut kalite seviyelerini state'e aktar
         const levels: QualityLevel[] = [
           { index: -1, label: 'Otomatik', height: 9999 },
@@ -216,7 +216,7 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
             height: lvl.height ?? 0,
           })).sort((a: QualityLevel, b: QualityLevel) => b.height - a.height),
         ];
-        console.log('[HLS] qualityLevels set to:', levels);
+        console.warn('[HLS] qualityLevels set to:', levels);
         setQualityLevels(levels);
       });
     } else {
