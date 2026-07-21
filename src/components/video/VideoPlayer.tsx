@@ -370,10 +370,9 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
     setIsSeeking(false);
     if (video) {
       video.currentTime = seekTimeRef.current;
-      if (wasPlayingRef.current) {
-        video.play().catch(() => {});
-        setShowCenterPlay(false);
-      }
+      // Sürükle-bırak sonrası her zaman oynat (kullanıcı zaten izleme niyetindedir)
+      video.play().catch(() => {});
+      setShowCenterPlay(false);
     }
   };
 
