@@ -773,7 +773,7 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
                                                                 <>
                                                                     <Upload className="h-5 w-5 text-gray-400" />
                                                                     <span className="text-sm text-gray-300">Video Yüklemek İçin Tıklayın</span>
-                                                                    <span className="text-[10px] text-gray-500">MP4, MOV (Max 500MB)</span>
+                                                                    <span className="text-[10px] text-gray-500">MP4, MOV, MKV</span>
                                                                 </>
                                                             )}
                                                         </label>
