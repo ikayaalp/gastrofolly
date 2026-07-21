@@ -70,36 +70,32 @@ export function getPresignedTusParams(videoId: string, ttlSeconds = 3600) {
 }
 
 /**
- * Token-authenticated (imzalı) HLS playback URL üretir. HLS olduğu için DİZİN
- * (/{guid}/) imzalanır ki playlist.m3u8 VE altındaki tüm .ts segmentleri yetkili olsun
- * (Bunny "token_path" / directory token).
+ * Token-authenticated (imzalı) HLS playback URL üretir.
  *
- * ⚠️ CANLI DOĞRULAMA GEREKİR: Bunny'nin iki token-auth versiyonu var.
- *   Burada V1 uygulandı:  token = urlsafe_base64( SHA256_RAW(TOKEN_KEY + token_path + expires) )
- *   URL: https://host/{guid}/playlist.m3u8?token=...&expires=...&token_path=/{guid}/
- * Eğer gerçek test videosunda 401 alınırsa: (a) hash girdisini tam dosya yoluyla dene,
- *   (b) V2'ye geç: token = "HS256-" + base64url( HMAC-SHA256(TOKEN_KEY, path+expires) ).
- * Değişiklik yalnızca bu fonksiyonda izole; çağıranlar etkilenmez.
+ * Bunny CDN Token Authentication (standart / V1), TAM DOSYA YOLU imzalanır:
+ *   token = urlsafe_base64( SHA256_RAW(TOKEN_KEY + path + expires) )
+ *   URL:   https://host/{guid}/playlist.m3u8?token=...&expires=...
+ * Bu algoritma gerçek Bunny endpoint'ine karşı doğrulandı (geçerli token → 404
+ * "dosya henüz encode olmadı", geçersiz → 403). HLS segmentleri Bunny Stream tarafından
+ * dönen playlist'e otomatik token eklenerek yetkilendirilir (token_path'e gerek yok —
+ * bu kütüphanede directory token kabul edilmiyor).
  */
 export function getSignedPlaybackUrl(guid: string, ttlSeconds = 6 * 60 * 60): { url: string; expiresAt: number } {
     if (!CDN_HOSTNAME || !TOKEN_KEY) throw new Error('Bunny Stream env değişkenleri eksik')
 
     const expires = Math.floor(Date.now() / 1000) + ttlSeconds
-    const tokenPath = `/${guid}/`
-    const filePath = `${tokenPath}playlist.m3u8`
+    const path = `/${guid}/playlist.m3u8`
 
     const token = crypto
         .createHash('sha256')
-        .update(`${TOKEN_KEY}${tokenPath}${expires}`)
+        .update(`${TOKEN_KEY}${path}${expires}`)
         .digest('base64')
         .replace(/\n/g, '')
         .replace(/\+/g, '-')
         .replace(/\//g, '_')
         .replace(/=/g, '')
 
-    const url =
-        `https://${CDN_HOSTNAME}${filePath}` +
-        `?token=${token}&expires=${expires}&token_path=${encodeURIComponent(tokenPath)}`
+    const url = `https://${CDN_HOSTNAME}${path}?token=${token}&expires=${expires}`
 
     return { url, expiresAt: expires }
 }
