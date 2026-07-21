@@ -16,12 +16,11 @@ export async function POST(request: NextRequest) {
     
     const lesson = await prisma.lesson.create({
       data: {
-        title: data.title,
         description: data.description || null,
         videoUrl: data.videoUrl || null,
         pdfUrl: data.pdfUrl || null,
-        duration: data.duration ? parseInt(data.duration) : null,
         order: parseInt(data.order),
+        title: data.title,
         isFree: data.isFree || false,
         courseId: data.courseId
       }

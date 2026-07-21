@@ -103,6 +103,7 @@ export async function GET(request: NextRequest) {
                   data: {
                     status: 'COMPLETED',
                     stripePaymentId: result.referenceCode || conversationId,
+                    platform: 'IYZICO',
                   }
                 })
 
@@ -336,6 +337,7 @@ export async function GET(request: NextRequest) {
             data: {
               status: 'COMPLETED',
               stripePaymentId: result.referenceCode || conversationId,
+              platform: 'IYZICO',
             }
           })
 
@@ -655,6 +657,7 @@ export async function POST(request: NextRequest) {
             data: {
               status: 'COMPLETED',
               stripePaymentId: result.referenceCode || token,
+              platform: 'IYZICO',
             }
           })
 

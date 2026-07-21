@@ -18,6 +18,18 @@ export async function POST(request: Request) {
         }
 
         // Progress kaydını bul veya oluştur/güncelle
+        // isCompleted daha önce true değilse ve şimdi true oluyorsa completedAt atayacağız
+        const existingProgress = await prisma.progress.findUnique({
+            where: {
+                userId_lessonId: {
+                    userId: session.user.id,
+                    lessonId: lessonId,
+                },
+            },
+        });
+
+        const shouldMarkCompleted = isCompleted && (!existingProgress || !existingProgress.isCompleted);
+
         const progress = await prisma.progress.upsert({
             where: {
                 userId_lessonId: {
@@ -28,8 +40,9 @@ export async function POST(request: Request) {
             update: {
                 timeWatched: Math.floor(timeWatched),
                 // Eğer daha önce tamamlandıysa, tamamlanmış olarak kalsın
-                // Eğer yeni tamamlanıyorsa, true yap
+                // Eğer yeni tamamlanıyorsa, true yap ve completedAt ekle
                 isCompleted: isCompleted ? true : undefined,
+                completedAt: shouldMarkCompleted ? new Date() : undefined,
                 watchedAt: new Date(),
             },
             create: {
@@ -38,6 +51,7 @@ export async function POST(request: Request) {
                 lessonId: lessonId,
                 timeWatched: Math.floor(timeWatched),
                 isCompleted: isCompleted || false,
+                completedAt: isCompleted ? new Date() : null,
             },
         });
 

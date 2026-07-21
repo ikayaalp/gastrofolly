@@ -98,18 +98,9 @@ export async function POST(request: NextRequest) {
 
         // 4. Event türüne göre işlem yap
 
-        // Store komisyon oranları: Apple %30, Google Play %15
+        // Store platform tespiti
         const store = event.store; // 'APP_STORE' | 'PLAY_STORE' | 'STRIPE' vb.
         const isApple = store === 'APP_STORE';
-        const COMMISSION_RATE = isApple ? 0.30 : 0.15;
-
-        // Aylık ve yıllık fiyatlar (TL) — her iki store'da da aynı
-        const STORE_MONTHLY_PRICE = 249.99;
-        const STORE_YEARLY_PRICE = 2499.99;
-
-        // Komisyon kesintisinden sonra bize kalan net tutarlar
-        const NET_MONTHLY_PRICE = Math.round(STORE_MONTHLY_PRICE * (1 - COMMISSION_RATE) * 100) / 100;
-        const NET_YEARLY_PRICE = Math.round(STORE_YEARLY_PRICE * (1 - COMMISSION_RATE) * 100) / 100;
 
         if (PREMIUM_EVENTS.includes(eventType)) {
             // ✅ Premium erişim ver
@@ -146,24 +137,29 @@ export async function POST(request: NextRequest) {
                                      productId?.toLowerCase()?.includes('yearly');
 
                     const billingPeriod = isYearly ? 'yearly' : 'monthly';
-                    const netAmount = isYearly ? NET_YEARLY_PRICE : NET_MONTHLY_PRICE;
-                    const storePrice = isYearly ? STORE_YEARLY_PRICE : STORE_MONTHLY_PRICE;
+                    
+                    const plan = await prisma.subscriptionPlan.findFirst({
+                        where: { isActive: true, interval: billingPeriod }
+                    });
+                    
+                    const storePrice = plan?.price ?? (isYearly ? 2499.99 : 249.99);
 
                     // Mükerrer kayıt koruması artık yukarıdaki claimWebhookEvent ile
                     // sağlanıyor (bu event ilk kez işleniyorsa buraya kadar gelinir).
                     await tx.payment.create({
                         data: {
                             userId: appUserId,
-                            amount: netAmount,
+                            amount: storePrice, // Sadece brüt kaydedilir
                             currency: 'TRY',
                             status: 'COMPLETED',
                             subscriptionPlan: 'Premium',
                             billingPeriod: billingPeriod,
+                            platform: isApple ? 'REVENUECAT_APPLE' : 'REVENUECAT_GOOGLE',
                             stripePaymentId: `rc_${appUserId}_${Date.now()}`, // Benzersiz ID
                         }
                     });
 
-                    console.log(`[RC Webhook] 💰 Payment kaydı oluşturuldu: ${billingPeriod} | ${isApple ? 'Apple' : 'Google Play'}: ₺${storePrice} → Komisyon sonrası: ₺${netAmount}`);
+                    console.log(`[RC Webhook] 💰 Payment kaydı oluşturuldu: ${billingPeriod} | ${isApple ? 'Apple' : 'Google Play'}: Brüt ₺${storePrice}`);
                 }
             });
 

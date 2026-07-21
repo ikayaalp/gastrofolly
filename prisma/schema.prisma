@@ -110,6 +110,7 @@ model User {
   reportsMade              Report[]
   blocks                   Block[]          @relation("Blocker")
   blockedBy                Block[]          @relation("Blocked")
+  instructorPayouts        InstructorPayout[]
 }
 
 enum UserRole {
@@ -213,6 +214,7 @@ model Enrollment {
 model Progress {
   id          String   @id @default(cuid())
   isCompleted Boolean  @default(false)
+  completedAt DateTime?
   watchedAt   DateTime @default(now())
   timeWatched Int      @default(0) // İzlenen süre (saniye cinsinden)
 
@@ -245,6 +247,7 @@ model Payment {
   amount          Float
   currency        String        @default("TRY")
   status          PaymentStatus @default(PENDING)
+  platform        PaymentPlatform?
   stripePaymentId String?       @unique
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
@@ -263,6 +266,29 @@ enum PaymentStatus {
   COMPLETED
   FAILED
   REFUNDED
+}
+
+enum PaymentPlatform {
+  IYZICO
+  REVENUECAT_APPLE
+  REVENUECAT_GOOGLE
+  STRIPE
+}
+
+model InstructorPayout {
+  id            String   @id @default(cuid())
+  instructorId  String
+  instructor    User     @relation(fields: [instructorId], references: [id], onDelete: Cascade)
+  month         Int      // e.g. 7 (for July)
+  year          Int      // e.g. 2026
+  poolShare     Float    // Calculated amount to pay
+  totalMinutes  Int      // Instructor's total minutes watched in that month
+  percentage    Float    // Instructor's percentage of the pool
+  status        String   @default("PENDING") // PENDING, PAID
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@unique([instructorId, month, year])
 }
 
 // İndirim Kodu modeli

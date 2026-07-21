@@ -22,10 +22,9 @@ export async function PUT(
       where: { id: lessonId },
       data: {
         title: data.title,
-        description: data.description || null,
-        videoUrl: data.videoUrl || null,
-        pdfUrl: data.pdfUrl !== undefined ? data.pdfUrl : undefined,
-        duration: data.duration ? parseInt(data.duration) : null,
+        description: data.description,
+        videoUrl: data.videoUrl,
+        pdfUrl: data.pdfUrl,
         order: parseInt(data.order),
         isFree: data.isFree || false
       }

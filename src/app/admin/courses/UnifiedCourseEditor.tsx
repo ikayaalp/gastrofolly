@@ -107,7 +107,6 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
         description: "",
         videoUrl: "",
         pdfUrl: "",
-        duration: 0,
         order: 0,
         isFree: false
     })
@@ -238,7 +237,6 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
                 description: lesson.description || "",
                 videoUrl: lesson.videoUrl || "",
                 pdfUrl: lesson.pdfUrl || "",
-                duration: lesson.duration || 0,
                 order: lesson.order,
                 isFree: lesson.isFree
             })
@@ -249,7 +247,6 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
                 description: "",
                 videoUrl: "",
                 pdfUrl: "",
-                duration: 0,
                 order: lessons.length + 1,
                 isFree: false
             })
@@ -720,8 +717,9 @@ export default function UnifiedCourseEditor({ course, categories, instructors, o
                                             <input placeholder="Ders Başlığı" className="px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white"
                                                 value={lessonForm.title} onChange={e => setLessonForm({ ...lessonForm, title: e.target.value })} />
                                             <div className="flex gap-2">
-                                                <input type="number" placeholder="Süre (dk)" className="px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white w-24"
-                                                    value={lessonForm.duration} onChange={e => setLessonForm({ ...lessonForm, duration: parseInt(e.target.value) || 0 })} />
+                                                <div className="flex items-center text-sm text-gray-400 bg-gray-900 px-3 py-2 rounded-lg border border-gray-700 w-32 justify-center">
+                                                    {editingLesson?.duration ? `${editingLesson.duration} dk` : 'Süre İzleniyor...'}
+                                                </div>
                                                 <input type="number" placeholder="Sıra" className="px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white w-20"
                                                     value={lessonForm.order} onChange={e => setLessonForm({ ...lessonForm, order: parseInt(e.target.value) || 0 })} />
                                                 <div className="flex items-center space-x-2 px-2">

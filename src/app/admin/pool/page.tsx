@@ -1,10 +1,10 @@
-// @ts-nocheck
 import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { REVENUE_TRACKING_START, HISTORICAL_REVENUE_OFFSET } from "@/lib/revenueConfig"
-import { Users, Wallet, TrendingUp, Clock, Info, Smartphone } from "lucide-react"
+import { calculateNetRevenue, calculatePoolAmount } from "@/lib/revenueConfig"
+import { Users, Wallet, TrendingUp, Clock, Info, Smartphone, Calendar } from "lucide-react"
+import PoolPayoutButton from "./PoolPayoutButton"
 
 function calculatePoolShare(instructors: any[], poolTotal: number) {
     const instructorsWithPoints = instructors.map(instructor => ({
@@ -20,7 +20,9 @@ function calculatePoolShare(instructors: any[], poolTotal: number) {
     }))
 }
 
-export default async function PoolManagementPage() {
+// Next.js 15+ searchParams Promise handling
+export default async function PoolManagementPage(props: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
+    const searchParams = await props.searchParams
     const session = await getServerSession(authOptions)
 
     if (!session?.user?.id) {
@@ -36,61 +38,49 @@ export default async function PoolManagementPage() {
         redirect("/dashboard")
     }
 
-    // Bugünden öncesi: sabit tarihsel kasa
-    const preRevenue = HISTORICAL_REVENUE_OFFSET
+    // Tarih filtreleme
+    const now = new Date()
+    const selectedMonth = searchParams?.month ? parseInt(searchParams.month as string) : now.getMonth() + 1
+    const selectedYear = searchParams?.year ? parseInt(searchParams.year as string) : now.getFullYear()
 
-    // Web (Iyzico) abonelik ödemeleri
-    const iyzicoPayments = await prisma.payment.aggregate({
+    const startDate = new Date(Date.UTC(selectedYear, selectedMonth - 1, 1, 0, 0, 0, 0))
+    const endDate = new Date(Date.UTC(selectedYear, selectedMonth, 0, 23, 59, 59, 999))
+
+    // Ayın ödemelerini getir
+    const payments = await prisma.payment.findMany({
         where: {
             status: 'COMPLETED',
             subscriptionPlan: { not: null },
-            createdAt: { gte: REVENUE_TRACKING_START },
-            stripePaymentId: { not: { startsWith: 'rc_' } } // RevenueCat ödemeleri hariç
-        },
-        _sum: { amount: true }
-    })
-    const webRevenue = iyzicoPayments._sum.amount || 0
-
-    // Mobil (Apple/RevenueCat) abonelik ödemeleri (Apple kesintisi sonrası net tutarlar)
-    const mobilePayments = await prisma.payment.aggregate({
-        where: {
-            status: 'COMPLETED',
-            subscriptionPlan: { not: null },
-            stripePaymentId: { startsWith: 'rc_' } // Sadece RevenueCat ödemeleri
-        },
-        _sum: { amount: true }
-    })
-    const mobileRevenue = mobilePayments._sum.amount || 0
-
-    // Mobil abonelik detayları (aylık/yıllık adet)
-    const mobileMonthlyCount = await prisma.payment.count({
-        where: {
-            status: 'COMPLETED',
-            stripePaymentId: { startsWith: 'rc_' },
-            billingPeriod: 'monthly'
-        }
-    })
-    const mobileYearlyCount = await prisma.payment.count({
-        where: {
-            status: 'COMPLETED',
-            stripePaymentId: { startsWith: 'rc_' },
-            billingPeriod: 'yearly'
+            createdAt: { gte: startDate, lte: endDate }
         }
     })
 
-    // Apple kesintisi öncesi brüt tutarlar (gösterim amaçlı)
-    // NOT: Bunlar App Store Connect/RevenueCat tarafında ayrı yönetilen IAP fiyatları.
-    // Abonelikler sayfasındaki SubscriptionPlan tablosu SADECE web (Iyzico) fiyatlandırması
-    // içindir, Apple fiyatıyla eşit olmak zorunda değildir — bilerek buradan okunmuyor.
-    const APPLE_MONTHLY_GROSS = 399
-    const APPLE_YEARLY_GROSS = 3999
-    const APPLE_MONTHLY_NET = Math.round(APPLE_MONTHLY_GROSS * 0.70 * 100) / 100  // 279.30 TL
-    const APPLE_YEARLY_NET = Math.round(APPLE_YEARLY_GROSS * 0.70 * 100) / 100    // 2799.30 TL
-    const mobileGrossRevenue = (mobileMonthlyCount * APPLE_MONTHLY_GROSS) + (mobileYearlyCount * APPLE_YEARLY_GROSS)
+    let totalGrossRevenue = 0
+    let totalNetRevenue = 0
+    let webGross = 0
+    let webNet = 0
+    let mobileGross = 0
+    let mobileNet = 0
+    
+    payments.forEach(payment => {
+        totalGrossRevenue += payment.amount
+        const net = calculateNetRevenue(payment.amount, payment.platform)
+        totalNetRevenue += net
 
-    const postRevenue = webRevenue + mobileRevenue
-    const TOTAL_REVENUE = preRevenue + postRevenue
-    const POOL_TOTAL = TOTAL_REVENUE * 0.25
+        if (payment.platform === 'IYZICO' || payment.platform === 'STRIPE') {
+            webGross += payment.amount
+            webNet += net
+        } else if (payment.platform === 'REVENUECAT_APPLE' || payment.platform === 'REVENUECAT_GOOGLE') {
+            mobileGross += payment.amount
+            mobileNet += net
+        } else {
+            // Eskiden platformu olmayanlar (backfill edilmemişse vs) web/iyzico varsayılabilir
+            webGross += payment.amount
+            webNet += net
+        }
+    })
+
+    const POOL_TOTAL = calculatePoolAmount(totalNetRevenue)
 
     // Gerçek eğitmenleri veritabanından çek
     const instructorUsers = await prisma.user.findMany({
@@ -98,29 +88,35 @@ export default async function PoolManagementPage() {
         select: { id: true, name: true, image: true }
     })
 
-    // Her eğitmen için gerçek ders sürelerini hesapla
+    // Her eğitmen için gerçek ders sürelerini hesapla (sadece seçili ayda tamamlananlar)
     const colors = ["#f97316", "#3b82f6", "#a855f7", "#22c55e", "#ef4444", "#eab308"]
+
+    const completedProgress = await prisma.progress.findMany({
+        where: {
+            isCompleted: true,
+            completedAt: { gte: startDate, lte: endDate },
+            lesson: {
+                isPublished: true,
+                duration: { not: null }
+            }
+        },
+        include: { lesson: { select: { duration: true, course: { select: { instructorId: true } } } } }
+    })
+
+    const instructorMinutes: Record<string, number> = {}
+    completedProgress.forEach(p => {
+        const instId = p.lesson.course.instructorId
+        const dur = p.lesson.duration || 0
+        instructorMinutes[instId] = (instructorMinutes[instId] || 0) + dur
+    })
 
     const instructorsWithData = await Promise.all(
         instructorUsers.map(async (user, index) => {
-            // Kullanıcıların bu eğitmenin derslerinde tamamladığı dakikaların toplamı
-            const completedProgress = await prisma.progress.findMany({
-                where: {
-                    isCompleted: true,
-                    lesson: {
-                        course: { instructorId: user.id },
-                        isPublished: true,
-                        duration: { not: null }
-                    }
-                },
-                include: { lesson: { select: { duration: true } } }
-            })
-            const minutes = completedProgress.reduce((sum, p) => sum + (p.lesson.duration || 0), 0)
-
+            const minutes = instructorMinutes[user.id] || 0
             return {
                 id: user.id,
                 name: user.name || "İsimsiz Şef",
-                courseName: "Toplam İzlenme",
+                courseName: "Aylık Toplam İzlenme",
                 level: "Eğitmen",
                 minutes,
                 coefficient: 1,
@@ -129,12 +125,19 @@ export default async function PoolManagementPage() {
         })
     )
 
+    // Payout durumlarını çek (Sadece Admin için)
+    const payouts = currentUser.role !== 'INSTRUCTOR' ? await prisma.instructorPayout.findMany({
+        where: {
+            month: selectedMonth,
+            year: selectedYear
+        }
+    }) : []
+    const paidInstructorIds = new Set(payouts.filter(p => p.status === 'PAID').map(p => p.instructorId))
+
     const poolData = calculatePoolShare(instructorsWithData, POOL_TOTAL)
     const totalMinutes = instructorsWithData.reduce((sum, i) => sum + i.minutes, 0)
-    const totalPoints = poolData.reduce((sum: number, i: any) => sum + i.points, 0)
 
-
-    // Pasta grafik (Sadece Admin veya toplamı görmek için)
+    // Pasta grafik
     let gradientAngle = 0
     const conicGradient = poolData.map((instructor: any) => {
         const startAngle = gradientAngle
@@ -144,8 +147,6 @@ export default async function PoolManagementPage() {
     }).join(', ')
 
     // GÖRÜNÜRLÜK AYARLARI
-    // Admin hepsini görür.
-    // Eğitmen sadece kendini görür.
     let displayedInstructors = poolData
     const isInstructor = currentUser.role === 'INSTRUCTOR'
 
@@ -155,9 +156,31 @@ export default async function PoolManagementPage() {
 
     return (
         <div className="space-y-8">
-            {/* Stats Cards - HERKES GÖRÜR */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                <h1 className="text-2xl font-bold text-white">Eğitmen Gelir Havuzu</h1>
+                <form className="flex items-center gap-2" method="GET">
+                    <div className="flex items-center bg-gray-900 border border-gray-700 rounded-lg px-3 py-2">
+                        <Calendar className="w-4 h-4 text-gray-400 mr-2" />
+                        <select name="month" defaultValue={selectedMonth} className="bg-transparent text-white text-sm outline-none">
+                            {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
+                                <option key={m} value={m}>{m}. Ay</option>
+                            ))}
+                        </select>
+                        <span className="text-gray-500 mx-2">/</span>
+                        <select name="year" defaultValue={selectedYear} className="bg-transparent text-white text-sm outline-none">
+                            {[now.getFullYear() - 1, now.getFullYear(), now.getFullYear() + 1].map(y => (
+                                <option key={y} value={y}>{y}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <button type="submit" className="px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-lg text-sm font-medium transition-colors">
+                        Filtrele
+                    </button>
+                </form>
+            </div>
 
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="bg-black border border-gray-800 rounded-xl p-6 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-green-500/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
                     <div className="flex items-center space-x-4 relative z-10">
@@ -201,7 +224,6 @@ export default async function PoolManagementPage() {
             {/* Gelir Kaynağı Detayları - SADECE ADMİN GÖRÜR */}
             {!isInstructor && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Web (Iyzico) Geliri */}
                     <div className="bg-black border border-gray-800 rounded-xl p-6 relative overflow-hidden group">
                         <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
                         <div className="flex items-center space-x-4 relative z-10 mb-4">
@@ -209,14 +231,16 @@ export default async function PoolManagementPage() {
                                 <TrendingUp className="h-6 w-6 text-orange-400" />
                             </div>
                             <div>
-                                <p className="text-2xl font-bold text-white">₺{webRevenue.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</p>
-                                <p className="text-gray-400 text-sm font-medium">Web Abonelik Geliri (Iyzico)</p>
+                                <p className="text-2xl font-bold text-white">₺{webNet.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</p>
+                                <p className="text-gray-400 text-sm font-medium">Web Abonelik Net Geliri</p>
                             </div>
                         </div>
-                        <p className="text-xs text-gray-500">Web sitesi üzerinden alınan abonelikler</p>
+                        <div className="flex justify-between items-center text-xs mt-2 border-t border-gray-800 pt-2">
+                            <span className="text-gray-500">Brüt Gelir:</span>
+                            <span className="text-gray-400">₺{webGross.toLocaleString('tr-TR')}</span>
+                        </div>
                     </div>
 
-                    {/* Mobil (Apple) Geliri */}
                     <div className="bg-black border border-gray-800 rounded-xl p-6 relative overflow-hidden group">
                         <div className="absolute top-0 right-0 w-24 h-24 bg-cyan-500/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
                         <div className="flex items-center space-x-4 relative z-10 mb-4">
@@ -224,35 +248,13 @@ export default async function PoolManagementPage() {
                                 <Smartphone className="h-6 w-6 text-cyan-400" />
                             </div>
                             <div>
-                                <p className="text-2xl font-bold text-white">₺{mobileRevenue.toLocaleString('tr-TR', { maximumFractionDigits: 2 })}</p>
-                                <p className="text-gray-400 text-sm font-medium">Mobil Abonelik Geliri (Apple Sonrası)</p>
+                                <p className="text-2xl font-bold text-white">₺{mobileNet.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</p>
+                                <p className="text-gray-400 text-sm font-medium">Mobil Abonelik Net Geliri</p>
                             </div>
                         </div>
-                        <div className="space-y-2 mt-3">
-                            <div className="flex items-center justify-between text-xs">
-                                <span className="text-gray-500">App Store Brüt Toplam:</span>
-                                <span className="text-gray-400 font-medium">₺{mobileGrossRevenue.toLocaleString('tr-TR')}</span>
-                            </div>
-                            <div className="flex items-center justify-between text-xs">
-                                <span className="text-gray-500">Apple Komisyonu (%30):</span>
-                                <span className="text-red-400 font-medium">-₺{(mobileGrossRevenue - mobileRevenue).toLocaleString('tr-TR', { maximumFractionDigits: 2 })}</span>
-                            </div>
-                            <div className="border-t border-gray-800 pt-2 flex items-center justify-between text-xs">
-                                <span className="text-gray-500">Net Gelir (Havuza Giren):</span>
-                                <span className="text-green-400 font-medium">₺{mobileRevenue.toLocaleString('tr-TR', { maximumFractionDigits: 2 })}</span>
-                            </div>
-                            <div className="flex gap-4 mt-2 pt-2 border-t border-gray-800/50">
-                                <div className="text-xs">
-                                    <span className="text-gray-600">Aylık: </span>
-                                    <span className="text-gray-400">{mobileMonthlyCount} adet</span>
-                                    <span className="text-gray-600 ml-1">(₺{APPLE_MONTHLY_GROSS} → ₺{APPLE_MONTHLY_NET})</span>
-                                </div>
-                                <div className="text-xs">
-                                    <span className="text-gray-600">Yıllık: </span>
-                                    <span className="text-gray-400">{mobileYearlyCount} adet</span>
-                                    <span className="text-gray-600 ml-1">(₺{APPLE_YEARLY_GROSS} → ₺{APPLE_YEARLY_NET})</span>
-                                </div>
-                            </div>
+                        <div className="flex justify-between items-center text-xs mt-2 border-t border-gray-800 pt-2">
+                            <span className="text-gray-500">Brüt Gelir:</span>
+                            <span className="text-gray-400">₺{mobileGross.toLocaleString('tr-TR')}</span>
                         </div>
                     </div>
                 </div>
@@ -318,6 +320,7 @@ export default async function PoolManagementPage() {
                                         <th className="px-6 py-3 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">İzlenme Süresi</th>
                                         <th className="px-6 py-3 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">Havuz Payı</th>
                                         <th className="px-6 py-3 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">Hakediş Tutarı</th>
+                                        {!isInstructor && <th className="px-6 py-3 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">İşlem</th>}
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-800">
@@ -347,6 +350,21 @@ export default async function PoolManagementPage() {
                                                 <td className="px-6 py-4 whitespace-nowrap text-right">
                                                     <div className="text-xl font-bold text-green-400">₺{instructor.poolShare.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</div>
                                                 </td>
+                                                {!isInstructor && (
+                                                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                                                        {instructor.poolShare > 0 ? (
+                                                            <PoolPayoutButton 
+                                                                instructorId={instructor.id}
+                                                                month={selectedMonth}
+                                                                year={selectedYear}
+                                                                amount={instructor.poolShare}
+                                                                isPaid={paidInstructorIds.has(instructor.id)}
+                                                            />
+                                                        ) : (
+                                                            <span className="text-xs text-gray-500">-</span>
+                                                        )}
+                                                    </td>
+                                                )}
                                             </tr>
                                         ))
                                     ) : (

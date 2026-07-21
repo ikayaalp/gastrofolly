@@ -58,7 +58,8 @@ export async function POST(request: NextRequest) {
                 status: 'PENDING'
               },
               data: {
-                status: 'COMPLETED'
+                status: 'COMPLETED',
+                platform: 'STRIPE'
               }
             })
 

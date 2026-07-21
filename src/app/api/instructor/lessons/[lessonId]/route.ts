@@ -20,7 +20,11 @@ export async function PUT(
 
     const { lessonId } = await params
     const body = await request.json()
-    const { title, description, duration, videoUrl, pdfUrl, isPublished } = body
+    const { title, description, videoUrl, pdfUrl, isPublished } = body
+
+    if (!title) {
+      return NextResponse.json({ error: "Title is required" }, { status: 400 })
+    }
 
     // Check if lesson exists and belongs to instructor's course
     const existingLesson = await prisma.lesson.findFirst({
@@ -38,8 +42,7 @@ export async function PUT(
       where: { id: lessonId },
       data: {
         ...(title && { title }),
-        ...(description && { description }),
-        ...(duration && { duration: parseInt(duration) }),
+        ...(description !== undefined && { description }),
         ...(videoUrl !== undefined && { videoUrl }),
         ...(pdfUrl !== undefined && { pdfUrl }),
         ...(isPublished !== undefined && { isPublished })

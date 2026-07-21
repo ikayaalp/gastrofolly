@@ -121,7 +121,6 @@ export default function CourseEditClient({ course, categories, session }: Props)
   const [newLesson, setNewLesson] = useState({
     title: "",
     description: "",
-    duration: "",
     videoUrl: "", pdfUrl: ""
   })
 
@@ -217,13 +216,12 @@ export default function CourseEditClient({ course, categories, session }: Props)
         },
         body: JSON.stringify({
           ...newLesson,
-          courseId: course.id,
-          duration: parseInt(newLesson.duration)
+          courseId: course.id
         }),
       })
 
       if (response.ok) {
-        setNewLesson({ title: "", description: "", duration: "", videoUrl: "", pdfUrl: "" })
+        setNewLesson({ title: "", description: "", videoUrl: "", pdfUrl: "" })
         window.location.reload()
       }
     } catch (error) {
@@ -594,7 +592,7 @@ export default function CourseEditClient({ course, categories, session }: Props)
                           </div>
                           <p className="text-gray-300 text-sm mb-2">{lesson.description}</p>
                           <div className="flex items-center space-x-4 text-sm text-gray-400">
-                            <span>{lesson.duration} dakika</span>
+                            <span>{lesson.duration ? lesson.duration + ' dakika' : 'İşleniyor…'}</span>
                             {lesson.videoUrl && (
                               <span className="text-green-500">Video yüklü</span>
                             )}
@@ -621,7 +619,7 @@ export default function CourseEditClient({ course, categories, session }: Props)
                   <h4 className="text-white font-semibold mb-4">Yeni Ders Ekle</h4>
                   <form onSubmit={handleAddLesson} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
+                      <div className="md:col-span-2">
                         <label className="block text-sm font-medium text-gray-300 mb-2">
                           Ders Başlığı *
                         </label>
@@ -630,19 +628,6 @@ export default function CourseEditClient({ course, categories, session }: Props)
                           value={newLesson.title}
                           onChange={(e) => setNewLesson(prev => ({ ...prev, title: e.target.value }))}
                           required
-                          className="w-full bg-gray-600 text-white px-4 py-2 rounded-lg border border-gray-500 focus:border-orange-500 focus:outline-none"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                          Süre (dakika) *
-                        </label>
-                        <input
-                          type="number"
-                          value={newLesson.duration}
-                          onChange={(e) => setNewLesson(prev => ({ ...prev, duration: e.target.value }))}
-                          required
-                          min="1"
                           className="w-full bg-gray-600 text-white px-4 py-2 rounded-lg border border-gray-500 focus:border-orange-500 focus:outline-none"
                         />
                       </div>
