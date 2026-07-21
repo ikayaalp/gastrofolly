@@ -2,11 +2,17 @@
 
 import React, { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, RotateCcw, RotateCw, SkipBack, SkipForward, Loader2, AlertTriangle, Gauge, X } from "lucide-react"
+import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, RotateCcw, RotateCw, SkipBack, SkipForward, Loader2, AlertTriangle, Gauge, X, Layers } from "lucide-react"
 import YouTubePlayer from "./YouTubePlayer"
 import Hls from "hls.js"
 
 const PLAYBACK_RATES = [0.5, 0.75, 1, 1.25, 1.5, 2] as const
+
+interface QualityLevel {
+  index: number;      // hls.js level index, -1 = Auto
+  label: string;
+  height: number;
+}
 const AUTO_NEXT_SECONDS = 5
 
 // Lesson tipi interface olarak tanımlanıyor
@@ -61,6 +67,11 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
   const wasPlayingRef = useRef(false);
   const isSeekingRef = useRef(false);
   const seekTimeRef = useRef<number>(0);
+  // HLS kalite seçimi
+  const hlsRef = useRef<Hls | null>(null);
+  const [qualityLevels, setQualityLevels] = useState<QualityLevel[]>([]);
+  const [selectedQuality, setSelectedQuality] = useState<number>(-1); // -1 = Auto
+  const [showQualityMenu, setShowQualityMenu] = useState(false);
 
   // Kontrol barı için auto-hide id
   const hideControlsTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -174,13 +185,33 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
     if (!video || !playbackUrl || isYouTubeUrl(playbackUrl)) return;
 
     const isHls = playbackUrl.endsWith('.m3u8') || playbackUrl.includes('/bcdn_token=');
-    let hls: Hls | null = null;
+
+    // Eski hls instance'ını temizle
+    if (hlsRef.current) {
+      hlsRef.current.destroy();
+      hlsRef.current = null;
+    }
+    setQualityLevels([]);
+    setSelectedQuality(-1);
 
     if (isHls && Hls.isSupported() && !video.canPlayType('application/vnd.apple.mpegurl')) {
-      hls = new Hls({ capLevelToPlayerSize: true, maxBufferLength: 30 });
+      const hls = new Hls({ capLevelToPlayerSize: true, maxBufferLength: 30 });
+      hlsRef.current = hls;
       hls.loadSource(playbackUrl);
       hls.attachMedia(video);
-      hls.on(Hls.Events.MANIFEST_PARSED, () => { video.play().catch(() => {}); });
+      hls.on(Hls.Events.MANIFEST_PARSED, (_e, data) => {
+        video.play().catch(() => {});
+        // Mevcut kalite seviyelerini state'e aktar
+        const levels: QualityLevel[] = [
+          { index: -1, label: 'Otomatik', height: 9999 },
+          ...data.levels.map((lvl: { height: number }, i: number) => ({
+            index: i,
+            label: lvl.height ? `${lvl.height}p` : `Seviye ${i + 1}`,
+            height: lvl.height ?? 0,
+          })).sort((a: QualityLevel, b: QualityLevel) => b.height - a.height),
+        ];
+        setQualityLevels(levels);
+      });
     } else {
       // Safari native HLS veya legacy MP4
       video.src = playbackUrl;
@@ -188,8 +219,22 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
       if (retryKey > 0) video.play().catch(() => {});
     }
 
-    return () => { if (hls) hls.destroy(); };
+    return () => {
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
+      }
+    };
   }, [playbackUrl, retryKey]);
+
+  // Kalite değiştiğinde hls.js level'ını güncelle
+  const changeQuality = (levelIndex: number) => {
+    setSelectedQuality(levelIndex);
+    setShowQualityMenu(false);
+    if (hlsRef.current) {
+      hlsRef.current.currentLevel = levelIndex; // -1 = auto
+    }
+  };
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -463,10 +508,50 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
     return url.includes('youtube.com') || url.includes('youtu.be')
   }
 
+  // Kalite seçici UI bileşeni — web'de hız butonunun yanında, mobilin fullscreen'inde tam ekran butonunun yanında render edilir
+  const QualitySelector = () => (
+    qualityLevels.length > 1 ? (
+      <div className="relative">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowQualityMenu((v) => !v);
+            setShowSpeedMenu(false);
+          }}
+          className="text-white hover:text-orange-400 transition-colors flex items-center gap-1"
+          title="Video kalitesi"
+        >
+          <Layers className="h-5 w-5" />
+          <span className="text-xs font-semibold">
+            {selectedQuality === -1 ? 'Auto' : `${qualityLevels.find(q => q.index === selectedQuality)?.label ?? 'Auto'}`}
+          </span>
+        </button>
+        {showQualityMenu && (
+          <div className="absolute bottom-full right-0 mb-2 bg-[#1a1a1a] border border-gray-700 rounded-lg overflow-hidden shadow-lg z-10 min-w-[80px]">
+            {qualityLevels.map((q) => (
+              <button
+                key={q.index}
+                onClick={(e) => { e.stopPropagation(); changeQuality(q.index); }}
+                className={`block w-full text-center px-3 py-1.5 text-sm transition-colors ${
+                  q.index === selectedQuality ? 'bg-orange-600 text-white' : 'text-gray-300 hover:bg-white/10'
+                }`}
+              >
+                {q.label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    ) : null
+  );
+
   // Video alanına tıklama için div-click ile, ortadaki büyük play için button-click ile iki ayrı fonksiyon tanımla
   const handleVideoAreaClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (showSpeedMenu) {
       setShowSpeedMenu(false);
+    }
+    if (showQualityMenu) {
+      setShowQualityMenu(false);
     }
     if (
       e.target instanceof HTMLElement &&
@@ -663,13 +748,15 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
                     className="w-16 md:w-20 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer block"
                   />
                 </div>
-                {/* Oynatma hızı + Tam ekran */}
-                <div className="flex items-center space-x-4 relative">
+                {/* Oynatma hızı + Kalite + Tam ekran */}
+                <div className="flex items-center space-x-3 relative">
+                  {/* Oynatma hızı */}
                   <div className="relative">
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
                         setShowSpeedMenu((v) => !v)
+                        setShowQualityMenu(false)
                       }}
                       className="text-white hover:text-orange-400 transition-colors flex items-center gap-1"
                       title="Oynatma hızı"
@@ -695,6 +782,9 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
                       </div>
                     )}
                   </div>
+                  {/* Kalite seçici — oynatma hızının yanında */}
+                  <QualitySelector />
+                  {/* Tam ekran */}
                   <button
                     onClick={(e) => { e.stopPropagation(); toggleFullscreen(); }}
                     className="text-white hover:text-orange-400 transition-colors"
