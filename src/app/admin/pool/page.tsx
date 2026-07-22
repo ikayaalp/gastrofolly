@@ -214,6 +214,37 @@ export default async function PoolManagementPage(props: { searchParams: Promise<
                 </div>
             </div>
 
+            {/* Abonelik Geliri Özeti: Brüt → Kesinti → Net → Havuz - SADECE ADMİN */}
+            {!isInstructor && (
+                <div className="bg-black border border-gray-800 rounded-xl p-6">
+                    <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
+                        Abonelik Geliri Özeti — {TURKISH_MONTHS_LONG[selectedMonth - 1]} {selectedYear}
+                    </h2>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div>
+                            <p className="text-gray-500 text-xs mb-1">Toplam Brüt Gelir</p>
+                            <p className="text-white text-2xl font-bold">₺{totalGrossRevenue.toLocaleString('tr-TR', { maximumFractionDigits: 2 })}</p>
+                            <p className="text-gray-600 text-[11px] mt-1">Müşterinin ödediği tam tutar</p>
+                        </div>
+                        <div>
+                            <p className="text-gray-500 text-xs mb-1">Platform Kesintisi</p>
+                            <p className="text-red-400 text-2xl font-bold">−₺{(totalGrossRevenue - totalNetRevenue).toLocaleString('tr-TR', { maximumFractionDigits: 2 })}</p>
+                            <p className="text-gray-600 text-[11px] mt-1">Apple %30 · Google %15 · Iyzico %3</p>
+                        </div>
+                        <div>
+                            <p className="text-gray-500 text-xs mb-1">Net Gelir (Kalan)</p>
+                            <p className="text-green-400 text-2xl font-bold">₺{totalNetRevenue.toLocaleString('tr-TR', { maximumFractionDigits: 2 })}</p>
+                            <p className="text-gray-600 text-[11px] mt-1">Kesinti sonrası bize kalan</p>
+                        </div>
+                        <div>
+                            <p className="text-gray-500 text-xs mb-1">Eğitmen Havuzu (%25)</p>
+                            <p className="text-orange-400 text-2xl font-bold">₺{POOL_TOTAL.toLocaleString('tr-TR', { maximumFractionDigits: 2 })}</p>
+                            <p className="text-gray-600 text-[11px] mt-1">Net gelirin %25'i</p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Gelir Kaynağı Detayları - SADECE ADMİN GÖRÜR */}
             {!isInstructor && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

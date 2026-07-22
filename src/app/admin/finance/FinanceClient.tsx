@@ -29,7 +29,7 @@ interface YearlySummaryItem {
 
 const TURKISH_MONTHS = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık']
 
-export default function FinanceClient() {
+export default function FinanceClient({ subGross, subNet }: { subGross: number; subNet: number }) {
   const [viewMode, setViewMode] = useState<"monthly" | "yearly">("monthly")
 
   const [records, setRecords] = useState<FinanceRecord[]>([])
@@ -200,6 +200,25 @@ export default function FinanceClient() {
             <Plus className="w-4 h-4 mr-2" />
             Yeni Kayıt Ekle
           </button>
+        </div>
+      </div>
+
+      {/* Abonelik Geliri (Tüm Zamanlar) — otomatik hesaplanır, elle Gelir/Gider'den bağımsızdır */}
+      <div className="bg-neutral-900/50 backdrop-blur-sm border border-neutral-800 rounded-2xl p-6">
+        <p className="text-sm font-medium text-gray-400 mb-4">Abonelik Geliri (Tüm Zamanlar) — komisyon kesintisi sonrası</p>
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <p className="text-gray-500 text-xs mb-1">Toplam Brüt</p>
+            <p className="text-white text-xl font-bold">₺{subGross.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</p>
+          </div>
+          <div>
+            <p className="text-gray-500 text-xs mb-1">Platform Kesintisi</p>
+            <p className="text-red-400 text-xl font-bold">−₺{(subGross - subNet).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</p>
+          </div>
+          <div>
+            <p className="text-gray-500 text-xs mb-1">Net Kalan</p>
+            <p className="text-green-400 text-xl font-bold">₺{subNet.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</p>
+          </div>
         </div>
       </div>
 
