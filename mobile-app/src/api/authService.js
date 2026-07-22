@@ -4,7 +4,18 @@ import config from './config';
 import notificationService from './notificationService';
 import { loginRevenueCat, logoutRevenueCat } from './revenueCatService';
 import { Platform } from 'react-native';
-import { getToken, setToken, removeToken } from '../utils/tokenStorage';
+import { getToken, setToken, removeToken, setProfileCache, removeProfileCache } from '../utils/tokenStorage';
+
+// Login yanıtındaki kullanıcıyı hem AsyncStorage'a (userData) hem de
+// "Kim izliyor?" ekranının profil önbelleğine (SecureStore) yazar.
+const persistUser = async (user) => {
+    if (!user) return;
+    await AsyncStorage.setItem('userData', JSON.stringify(user));
+    if (user.id) {
+        await AsyncStorage.setItem('userId', user.id);
+    }
+    await setProfileCache(user);
+};
 
 const authService = {
     // Register new user
@@ -62,13 +73,7 @@ const authService = {
             }
 
             // Save user data if provided
-            if (response.data.user) {
-                await AsyncStorage.setItem('userData', JSON.stringify(response.data.user));
-                // Also save userId separately for easy access
-                if (response.data.user.id) {
-                    await AsyncStorage.setItem('userId', response.data.user.id);
-                }
-            }
+            await persistUser(response.data.user);
 
             // RevenueCat kullanıcı kimliğini eşleştir
             if (response.data.user?.id) {
@@ -80,6 +85,39 @@ const authService = {
             return {
                 success: false,
                 error: error.response?.data?.message || 'Giriş başarısız oldu',
+            };
+        }
+    },
+
+    // Başka cihaz tarafından devralınmış oturumu geri al ("Kim izliyor?" ekranı).
+    // Eldeki eski token imzası/süresi geçerliyse backend yeni sessionId + yeni
+    // token üretir; karşı cihazın oturumu düşer. Token süresi dolmuşsa 401 döner
+    // ve kullanıcı normal giriş yapmalıdır.
+    reclaimSession: async () => {
+        try {
+            const response = await api.post('/api/auth/mobile-reclaim');
+
+            if (response.data?.token) {
+                await setToken(response.data.token);
+                await persistUser(response.data.user);
+
+                // Push token'ı yeni oturumla yeniden ilişkilendir
+                const pushToken = await AsyncStorage.getItem('expoPushToken');
+                if (pushToken) {
+                    await notificationService.sendTokenToBackend(pushToken);
+                }
+
+                if (response.data.user?.id) {
+                    await loginRevenueCat(response.data.user.id);
+                }
+
+                return { success: true, data: response.data };
+            }
+            return { success: false, error: 'Oturum yenilenemedi' };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.response?.data?.message || 'Oturum yenilenemedi',
             };
         }
     },
@@ -125,6 +163,9 @@ const authService = {
             }
 
             await removeToken();
+            // Bilinçli çıkış → profil önbelleğini de sil ki "Kim izliyor?" ekranı
+            // değil normal Login gelsin.
+            await removeProfileCache();
             await AsyncStorage.removeItem('userData');
             await AsyncStorage.removeItem('userId');
             await AsyncStorage.removeItem('onboardingCompleted');
@@ -157,12 +198,7 @@ const authService = {
             }
 
             // Save user data if provided
-            if (response.data.user) {
-                await AsyncStorage.setItem('userData', JSON.stringify(response.data.user));
-                if (response.data.user.id) {
-                    await AsyncStorage.setItem('userId', response.data.user.id);
-                }
-            }
+            await persistUser(response.data.user);
 
             // RevenueCat kullanıcı kimliğini eşleştir
             if (response.data.user?.id) {
@@ -199,12 +235,7 @@ const authService = {
             }
 
             // Save user data if provided
-            if (response.data.user) {
-                await AsyncStorage.setItem('userData', JSON.stringify(response.data.user));
-                if (response.data.user.id) {
-                    await AsyncStorage.setItem('userId', response.data.user.id);
-                }
-            }
+            await persistUser(response.data.user);
 
             // RevenueCat kullanıcı kimliğini eşleştir
             if (response.data.user?.id) {
@@ -298,6 +329,7 @@ const authService = {
             if (response.data.success) {
                 // Clear all local storage
                 await removeToken();
+                await removeProfileCache();
                 await AsyncStorage.multiRemove(['userData', 'userId', 'expoPushToken', '@favorites']);
                 await logoutRevenueCat();
                 return { success: true };

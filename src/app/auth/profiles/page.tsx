@@ -2,7 +2,7 @@
 
 import { useSession, signOut } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { LogOut, Loader2, Play } from "lucide-react"
 import Image from "next/image"
 import { toast } from "react-hot-toast"
@@ -11,6 +11,24 @@ export default function ProfilesPage() {
   const { data: session, update, status } = useSession()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  // Arka plan kolajı için kurs afişleri; yüklenemezse degrade fallback kalır
+  const [covers, setCovers] = useState<string[]>([])
+
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/courses/featured')
+      .then((res) => (res.ok ? res.json() : Promise.reject()))
+      .then((data) => {
+        if (cancelled) return
+        const urls = (data?.courses || [])
+          .map((c: { posterImageUrl?: string; thumbnailImageUrl?: string; imageUrl?: string }) =>
+            c.posterImageUrl || c.thumbnailImageUrl || c.imageUrl)
+          .filter(Boolean)
+        setCovers(urls.slice(0, 24))
+      })
+      .catch(() => { /* kolaj opsiyonel — sessizce degrade fallback */ })
+    return () => { cancelled = true }
+  }, [])
 
   // Redirect if not logged in at all (e.g., hard logged out)
   if (status === "unauthenticated") {
@@ -49,13 +67,31 @@ export default function ProfilesPage() {
   }
 
   const userName = session?.user?.name || "Kullanıcı"
-  const userImage = session?.user?.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=ea580c&color=fff&size=256`
+  const userImage = session?.user?.image || null
+  const userInitial = userName.trim().charAt(0).toUpperCase()
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center relative overflow-hidden">
       {/* Dynamic Background Gradients */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-orange-900/20 via-black to-black"></div>
-      
+
+      {/* Kurs afişi kolajı — Netflix tarzı "arkada arşiv" backdrop */}
+      {covers.length > 0 && (
+        <>
+          <div className="absolute inset-0 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 opacity-40 pointer-events-none" aria-hidden="true">
+            {covers.map((url, i) => (
+              <div
+                key={`${url}-${i}`}
+                className="aspect-[2/3] bg-cover bg-center"
+                style={{ backgroundImage: `url(${url})` }}
+              />
+            ))}
+          </div>
+          {/* Karartma: ön plan her koşulda okunur kalsın */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/90 pointer-events-none" aria-hidden="true"></div>
+        </>
+      )}
+
       <div className="z-10 flex flex-col items-center w-full max-w-4xl px-4 animate-in fade-in duration-1000">
         <h1 className="text-4xl md:text-5xl font-light text-center mb-16 tracking-wide text-white/90">
           Kim İzliyor?
@@ -65,13 +101,19 @@ export default function ProfilesPage() {
           <div className="relative">
             {/* Avatar Container with hover effects */}
             <div className={`w-32 h-32 md:w-40 md:h-40 rounded-xl overflow-hidden border-4 border-transparent group-hover:border-white transition-all duration-300 transform group-hover:scale-105 shadow-2xl relative ${isLoading ? 'opacity-50' : ''}`}>
-              <Image 
-                src={userImage}
-                alt={userName}
-                fill
-                className="object-cover"
-              />
-              
+              {userImage ? (
+                <Image
+                  src={userImage}
+                  alt={userName}
+                  fill
+                  className="object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-orange-600 flex items-center justify-center">
+                  <span className="text-5xl md:text-6xl font-bold text-white">{userInitial}</span>
+                </div>
+              )}
+
               {/* Hover Overlay */}
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                 {isLoading ? (

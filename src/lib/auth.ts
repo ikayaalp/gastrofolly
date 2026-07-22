@@ -141,8 +141,18 @@ export const authOptions: NextAuthOptions = {
           // Single-device login check
           if (user.currentSessionId && token.sessionId !== user.currentSessionId) {
             console.log(`[NextAuth] Kicking out old session for user: ${user.id}`);
-            // Return session with error flag so client can show toast before logging out
+            // Oturum başka cihaz tarafından devralındı: error bayrağını koy VE
+            // kimliği sök. id/role/email olmadan tüm server sayfaları ve API
+            // route'ları (session?.user?.id kontrolü) bu oturumu anonim sayar —
+            // /auth/profiles atlanarak hiçbir şeye erişilemez. name/image kalır
+            // ki profil seçim kartı kimin oturumu olduğunu gösterebilsin.
+            // Oturumu geri alma /api/auth/reclaim'de cookie JWT'sinden (getToken)
+            // kimlik okunarak yapılır, session id'sine ihtiyaç duymaz.
             (session as any).error = 'ConcurrentLogin';
+            (session.user as any).id = undefined;
+            (session.user as any).role = undefined;
+            (session.user as any).email = undefined;
+            return session;
           }
 
           // Lazy cleanup

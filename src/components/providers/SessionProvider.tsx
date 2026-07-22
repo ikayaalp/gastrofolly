@@ -1,28 +1,37 @@
 "use client"
 
-import { SessionProvider, useSession, signOut } from "next-auth/react"
+import { SessionProvider, useSession } from "next-auth/react"
 import { useEffect, useRef } from "react"
 import { toast } from "react-hot-toast"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 
+// ConcurrentLogin durumunda session callback kimliği söktüğü için (auth.ts)
+// server sayfaları/API'ler zaten hiçbir şeye izin vermez; bu listener da
+// kullanıcıyı client tarafında /auth/profiles'a SABİTLER — hangi sayfaya
+// gitmeye çalışırsa çalışsın geri itilir. Ekrandan çıkışın iki yolu vardır:
+// profili seçip oturumu geri almak ya da farklı hesapla giriş yapmak.
 function SessionListener() {
   const { data: session } = useSession()
-  const hasLoggedOut = useRef(false)
-
+  const hasToasted = useRef(false)
   const router = useRouter()
-  
+  const pathname = usePathname()
+
   useEffect(() => {
-    if ((session as any)?.error === 'ConcurrentLogin' && !hasLoggedOut.current) {
-      hasLoggedOut.current = true;
+    if ((session as any)?.error !== 'ConcurrentLogin') return
+
+    if (!hasToasted.current) {
+      hasToasted.current = true
       toast.error("Başka bir cihazdan giriş yapıldı. Mevcut cihazdan devam etmek için profilinizi seçin.", {
         duration: 5000,
         icon: '⚠️',
       })
-      setTimeout(() => {
-        router.push('/auth/profiles')
-      }, 2000)
     }
-  }, [session, router])
+
+    // Profil seçim ve giriş sayfaları dışında hiçbir yerde durulamaz.
+    if (pathname !== '/auth/profiles' && !pathname?.startsWith('/auth/signin')) {
+      router.replace('/auth/profiles')
+    }
+  }, [session, pathname, router])
 
   return null
 }

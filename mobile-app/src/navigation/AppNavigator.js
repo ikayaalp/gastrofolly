@@ -56,6 +56,7 @@ import ChangePasswordScreen from '../screens/ChangePasswordScreen';
 import ChefSocialProfileScreen from '../screens/ChefSocialProfileScreen';
 import MessagesScreen from '../screens/MessagesScreen';
 import ChatScreen from '../screens/ChatScreen';
+import WhoIsWatchingScreen from '../screens/WhoIsWatchingScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -229,6 +230,15 @@ export default function AppNavigator() {
                     setInitialRoute('Onboarding');
                 } else {
                     setInitialRoute('Main');
+
+                    // Oturum başka cihaz tarafından devralındıysa kullanıcı cache'lenmiş
+                    // ekranlarda gezinemeden yakalansın: açılışta fire-and-forget oturum
+                    // kontrolü. 401 dönerse apiClient interceptor'ı WhoIsWatching'e atar.
+                    // (Dynamic import: authService → apiClient → navigationRef zinciri
+                    // modül yükleme sırasında circular import olmasın diye.)
+                    import('../api/authService')
+                        .then(({ default: authService }) => authService.refreshUserData())
+                        .catch(() => { /* ağ hatası açılışı bloklamasın */ });
                 }
             } catch (error) {
                 console.log('Error checking initial route:', error);
@@ -256,6 +266,7 @@ export default function AppNavigator() {
                 <Stack.Screen name="Onboarding" component={OnboardingScreen} />
 
                 <Stack.Screen name="Login" component={LoginScreen} />
+                <Stack.Screen name="WhoIsWatching" component={WhoIsWatchingScreen} options={{ gestureEnabled: false }} />
                 <Stack.Screen name="Register" component={RegisterScreen} />
                 <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
                 <Stack.Screen name="EmailVerification" component={EmailVerificationScreen} />

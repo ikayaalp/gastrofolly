@@ -2,9 +2,11 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from './config';
 import { navigationRef } from '../navigation/AppNavigator';
-import { Alert } from 'react-native';
 import { logoutRevenueCat } from './revenueCatService';
 import { getToken, removeToken } from '../utils/tokenStorage';
+
+// 401 işleme kilidi: aynı anda patlayan birden çok istek tek yönlendirme üretsin.
+let isHandling401 = false;
 
 const api = axios.create({
     baseURL: config.API_BASE_URL,
@@ -34,38 +36,47 @@ api.interceptors.response.use(
     async (error) => {
         if (error.response && error.response.status === 401) {
             const url = error.config?.url || '';
-            // Ignore login/register endpoints to avoid confusing alerts on wrong password
-            if (!url.includes('/login') && !url.includes('/register') && !url.includes('/apple-mobile') && !url.includes('/google-mobile')) {
-                const isLoggingOut = await AsyncStorage.getItem('isLoggingOut');
-                if (!isLoggingOut) {
-                    await AsyncStorage.setItem('isLoggingOut', 'true');
-                    
-                    // Clear user data silently (inline to avoid a circular import with authService.js,
-                    // which itself imports this client)
-                    await removeToken();
-                    await AsyncStorage.removeItem('userData');
-                    await AsyncStorage.removeItem('userId');
-                    await AsyncStorage.removeItem('onboardingCompleted');
-                    await logoutRevenueCat();
+            // Login/register 401'leri (yanlış şifre) ve reclaim'in kendi 401'i
+            // (süresi dolmuş token — ekran kendisi ele alıyor) bu akışı tetiklemesin.
+            if (!url.includes('/login') && !url.includes('/register') &&
+                !url.includes('/apple-mobile') && !url.includes('/google-mobile') &&
+                !url.includes('/mobile-reclaim')) {
+                if (!isHandling401) {
+                    isHandling401 = true;
 
-                    // Kullanıcı alert'i kapatmasa/onaylamasa bile çıkışı hemen uygula —
-                    // token zaten silindi, ekranda kırık/401 döngüsünde kalmasın.
-                    if (navigationRef.isReady()) {
-                        navigationRef.reset({
-                            index: 0,
-                            routes: [{ name: 'Onboarding' }],
-                        });
+                    const token = await getToken();
+
+                    if (token) {
+                        // Token duruyor ama backend reddetti → başka cihazdan giriş
+                        // yapıldı (sessionId devralındı). Token'ı SİLME: "Kim izliyor?"
+                        // ekranı bu token'la oturumu tek dokunuşla geri alacak.
+                        // RevenueCat kimliği de korunur; kullanıcı değişmiyor.
+                        if (navigationRef.isReady()) {
+                            navigationRef.reset({
+                                index: 0,
+                                routes: [{ name: 'WhoIsWatching' }],
+                            });
+                        }
+                    } else {
+                        // Token hiç yok → oturum devri değil, tutarsız state temizliği.
+                        // (inline: authService import edilirse circular import oluşur)
+                        await removeToken();
+                        await AsyncStorage.removeItem('userData');
+                        await AsyncStorage.removeItem('userId');
+                        await AsyncStorage.removeItem('onboardingCompleted');
+                        await logoutRevenueCat();
+
+                        if (navigationRef.isReady()) {
+                            navigationRef.reset({
+                                index: 0,
+                                routes: [{ name: 'Onboarding' }],
+                            });
+                        }
                     }
 
-                    Alert.alert(
-                        "Oturum Kapatıldı ⚠️",
-                        "Hesabınıza başka bir cihazdan giriş yapıldı. Güvenliğiniz için oturumunuz sonlandırılıyor.",
-                        [{ text: "Tamam" }]
-                    );
-
                     setTimeout(() => {
-                        AsyncStorage.removeItem('isLoggingOut');
-                    }, 5000);
+                        isHandling401 = false;
+                    }, 3000);
                 }
             }
         }

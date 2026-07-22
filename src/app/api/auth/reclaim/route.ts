@@ -1,14 +1,27 @@
-import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
+import { NextRequest, NextResponse } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 import { prisma } from '@/lib/prisma';
 import { randomUUID } from 'crypto';
+import { checkRateLimit, getClientIp, RATE_LIMITS } from '@/lib/rateLimit';
 
-export async function POST(req: Request) {
+// Başka cihaz tarafından devralınmış web oturumunu geri alır ("Kim İzliyor?").
+// ConcurrentLogin durumunda session callback kimliği söktüğü için getServerSession
+// KULLANILAMAZ; kimlik doğrudan imzalı cookie JWT'sinden (getToken) okunur.
+// Cookie JWT'si hâlâ bu cihazda yapılmış gerçek bir girişin ürünüdür — şifre
+// bypass'ı yoktur, yalnızca sessionId eşleşme kontrolü atlanır.
+export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const ip = getClientIp(req);
+    if (!(await checkRateLimit(`web-reclaim:${ip}`, RATE_LIMITS.AUTH)).success) {
+      return NextResponse.json(
+        { success: false, message: 'Çok fazla deneme. Lütfen birkaç dakika sonra tekrar deneyin.' },
+        { status: 429 }
+      );
+    }
 
-    if (!session || !session.user || !session.user.id) {
+    const token = await getToken({ req });
+
+    if (!token?.sub) {
       return NextResponse.json(
         { success: false, message: 'Geçerli bir oturum bulunamadı' },
         { status: 401 }
@@ -17,7 +30,7 @@ export async function POST(req: Request) {
 
     // Kullanıcının sistemde hala var olup olmadığını kontrol et
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: token.sub },
       select: { id: true, email: true }
     });
 
@@ -28,9 +41,9 @@ export async function POST(req: Request) {
       );
     }
 
-    // Yeni bir session ID oluştur ve veritabanına kaydet
+    // Yeni bir session ID oluştur ve veritabanına kaydet — karşı cihaz düşer.
     const newSessionId = randomUUID();
-    
+
     await prisma.user.update({
       where: { id: user.id },
       data: { currentSessionId: newSessionId }
