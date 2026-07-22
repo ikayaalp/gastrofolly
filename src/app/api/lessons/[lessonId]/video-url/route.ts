@@ -24,7 +24,7 @@ export async function GET(
                 videoUrl: true,
                 courseId: true,
                 course: {
-                    select: { id: true, isFree: true, instructorId: true },
+                    select: { id: true, isFree: true, instructorId: true, isPublished: true },
                 },
             },
         })
@@ -35,6 +35,12 @@ export async function GET(
 
         const isAdmin = user?.role === 'ADMIN'
         const isInstructor = !!user && lesson.course.instructorId === user.id
+        
+        // Taslak kurs koruması: Yayınlanmamış kursu sadece admin veya eğitmen görebilir
+        if (!lesson.course.isPublished && !isAdmin && !isInstructor) {
+            return NextResponse.json({ error: 'Ders bulunamadı' }, { status: 404 })
+        }
+
         const hasValidSubscription = isPremiumUser(user)
 
         const payment = user

@@ -68,6 +68,14 @@ export async function GET(
         const isAdmin = user?.role === 'ADMIN';
         const isInstructor = course.instructorId === user?.id;
 
+        // Yayınlanmamış kursları sadece admin ve eğitmen görebilir
+        if (!course.isPublished && !isAdmin && !isInstructor) {
+            return NextResponse.json(
+                { error: 'Kurs bulunamadı' },
+                { status: 404 }
+            );
+        }
+
         // Check if user has a completed payment for this course
         const payment = user ? await prisma.payment.findFirst({
             where: {
@@ -83,8 +91,6 @@ export async function GET(
         const hasValidSubscription = isPremiumUser(user);
 
         const hasFullCourseAccess = hasValidSubscription || isAdmin || isInstructor || hasPaid || course.isFree;
-
-        console.log(`[Course Access] User: ${user?.id || 'anonymous'} | Role: ${user?.role || 'none'} | Plan: ${user?.subscriptionPlan || 'none'} | EndDate: ${user?.subscriptionEndDate || 'null'} | isInstructor: ${isInstructor} | hasPaid: ${hasPaid} | hasFullCourseAccess: ${hasFullCourseAccess}`);
 
         // Process lessons to hide videoUrl if not enrolled or not free/first/subscribed
         const processedLessons = course.lessons.map((lesson, index) => {
