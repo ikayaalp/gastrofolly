@@ -8,6 +8,7 @@ import { TURKISH_MONTHS_LONG, buildMonthlySeries, parseMonthYearParams } from "@
 import Link from "next/link"
 import Image from "next/image"
 import RevenueChart from "@/components/admin/analytics/RevenueChart"
+import MonthYearFilter from "./MonthYearFilter"
 import { BookOpen, Users, Wallet, TrendingUp, ArrowUpRight, Activity, BarChart3, AlertCircle, XCircle } from "lucide-react"
 
 async function getAdminData(startOfSelectedMonth: Date, endOfSelectedMonth: Date) {
@@ -140,34 +141,11 @@ export default async function AdminPage({
 
   // Ay/yıl seçici — tekrara düşmemek için değişkene alındı
   const MonthYearForm = (
-    <form method="GET" className="flex items-center gap-2">
-      <select
-        name="month"
-        defaultValue={selectedMonth}
-        className="bg-neutral-900 border border-neutral-800 rounded-xl px-2 py-1.5 text-white text-xs focus:outline-none focus:border-orange-500 cursor-pointer appearance-none"
-        style={{ backgroundImage: 'none' }}
-      >
-        {TURKISH_MONTHS_LONG.map((name, i) => (
-          <option key={i} value={i}>{name}</option>
-        ))}
-      </select>
-      <select
-        name="year"
-        defaultValue={selectedYear}
-        className="bg-neutral-900 border border-neutral-800 rounded-xl px-2 py-1.5 text-white text-xs focus:outline-none focus:border-orange-500 cursor-pointer appearance-none"
-        style={{ backgroundImage: 'none' }}
-      >
-        {Array.from({ length: 7 }, (_, i) => now.getUTCFullYear() - 3 + i).map(y => (
-          <option key={y} value={y}>{y}</option>
-        ))}
-      </select>
-      <button
-        type="submit"
-        className="bg-orange-600 hover:bg-orange-500 text-white text-xs font-medium px-2.5 py-1.5 rounded-lg transition-colors"
-      >
-        Göster
-      </button>
-    </form>
+    <MonthYearFilter
+      selectedMonth={selectedMonth}
+      selectedYear={selectedYear}
+      years={Array.from({ length: 7 }, (_, i) => now.getUTCFullYear() - 3 + i)}
+    />
   )
 
   return (
