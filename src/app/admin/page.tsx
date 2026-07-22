@@ -9,13 +9,12 @@ import Link from "next/link"
 import Image from "next/image"
 import RevenueChart from "@/components/admin/analytics/RevenueChart"
 import MonthYearFilter from "./MonthYearFilter"
-import { BookOpen, Users, Wallet, TrendingUp, ArrowUpRight, Activity, BarChart3, AlertCircle, XCircle } from "lucide-react"
+import { BookOpen, Users, Wallet, ArrowUpRight, Activity, BarChart3, AlertCircle, XCircle } from "lucide-react"
 
 async function getAdminData(startOfSelectedMonth: Date, endOfSelectedMonth: Date) {
   const [
     users,
     coursesCount,
-    enrollments,
     recentRegistrations,
     activeSubscriberCount,
     failedPaymentCount,
@@ -29,7 +28,6 @@ async function getAdminData(startOfSelectedMonth: Date, endOfSelectedMonth: Date
       select: { id: true, role: true },
     }),
     prisma.course.count(),
-    prisma.enrollment.count(),
     prisma.user.findMany({
       where: { emailVerified: { not: null } },
       take: 5,
@@ -83,7 +81,6 @@ async function getAdminData(startOfSelectedMonth: Date, endOfSelectedMonth: Date
   return {
     users,
     coursesCount,
-    enrollments,
     recentRegistrations,
     activeSubscriberCount,
     failedPaymentCount,
@@ -125,7 +122,6 @@ export default async function AdminPage({
   const {
     users,
     coursesCount,
-    enrollments,
     recentRegistrations,
     activeSubscriberCount,
     failedPaymentCount,
@@ -186,21 +182,7 @@ export default async function AdminPage({
           <p className="text-3xl font-bold text-white mt-1">{coursesCount}</p>
         </div>
 
-        <div className="bg-black border border-gray-800 rounded-xl p-6 group hover:border-orange-500/30 transition-colors">
-          <div className="flex justify-between items-start mb-4">
-            <div className="bg-orange-500/20 p-3 rounded-xl group-hover:scale-110 transition-transform">
-              <TrendingUp className="h-6 w-6 text-orange-400" />
-            </div>
-          </div>
-          <p className="text-gray-400 text-sm font-medium">Toplam Kayıt</p>
-          <p className="text-3xl font-bold text-white mt-1">{enrollments}</p>
-          <p className="text-xs text-gray-500 mt-2">Tüm zamanlar — aylık kırılım için Analitik&apos;e bakın</p>
-        </div>
-      </div>
-
-      {/* Stat Kartları — Seçili Ay + Snapshot */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Seçili Ay Geliri */}
+        {/* Seçili Ay Geliri — Toplam Kayıt kartının yerine taşındı */}
         <div className="bg-black border border-gray-800 rounded-xl p-6 group hover:border-green-500/30 transition-colors">
           <div className="flex items-start justify-between mb-3">
             <div className="bg-green-500/20 p-3 rounded-xl group-hover:scale-110 transition-transform">
@@ -212,7 +194,10 @@ export default async function AdminPage({
           <p className="text-3xl font-bold text-white mt-1">₺{selectedMonthRevenue.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</p>
           <p className="text-xs text-gray-500 mt-2">Seçili ay, abonelik ödemeleri</p>
         </div>
+      </div>
 
+      {/* Stat Kartları — Snapshot */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Aktif Abone */}
         <Link
           href="/admin/users?filter=subscribers"
