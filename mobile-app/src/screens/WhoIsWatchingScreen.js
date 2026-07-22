@@ -151,8 +151,8 @@ export default function WhoIsWatchingScreen({ navigation }) {
             <View style={styles.content}>
                 <Text style={styles.title}>Kim izliyor?</Text>
                 <Text style={styles.subtitle}>
-                    Hesabınıza başka bir cihazdan giriş yapıldı.{'\n'}
-                    Bu cihazdan devam etmek için profilinizi seçin.
+                    Hesabınızda başka bir cihazda oturum açıldığı için{'\n'}
+                    oturumunuz kapatıldı. Devam etmek için profilinizi seçin.
                 </Text>
 
                 <TouchableOpacity

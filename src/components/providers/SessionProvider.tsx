@@ -21,7 +21,7 @@ function SessionListener() {
 
     if (!hasToasted.current) {
       hasToasted.current = true
-      toast.error("Başka bir cihazdan giriş yapıldı. Mevcut cihazdan devam etmek için profilinizi seçin.", {
+      toast.error("Hesabınızda başka bir cihazda oturum açıldığı için bu oturum kapatılıyor. Devam etmek için profilinizi seçin.", {
         duration: 5000,
         icon: '⚠️',
       })
