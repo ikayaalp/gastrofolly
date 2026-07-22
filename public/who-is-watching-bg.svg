@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+  <!-- Culinora "Kim İzliyor?" arka plan afişi — sinematik koyu mutfak teması.
+       Tamamen vektörel: ağ isteği yok, anında yüklenir. Gerçek bir fotoğrafla
+       değiştirmek isterseniz bu dosyanın yerine aynı adla raster koyup
+       profiles/page.tsx'teki yolu .jpg yapmanız yeterli. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0a0705"/>
+      <stop offset="0.45" stop-color="#120b07"/>
+      <stop offset="1" stop-color="#000000"/>
+    </linearGradient>
+    <radialGradient id="halo" cx="0.5" cy="0.38" r="0.55">
+      <stop offset="0" stop-color="#ea580c" stop-opacity="0.16"/>
+      <stop offset="0.5" stop-color="#ea580c" stop-opacity="0.05"/>
+      <stop offset="1" stop-color="#ea580c" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="ember" cx="0.15" cy="0.9" r="0.5">
+      <stop offset="0" stop-color="#f97316" stop-opacity="0.07"/>
+      <stop offset="1" stop-color="#f97316" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="vignette" cx="0.5" cy="0.5" r="0.75">
+      <stop offset="0" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="0.65" stop-color="#000000" stop-opacity="0.25"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="0.88"/>
+    </radialGradient>
+    <linearGradient id="beam" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.035"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Zemin -->
+  <rect width="1920" height="1080" fill="url(#bg)"/>
+  <rect width="1920" height="1080" fill="url(#halo)"/>
+  <rect width="1920" height="1080" fill="url(#ember)"/>
+
+  <!-- Diyagonal ışık huzmeleri -->
+  <polygon points="380,0 620,0 1350,1080 1110,1080" fill="url(#beam)"/>
+  <polygon points="1500,0 1640,0 900,1080 760,1080" fill="url(#beam)"/>
+
+  <!-- == Poster ögeleri: zarif çizgi-illüstrasyonlar (düşük opaklık) == -->
+
+  <!-- Şef şapkası — sol üst, hafif eğik -->
+  <g transform="translate(255,215) rotate(-8) scale(1.35)" stroke="#f97316" stroke-width="5"
+     fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.09">
+    <path d="M -78 40 C -120 40 -132 -14 -92 -26 C -96 -66 -44 -84 -22 -56 C -6 -92 58 -86 62 -46 C 104 -44 108 16 66 26 L 66 40 Z"/>
+    <path d="M -66 62 L 56 62 L 52 108 L -62 108 Z"/>
+    <line x1="-30" y1="62" x2="-32" y2="30"/>
+    <line x1="0" y1="62" x2="0" y2="26"/>
+    <line x1="30" y1="62" x2="32" y2="30"/>
+  </g>
+
+  <!-- Buhar kıvrımları — merkezin üstünde -->
+  <g stroke="#e5e5e5" stroke-width="5" fill="none" stroke-linecap="round" opacity="0.05">
+    <path d="M 880 300 C 860 250 900 220 880 170 C 865 130 895 100 885 60"/>
+    <path d="M 960 320 C 935 265 980 230 958 175 C 940 130 975 95 962 50"/>
+    <path d="M 1040 300 C 1020 250 1060 220 1040 170 C 1025 130 1055 100 1045 60"/>
+  </g>
+
+  <!-- Çatal ve bıçak — sol kenar -->
+  <g transform="translate(150,700) rotate(12) scale(1.2)" stroke="#d1d5db" stroke-width="5"
+     fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.07">
+    <line x1="0" y1="0" x2="0" y2="150"/>
+    <path d="M -14 -70 L -14 -18 C -14 -6 14 -6 14 -18 L 14 -70 M 0 -70 L 0 -12"/>
+    <g transform="translate(70,0)">
+      <line x1="0" y1="0" x2="0" y2="150"/>
+      <path d="M 0 -75 C 26 -60 26 -20 0 -5 Z"/>
+    </g>
+  </g>
+
+  <!-- Tel çırpıcı — sağ alt, büyük -->
+  <g transform="translate(1610,760) rotate(-24) scale(1.5)" stroke="#f97316" stroke-width="5"
+     fill="none" stroke-linecap="round" opacity="0.08">
+    <line x1="0" y1="0" x2="0" y2="120"/>
+    <path d="M 0 0 C -52 -46 -36 -128 0 -132 C 36 -128 52 -46 0 0"/>
+    <path d="M 0 0 C -24 -52 -16 -124 0 -132 C 16 -124 24 -52 0 0"/>
+    <ellipse cx="0" cy="-64" rx="34" ry="52"/>
+  </g>
+
+  <!-- Oklava ve un serpintisi — sağ üst -->
+  <g transform="translate(1560,220) rotate(28)" stroke="#d1d5db" stroke-width="5"
+     fill="none" stroke-linecap="round" opacity="0.06">
+    <rect x="-130" y="-16" width="260" height="32" rx="16"/>
+    <line x1="-130" y1="0" x2="-190" y2="0"/>
+    <line x1="130" y1="0" x2="190" y2="0"/>
+  </g>
+  <g fill="#e5e5e5" opacity="0.05">
+    <circle cx="1450" cy="330" r="5"/>
+    <circle cx="1500" cy="365" r="3.6"/>
+    <circle cx="1420" cy="385" r="3"/>
+    <circle cx="1545" cy="410" r="4.4"/>
+  </g>
+
+  <!-- Servis tabağı (kloş) — alt orta-sol -->
+  <g transform="translate(600,905) scale(1.25)" stroke="#f97316" stroke-width="5"
+     fill="none" stroke-linecap="round" opacity="0.07">
+    <path d="M -110 0 C -110 -66 110 -66 110 0"/>
+    <line x1="-140" y1="0" x2="140" y2="0"/>
+    <circle cx="0" cy="-72" r="7"/>
+  </g>
+
+  <!-- Kepçe — orta sağ boşlukta küçük denge ögesi -->
+  <g transform="translate(1310,560) rotate(-38)" stroke="#d1d5db" stroke-width="5"
+     fill="none" stroke-linecap="round" opacity="0.055">
+    <line x1="0" y1="-95" x2="0" y2="30"/>
+    <path d="M -38 30 C -38 74 38 74 38 30 Z"/>
+  </g>
+
+  <!-- Marka izi — en altta, çok silik -->
+  <text x="960" y="1042" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif"
+        font-size="34" letter-spacing="26" fill="#f97316" opacity="0.13">C U L I N O R A</text>
+
+  <!-- Vinyet en üstte: kenarlar koyu, merkez (profil kartı alanı) temiz -->
+  <rect width="1920" height="1080" fill="url(#vignette)"/>
+</svg>

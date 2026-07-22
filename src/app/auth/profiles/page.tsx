@@ -11,24 +11,6 @@ export default function ProfilesPage() {
   const { data: session, update, status } = useSession()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
-  // Arka plan kolajı için kurs afişleri; yüklenemezse degrade fallback kalır
-  const [covers, setCovers] = useState<string[]>([])
-
-  useEffect(() => {
-    let cancelled = false
-    fetch('/api/courses/featured')
-      .then((res) => (res.ok ? res.json() : Promise.reject()))
-      .then((data) => {
-        if (cancelled) return
-        const urls = (data?.courses || [])
-          .map((c: { posterImageUrl?: string; thumbnailImageUrl?: string; imageUrl?: string }) =>
-            c.posterImageUrl || c.thumbnailImageUrl || c.imageUrl)
-          .filter(Boolean)
-        setCovers(urls.slice(0, 24))
-      })
-      .catch(() => { /* kolaj opsiyonel — sessizce degrade fallback */ })
-    return () => { cancelled = true }
-  }, [])
 
   // Redirect if not logged in at all (e.g., hard logged out).
   // Render sırasında router.push React ihlali ("Cannot update Router while
@@ -82,22 +64,14 @@ export default function ProfilesPage() {
       {/* Dynamic Background Gradients */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-orange-900/20 via-black to-black"></div>
 
-      {/* Kurs afişi kolajı — Netflix tarzı "arkada arşiv" backdrop */}
-      {covers.length > 0 && (
-        <>
-          <div className="absolute inset-0 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 opacity-40 pointer-events-none" aria-hidden="true">
-            {covers.map((url, i) => (
-              <div
-                key={`${url}-${i}`}
-                className="aspect-[2/3] bg-cover bg-center"
-                style={{ backgroundImage: `url(${url})` }}
-              />
-            ))}
-          </div>
-          {/* Karartma: ön plan her koşulda okunur kalsın */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/90 pointer-events-none" aria-hidden="true"></div>
-        </>
-      )}
+      {/* Sinematik afiş backdrop — statik SVG, ağ isteği yok, anında yüklenir.
+          (Eski kurs-kapağı kolajı her açılışta 24 Cloudinary görseli çekiyordu
+          ve yavaş yükleniyordu.) */}
+      <div
+        className="absolute inset-0 bg-cover bg-center pointer-events-none"
+        style={{ backgroundImage: 'url(/who-is-watching-bg.svg)' }}
+        aria-hidden="true"
+      ></div>
 
       <div className="z-10 flex flex-col items-center w-full max-w-4xl px-4 animate-in fade-in duration-1000">
         <h1 className="text-4xl md:text-5xl font-light text-center mb-16 tracking-wide text-white/90">
