@@ -14,7 +14,6 @@ import {
   Calendar,
   GraduationCap,
   CreditCard,
-  TrendingUp,
   Sparkles,
   Star,
   Eye,
@@ -188,7 +187,7 @@ export default function UserManagement({ initialFilter }: UserManagementProps) {
   return (
     <div className="space-y-8">
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-black border border-gray-800 rounded-xl p-6">
           <div className="flex items-center space-x-3">
             <div className="bg-orange-500/20 p-3 rounded-lg">
@@ -212,18 +211,6 @@ export default function UserManagement({ initialFilter }: UserManagementProps) {
                 <span className="text-sm text-gray-500">({stats.premiumUsers} üye)</span>
               </div>
               <p className="text-gray-400">Premium Oranı</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-black border border-gray-800 rounded-xl p-6">
-          <div className="flex items-center space-x-3">
-            <div className="bg-green-500/20 p-3 rounded-lg">
-              <TrendingUp className="h-6 w-6 text-green-400" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-white">{formatCurrency(stats.totalRevenue)}</p>
-              <p className="text-gray-400">Toplam Gelir</p>
             </div>
           </div>
         </div>
