@@ -3,19 +3,18 @@ import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
-import { REVENUE_TRACKING_START, HISTORICAL_REVENUE_OFFSET } from "@/lib/revenueConfig"
+import { REVENUE_TRACKING_START } from "@/lib/revenueConfig"
 import { TURKISH_MONTHS_LONG, buildMonthlySeries, parseMonthYearParams } from "@/lib/monthlyRevenue"
 import Link from "next/link"
 import Image from "next/image"
 import RevenueChart from "@/components/admin/analytics/RevenueChart"
-import { BookOpen, Users, Wallet, TrendingUp, CreditCard, ArrowUpRight, Activity, BarChart3, AlertCircle, XCircle } from "lucide-react"
+import { BookOpen, Users, Wallet, TrendingUp, ArrowUpRight, Activity, BarChart3, AlertCircle, XCircle } from "lucide-react"
 
 async function getAdminData(startOfSelectedMonth: Date, endOfSelectedMonth: Date) {
   const [
     users,
     coursesCount,
     enrollments,
-    payments,
     recentRegistrations,
     activeSubscriberCount,
     failedPaymentCount,
@@ -30,15 +29,6 @@ async function getAdminData(startOfSelectedMonth: Date, endOfSelectedMonth: Date
     }),
     prisma.course.count(),
     prisma.enrollment.count(),
-    prisma.payment.aggregate({
-      where: {
-        status: 'COMPLETED',
-        subscriptionPlan: { not: null },
-        createdAt: { gte: REVENUE_TRACKING_START },
-      },
-      _sum: { amount: true },
-      _count: true,
-    }),
     prisma.user.findMany({
       where: { emailVerified: { not: null } },
       take: 5,
@@ -93,7 +83,6 @@ async function getAdminData(startOfSelectedMonth: Date, endOfSelectedMonth: Date
     users,
     coursesCount,
     enrollments,
-    payments,
     recentRegistrations,
     activeSubscriberCount,
     failedPaymentCount,
@@ -136,7 +125,6 @@ export default async function AdminPage({
     users,
     coursesCount,
     enrollments,
-    payments,
     recentRegistrations,
     activeSubscriberCount,
     failedPaymentCount,
@@ -199,7 +187,7 @@ export default async function AdminPage({
       </div>
 
       {/* Stat Kartları — Tüm Zamanlar */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-black border border-gray-800 rounded-xl p-6 group hover:border-blue-500/30 transition-colors">
           <div className="flex justify-between items-start mb-4">
             <div className="bg-blue-500/20 p-3 rounded-xl group-hover:scale-110 transition-transform">
@@ -228,18 +216,7 @@ export default async function AdminPage({
           </div>
           <p className="text-gray-400 text-sm font-medium">Toplam Kayıt</p>
           <p className="text-3xl font-bold text-white mt-1">{enrollments}</p>
-          <p className="text-xs text-gray-500 mt-2">Tüm zamanlar — aylık kırılım için Analitik'e bakın</p>
-        </div>
-
-        <div className="bg-black border border-gray-800 rounded-xl p-6 group hover:border-yellow-500/30 transition-colors">
-          <div className="flex justify-between items-start mb-4">
-            <div className="bg-yellow-500/20 p-3 rounded-xl group-hover:scale-110 transition-transform">
-              <CreditCard className="h-6 w-6 text-yellow-400" />
-            </div>
-          </div>
-          <p className="text-gray-400 text-sm font-medium">Toplam Gelir</p>
-          <p className="text-3xl font-bold text-white mt-1">₺{(HISTORICAL_REVENUE_OFFSET + (payments._sum.amount || 0)).toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</p>
-          <p className="text-xs text-gray-500 mt-2">Tüm zamanlar, abonelik ödemeleri</p>
+          <p className="text-xs text-gray-500 mt-2">Tüm zamanlar — aylık kırılım için Analitik&apos;e bakın</p>
         </div>
       </div>
 
