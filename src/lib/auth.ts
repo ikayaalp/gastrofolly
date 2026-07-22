@@ -106,9 +106,14 @@ export const authOptions: NextAuthOptions = {
           data: dataToUpdate
         })
       }
-      if (trigger === "update" && session?.user) {
-        token.name = session.user.name
-        token.picture = session.user.image
+      if (trigger === "update" && session) {
+        if (session.user) {
+          token.name = session.user.name
+          token.picture = session.user.image
+        }
+        if (session.reclaimSessionId) {
+          token.sessionId = session.reclaimSessionId;
+        }
       }
       return token
     },
