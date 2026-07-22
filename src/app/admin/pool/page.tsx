@@ -3,8 +3,10 @@ import { redirect } from "next/navigation"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { calculateNetRevenue, calculatePoolAmount } from "@/lib/revenueConfig"
-import { Users, Wallet, TrendingUp, Clock, Info, Smartphone, Calendar } from "lucide-react"
+import { Users, Wallet, TrendingUp, Clock, Info, Smartphone } from "lucide-react"
+import { TURKISH_MONTHS_LONG } from "@/lib/monthlyRevenue"
 import PoolPayoutButton from "./PoolPayoutButton"
+import PoolMonthFilter from "./PoolMonthFilter"
 
 function calculatePoolShare(instructors: any[], poolTotal: number) {
     const instructorsWithPoints = instructors.map(instructor => ({
@@ -157,26 +159,17 @@ export default async function PoolManagementPage(props: { searchParams: Promise<
     return (
         <div className="space-y-8">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                <h1 className="text-2xl font-bold text-white">Eğitmen Gelir Havuzu</h1>
-                <form className="flex items-center gap-2" method="GET">
-                    <div className="flex items-center bg-gray-900 border border-gray-700 rounded-lg px-3 py-2">
-                        <Calendar className="w-4 h-4 text-gray-400 mr-2" />
-                        <select name="month" defaultValue={selectedMonth} className="bg-transparent text-white text-sm outline-none">
-                            {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
-                                <option key={m} value={m}>{m}. Ay</option>
-                            ))}
-                        </select>
-                        <span className="text-gray-500 mx-2">/</span>
-                        <select name="year" defaultValue={selectedYear} className="bg-transparent text-white text-sm outline-none">
-                            {[now.getFullYear() - 1, now.getFullYear(), now.getFullYear() + 1].map(y => (
-                                <option key={y} value={y}>{y}</option>
-                            ))}
-                        </select>
-                    </div>
-                    <button type="submit" className="px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-lg text-sm font-medium transition-colors">
-                        Filtrele
-                    </button>
-                </form>
+                <div>
+                    <h1 className="text-2xl font-bold text-white">Eğitmen Gelir Havuzu</h1>
+                    <p className="text-gray-400 text-sm mt-1">
+                        {TURKISH_MONTHS_LONG[selectedMonth - 1]} {selectedYear} — aylık gelir ve dağıtım
+                    </p>
+                </div>
+                <PoolMonthFilter
+                    selectedMonth={selectedMonth}
+                    selectedYear={selectedYear}
+                    years={[now.getFullYear() - 1, now.getFullYear(), now.getFullYear() + 1]}
+                />
             </div>
 
             {/* Stats Cards */}
