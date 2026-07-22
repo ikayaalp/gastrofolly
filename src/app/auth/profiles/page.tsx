@@ -30,9 +30,16 @@ export default function ProfilesPage() {
     return () => { cancelled = true }
   }, [])
 
-  // Redirect if not logged in at all (e.g., hard logged out)
+  // Redirect if not logged in at all (e.g., hard logged out).
+  // Render sırasında router.push React ihlali ("Cannot update Router while
+  // rendering ProfilesPage") ürettiği için effect içinde yapılır.
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.replace("/auth/signin")
+    }
+  }, [status, router])
+
   if (status === "unauthenticated") {
-    router.push("/auth/signin")
     return null
   }
 

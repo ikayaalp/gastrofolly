@@ -27,8 +27,12 @@ function SessionListener() {
       })
     }
 
-    // Profil seçim ve giriş sayfaları dışında hiçbir yerde durulamaz.
-    if (pathname !== '/auth/profiles' && !pathname?.startsWith('/auth/signin')) {
+    // Devralınmış oturumla profiles dışında hiçbir yerde durulamaz. signin'e
+    // istisna YOK: kimliği sökülmüş session'la server sayfaları signin'e
+    // redirect eder, kullanıcı orada takılı kalır (profiles'ı hiç görmez).
+    // Farklı hesapla girişin meşru yolu profiles'taki buton — o önce signOut
+    // yapar, session temizlenince bu sabitleme zaten devreden çıkar.
+    if (pathname !== '/auth/profiles') {
       router.replace('/auth/profiles')
     }
   }, [session, pathname, router])
