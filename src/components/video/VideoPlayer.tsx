@@ -67,6 +67,7 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
   const wasPlayingRef = useRef(false);
   const isSeekingRef = useRef(false);
   const seekTimeRef = useRef<number>(0);
+  const seekRecoveryRef = useRef(false);
   // Ders değişince video kaynağı hazır olduğunda otomatik oynat
   const shouldAutoPlayRef = useRef(true);
   // HLS kalite seçimi
@@ -148,11 +149,18 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
       setHasError(false)
     }
     const handleError = () => {
+      // Seek sırasında oluşan geçici hataları yoksay — HLS.js kendi recovery'si
+      // ile toparlar, kullanıcıya hata ekranı göstermeye gerek yok.
+      if (isSeekingRef.current || seekRecoveryRef.current) return;
       if (process.env.NODE_ENV === 'development') { console.log('Video error:', video.error) }
       setIsPlaying(false)
       setIsLoading(false)
       setHasError(true)
     }
+    // Rebuffering: seek sonrası veya ağ yavaşlığında video veri bekliyor →
+    // loading spinner göster. 'playing' geldiğinde kapanır.
+    const handleWaiting = () => setIsLoading(true)
+    const handlePlaying = () => setIsLoading(false)
     // iOS Safari, requestFullscreen yerine webkitEnterFullscreen kullanır ve
     // document 'fullscreenchange' event'i tetiklemez; state'i senkron tutmak
     // için bu iOS'a özel event'leri de dinlememiz gerekiyor.
@@ -172,6 +180,8 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
     video.addEventListener('canplay', handleCanPlay)
     video.addEventListener('loadstart', handleLoadStart)
     video.addEventListener('error', handleError)
+    video.addEventListener('waiting', handleWaiting)
+    video.addEventListener('playing', handlePlaying)
     video.addEventListener('webkitbeginfullscreen', handleIOSFullscreenBegin)
     video.addEventListener('webkitendfullscreen', handleIOSFullscreenEnd)
     video.addEventListener('ended', handleEnded)
@@ -185,6 +195,8 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
       video.removeEventListener('canplay', handleCanPlay)
       video.removeEventListener('loadstart', handleLoadStart)
       video.removeEventListener('error', handleError)
+      video.removeEventListener('waiting', handleWaiting)
+      video.removeEventListener('playing', handlePlaying)
       video.removeEventListener('webkitbeginfullscreen', handleIOSFullscreenBegin)
       video.removeEventListener('webkitendfullscreen', handleIOSFullscreenEnd)
       video.removeEventListener('ended', handleEnded)
@@ -247,8 +259,10 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
         // ~56MB olduğundan byte limitini de yükseltiyoruz yoksa 90 sn'ye ulaşamaz.
         maxBufferLength: 90,
         maxBufferSize: 120 * 1000 * 1000,
-        // Geri sarma için 60 sn geri tampon tut → yakın geri atlamalar da anında.
-        backBufferLength: 60,
+        // Geri sarma için TÜM izlenen içeriği bellekte tut → YouTube gibi
+        // gri çubukta olan herhangi bir noktaya anında dönülebilir.
+        // Bellek maliyeti: 20 dk 1080p ≈ 80 MB (maxBufferSize 120 MB'ın altında).
+        backBufferLength: Infinity,
       });
       hlsRef.current = hls;
       hls.loadSource(playbackUrl);
@@ -279,6 +293,33 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
         });
         seekLevelIndexRef.current = belowIdx !== -1 ? belowIdx : minIdx;
         // Oynatmayı canplay handler tek noktadan yönetir.
+      });
+
+      // HLS.js hata kurtarma: buffer hataları (geri sarma sırasında sık görülür)
+      // ve ağ hatalarını otomatik olarak toparlayarak çöküşü önle.
+      hls.on(Hls.Events.ERROR, (_e, data) => {
+        if (!data.fatal) return; // fatal olmayan hataları yoksay, HLS kendi toparlıyor
+        seekRecoveryRef.current = true;
+        switch (data.type) {
+          case Hls.ErrorTypes.MEDIA_ERROR:
+            // Buffer bozulması / seek sırasında codec hatası → recoverMediaError
+            console.warn('[HLS] Fatal media error, recovering…');
+            hls.recoverMediaError();
+            break;
+          case Hls.ErrorTypes.NETWORK_ERROR:
+            // Ağ kopması → kaynağı yeniden yükle
+            console.warn('[HLS] Fatal network error, retrying source…');
+            hls.startLoad();
+            break;
+          default:
+            // Kurtarılamaz hata → kullanıcıya göster
+            console.error('[HLS] Unrecoverable error', data);
+            seekRecoveryRef.current = false;
+            setHasError(true);
+            break;
+        }
+        // Recovery sonrası flag'i temizle
+        setTimeout(() => { seekRecoveryRef.current = false; }, 2000);
       });
     } else {
       // Safari native HLS veya legacy MP4 — oynatmayı canplay handler yönetir
@@ -479,14 +520,35 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
 
   const handleSeekEnd = () => {
     const video = videoRef.current;
-    isSeekingRef.current = false;
-    setIsSeeking(false);
     if (video) {
+      setIsLoading(true);
       video.currentTime = seekTimeRef.current;
       // YouTube tarzı: tampon dışına atlarken anlık açılış için kısa süre kaliteyi düşür
       fastSeekQualityDrop();
-      // Sürükle-bırak sonrası her zaman oynat (kullanıcı zaten izleme niyetindedir)
-      attemptPlay();
+      // Hedef tampondaysa video anında hazır olur (seeked hemen tetiklenir).
+      // Tampon dışıysa (özellikle geri sarma) HLS yeni segment indirmeli →
+      // 'seeked' event'ini bekle, yoksa play() çağrısı AbortError ile çöker.
+      const onSeeked = () => {
+        video.removeEventListener('seeked', onSeeked);
+        isSeekingRef.current = false;
+        setIsSeeking(false);
+        setIsLoading(false);
+        attemptPlay();
+      };
+      video.addEventListener('seeked', onSeeked, { once: true });
+      // Güvenlik: seeked hiç gelmezse (çok nadir ağ sorunu) 5 sn sonra kurtul
+      setTimeout(() => {
+        video.removeEventListener('seeked', onSeeked);
+        if (isSeekingRef.current) {
+          isSeekingRef.current = false;
+          setIsSeeking(false);
+          setIsLoading(false);
+          attemptPlay();
+        }
+      }, 5000);
+    } else {
+      isSeekingRef.current = false;
+      setIsSeeking(false);
     }
   };
 
@@ -517,7 +579,13 @@ export default function VideoPlayer({ lesson, course, userId, userEmail, isCompl
     const video = videoRef.current
     if (!video) return
 
-    video.currentTime = Math.max(0, Math.min(duration, video.currentTime + seconds))
+    const newTime = Math.max(0, Math.min(duration, video.currentTime + seconds));
+    setIsLoading(true);
+    video.currentTime = newTime;
+    // Geri/ileri atlama sonrası segment indirmesi gerekebilir → seeked bekle
+    video.addEventListener('seeked', () => {
+      setIsLoading(false);
+    }, { once: true });
   }
 
   const toggleFullscreen = async () => {
