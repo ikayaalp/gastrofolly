@@ -260,30 +260,8 @@ export default async function LearnPage({ params, searchParams }: LearnPageProps
   const resolvedSearchParams = await searchParams
   const data = await getCourseWithProgress(courseId, session.user.id, resolvedSearchParams?.lesson)
 
-  // Success parametresi varsa enrollment kontrolünü bypass et (ödeme başarılı ama enrollment henüz oluşturulmamış olabilir)
   if (!data || !data.course) {
-    if (resolvedSearchParams?.success) {
-
-      // Success parametresi varsa enrollment'ı manuel oluştur
-      try {
-        await prisma.enrollment.create({
-          data: {
-            userId: session.user.id,
-            courseId: courseId,
-          }
-        })
-
-        // Sayfayı yenile
-        redirect(`/learn/${courseId}?success=true${resolvedSearchParams?.fraud_bypassed ? '&fraud_bypassed=true' : ''}`)
-      } catch (error) {
-        console.error('Learn Page - Enrollment already exists or error:', error)
-        // Enrollment zaten varsa devam et
-      }
-    } else {
-
-      // Eğer enrollment yoksa course detail sayfasına yönlendir
-      redirect(`/course/${courseId}`)
-    }
+    redirect(`/course/${courseId}`)
   }
 
   // TypeScript için data'nın null olmadığını garanti et
