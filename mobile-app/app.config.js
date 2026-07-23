@@ -48,7 +48,7 @@ export default {
         "slug": "chef-2-0",
 
         "scheme": ["chef2", "com.chef2.app"],
-        "version": "1.1.9",
+        "version": "1.1.10",
         "orientation": "portrait",
         "icon": "./assets/icon_blackBg.png",
         "userInterfaceStyle": "dark",
@@ -62,7 +62,7 @@ export default {
             "backgroundColor": "#000000"
         },
         "ios": {
-            "buildNumber": "46",
+            "buildNumber": "47",
             "supportsTablet": true,
             "bundleIdentifier": "com.chef2.app",
             "infoPlist": {
@@ -72,7 +72,7 @@ export default {
         },
         "android": {
             "package": "com.chef2.app",
-            "versionCode": 17,
+            "versionCode": 18,
             "adaptiveIcon": {
                 "foregroundImage": "./assets/adaptive-icon.png",
                 "backgroundColor": "#000000"
