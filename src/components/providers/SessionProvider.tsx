@@ -19,20 +19,23 @@ function SessionListener() {
   useEffect(() => {
     if ((session as any)?.error !== 'ConcurrentLogin') return
 
-    if (!hasToasted.current) {
-      hasToasted.current = true
-      toast.error("Hesabınızda başka bir cihazda oturum açıldığı için bu oturum kapatılıyor. Devam etmek için profilinizi seçin.", {
-        duration: 5000,
-        icon: '⚠️',
-      })
-    }
-
     // Devralınmış oturumla profiles dışında hiçbir yerde durulamaz. signin'e
     // istisna YOK: kimliği sökülmüş session'la server sayfaları signin'e
     // redirect eder, kullanıcı orada takılı kalır (profiles'ı hiç görmez).
     // Farklı hesapla girişin meşru yolu profiles'taki buton — o önce signOut
     // yapar, session temizlenince bu sabitleme zaten devreden çıkar.
     if (pathname !== '/auth/profiles') {
+      // Uyarı SADECE içeride gezerken canlı düşürülme anında gösterilir.
+      // Dışarıdan gelen (siteyi açar açmaz profiles'a düşen) kullanıcıya
+      // "oturum kapatılıyor" demek gereksiz panik yaratıyor — devralma
+      // günler önce kendi başka cihazından da olmuş olabilir.
+      if (!hasToasted.current) {
+        hasToasted.current = true
+        toast.error("Hesabınızda başka bir cihazda oturum açıldığı için bu oturum kapatılıyor. Devam etmek için profilinizi seçin.", {
+          duration: 5000,
+          icon: '⚠️',
+        })
+      }
       router.replace('/auth/profiles')
     }
   }, [session, pathname, router])
