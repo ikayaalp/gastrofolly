@@ -49,7 +49,7 @@ module.exports = {
         "slug": "chef-2-0",
 
         "scheme": ["chef2", "com.chef2.app"],
-        "version": "1.1.12",
+        "version": "1.1.13",
         "orientation": "portrait",
         "icon": "./assets/icon_blackBg.png",
         "userInterfaceStyle": "dark",
@@ -63,7 +63,7 @@ module.exports = {
             "backgroundColor": "#000000"
         },
         "ios": {
-            "buildNumber": "49",
+            "buildNumber": "50",
             "supportsTablet": true,
             "bundleIdentifier": "com.chef2.app",
             "infoPlist": {
@@ -77,7 +77,7 @@ module.exports = {
         },
         "android": {
             "package": "com.chef2.app",
-            "versionCode": 20,
+            "versionCode": 21,
             "adaptiveIcon": {
                 "foregroundImage": "./assets/adaptive-icon.png",
                 "backgroundColor": "#000000"
