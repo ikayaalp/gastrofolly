@@ -902,9 +902,13 @@ export default function SocialScreen({ navigation }) {
 
                         <ScrollView style={styles.modalBody}>
                             <View style={styles.userInfoRow}>
-                                <View style={styles.modalUserAvatar}>
-                                    <User size={20} color="#fff" />
-                                </View>
+                                {currentUser?.image ? (
+                                    <Image source={{ uri: currentUser.image }} style={styles.modalUserAvatar} />
+                                ) : (
+                                    <View style={styles.modalUserAvatar}>
+                                        <User size={20} color="#fff" />
+                                    </View>
+                                )}
                                 <View style={styles.categorySelector}>
                                     <Text style={styles.categorySelectorText}>{currentUser?.name || 'Kullanıcı'}</Text>
                                 </View>
@@ -921,34 +925,39 @@ export default function SocialScreen({ navigation }) {
                                 textAlignVertical="top"
                             />
 
-                            {/* Selected Media Preview */}
+                            {/* Selected Media Preview — X tarzı yuvarlak thumbnail satırı.
+                                Yatay scroll'da çocuklara SABİT piksel boyut şart; yüzde
+                                genişlik 0'a çöküyordu (resim görünmüyordu). */}
                             {selectedMedias.length > 0 && (
-                                <View style={styles.modalMediaPreviewContainer}>
-                                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                                        {selectedMedias.map((media, index) => (
-                                            <View key={index} style={{ marginRight: 10 }}>
-                                                {media.type === 'image' ? (
-                                                    <Image source={{ uri: media.uri }} style={styles.modalMediaPreview} resizeMode="cover" />
-                                                ) : (
-                                                    <PreviewVideoPlayer
-                                                        sourceUri={media.uri}
-                                                        style={styles.modalMediaPreview}
-                                                    />
-                                                )}
-                                                <TouchableOpacity
-                                                    style={styles.removeMediaButton}
-                                                    onPress={() => {
-                                                        const newMedias = [...selectedMedias];
-                                                        newMedias.splice(index, 1);
-                                                        setSelectedMedias(newMedias);
-                                                    }}
-                                                >
-                                                    <X size={16} color="#fff" />
-                                                </TouchableOpacity>
-                                            </View>
-                                        ))}
-                                    </ScrollView>
-                                </View>
+                                <ScrollView
+                                    horizontal
+                                    showsHorizontalScrollIndicator={false}
+                                    style={styles.mediaRow}
+                                    contentContainerStyle={styles.mediaRowContent}
+                                >
+                                    {selectedMedias.map((media, index) => (
+                                        <View key={index} style={styles.mediaThumbWrap}>
+                                            {media.type === 'image' ? (
+                                                <Image source={{ uri: media.uri }} style={styles.mediaThumb} resizeMode="cover" />
+                                            ) : (
+                                                <PreviewVideoPlayer
+                                                    sourceUri={media.uri}
+                                                    style={styles.mediaThumb}
+                                                />
+                                            )}
+                                            <TouchableOpacity
+                                                style={styles.removeMediaButton}
+                                                onPress={() => {
+                                                    const newMedias = [...selectedMedias];
+                                                    newMedias.splice(index, 1);
+                                                    setSelectedMedias(newMedias);
+                                                }}
+                                            >
+                                                <X size={14} color="#fff" />
+                                            </TouchableOpacity>
+                                        </View>
+                                    ))}
+                                </ScrollView>
                             )}
                         </ScrollView>
 
@@ -1664,11 +1673,14 @@ const styles = StyleSheet.create({
     },
     removeMediaButton: {
         position: 'absolute',
-        top: 8,
-        right: 8,
-        backgroundColor: 'rgba(0,0,0,0.7)',
-        borderRadius: 12,
-        padding: 6,
+        top: 6,
+        right: 6,
+        backgroundColor: 'rgba(0,0,0,0.65)',
+        borderRadius: 14,
+        width: 26,
+        height: 26,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     uploadingIndicator: {
         flexDirection: 'row',
@@ -1758,18 +1770,21 @@ const styles = StyleSheet.create({
         padding: 0,
         marginBottom: 20,
     },
-    modalMediaPreviewContainer: {
-        width: '100%',
-        height: 250,
-        borderRadius: 12,
-        overflow: 'hidden',
-        position: 'relative',
-        backgroundColor: '#111',
+    mediaRow: {
         marginBottom: 20,
     },
-    modalMediaPreview: {
-        width: '100%',
-        height: '100%',
+    mediaRowContent: {
+        paddingRight: 6,
+    },
+    mediaThumbWrap: {
+        marginRight: 10,
+        position: 'relative',
+    },
+    mediaThumb: {
+        width: 150,
+        height: 190,
+        borderRadius: 16,
+        backgroundColor: '#111',
     },
     modalToolbar: {
         flexDirection: 'row',
