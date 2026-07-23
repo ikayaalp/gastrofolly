@@ -38,19 +38,32 @@ const asyncStoragePersister = createAsyncStoragePersister({
 export default function App() {
   const [appIsReady, setAppIsReady] = useState(false);
 
+  // Watchdog: ne olursa olsun uygulama açılır. Aşağıdaki adımlardan biri
+  // beklenmedik şekilde takılsa bile splash sonsuza kadar kalamaz.
+  useEffect(() => {
+    const watchdog = setTimeout(() => {
+      setAppIsReady(true);
+      // onLayout bir sebeple tetiklenmezse splash yine kalır — zorla gizle.
+      // hideAsync idempotenttir, ikinci çağrı zararsızdır.
+      SplashScreen.hideAsync().catch(() => { });
+    }, 5000);
+    return () => clearTimeout(watchdog);
+  }, []);
+
   useEffect(() => {
     async function prepare() {
       try {
         // RevenueCat SDK'yı başlat
         initRevenueCat();
 
-        // Pre-load essential images into memory before app starts
-        await Asset.loadAsync([
-          require('./assets/icon.png'),
-          require('./assets/auth-background.jpg'),
+        // Görselleri önden yükle — ama açılışı kilitlemesin: kısa zaman aşımı.
+        await Promise.race([
+          Asset.loadAsync([
+            require('./assets/icon.png'),
+            require('./assets/auth-background.jpg'),
+          ]),
+          new Promise((resolve) => setTimeout(resolve, 2000)),
         ]);
-
-        await notificationService.registerForPushNotifications();
       } catch (e) {
         console.warn(e);
       } finally {
@@ -101,6 +114,19 @@ export default function App() {
       notificationService.removeNotificationListeners();
     };
   }, []);
+
+  // Push bildirimi kaydı açılışı ASLA bloklamamalı: içinde izin diyaloğu
+  // (Android 13+ kullanıcı yanıtını süresiz bekler) ve iki ağ çağrısı
+  // (Expo token + backend'e kayıt) var. Bunlar await edilince prepare()
+  // bitmiyor, appIsReady false kalıyor ve splash kalıcı donuyordu.
+  // Çözüm: uygulama hazır olduktan SONRA, bloklamadan çalıştır — izin
+  // diyaloğu da splash yerine gerçek arayüzün üstünde görünür.
+  useEffect(() => {
+    if (!appIsReady) return;
+    notificationService
+      .registerForPushNotifications()
+      .catch((e) => console.warn('Push kaydı başarısız (açılış etkilenmez):', e?.message));
+  }, [appIsReady]);
 
   const onLayoutRootView = React.useCallback(async () => {
     if (appIsReady) {
