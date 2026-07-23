@@ -81,13 +81,12 @@ export default function ProfilesPage() {
           50%      { box-shadow: 0 0 52px 10px rgba(234, 88, 12, 0.65); }
         }
         .kiw-title    { animation: kiwFadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
-        .kiw-subtitle { animation: kiwFadeUp 0.7s 0.12s cubic-bezier(0.22, 1, 0.36, 1) both; }
-        .kiw-card     { animation: kiwCardIn 0.65s 0.25s cubic-bezier(0.22, 1, 0.36, 1) both; }
+        .kiw-card     { animation: kiwCardIn 0.65s 0.2s cubic-bezier(0.22, 1, 0.36, 1) both; }
         .kiw-actions  { animation: kiwFadeUp 0.7s 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
         .kiw-halo     { animation: kiwBreath 3.2s ease-in-out 1s infinite; }
         .kiw-loading  { animation: kiwPulseRing 1.1s ease-in-out infinite; }
         @media (prefers-reduced-motion: reduce) {
-          .kiw-title, .kiw-subtitle, .kiw-card, .kiw-actions { animation: none; }
+          .kiw-title, .kiw-card, .kiw-actions { animation: none; }
           .kiw-halo, .kiw-loading { animation: none; }
         }
       `}</style>
@@ -105,12 +104,9 @@ export default function ProfilesPage() {
       ></div>
 
       <div className="z-10 flex flex-col items-center w-full max-w-4xl px-4">
-        <h1 className="kiw-title text-4xl md:text-5xl font-light text-center tracking-wide text-white/90">
+        <h1 className="kiw-title text-4xl md:text-5xl font-light text-center tracking-wide text-white/90 mb-16">
           Kim İzliyor?
         </h1>
-        <p className="kiw-subtitle mt-4 mb-14 text-sm md:text-base text-gray-400 text-center max-w-md">
-          Hesabınızda başka bir cihazda oturum açıldı. Devam etmek için profilinizi seçin.
-        </p>
 
         <div className="kiw-card flex flex-col items-center justify-center group cursor-pointer" onClick={handleProfileSelect}>
           <div className="relative">
@@ -155,9 +151,6 @@ export default function ProfilesPage() {
           <h2 className="mt-6 text-xl md:text-2xl text-gray-400 group-hover:text-white font-medium transition-colors duration-300">
             {userName}
           </h2>
-          <p className={`mt-1 text-xs tracking-widest uppercase transition-opacity duration-300 ${isLoading ? 'text-orange-400 opacity-100' : 'text-gray-600 opacity-0 group-hover:opacity-100'}`}>
-            {isLoading ? 'Oturum yenileniyor…' : 'Devam etmek için tıkla'}
-          </p>
         </div>
 
         {/* Action Buttons */}
