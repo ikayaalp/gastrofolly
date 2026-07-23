@@ -229,16 +229,29 @@ export default function AppNavigator() {
                     await AsyncStorage.removeItem('onboardingCompleted');
                     setInitialRoute('Onboarding');
                 } else {
-                    setInitialRoute('Main');
-
-                    // Oturum başka cihaz tarafından devralındıysa kullanıcı cache'lenmiş
-                    // ekranlarda gezinemeden yakalansın: açılışta fire-and-forget oturum
-                    // kontrolü. 401 dönerse apiClient interceptor'ı WhoIsWatching'e atar.
-                    // (Dynamic import: authService → apiClient → navigationRef zinciri
-                    // modül yükleme sırasında circular import olmasın diye.)
-                    import('../api/authService')
-                        .then(({ default: authService }) => authService.refreshUserData())
-                        .catch(() => { /* ağ hatası açılışı bloklamasın */ });
+                    // Oturum başka cihaz tarafından devralınmışsa anasayfa BİR AN BİLE
+                    // görünmeden doğrudan "Kim izliyor?" ile açıl: splash/yükleme
+                    // ekranı sürerken kısa zaman aşımlı oturum doğrulaması yap.
+                    // Yalnızca net 401 (oturum devri) WhoIsWatching'e yönlendirir;
+                    // zaman aşımı/ağ hatası Main'e devam eder (offline kullanım
+                    // bozulmasın — offline'da zaten 401 gelmez, flash da olmaz).
+                    // (Dynamic import: apiClient → navigationRef zinciri modül
+                    // yükleme sırasında circular import olmasın diye.)
+                    let route = 'Main';
+                    try {
+                        const { default: api } = await import('../api/apiClient');
+                        await Promise.race([
+                            api.get('/api/auth/me'),
+                            new Promise((_, reject) =>
+                                setTimeout(() => reject(new Error('session-check-timeout')), 2500)
+                            ),
+                        ]);
+                    } catch (e) {
+                        if (e?.response?.status === 401) {
+                            route = 'WhoIsWatching';
+                        }
+                    }
+                    setInitialRoute(route);
                 }
             } catch (error) {
                 console.log('Error checking initial route:', error);
