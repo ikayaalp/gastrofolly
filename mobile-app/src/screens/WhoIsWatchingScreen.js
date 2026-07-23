@@ -12,11 +12,10 @@ import {
     Easing,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { LinearGradient } from 'expo-linear-gradient';
 import { LogOut } from 'lucide-react-native';
 import authService from '../api/authService';
-import courseService from '../api/courseService';
 import { logoutRevenueCat } from '../api/revenueCatService';
+import WhoIsWatchingBackdrop from '../components/WhoIsWatchingBackdrop';
 import {
     getToken,
     removeToken,
@@ -25,13 +24,7 @@ import {
 } from '../utils/tokenStorage';
 import { colors, spacing, radius, typography } from '../constants/theme';
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-
-// Arka plan kolajı: 3 sütun dikey kurs afişi, ekranı dolduracak kadar satır.
-const COLLAGE_COLUMNS = 3;
-const COLLAGE_ITEM_WIDTH = SCREEN_WIDTH / COLLAGE_COLUMNS;
-const COLLAGE_ITEM_HEIGHT = COLLAGE_ITEM_WIDTH * 1.5;
-const COLLAGE_COUNT = COLLAGE_COLUMNS * (Math.ceil(SCREEN_HEIGHT / COLLAGE_ITEM_HEIGHT) + 1);
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 /**
  * "Kim izliyor?" — başka cihazdan giriş yapılıp oturum devralındığında gösterilir.
@@ -41,15 +34,13 @@ const COLLAGE_COUNT = COLLAGE_COLUMNS * (Math.ceil(SCREEN_HEIGHT / COLLAGE_ITEM_
  */
 export default function WhoIsWatchingScreen({ navigation }) {
     const [profile, setProfile] = useState(null);
-    const [covers, setCovers] = useState([]);
     const [isReclaiming, setIsReclaiming] = useState(false);
 
-    // Giriş animasyonları: başlık → kart → buton kademeli gelir; hale nefes alır;
+    // Giriş animasyonları: başlık → kart → buton kademeli gelir;
     // basışta kart yaylanır. Değerler render'lar arası korunmalı → useRef.
     const titleAnim = useRef(new Animated.Value(0)).current;
     const cardAnim = useRef(new Animated.Value(0)).current;
     const buttonAnim = useRef(new Animated.Value(0)).current;
-    const haloAnim = useRef(new Animated.Value(0)).current;
     const pressScale = useRef(new Animated.Value(1)).current;
 
     useEffect(() => {
@@ -73,26 +64,7 @@ export default function WhoIsWatchingScreen({ navigation }) {
                 useNativeDriver: true,
             }),
         ]).start();
-
-        const haloLoop = Animated.loop(
-            Animated.sequence([
-                Animated.timing(haloAnim, {
-                    toValue: 1,
-                    duration: 1600,
-                    easing: Easing.inOut(Easing.sin),
-                    useNativeDriver: true,
-                }),
-                Animated.timing(haloAnim, {
-                    toValue: 0,
-                    duration: 1600,
-                    easing: Easing.inOut(Easing.sin),
-                    useNativeDriver: true,
-                }),
-            ])
-        );
-        haloLoop.start();
-        return () => haloLoop.stop();
-    }, [titleAnim, cardAnim, buttonAnim, haloAnim]);
+    }, [titleAnim, cardAnim, buttonAnim]);
 
     const handlePressIn = () => {
         Animated.spring(pressScale, {
@@ -153,17 +125,6 @@ export default function WhoIsWatchingScreen({ navigation }) {
                 return;
             }
             setProfile(cached);
-
-            // Arka plan kolajı — public endpoint, token geçersizken de çalışır.
-            // Yüklenemezse sade degrade fallback kalır.
-            const res = await courseService.getFeaturedCourses();
-            if (cancelled) return;
-            if (res.success) {
-                const urls = (res.data?.courses || [])
-                    .map((c) => c.posterImageUrl || c.thumbnailImageUrl || c.imageUrl)
-                    .filter(Boolean);
-                setCovers(urls.slice(0, COLLAGE_COUNT));
-            }
         };
 
         load();
@@ -196,26 +157,11 @@ export default function WhoIsWatchingScreen({ navigation }) {
 
     return (
         <View style={styles.container}>
-            {/* Arka plan: kurs afişi kolajı (varsa) */}
-            {covers.length > 0 && (
-                <View style={styles.collage} pointerEvents="none">
-                    {covers.map((uri, i) => (
-                        <Image
-                            key={`${uri}-${i}`}
-                            source={{ uri }}
-                            style={styles.collageItem}
-                            resizeMode="cover"
-                        />
-                    ))}
-                </View>
-            )}
-
-            {/* Karartma: ön plan her koşulda okunur kalsın */}
-            <LinearGradient
-                colors={['rgba(0,0,0,0.75)', 'rgba(0,0,0,0.55)', 'rgba(0,0,0,0.92)']}
-                style={StyleSheet.absoluteFill}
-                pointerEvents="none"
-            />
+            {/* Arka plan: webteki ile aynı sinematik vektörel afiş —
+                ağ isteği yok, anında çizilir (vinyet/karartma afişin içinde) */}
+            <View style={StyleSheet.absoluteFill} pointerEvents="none">
+                <WhoIsWatchingBackdrop />
+            </View>
 
             <View style={styles.content}>
                 <Animated.View
@@ -247,19 +193,6 @@ export default function WhoIsWatchingScreen({ navigation }) {
                         disabled={isReclaiming}
                     >
                         <View style={styles.avatarArea}>
-                            {/* Nefes alan turuncu hale */}
-                            <Animated.View
-                                pointerEvents="none"
-                                style={[
-                                    styles.halo,
-                                    {
-                                        opacity: haloAnim.interpolate({ inputRange: [0, 1], outputRange: [0.25, 0.6] }),
-                                        transform: [{
-                                            scale: haloAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 1.14] }),
-                                        }],
-                                    },
-                                ]}
-                            />
                             <View style={styles.avatarFrame}>
                                 <View style={styles.avatarWrapper}>
                                     {profile?.image ? (
@@ -316,16 +249,6 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: colors.background,
     },
-    collage: {
-        ...StyleSheet.absoluteFillObject,
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        opacity: 0.5,
-    },
-    collageItem: {
-        width: COLLAGE_ITEM_WIDTH,
-        height: COLLAGE_ITEM_HEIGHT,
-    },
     content: {
         flex: 1,
         alignItems: 'center',
@@ -346,21 +269,6 @@ const styles = StyleSheet.create({
     avatarArea: {
         alignItems: 'center',
         justifyContent: 'center',
-    },
-    // RN'de blur olmadığından "hale": avatarın arkasında, kendisinden büyük,
-    // yumuşak köşeli turuncu katman + güçlü renkli gölge. Opacity/scale'i
-    // Animated loop sürüyor → nefes alma hissi.
-    halo: {
-        position: 'absolute',
-        width: AVATAR_SIZE + 30,
-        height: AVATAR_SIZE + 30,
-        borderRadius: radius.xxl + 8,
-        backgroundColor: colors.primary,
-        shadowColor: colors.primary,
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.9,
-        shadowRadius: 26,
-        elevation: 16,
     },
     avatarFrame: {
         padding: 3,
