@@ -14,7 +14,7 @@ const AppTheme = {
 };
 
 import React, { useState, useEffect } from 'react';
-import { Platform, View, ActivityIndicator } from 'react-native';
+import { Platform, View, ActivityIndicator, Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getToken, setToken } from '../utils/tokenStorage';
@@ -202,8 +202,24 @@ function TabNavigator() {
 
 import ForgotPasswordScreen from '../screens/ForgotPasswordScreen';
 
+// Açılıştaki oturum yoklamasının üst sınırı. Tipik yanıt ~300ms olduğu için
+// pratikte hissedilmez; yalnızca ağ yavaşsa devreye girer ve Main'e geçilir.
+const SESSION_CHECK_TIMEOUT_MS = 2000;
+// Son güvenlik ağı: beklenmedik bir takılmada bile açılış splash'ta kilitlenmesin.
+const STARTUP_WATCHDOG_MS = 4000;
+
 export default function AppNavigator() {
     const [initialRoute, setInitialRoute] = useState(null);
+
+    // Watchdog: ne olursa olsun bu süre sonunda bir route set edilir. Oturum
+    // yoklaması zaten kendi zaman aşımına sahip; bu, o katman da beklenmedik
+    // şekilde takılırsa uygulamanın açılmasını garantiler.
+    useEffect(() => {
+        const watchdog = setTimeout(() => {
+            setInitialRoute((prev) => prev ?? 'Main');
+        }, STARTUP_WATCHDOG_MS);
+        return () => clearTimeout(watchdog);
+    }, []);
 
     useEffect(() => {
         const checkInitialRoute = async () => {
@@ -229,19 +245,37 @@ export default function AppNavigator() {
                     await AsyncStorage.removeItem('onboardingCompleted');
                     setInitialRoute('Onboarding');
                 } else {
-                    // Açılışı ASLA bir ağ çağrısına bloklamıyoruz — aksi halde
-                    // yavaş/başarısız istek ya da takılan dinamik import splash'ta
-                    // kalıcı donmaya yol açar (yaşanan hata buydu).
-                    // Doğrudan Main'e gir; oturum başka cihazca devralınmışsa
-                    // apiClient interceptor'ı ilk 401'de WhoIsWatching'e yönlendirir.
-                    setInitialRoute('Main');
-
-                    // Ek olarak arka planda (fire-and-forget, bloklamadan) hızlı bir
-                    // oturum yoklaması: Home içeriği dolmadan devralma yakalansın.
-                    // Hata/timeout açılışı etkilemez; 401 ise interceptor yönlendirir.
-                    import('../api/apiClient')
-                        .then(({ default: api }) => api.get('/api/auth/me'))
-                        .catch(() => { /* 401 → interceptor WhoIsWatching'e atar; diğer hatalar önemsiz */ });
+                    // Oturum başka cihazca devralınmışsa anasayfa BİR AN BİLE
+                    // görünmeden doğrudan "Kim izliyor?" açılsın: splash sürerken
+                    // kısa bir oturum yoklaması yapılır.
+                    //
+                    // KRİTİK: import + istek TEK BİR zaman aşımı yarışının İÇİNDE.
+                    // (Önceki donma hatasında import yarışın dışındaydı; takılınca
+                    // setInitialRoute hiç çağrılmayıp splash'ta kalıcı kilitleniyordu.)
+                    // Böylece hiçbir adım açılışı sonsuza kadar bloklayamaz.
+                    let route = 'Main';
+                    try {
+                        await Promise.race([
+                            (async () => {
+                                const { default: api } = await import('../api/apiClient');
+                                await api.get('/api/auth/me');
+                            })(),
+                            new Promise((_, reject) =>
+                                setTimeout(
+                                    () => reject(new Error('session-check-timeout')),
+                                    SESSION_CHECK_TIMEOUT_MS
+                                )
+                            ),
+                        ]);
+                    } catch (e) {
+                        // Sadece net 401 (oturum devri) profil seçimine yönlendirir.
+                        // Zaman aşımı/ağ hatası → Main; offline kullanım bozulmaz,
+                        // devralma varsa apiClient interceptor'ı ilk 401'de yakalar.
+                        if (e?.response?.status === 401) {
+                            route = 'WhoIsWatching';
+                        }
+                    }
+                    setInitialRoute(route);
                 }
             } catch (error) {
                 console.log('Error checking initial route:', error);
@@ -253,9 +287,21 @@ export default function AppNavigator() {
     }, []);
 
     if (!initialRoute) {
+        // Oturum yoklaması sürerken native splash ile GÖRSEL OLARAK aynı ekranı
+        // göster (aynı görsel + siyah zemin) → logo kaybolup spinner belirmez,
+        // kullanıcı tek kesintisiz açılış görür.
         return (
             <View style={{ flex: 1, backgroundColor: '#000', justifyContent: 'center', alignItems: 'center' }}>
-                <ActivityIndicator size="large" color="#ea580c" />
+                <Image
+                    source={require('../../assets/splash.png')}
+                    style={{ width: '100%', height: '100%', position: 'absolute' }}
+                    resizeMode="contain"
+                />
+                <ActivityIndicator
+                    size="small"
+                    color="#ea580c"
+                    style={{ position: 'absolute', bottom: 80 }}
+                />
             </View>
         );
     }
