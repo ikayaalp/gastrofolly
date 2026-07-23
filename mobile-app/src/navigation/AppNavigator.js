@@ -229,29 +229,19 @@ export default function AppNavigator() {
                     await AsyncStorage.removeItem('onboardingCompleted');
                     setInitialRoute('Onboarding');
                 } else {
-                    // Oturum başka cihaz tarafından devralınmışsa anasayfa BİR AN BİLE
-                    // görünmeden doğrudan "Kim izliyor?" ile açıl: splash/yükleme
-                    // ekranı sürerken kısa zaman aşımlı oturum doğrulaması yap.
-                    // Yalnızca net 401 (oturum devri) WhoIsWatching'e yönlendirir;
-                    // zaman aşımı/ağ hatası Main'e devam eder (offline kullanım
-                    // bozulmasın — offline'da zaten 401 gelmez, flash da olmaz).
-                    // (Dynamic import: apiClient → navigationRef zinciri modül
-                    // yükleme sırasında circular import olmasın diye.)
-                    let route = 'Main';
-                    try {
-                        const { default: api } = await import('../api/apiClient');
-                        await Promise.race([
-                            api.get('/api/auth/me'),
-                            new Promise((_, reject) =>
-                                setTimeout(() => reject(new Error('session-check-timeout')), 2500)
-                            ),
-                        ]);
-                    } catch (e) {
-                        if (e?.response?.status === 401) {
-                            route = 'WhoIsWatching';
-                        }
-                    }
-                    setInitialRoute(route);
+                    // Açılışı ASLA bir ağ çağrısına bloklamıyoruz — aksi halde
+                    // yavaş/başarısız istek ya da takılan dinamik import splash'ta
+                    // kalıcı donmaya yol açar (yaşanan hata buydu).
+                    // Doğrudan Main'e gir; oturum başka cihazca devralınmışsa
+                    // apiClient interceptor'ı ilk 401'de WhoIsWatching'e yönlendirir.
+                    setInitialRoute('Main');
+
+                    // Ek olarak arka planda (fire-and-forget, bloklamadan) hızlı bir
+                    // oturum yoklaması: Home içeriği dolmadan devralma yakalansın.
+                    // Hata/timeout açılışı etkilemez; 401 ise interceptor yönlendirir.
+                    import('../api/apiClient')
+                        .then(({ default: api }) => api.get('/api/auth/me'))
+                        .catch(() => { /* 401 → interceptor WhoIsWatching'e atar; diğer hatalar önemsiz */ });
                 }
             } catch (error) {
                 console.log('Error checking initial route:', error);
