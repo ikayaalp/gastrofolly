@@ -1,5 +1,6 @@
-import 'dotenv/config'; // Load env vars if needed
-import fs from 'fs';
+const fs = require('fs');
+const path = require('path');
+require('dotenv/config'); // Load env vars if needed
 
 // Embed google-services.json content to ensure it exists on EAS Build
 const googleServicesJson = {
@@ -33,22 +34,22 @@ const googleServicesJson = {
 };
 
 // Write the file if it doesn't exist
-if (!fs.existsSync('google-services.json')) {
+const googleServicesPath = path.join(__dirname, 'google-services.json');
+if (!fs.existsSync(googleServicesPath)) {
     try {
-        fs.writeFileSync('google-services.json', JSON.stringify(googleServicesJson, null, 2));
-        console.log('Created google-services.json from config');
+        fs.writeFileSync(googleServicesPath, JSON.stringify(googleServicesJson, null, 2));
     } catch (error) {
-        console.error('Error creating google-services.json:', error);
+        // Avoid logging to stdout during config evaluation
     }
 }
 
-export default {
+module.exports = {
     "expo": {
         "name": "Culinora",
         "slug": "chef-2-0",
 
         "scheme": ["chef2", "com.chef2.app"],
-        "version": "1.1.10",
+        "version": "1.1.11",
         "orientation": "portrait",
         "icon": "./assets/icon_blackBg.png",
         "userInterfaceStyle": "dark",
@@ -62,7 +63,7 @@ export default {
             "backgroundColor": "#000000"
         },
         "ios": {
-            "buildNumber": "47",
+            "buildNumber": "48",
             "supportsTablet": true,
             "bundleIdentifier": "com.chef2.app",
             "infoPlist": {
@@ -72,7 +73,7 @@ export default {
         },
         "android": {
             "package": "com.chef2.app",
-            "versionCode": 18,
+            "versionCode": 19,
             "adaptiveIcon": {
                 "foregroundImage": "./assets/adaptive-icon.png",
                 "backgroundColor": "#000000"
