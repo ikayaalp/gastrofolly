@@ -1,0 +1,15 @@
+# EAS mobil build'i yalnızca mobile-app/ klasörünü kullanır (web ile kod
+# paylaşılmıyor). Web projesinin ağır dosyaları arşive girmesin — bunlar
+# yükleme süresini gereksiz uzatıyordu (659 MB / 5+ dk).
+
+# Ekran kaydı / demo videoları (~137 MB, mobil build'de kullanılmıyor)
+public/videos/
+
+# Build çıktıları ve bağımlılıklar
+.next/
+node_modules/
+dist/
+
+# Web-only ağır klasörler
+.vercel/
+coverage/
