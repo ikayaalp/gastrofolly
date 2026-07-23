@@ -60,9 +60,9 @@ const USE_NEW_ACCOUNT = process.env.EAS_ACCOUNT === 'new';
 const OLD_OWNER = 'ismailkayaalp';
 const OLD_PROJECT_ID = '63124923-17bd-4207-98cb-8913b8321006';
 
-// Yeni hesap (iOS) — `eas init` sonrası projectId buraya yazılacak.
+// Yeni hesap (iOS) — @ikayaalpp/chef-2-0
 const NEW_OWNER = 'ikayaalpp';
-const NEW_PROJECT_ID = ''; // TODO: eas init çıktısındaki projectId
+const NEW_PROJECT_ID = 'b516f8ca-586e-4c27-8895-4eeb55549f80';
 
 module.exports = {
     "expo": {
