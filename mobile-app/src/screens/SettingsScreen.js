@@ -34,6 +34,11 @@ import api from '../api/apiClient';
 import { getToken } from '../utils/tokenStorage';
 import CustomAlert from '../components/CustomAlert';
 import { colors, spacing, radius, typography } from '../constants/theme';
+import Constants from 'expo-constants';
+
+// Sürüm app.config.js'ten dinamik okunur — elle güncellenmez, hep senkron kalır.
+const APP_VERSION = Constants.expoConfig?.version || Constants.manifest?.version || '1.0.0';
+const CURRENT_YEAR = new Date().getFullYear();
 
 export default function SettingsScreen({ navigation }) {
     const [userData, setUserData] = useState(null);
@@ -290,8 +295,8 @@ export default function SettingsScreen({ navigation }) {
                         <SettingItem
                             icon={Info}
                             title="Hakkında"
-                            subtitle="Sürüm 1.0.2"
-                            onPress={() => showAlert('Hakkında', 'Culinora Mobile v1.0.2\n\nGeliştirici: Culinora Team\n© 2024 Tüm hakları saklıdır.', [{ text: 'Tamam' }])}
+                            subtitle={`Sürüm ${APP_VERSION}`}
+                            onPress={() => showAlert('Hakkında', `Culinora v${APP_VERSION}\n\nGeliştirici: Culinora\n© ${CURRENT_YEAR} Tüm hakları saklıdır.`, [{ text: 'Tamam' }])}
                         />
                     </SettingSection>
 
@@ -336,7 +341,7 @@ export default function SettingsScreen({ navigation }) {
                         />
                     </View>
 
-                    <Text style={styles.versionText}>Culinora Mobile v1.0.2</Text>
+                    <Text style={styles.versionText}>Culinora v{APP_VERSION}</Text>
 
                 </ScrollView>
             </View>
