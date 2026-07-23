@@ -227,10 +227,6 @@ export default function WhoIsWatchingScreen({ navigation }) {
                     }}
                 >
                     <Text style={styles.title}>Kim izliyor?</Text>
-                    <Text style={styles.subtitle}>
-                        Hesabınızda başka bir cihazda oturum açıldığı için{'\n'}
-                        oturumunuz kapatıldı. Devam etmek için profilinizi seçin.
-                    </Text>
                 </Animated.View>
 
                 <Animated.View
@@ -341,13 +337,7 @@ const styles = StyleSheet.create({
         fontSize: typography.size['5xl'],
         fontWeight: typography.weight.normal,
         letterSpacing: 1,
-        marginBottom: spacing.md,
-    },
-    subtitle: {
-        color: colors.textMuted,
-        fontSize: typography.size.base,
         textAlign: 'center',
-        lineHeight: 20,
         marginBottom: spacing.xxxl + spacing.lg,
     },
     profileCard: {

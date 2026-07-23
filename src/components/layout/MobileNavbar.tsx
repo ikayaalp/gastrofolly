@@ -24,6 +24,11 @@ export default function MobileNavbar({ initialSession }: { initialSession?: Sess
     const activeSession = session || initialSession
     const isLoading = status === 'loading' && !initialSession
 
+    // Auth ekranlarında (Kim İzliyor, giriş, kayıt...) alt bar görünmesin —
+    // devralınmış oturumda session objesi hâlâ var olduğundan yalnızca
+    // session kontrolü profiles sayfasında barı gizleyemiyor.
+    if (pathname?.startsWith('/auth')) return null
+
     if (isLoading || !activeSession) return null
 
     // Helper to check active state
