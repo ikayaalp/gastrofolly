@@ -43,6 +43,27 @@ if (!fs.existsSync(googleServicesPath)) {
     }
 }
 
+// ── EAS hesap seçimi ────────────────────────────────────────────────────────
+// Android ESKİ hesapta kalmalı: Play'e yüklenen .aab'nin upload keystore'u orada.
+// Yeni hesapta Android build alınırsa Play "wrong key" deyip reddeder.
+// iOS ise YENİ hesaptan alınıyor (eski hesabın iOS build kotası doldu).
+//
+// Kullanım:
+//   Android → eas login (ismailkayaalp)
+//             eas build --platform android --profile production
+//   iOS     → eas login (ikayaalpp)
+//             PowerShell:  $env:EAS_ACCOUNT="new"; eas build --platform ios --profile production
+//             Bash:        EAS_ACCOUNT=new eas build --platform ios --profile production
+const USE_NEW_ACCOUNT = process.env.EAS_ACCOUNT === 'new';
+
+// Eski hesap (Android — DEĞİŞTİRME)
+const OLD_OWNER = 'ismailkayaalp';
+const OLD_PROJECT_ID = '63124923-17bd-4207-98cb-8913b8321006';
+
+// Yeni hesap (iOS) — `eas init` sonrası projectId buraya yazılacak.
+const NEW_OWNER = 'ikayaalpp';
+const NEW_PROJECT_ID = ''; // TODO: eas init çıktısındaki projectId
+
 module.exports = {
     "expo": {
         "name": "Culinora",
@@ -123,10 +144,10 @@ module.exports = {
             "expo-secure-store",
             "expo-video"
         ],
-        "owner": "ismailkayaalp",
+        "owner": USE_NEW_ACCOUNT ? NEW_OWNER : OLD_OWNER,
         "extra": {
             "eas": {
-                "projectId": "63124923-17bd-4207-98cb-8913b8321006"
+                "projectId": USE_NEW_ACCOUNT ? NEW_PROJECT_ID : OLD_PROJECT_ID
             }
         },
         "termsOfServiceUrl": "https://culinora.net/terms"
