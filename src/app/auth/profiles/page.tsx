@@ -61,6 +61,37 @@ export default function ProfilesPage() {
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center relative overflow-hidden">
+      {/* Sahne animasyonları — Tailwind animasyon plugin'i yok, keyframe'ler burada */}
+      <style>{`
+        @keyframes kiwFadeUp {
+          from { opacity: 0; transform: translateY(18px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes kiwCardIn {
+          0%   { opacity: 0; transform: scale(0.72); }
+          60%  { opacity: 1; transform: scale(1.05); }
+          100% { opacity: 1; transform: scale(1); }
+        }
+        @keyframes kiwBreath {
+          0%, 100% { opacity: 0.45; transform: scale(1); }
+          50%      { opacity: 0.9;  transform: scale(1.12); }
+        }
+        @keyframes kiwPulseRing {
+          0%, 100% { box-shadow: 0 0 24px 2px rgba(234, 88, 12, 0.35); }
+          50%      { box-shadow: 0 0 52px 10px rgba(234, 88, 12, 0.65); }
+        }
+        .kiw-title    { animation: kiwFadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+        .kiw-subtitle { animation: kiwFadeUp 0.7s 0.12s cubic-bezier(0.22, 1, 0.36, 1) both; }
+        .kiw-card     { animation: kiwCardIn 0.65s 0.25s cubic-bezier(0.22, 1, 0.36, 1) both; }
+        .kiw-actions  { animation: kiwFadeUp 0.7s 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
+        .kiw-halo     { animation: kiwBreath 3.2s ease-in-out 1s infinite; }
+        .kiw-loading  { animation: kiwPulseRing 1.1s ease-in-out infinite; }
+        @media (prefers-reduced-motion: reduce) {
+          .kiw-title, .kiw-subtitle, .kiw-card, .kiw-actions { animation: none; }
+          .kiw-halo, .kiw-loading { animation: none; }
+        }
+      `}</style>
+
       {/* Dynamic Background Gradients */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-orange-900/20 via-black to-black"></div>
 
@@ -73,58 +104,68 @@ export default function ProfilesPage() {
         aria-hidden="true"
       ></div>
 
-      <div className="z-10 flex flex-col items-center w-full max-w-4xl px-4 animate-in fade-in duration-1000">
-        <h1 className="text-4xl md:text-5xl font-light text-center mb-16 tracking-wide text-white/90">
+      <div className="z-10 flex flex-col items-center w-full max-w-4xl px-4">
+        <h1 className="kiw-title text-4xl md:text-5xl font-light text-center tracking-wide text-white/90">
           Kim İzliyor?
         </h1>
+        <p className="kiw-subtitle mt-4 mb-14 text-sm md:text-base text-gray-400 text-center max-w-md">
+          Hesabınızda başka bir cihazda oturum açıldı. Devam etmek için profilinizi seçin.
+        </p>
 
-        <div className="flex flex-col items-center justify-center group cursor-pointer" onClick={handleProfileSelect}>
+        <div className="kiw-card flex flex-col items-center justify-center group cursor-pointer" onClick={handleProfileSelect}>
           <div className="relative">
-            {/* Avatar Container with hover effects */}
-            <div className={`w-32 h-32 md:w-40 md:h-40 rounded-xl overflow-hidden border-4 border-transparent group-hover:border-white transition-all duration-300 transform group-hover:scale-105 shadow-2xl relative ${isLoading ? 'opacity-50' : ''}`}>
-              {userImage ? (
-                <Image
-                  src={userImage}
-                  alt={userName}
-                  fill
-                  className="object-cover"
-                />
-              ) : (
-                <div className="w-full h-full bg-orange-600 flex items-center justify-center">
-                  <span className="text-5xl md:text-6xl font-bold text-white">{userInitial}</span>
-                </div>
-              )}
+            {/* Nefes alan turuncu hale — kartın arkasında */}
+            <div
+              className="kiw-halo absolute -inset-5 rounded-3xl bg-orange-600/25 blur-2xl pointer-events-none"
+              aria-hidden="true"
+            ></div>
 
-              {/* Hover Overlay */}
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                {isLoading ? (
-                  <Loader2 className="w-10 h-10 text-white animate-spin" />
+            {/* Gradient çerçeve + kart */}
+            <div
+              className={`relative p-[3px] rounded-2xl bg-gradient-to-br from-orange-500 via-orange-700/40 to-transparent transition-all duration-300 group-hover:from-orange-400 group-hover:via-orange-500/60 group-hover:shadow-[0_0_45px_rgba(234,88,12,0.5)] group-hover:scale-105 group-active:scale-95 ${isLoading ? 'kiw-loading' : ''}`}
+            >
+              <div className="w-32 h-32 md:w-44 md:h-44 rounded-[13px] overflow-hidden relative bg-black">
+                {userImage ? (
+                  <Image
+                    src={userImage}
+                    alt={userName}
+                    fill
+                    className={`object-cover transition-all duration-500 group-hover:scale-110 ${isLoading ? 'opacity-40 grayscale' : ''}`}
+                  />
                 ) : (
-                  <Play className="w-12 h-12 text-white ml-2" fill="currentColor" />
+                  <div className={`w-full h-full bg-gradient-to-br from-orange-500 to-orange-700 flex items-center justify-center transition-transform duration-500 group-hover:scale-110 ${isLoading ? 'opacity-40' : ''}`}>
+                    <span className="text-5xl md:text-6xl font-bold text-white drop-shadow-lg">{userInitial}</span>
+                  </div>
                 )}
+
+                {/* Hover / loading overlay */}
+                <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${isLoading ? 'opacity-100 bg-black/50' : 'opacity-0 group-hover:opacity-100 bg-black/35'}`}>
+                  {isLoading ? (
+                    <Loader2 className="w-11 h-11 text-orange-400 animate-spin" />
+                  ) : (
+                    <span className="bg-orange-600/90 rounded-full p-3 shadow-xl transition-transform duration-300 group-hover:scale-110">
+                      <Play className="w-7 h-7 text-white ml-0.5" fill="currentColor" />
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
-            
-            {/* Loading Indicator for specific profile */}
-            {isLoading && (
-              <div className="absolute -bottom-4 left-1/2 -translate-x-1/2">
-                <div className="bg-orange-600 rounded-full p-1.5 shadow-lg">
-                  <Loader2 className="w-4 h-4 animate-spin text-white" />
-                </div>
-              </div>
-            )}
           </div>
-          
+
           <h2 className="mt-6 text-xl md:text-2xl text-gray-400 group-hover:text-white font-medium transition-colors duration-300">
             {userName}
           </h2>
+          <p className={`mt-1 text-xs tracking-widest uppercase transition-opacity duration-300 ${isLoading ? 'text-orange-400 opacity-100' : 'text-gray-600 opacity-0 group-hover:opacity-100'}`}>
+            {isLoading ? 'Oturum yenileniyor…' : 'Devam etmek için tıkla'}
+          </p>
         </div>
 
         {/* Action Buttons */}
-        <div className="mt-24">
-          <button 
+        <div className="kiw-actions mt-20">
+          <button
             onClick={handleLogout}
-            className="flex items-center gap-2 px-6 py-3 rounded-full border border-gray-700 text-gray-400 hover:text-white hover:border-white transition-all duration-300 hover:bg-white/5"
+            disabled={isLoading}
+            className="flex items-center gap-2 px-6 py-3 rounded-full border border-gray-700 text-gray-400 hover:text-white hover:border-orange-500/70 hover:bg-orange-500/10 active:scale-95 transition-all duration-300 disabled:opacity-40 disabled:pointer-events-none"
           >
             <LogOut size={18} />
             <span className="text-sm font-medium tracking-wide">Farklı Bir Hesapla Giriş Yap</span>

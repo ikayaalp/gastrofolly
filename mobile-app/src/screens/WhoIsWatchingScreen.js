@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
     View,
     Text,
@@ -8,6 +8,8 @@ import {
     ActivityIndicator,
     Alert,
     Dimensions,
+    Animated,
+    Easing,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -41,6 +43,73 @@ export default function WhoIsWatchingScreen({ navigation }) {
     const [profile, setProfile] = useState(null);
     const [covers, setCovers] = useState([]);
     const [isReclaiming, setIsReclaiming] = useState(false);
+
+    // Giriş animasyonları: başlık → kart → buton kademeli gelir; hale nefes alır;
+    // basışta kart yaylanır. Değerler render'lar arası korunmalı → useRef.
+    const titleAnim = useRef(new Animated.Value(0)).current;
+    const cardAnim = useRef(new Animated.Value(0)).current;
+    const buttonAnim = useRef(new Animated.Value(0)).current;
+    const haloAnim = useRef(new Animated.Value(0)).current;
+    const pressScale = useRef(new Animated.Value(1)).current;
+
+    useEffect(() => {
+        Animated.stagger(140, [
+            Animated.timing(titleAnim, {
+                toValue: 1,
+                duration: 550,
+                easing: Easing.out(Easing.cubic),
+                useNativeDriver: true,
+            }),
+            Animated.spring(cardAnim, {
+                toValue: 1,
+                friction: 6,
+                tension: 60,
+                useNativeDriver: true,
+            }),
+            Animated.timing(buttonAnim, {
+                toValue: 1,
+                duration: 500,
+                easing: Easing.out(Easing.cubic),
+                useNativeDriver: true,
+            }),
+        ]).start();
+
+        const haloLoop = Animated.loop(
+            Animated.sequence([
+                Animated.timing(haloAnim, {
+                    toValue: 1,
+                    duration: 1600,
+                    easing: Easing.inOut(Easing.sin),
+                    useNativeDriver: true,
+                }),
+                Animated.timing(haloAnim, {
+                    toValue: 0,
+                    duration: 1600,
+                    easing: Easing.inOut(Easing.sin),
+                    useNativeDriver: true,
+                }),
+            ])
+        );
+        haloLoop.start();
+        return () => haloLoop.stop();
+    }, [titleAnim, cardAnim, buttonAnim, haloAnim]);
+
+    const handlePressIn = () => {
+        Animated.spring(pressScale, {
+            toValue: 0.93,
+            friction: 5,
+            tension: 180,
+            useNativeDriver: true,
+        }).start();
+    };
+    const handlePressOut = () => {
+        Animated.spring(pressScale, {
+            toValue: 1,
+            friction: 4,
+            tension: 160,
+            useNativeDriver: true,
+        }).start();
+    };
 
     // Tam temizlik yapıp Login'e düşür (reclaim başarısız / farklı hesap seçimi)
     const fullSignOut = useCallback(async () => {
@@ -149,46 +218,96 @@ export default function WhoIsWatchingScreen({ navigation }) {
             />
 
             <View style={styles.content}>
-                <Text style={styles.title}>Kim izliyor?</Text>
-                <Text style={styles.subtitle}>
-                    Hesabınızda başka bir cihazda oturum açıldığı için{'\n'}
-                    oturumunuz kapatıldı. Devam etmek için profilinizi seçin.
-                </Text>
-
-                <TouchableOpacity
-                    style={styles.profileCard}
-                    onPress={handleReclaim}
-                    activeOpacity={0.8}
-                    disabled={isReclaiming}
+                <Animated.View
+                    style={{
+                        opacity: titleAnim,
+                        transform: [{
+                            translateY: titleAnim.interpolate({ inputRange: [0, 1], outputRange: [18, 0] }),
+                        }],
+                    }}
                 >
-                    <View style={styles.avatarWrapper}>
-                        {profile?.image ? (
-                            <Image source={{ uri: profile.image }} style={styles.avatar} />
-                        ) : (
-                            <View style={[styles.avatar, styles.avatarFallback]}>
-                                <Text style={styles.avatarInitial}>{initial}</Text>
-                            </View>
-                        )}
-                        {isReclaiming && (
-                            <View style={styles.avatarOverlay}>
-                                <ActivityIndicator size="large" color={colors.text} />
-                            </View>
-                        )}
-                    </View>
-                    <Text style={styles.profileName} numberOfLines={1}>
-                        {displayName}
+                    <Text style={styles.title}>Kim izliyor?</Text>
+                    <Text style={styles.subtitle}>
+                        Hesabınızda başka bir cihazda oturum açıldığı için{'\n'}
+                        oturumunuz kapatıldı. Devam etmek için profilinizi seçin.
                     </Text>
-                </TouchableOpacity>
+                </Animated.View>
 
-                <TouchableOpacity
-                    style={styles.switchButton}
-                    onPress={fullSignOut}
-                    disabled={isReclaiming}
-                    activeOpacity={0.7}
+                <Animated.View
+                    style={{
+                        opacity: cardAnim,
+                        transform: [
+                            { scale: cardAnim.interpolate({ inputRange: [0, 1], outputRange: [0.72, 1] }) },
+                            { scale: pressScale },
+                        ],
+                    }}
                 >
-                    <LogOut size={16} color={colors.textMuted} />
-                    <Text style={styles.switchButtonText}>Farklı Hesapla Giriş Yap</Text>
-                </TouchableOpacity>
+                    <TouchableOpacity
+                        style={styles.profileCard}
+                        onPress={handleReclaim}
+                        onPressIn={handlePressIn}
+                        onPressOut={handlePressOut}
+                        activeOpacity={0.9}
+                        disabled={isReclaiming}
+                    >
+                        <View style={styles.avatarArea}>
+                            {/* Nefes alan turuncu hale */}
+                            <Animated.View
+                                pointerEvents="none"
+                                style={[
+                                    styles.halo,
+                                    {
+                                        opacity: haloAnim.interpolate({ inputRange: [0, 1], outputRange: [0.25, 0.6] }),
+                                        transform: [{
+                                            scale: haloAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 1.14] }),
+                                        }],
+                                    },
+                                ]}
+                            />
+                            <View style={styles.avatarFrame}>
+                                <View style={styles.avatarWrapper}>
+                                    {profile?.image ? (
+                                        <Image source={{ uri: profile.image }} style={styles.avatar} />
+                                    ) : (
+                                        <View style={[styles.avatar, styles.avatarFallback]}>
+                                            <Text style={styles.avatarInitial}>{initial}</Text>
+                                        </View>
+                                    )}
+                                    {isReclaiming && (
+                                        <View style={styles.avatarOverlay}>
+                                            <ActivityIndicator size="large" color={colors.primary} />
+                                        </View>
+                                    )}
+                                </View>
+                            </View>
+                        </View>
+                        <Text style={styles.profileName} numberOfLines={1}>
+                            {displayName}
+                        </Text>
+                        {isReclaiming && (
+                            <Text style={styles.reclaimHint}>Oturum yenileniyor…</Text>
+                        )}
+                    </TouchableOpacity>
+                </Animated.View>
+
+                <Animated.View
+                    style={{
+                        opacity: buttonAnim,
+                        transform: [{
+                            translateY: buttonAnim.interpolate({ inputRange: [0, 1], outputRange: [14, 0] }),
+                        }],
+                    }}
+                >
+                    <TouchableOpacity
+                        style={styles.switchButton}
+                        onPress={fullSignOut}
+                        disabled={isReclaiming}
+                        activeOpacity={0.7}
+                    >
+                        <LogOut size={16} color={colors.textMuted} />
+                        <Text style={styles.switchButtonText}>Farklı Hesapla Giriş Yap</Text>
+                    </TouchableOpacity>
+                </Animated.View>
             </View>
         </View>
     );
@@ -234,6 +353,32 @@ const styles = StyleSheet.create({
     profileCard: {
         alignItems: 'center',
     },
+    avatarArea: {
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    // RN'de blur olmadığından "hale": avatarın arkasında, kendisinden büyük,
+    // yumuşak köşeli turuncu katman + güçlü renkli gölge. Opacity/scale'i
+    // Animated loop sürüyor → nefes alma hissi.
+    halo: {
+        position: 'absolute',
+        width: AVATAR_SIZE + 30,
+        height: AVATAR_SIZE + 30,
+        borderRadius: radius.xxl + 8,
+        backgroundColor: colors.primary,
+        shadowColor: colors.primary,
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.9,
+        shadowRadius: 26,
+        elevation: 16,
+    },
+    avatarFrame: {
+        padding: 3,
+        borderRadius: radius.xl + 6,
+        borderWidth: 2,
+        borderColor: colors.primary,
+        backgroundColor: colors.background,
+    },
     avatarWrapper: {
         width: AVATAR_SIZE,
         height: AVATAR_SIZE,
@@ -267,6 +412,14 @@ const styles = StyleSheet.create({
         fontWeight: typography.weight.medium,
         marginTop: spacing.lg,
         maxWidth: SCREEN_WIDTH - spacing.xxxl * 2,
+    },
+    reclaimHint: {
+        color: colors.primary,
+        fontSize: typography.size.sm,
+        fontWeight: typography.weight.semibold,
+        letterSpacing: 1.2,
+        marginTop: spacing.xs,
+        textTransform: 'uppercase',
     },
     switchButton: {
         flexDirection: 'row',
