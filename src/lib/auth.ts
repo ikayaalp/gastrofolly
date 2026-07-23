@@ -79,6 +79,12 @@ export const authOptions: NextAuthOptions = {
   ],
   session: {
     strategy: "jwt",
+    // Cihaz hatırlama: cookie 90 gün yaşar (aktif kullanımda NextAuth her gün
+    // tazelediği için düzenli kullanan hiç düşmez). Oturum başka cihaz
+    // tarafından devralınsa bile cookie durduğundan kullanıcı culinora.net'e
+    // döndüğünde şifre yerine "Kim İzliyor?" ekranından tek tıkla girer.
+    // Bilinçli çıkışta cookie silinir → normal giriş istenir.
+    maxAge: 90 * 24 * 60 * 60,
   },
   callbacks: {
     async jwt({ token, user, trigger, session }) {

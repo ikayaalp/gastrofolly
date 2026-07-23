@@ -198,6 +198,12 @@ import { redirect } from "next/navigation";
 export default async function LandingPage() {
   const session = await getServerSession(authOptions);
 
+  // Devralınmış oturum: culinora.net'i açan kullanıcı signin zincirine hiç
+  // girmeden sunucu tarafında doğrudan profil seçim ekranına gitsin.
+  if ((session as { error?: string } | null)?.error === "ConcurrentLogin") {
+    redirect("/auth/profiles");
+  }
+
   // If user is logged in, redirect to home
   if (session?.user) {
     redirect("/home");
