@@ -64,10 +64,14 @@ module.exports = {
         },
         "ios": {
             "buildNumber": "48",
-            "supportsTablet": true,
+            "supportsTablet": false,
             "bundleIdentifier": "com.chef2.app",
             "infoPlist": {
-                "UIBackgroundModes": ["remote-notification"]
+                "UIBackgroundModes": ["remote-notification"],
+                // Yalnızca standart HTTPS şifrelemesi kullanılıyor (muafiyet kapsamında);
+                // bu bayrak App Store Connect'teki export compliance sorusunu her build'de
+                // sormasını engeller.
+                "ITSAppUsesNonExemptEncryption": false
             },
             "googleServicesFile": "./GoogleService-Info.plist"
         },
@@ -96,7 +100,12 @@ module.exports = {
                 "expo-image-picker",
                 {
                     "photosPermission": "Kendi profil fotoğrafınızı güncelleyebilmeniz ve toplulukta yemek tariflerinizi paylaşabilmeniz için fotoğraflarınıza erişim izni gereklidir.",
-                    "cameraPermission": "Kendi profil fotoğrafınızı çekebilmeniz ve toplulukta yemek tariflerinizi paylaşabilmeniz için kameranıza erişim izni gereklidir."
+                    "cameraPermission": "Kendi profil fotoğrafınızı çekebilmeniz ve toplulukta yemek tariflerinizi paylaşabilmeniz için kameranıza erişim izni gereklidir.",
+                    // Uygulama kamerayla video KAYDETMİYOR (yalnızca fotoğraf çekiyor,
+                    // video sadece galeriden seçiliyor) → mikrofon izni gereksiz.
+                    // false: iOS NSMicrophoneUsageDescription + Android RECORD_AUDIO eklenmez.
+                    // Kullanılmayan izin hem Apple hem Play'de ret/Data-Safety uyumsuzluğu riski.
+                    "microphonePermission": false
                 }
             ],
             "expo-web-browser",
