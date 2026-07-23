@@ -7,7 +7,9 @@ import { checkRateLimit, getClientIp, RATE_LIMITS } from '@/lib/rateLimit'
 
 const GOOGLE_MOBILE_CLIENT_IDS = [
     '334630749775-terb1dfppb1atgem3t1pc0o41chaj3r1.apps.googleusercontent.com', // iOS
-    '334630749775-egnkr4i90r374isi6ep5iihjl0skqh19.apps.googleusercontent.com'  // Android
+    '334630749775-egnkr4i90r374isi6ep5iihjl0skqh19.apps.googleusercontent.com', // Android (EAS/dev SHA)
+    '334630749775-fqhar6cei4f6oo9mp3f2qtn0acsi4e9k.apps.googleusercontent.com', // Android (Play imzalama SHA)
+    '334630749775-meelg2lgcapd5d64rmbm9gmm8h06im0e.apps.googleusercontent.com'  // Web (sunucu) — idToken audience
 ];
 
 // Google token verification endpoint for mobile app

@@ -10,7 +10,10 @@ WebBrowser.maybeCompleteAuthSession();
 // Web Client ID → Web application türünde oluşturulan client
 // iOS Client ID → iOS türünde, bundle ID: com.chef2.app
 // Android Client ID → Android türünde, package: com.chef2.app
-const GOOGLE_WEB_CLIENT_ID = 'YOUR_WEB_CLIENT_ID_HERE';
+// Web (sunucu) client: idToken'ın audience'ı bu olur; backend bunu doğrular.
+// Web sitesinin de kullandığı ortak "server" client — client secret uygulamada
+// tutulmaz, yalnızca ID kullanılır.
+const GOOGLE_WEB_CLIENT_ID = '334630749775-meelg2lgcapd5d64rmbm9gmm8h06im0e.apps.googleusercontent.com';
 const GOOGLE_IOS_CLIENT_ID = '334630749775-terb1dfppb1atgem3t1pc0o41chaj3r1.apps.googleusercontent.com';
 const GOOGLE_ANDROID_CLIENT_ID = '334630749775-egnkr4i90r374isi6ep5iihjl0skqh19.apps.googleusercontent.com';
 
