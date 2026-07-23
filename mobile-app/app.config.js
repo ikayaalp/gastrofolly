@@ -64,7 +64,7 @@ module.exports = {
         },
         "ios": {
             "buildNumber": "50",
-            "supportsTablet": true,
+            "supportsTablet": false,
             "bundleIdentifier": "com.chef2.app",
             "infoPlist": {
                 "UIBackgroundModes": ["remote-notification"],
