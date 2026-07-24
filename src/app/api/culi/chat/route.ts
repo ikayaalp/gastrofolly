@@ -39,36 +39,42 @@ async function generateCompletionWithFallback(systemPrompt: string, formattedMes
         throw new Error('API keys are not configured');
     }
 
+    const messages = [{ role: 'system', content: systemPrompt }, ...formattedMessages];
+
     const runGroq = async () => {
-        if (!groqKey) throw new Error('API keys are not configured');
         const openai = new OpenAI({ apiKey: groqKey, baseURL: 'https://api.groq.com/openai/v1' });
         return await openai.chat.completions.create({
             model: 'llama-3.3-70b-versatile',
-            messages: [{ role: 'system', content: systemPrompt }, ...formattedMessages],
+            messages,
             max_tokens: 1000,
             temperature: 0.7,
         });
     };
 
-    if (geminiKey) {
+    const runGemini = async () => {
+        const openai = new OpenAI({ apiKey: geminiKey, baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/' });
+        return await openai.chat.completions.create({
+            model: 'gemini-2.0-flash',
+            messages,
+            max_tokens: 1000,
+            temperature: 0.7,
+        });
+    };
+
+    // Groq birincil (geçerli model). Herhangi bir hatada Gemini yedeğine düş.
+    if (groqKey) {
         try {
-            const openai = new OpenAI({ apiKey: geminiKey, baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/' });
-            return await openai.chat.completions.create({
-                model: 'gemini-3.5-flash',
-                messages: [{ role: 'system', content: systemPrompt }, ...formattedMessages],
-                max_tokens: 1000,
-                temperature: 0.7,
-            });
+            return await runGroq();
         } catch (error: any) {
-            if (error?.status === 429 && groqKey) {
-                console.warn('Gemini API rate limited (429), falling back to Groq...');
-                return await runGroq();
+            if (geminiKey) {
+                console.warn('Groq başarısız, Gemini yedeğine geçiliyor:', error?.status ?? error?.message);
+                return await runGemini();
             }
             throw error;
         }
     }
 
-    return await runGroq();
+    return await runGemini();
 }
 
 export async function POST(request: NextRequest) {

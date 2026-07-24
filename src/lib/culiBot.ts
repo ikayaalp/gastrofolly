@@ -46,16 +46,12 @@ export async function getCuliUser() {
  * Generates an AI response using Groq API
  */
 async function generateCuliReply(postContent: string | null, userQuestion: string) {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-        console.error('Gemini API key is not configured for Culi Bot');
+    const geminiKey = process.env.GEMINI_API_KEY;
+    const groqKey = process.env.GROQ_API_KEY;
+    if (!geminiKey && !groqKey) {
+        console.error('AI API key is not configured for Culi Bot');
         return "Üzgünüm, şu an mutfakta biraz meşgulüm. Lütfen daha sonra tekrar sor! 👨‍🍳";
     }
-
-    const openai = new OpenAI({
-        apiKey: apiKey,
-        baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/',
-    });
 
     let promptContext = `KULLANICININ SORUSU VEYA YORUMU:\n"${userQuestion}"\n`;
 
@@ -63,18 +59,39 @@ async function generateCuliReply(postContent: string | null, userQuestion: strin
         promptContext = `TARTIŞILAN ANA GÖNDERİ (POST) İÇERİĞİ:\n"${postContent}"\n\n` + promptContext;
     }
 
-    try {
-        const completion = await openai.chat.completions.create({
-            model: 'gemini-3.5-flash',
-            messages: [
-                { role: 'system', content: SYSTEM_PROMPT },
-                { role: 'user', content: promptContext }
-            ],
-            max_tokens: 500,
-            temperature: 0.7,
-        });
+    const messages = [
+        { role: 'system' as const, content: SYSTEM_PROMPT },
+        { role: 'user' as const, content: promptContext },
+    ];
 
-        return completion.choices[0]?.message?.content || 'Ah, fırında bir şeyler unuttum sanırım! Şu an cevap veremiyorum. 👨‍🍳';
+    const runGroq = async () => {
+        const openai = new OpenAI({ apiKey: groqKey, baseURL: 'https://api.groq.com/openai/v1' });
+        const c = await openai.chat.completions.create({ model: 'llama-3.3-70b-versatile', messages, max_tokens: 500, temperature: 0.7 });
+        return c.choices[0]?.message?.content;
+    };
+
+    const runGemini = async () => {
+        const openai = new OpenAI({ apiKey: geminiKey, baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/' });
+        const c = await openai.chat.completions.create({ model: 'gemini-2.0-flash', messages, max_tokens: 500, temperature: 0.7 });
+        return c.choices[0]?.message?.content;
+    };
+
+    try {
+        // Groq birincil (geçerli model). Herhangi bir hatada Gemini yedeğine düş.
+        let reply: string | null | undefined;
+        if (groqKey) {
+            try {
+                reply = await runGroq();
+            } catch (error: any) {
+                if (!geminiKey) throw error;
+                console.warn('Culi Bot: Groq başarısız, Gemini yedeğine geçiliyor:', error?.status ?? error?.message);
+                reply = await runGemini();
+            }
+        } else {
+            reply = await runGemini();
+        }
+
+        return reply || 'Ah, fırında bir şeyler unuttum sanırım! Şu an cevap veremiyorum. 👨‍🍳';
     } catch (error) {
         console.error('Culi AI generation error:', error);
         return "Teknik bir sorun oldu, mutfağa geri dönmem gerek! 👨‍🍳";
