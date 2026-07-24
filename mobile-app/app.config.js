@@ -84,8 +84,13 @@ module.exports = {
             "backgroundColor": "#000000"
         },
         "ios": {
-            "buildNumber": "50",
-            "supportsTablet": false,
+            "buildNumber": "51",
+            // iPad desteği KAPATILAMAZ: uygulamanın önceki yayınlanmış sürümü
+            // iPad'i destekliyordu ve Apple, güncellemede cihaz desteğinin geri
+            // çekilmesine izin vermiyor (altool: "This bundle does not support one
+            // or more of the devices supported by the previous app version").
+            // false yapılırsa App Store Connect yüklemesi doğrulamada reddedilir.
+            "supportsTablet": true,
             "bundleIdentifier": "com.chef2.app",
             "infoPlist": {
                 "UIBackgroundModes": ["remote-notification"],
