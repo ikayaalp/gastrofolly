@@ -21,10 +21,24 @@
       "ios": {
         "credentialsSource": "remote"
       }
+    },
+    "production-ios": {
+      "extends": "production",
+      "env": {
+        "EAS_ACCOUNT": "new"
+      }
     }
   },
   "submit": {
     "production": {
+      "ios": {
+        "appleId": "ismailkayaalp@gmail.com",
+        "ascAppId": "6745252495",
+        "appleTeamId": "7YWUU97SVU",
+        "language": "en-US"
+      }
+    },
+    "production-ios": {
       "ios": {
         "appleId": "ismailkayaalp@gmail.com",
         "ascAppId": "6745252495",
